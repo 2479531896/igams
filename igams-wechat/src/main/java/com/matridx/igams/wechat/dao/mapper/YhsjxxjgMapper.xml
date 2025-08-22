@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IYhsjxxjgDao" >
+	<!-- 批量新增送检详细审核结果 -->
+	<insert  id="insertByYhsjxxjgDtos" parameterType="list">
+		insert into igams_yhsjxxjg (xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, jyzfgd, sm, sdds, xpjcl, gzd, xdfd, lrry, lrsj, scbj, jclx, wzfllx, yhid, gllx, zt)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.xxjgid},cast(#{item.xh} as numeric),#{item.sjid},#{item.jdid},#{item.fjdid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.fldj},#{item.dqs},
+					#{item.zdqs},#{item.dwds},#{item.dsbfb},#{item.jyzfgd},#{item.sm},#{item.sdds},#{item.xpjcl},#{item.gzd},#{item.xdfd},#{item.lrry},LOCALTIMESTAMP, '0', #{item.jclx}, #{item.wzfllx}, #{item.yhid}, #{item.gllx}, #{item.zt})
+			</foreach>
+		</if>
+	</insert>
+	<!--批量删除用户送检详细审核结果-->
+	<delete id="deleteByYhsjxxjgDto" parameterType="YhsjxxjgDto">
+		delete from igams_yhsjxxjg
+		where sjid = #{sjid} and yhid = #{yhid} and jclx = #{jclx} 
+	</delete>
+	<!-- 根据用户ID和送检ID查询信息 -->
+	<select id="selectByYhidAndSjid" parameterType="YhsjxxjgDto" resultType="YhsjxxjgDto">
+		SELECT xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, 
+			jyzfgd, sm, sdds, xpjcl, gzd, jclx, wzfllx, gllx, zt
+			FROM igams_yhsjxxjg
+			<where>
+				scbj != '1'
+				<if test="sjid != null and sjid != ''">
+					and sjid = #{sjid}
+				</if>
+				<if test="yhid != null and yhid != ''">
+					and yhid = #{yhid}
+				</if>
+			</where>
+	</select>
+	<!-- 修改用户送检结果信息 -->
+	<update id="update" parameterType="YhsjxxjgModel">
+		update igams_yhsjxxjg set xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+	   	<if test="gzd !=null and gzd !=''">
+			,gzd=#{gzd}
+		</if>
+		<if test="wzfl !=null and wzfl !=''">
+			,wzfl=#{wzfl}
+		</if>
+		<if test="fldj !=null and fldj !=''">
+			,fldj=#{fldj}
+		</if>
+		<if test="dqs !=null and dqs !=''">
+			,dqs=#{dqs}
+		</if>
+		<if test="zdqs !=null and zdqs !=''">
+			,zdqs=#{zdqs}
+		</if>
+		<if test="dwds !=null and dwds !=''">
+			,dwds=#{dwds}
+		</if>
+		<if test="wzfllx !=null and wzfllx !=''">
+			,wzfllx=#{wzfllx}
+		</if>
+		<if test="gllx !=null and gllx !=''">
+			,gllx=#{gllx}
+		</if>
+		<if test="zt !=null and zt !=''">
+			,zt=#{zt}
+		</if>
+		<where>
+			xxjgid = #{xxjgid} 
+		</where>
+	</update>
+	<!-- 查询详细结果信息(小程序) -->
+	<select id="getTreeAnalysis" parameterType="SjxxjgDto" resultType="SjxxjgDto">
+		WITH RECURSIVE r (xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, jyzfgd, sm, sdds, xpjcl, gzd, jclx, wfllx, yhid, gllx, xdfd, depth, t_xssx) AS (
+			SELECT xxjgid, xh, sjid, jdid, fjdid
+				, wzywm, wzzwm, wzfl, fldj, dqs
+				, zdqs, dwds, dsbfb, jyzfgd, sm
+				, sdds, xpjcl, gzd, jclx, wzfllx
+				, yhid, gllx, xdfd, 1 AS depth, xxjgid||'' as t_xssx
+			FROM igams_yhsjxxjg
+			WHERE scbj != '1' and fjdid = '' and jclx = #{jclx}
+				<if test="yhid != null and yhid != ''">
+					and yhid = #{yhid}
+				</if>
+				<if test="gllx !=null and gllx!=''">
+					and gllx=#{gllx}
+				</if>
+				<if test="sjid != null and sjid != ''">
+					and sjid = #{sjid}
+				</if>
+				<if test="wzfl != null and wzfl != ''">
+					and wzfl = #{wzfl}
+				</if>
+			UNION ALL
+			SELECT b.xxjgid, b.xh, b.sjid, b.jdid, b.fjdid
+				, b.wzywm, b.wzzwm, b.wzfl, b.fldj, b.dqs
+				, b.zdqs, b.dwds, b.dsbfb, b.jyzfgd, b.sm
+				, b.sdds, b.xpjcl, b.gzd, b.jclx, b.wzfllx
+				,b.yhid,b.gllx, b.xdfd, r.depth + 1 AS depth, r.t_xssx||'_'||b.xxjgid t_xssx
+			FROM igams_yhsjxxjg b JOIN r ON b.fjdid = r.jdid AND b.sjid = r.sjid AND b.yhid = r.yhid AND b.gllx = r.gllx
+		)
+		SELECT xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, jyzfgd, sm, sdds, xpjcl, gzd, jclx, wfllx, yhid, gllx, xdfd, depth, t_xssx
+		FROM r
+		ORDER BY t_xssx
+	</select>
+	<!-- 根据节点ID查询Species下最后一条详细结果 -->
+	<select id="getSpeciesInfo" parameterType="List" resultType="SjxxjgDto">
+		 WITH RECURSIVE r (xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx, yhid, gllx,depth,np)
+		 AS ( select xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx, yhid, gllx,1 as depth ,RIGHT('0000'||CAST(row_number() over(order by jdid)  AS varchar(50)),4) np
+		   from igams_yhsjxxjg a 
+		   where scbj!='1'
+		   and 
+		   <foreach collection="list" open="(" close=")" separator=" or " item="item">
+					(fjdid=#{item.jdid} 
+					and yhid = #{item.yhid}
+		 			<if test="item.sjid != null and item.sjid !=''">
+		 				and sjid=#{item.sjid}
+		 			</if>
+				  	<if test="item.gllx != null and item.gllx != ''">
+						and gllx = #{item.gllx}
+				 	</if>
+		 			)
+	 			</foreach> 
+		   union all 
+		   select b.xxjgid,b.xh,b.sjid,b.jdid,b.fjdid,b.wzywm,b.wzzwm,b.wzfl,b.fldj,b.dqs,b.zdqs,b.dwds,b.dsbfb,b.jyzfgd,b.sm,b.sdds,b.xpjcl,b.gzd,b.jclx,b.wzfllx, b.yhid, b.gllx,r.depth + 1 as depth ,r.np||RIGHT('0000'||CAST(row_number() over(partition by r.jdid order by b.jdid)  AS varchar(50)),4) np
+		   from igams_yhsjxxjg b 
+		   join r on b.fjdid = r.jdid 
+		   and b.sjid = r.sjid and b.yhid = r.yhid and b.gllx = r.gllx)
+		 SELECT xxjgid,xh,sjid,jdid,case when fjdid is not null then '' end fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx, yhid, gllx,depth,np
+		 FROM r order by np
+	</select>
+	<!-- 根据送检ID和物种分类查询fjdid为null的详细信息 -->
+	<select id="getDtoByFjdidIsNull" parameterType="SjxxjgDto" resultType="SjxxjgDto">
+		select xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, 
+			jyzfgd, sm, sdds, xpjcl, gzd, wzfllx, yhid, gllx
+		from igams_yhsjxxjg
+		<where>
+			scbj!='1' and fjdid ='' 
+			and jclx=#{jclx} and yhid=#{yhid}
+			<if test="gllx !=null and gllx !=''">
+				and gllx = #{gllx}
+			</if>
+			<if test="sjid !=null and sjid!=''">
+				and sjid=#{sjid}
+			</if>
+			<if test="wzfl !=null and wzfl!=''">
+				and wzfl=#{wzfl}
+			</if>
+		</where>
+	</select>
+</mapper>

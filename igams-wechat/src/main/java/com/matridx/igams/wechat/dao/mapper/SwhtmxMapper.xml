@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISwhtmxDao">
+
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_swhtmx(htmxid, htid, xh, jcxmid, jczxmid, jg, sfyx, lrry, lrsj, scbj)
+        values
+        <foreach collection="list" item="entity" separator=",">
+        (#{entity.htmxid}, #{entity.htid}, cast(#{entity.xh} as numeric), #{entity.jcxmid}, #{entity.jczxmid}
+            <if test="entity.jg != null and entity.jg != ''">
+                ,cast(#{entity.jg} as numeric)
+            </if>
+            <if test="entity.jg == null or entity.jg == ''">
+                ,null
+            </if>
+       , '1', #{entity.lrry}, LOCALTIMESTAMP, '0')
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_swhtmx
+                <set>
+                    xgsj = LOCALTIMESTAMP,xgry = #{item.xgry}
+                    <if test="item.xh != null and item.xh != ''">
+                        ,xh=cast(#{item.xh} as numeric)
+                    </if>
+                    <if test="item.jcxmid != null and item.jcxmid != ''">
+                        ,jcxmid=#{item.jcxmid}
+                    </if>
+                    <if test="item.jczxmid != null and item.jczxmid != ''">
+                        ,jczxmid=#{item.jczxmid}
+                    </if>
+                    <if test="item.jg != null and item.jg != ''">
+                        ,jg=cast(#{item.jg} as numeric)
+                    </if>
+                    <if test="item.sfyx != null and item.sfyx != ''">
+                        ,sfyx=#{item.sfyx}
+                    </if>
+                </set>
+                where htmxid = #{item.htmxid}
+            </foreach>
+        </if>
+    </update>
+
+    <sql id="OUT_SEARCH_JOINS">
+		left join matridx_jcsj jcxm on jcxm.csid = swhtmx.jcxmid
+        left join matridx_jcsj jczxm on jczxm.csid = swhtmx.jczxmid
+	</sql>
+
+    <!--查询单个-->
+    <select id="getDtoList" resultType="SwhtmxDto" parameterType="SwhtmxDto">
+        select
+        swhtmx.htmxid,swhtmx.htid,swhtmx.xh,swhtmx.jcxmid,swhtmx.jczxmid,swhtmx.jg,swhtmx.sfyx,swhtmx.lrry,swhtmx.lrsj,swhtmx.xgry,swhtmx.xgsj,
+        jcxm.csmc jcxmmc,jczxm.csmc jczxmmc
+        from igams_swhtmx swhtmx
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where swhtmx.scbj = '0'
+        <if test="htid != null and htid != ''">
+            and swhtmx.htid=#{htid}
+        </if>
+        <if test = "ids != null and ids.size > 0 "  >
+            and swhtmx.htid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        order by swhtmx.xh
+    </select>
+
+
+    <select id="getAllList" resultType="SwhtmxDto" parameterType="SwhtmxDto">
+        select
+        swhtmx.htmxid,swhtmx.htid,swhtmx.xh,swhtmx.jcxmid,swhtmx.jczxmid,swhtmx.jg,swhtmx.sfyx,swhtmx.lrry,swhtmx.lrsj,swhtmx.xgry,swhtmx.xgsj,
+        jcxm.csmc jcxmmc,jczxm.csmc jczxmmc
+        from igams_swhtmx swhtmx
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where swhtmx.scbj = '0'
+        and swhtmx.htid in (select htid from igams_khhtgl where khid = #{khid})
+    </select>
+
+    <select id="getHbsfInfo" resultType="SwhtmxDto" parameterType="SwhtmxDto">
+        select swhtmx.htmxid,swhtgl.htid,swhtmx.jcxmid,case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end as jczxmid,hbhzkh.hbid,swhtmx.jg,swhtgl.htzt,swhtgl.sflx
+        ,swhtgl.htksrq,swhtgl.htjsrq,swhtmx.lrsj,ROW_NUMBER() over (partition by hbhzkh.hbid,swhtmx.jcxmid,case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end order by swhtmx.lrsj desc) path,
+        hbsfbz.sfbz
+        from igams_swhtgl swhtgl
+        left join igams_swhtmx swhtmx on swhtgl.htid = swhtmx.htid and swhtmx.scbj = '0' and swhtmx.sfyx='1'
+        left join igams_khhtgl khhtgl on khhtgl.htid =swhtgl.htid
+        left join igams_hbhzkh hbhzkh on hbhzkh.khid = khhtgl.khid and hbhzkh.zykh='1'
+        LEFT JOIN matridx_jcsj jczxm on jczxm.fcsid = swhtmx.jcxmid and jczxm.scbj != '1' and jczxm.jclb = 'DETECT_SUBTYPE'
+        left join igams_sjhbxx hb on hb.hbid=hbhzkh.hbid
+        left join igams_hbsfbz hbsfbz on hbhzkh.hbid = hbsfbz.hbid and (swhtmx.jcxmid=hbsfbz.xm and (case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end=hbsfbz.zxm or ((case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end is null or case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end = '' )and (hbsfbz.zxm is null or hbsfbz.zxm = ''))))
+        where swhtgl.scbj = '0'  and hbhzkh.hbid is not null
+        and hb.scbj='0'
+        and swhtmx.jg is not null
+        and (swhtmx.jg!=hbsfbz.sfbz or hbsfbz.sfbz is null)
+        <if test="zt != null and zt !=''">
+            and swhtgl.zt = #{zt}
+        </if>
+        <if test="cxbj == '1'">
+            and ( swhtgl.htzt = '10' or swhtgl.htzt = '30' )
+        </if>
+        <if test="htid != null and htid != ''">
+            and swhtgl.htid=#{htid}
+        </if>
+        and swhtgl.htksrq &lt;= CURRENT_DATE and swhtgl.htjsrq >=  CURRENT_DATE
+    </select>
+
+    <!--通过主键删除-->
+    <delete id="delete" parameterType="SwhtmxDto">
+        update  igams_swhtmx set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'
+        where
+        <if test="htid !=null and htid != ''">
+            htid = #{htid}
+        </if>
+        <if test="mxids !=null and mxids.size > 0">
+            htmxid in
+            <foreach collection="mxids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            htid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update igams_swhtmx
+        <set>
+            xgsj = LOCALTIMESTAMP
+            <if test="sfyx != null and sfyx != ''">
+                ,sfyx = #{sfyx}
+            </if>
+        </set>
+        where
+        <if test="htmxid !=null and htmxid != ''">
+            htmxid = #{htmxid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            htmxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="modProjectInfo" parameterType="SwhtmxDto">
+        <if test="dtos !=null and dtos.size > 0 and ids != null and ids.size > 0">
+            UPDATE igams_swhtmx swhtmx
+            SET
+            sfyx = tmp.sfyx,
+            xgry = tmp.xgry
+            FROM
+            ( VALUES
+
+            <foreach collection="dtos" separator="," item="item" index="index">
+                (
+                #{item.jcxmid},#{item.jczxmid},#{item.sfyx},#{item.xgry}
+                )
+            </foreach>
+            ) AS tmp ( jcxmid,jczxmid,sfyx,xgry )
+            WHERE
+            swhtmx.jcxmid = tmp.jcxmid and (swhtmx.jczxmid = tmp.jczxmid or swhtmx.jczxmid is null or swhtmx.jczxmid = '')
+            and swhtmx.htid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+</mapper>
+

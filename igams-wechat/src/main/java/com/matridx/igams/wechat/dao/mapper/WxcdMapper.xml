@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWxcdDao" >
+
+	<!-- 获取微信菜单列表 -->
+    <select id="getWxcdTreeList" parameterType="WxcdDto" resultType="WxcdDto">
+		with recursive t (cdid,fcdid,xssx,cdlx,cdm,cdj,ljdz,yjcdsz,ejcdsz,mtid,appid,ymlj,depth,gxlx,t_xssx) as (
+	  select firstcd.cdid,firstcd.fcdid,firstcd.xssx,firstcd.cdlx,firstcd.cdm,firstcd.cdj,firstcd.ljdz,firstcd.yjcdsz,firstcd.ejcdsz,
+	  firstcd.mtid,firstcd.appid,firstcd.ymlj,1 as depth,firstcd.gxlx,to_char(firstcd.xssx,'99') t_xssx
+	    from matridx_wxcd firstcd where firstcd.fcdid is null and firstcd.scbj != '1'
+	    <if test="gxlx !=null and gxlx != ''">
+			and firstcd.gxlx = #{gxlx}
+		</if>
+		<if test="gxlx == null or gxlx == ''">
+			and firstcd.gxlx is null
+		</if>
+	  union all
+	    select wxcd.cdid,wxcd.fcdid,wxcd.xssx,wxcd.cdlx,wxcd.cdm,wxcd.cdj,wxcd.ljdz,wxcd.yjcdsz,wxcd.ejcdsz,
+	  wxcd.mtid,wxcd.appid,wxcd.ymlj,t.depth + 1 as depth,wxcd.gxlx,t.t_xssx||'_'||to_char(wxcd.xssx,'99') as t_xssx
+	    from matridx_wxcd wxcd
+	    join t on wxcd.fcdid = t.cdid
+	     where wxcd.scbj !='1' 
+	    <if test="gxlx !=null and gxlx != ''">
+			and wxcd.gxlx = #{gxlx}
+		</if>
+		<if test="gxlx == null or gxlx == ''">
+			and wxcd.gxlx is null
+		</if>
+	    )
+	    select cdid,fcdid,xssx,cdlx,cdm,cdj,ljdz,yjcdsz,ejcdsz,mtid,appid,ymlj,depth,gxlx,t_xssx from t 
+	    order by t_xssx
+    </select>
+    <!-- 根据文件ID获取文件信息 -->
+	<select id="getDtoById" parameterType="String" resultType="WxcdDto">
+		select wxcd.cdid,wxcd.fcdid,wxcd.xssx,wxcd.cdlx,wxcd.cdm,wxcd.cdj,wxcd.ljdz,wxcd.yjcdsz,wxcd.ejcdsz,wxcd.gxlx,
+			wxcd.mtid,wxcd.appid,wxcd.ymlj,wxcd.lrry,wxcd.lrsj,wxcd.xgry,wxcd.xgsj,wxcd.scry,wxcd.scsj,wxcd.scbj
+			from matridx_wxcd wxcd
+			<where>
+				wxcd.scbj !='1' and wxcd.cdid = #{cdid}
+			</where>
+	</select>
+    <!-- 修改微信菜单信息 -->
+	<update  id="update" parameterType="WxcdModel">
+		update matridx_wxcd set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="fcdid !=null and fcdid != ''">
+			,fcdid = #{fcdid}
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			,xssx = cast(#{xssx} as numeric)
+		</if>
+		<if test="cdlx !=null and cdlx != ''">
+			,cdlx = #{cdlx}
+		</if>
+		<if test="gxlx !=null and gxlx != ''">
+			,gxlx = #{gxlx}
+		</if>
+		<if test="cdm !=null and cdm != ''">
+			,cdm = #{cdm}
+		</if>
+		<if test="cdj !=null and cdj != ''">
+			,cdj = #{cdj}
+		</if>
+		<if test="ljdz !=null and ljdz != ''">
+			,ljdz = #{ljdz}
+		</if>
+		<if test="yjcdsz !=null and yjcdsz != ''">
+			,yjcdsz = #{yjcdsz}
+		</if>
+		<if test="ejcdsz !=null and ejcdsz != ''">
+			,ejcdsz = #{ejcdsz}
+		</if>
+		<if test="mtid !=null and mtid != ''">
+			,mtid = #{mtid}
+		</if>
+		<if test="appid !=null and appid != ''">
+			,appid = #{appid}
+		</if>
+		<if test="ymlj !=null and ymlj != ''">
+			,ymlj = #{ymlj}
+		</if>
+		<where>
+			cdid = #{cdid}
+		</where>
+	</update>
+	<!-- 新增微信菜单信息 -->
+	<insert id="insert" parameterType="WxcdModel">
+		insert into matridx_wxcd(cdid
+		<if test="fcdid !=null and fcdid != ''">
+			,fcdid
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			,xssx
+		</if>
+		<if test="cdlx !=null and cdlx != ''">
+			,cdlx
+		</if>
+		<if test="gxlx !=null and gxlx != ''">
+			,gxlx
+		</if>
+		<if test="cdm !=null and cdm != ''">
+			,cdm
+		</if>
+		<if test="cdj !=null and cdj != ''">
+			,cdj
+		</if>
+		<if test="ljdz !=null and ljdz != ''">
+			,ljdz
+		</if>
+		<if test="yjcdsz !=null and yjcdsz != ''">
+			,yjcdsz
+		</if>
+		<if test="ejcdsz !=null and ejcdsz != ''">
+			,ejcdsz
+		</if>
+		<if test="mtid !=null and mtid != ''">
+			,mtid
+		</if>
+		<if test="appid !=null and appid != ''">
+			,appid
+		</if>
+		<if test="ymlj !=null and ymlj != ''">
+			,ymlj
+		</if>
+		,lrry,lrsj,scbj) values(#{cdid}
+		<if test="fcdid !=null and fcdid != ''">
+			,#{fcdid}
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			,cast(#{xssx} as numeric)
+		</if>
+		<if test="cdlx !=null and cdlx != ''">
+			,#{cdlx}
+		</if>
+		<if test="gxlx !=null and gxlx != ''">
+			,#{gxlx}
+		</if>
+		<if test="cdm !=null and cdm != ''">
+			,#{cdm}
+		</if>
+		<if test="cdj !=null and cdj != ''">
+			,#{cdj}
+		</if>
+		<if test="ljdz !=null and ljdz != ''">
+			,#{ljdz}
+		</if>
+		<if test="yjcdsz !=null and yjcdsz != ''">
+			,#{yjcdsz}
+		</if>
+		<if test="ejcdsz !=null and ejcdsz != ''">
+			,#{ejcdsz}
+		</if>
+		<if test="mtid !=null and mtid != ''">
+			,#{mtid}
+		</if>
+		<if test="appid !=null and appid != ''">
+			,#{appid}
+		</if>
+		<if test="ymlj !=null and ymlj != ''">
+			,#{ymlj}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 删除微信菜单信息 -->
+	<update  id="deleteByCdid" parameterType="WxcdDto">
+		with recursive t(cdid) as (
+	  select firstcd.cdid
+	    from matridx_wxcd firstcd where firstcd.cdid=#{cdid} and firstcd.scbj != '1' 
+	  union all
+	    select wxcd.cdid
+	    from matridx_wxcd wxcd
+	    inner join t on wxcd.fcdid = t.cdid
+	     where wxcd.scbj !='1'
+	    )
+	update matridx_wxcd set
+		scbj = '1'
+		where cdid in (select cdid from t)
+	</update>
+	<!-- 获取个性类型 -->
+	<select id="getGxlxList" resultType="String">
+		select gxlx
+			from matridx_wxcd
+			group by gxlx
+	</select>
+</mapper>

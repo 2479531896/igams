@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IBfplszDao" >
+
+    <select id="getPagedToBeVisitedList" parameterType="BfplszDto" resultType="BfplszDto">
+        select * from(select  bfplsz.dwid,bfplsz.lxrid,bfdx.dwmc,bflxr.lxrxm,to_char(bfgl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,bfgl.gtnr ,row_number() over(partition by bfplsz.plszid  order by bfgl.lrsj desc) imp
+        from igams_bfplsz bfplsz
+        left join igams_bfdxgl bfdx on bfdx.dwid=bfplsz.dwid and bfdx.scbj='0'
+        left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfplsz.lxrid and bflxr.scbj='0'
+        left join igams_bfgl bfgl on bfgl.dwid=bfplsz.dwid and bfgl.lxrid =bfplsz.lxrid and bfgl.bfr=bfplsz.yhid and bfgl.scbj='0'
+        where bfplsz.bfbj='0'  and bfplsz.yhid = #{yhid}
+        ) tb where tb.imp=1
+        <if test="entire != null and entire != ''">
+            and (tb.dwmc like '%'||#{entire}||'%'
+            or tb.lxrxm like '%'||#{entire}||'%'
+            or tb.gtnr like '%'||#{entire}||'%'
+            )
+        </if>
+    </select>
+
+    <select id="getDto" parameterType="BfplszDto" resultType="BfplszDto">
+        select bfplsz.plszid ,bfplsz.lxrid ,bfplsz.dwid ,bfplsz.yhid ,bfplsz.bfpc ,bfplsz.pclx ,bfplsz.pczq ,bfplsz.bfbj,bfplsz.qsrq,jc_pclx.csdm as pclxdm
+        from igams_bfplsz bfplsz
+        left join matridx_jcsj jc_pclx on jc_pclx.csid=bfplsz.pclx
+        <where>
+            bfplsz.lxrid=#{lxrid} and bfplsz.dwid=#{dwid} and bfplsz.yhid=#{yhid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="BfplszDto">
+        insert into igams_bfplsz(plszid
+        <if test="lxrid != null and lxrid != ''">
+            ,lxrid
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,dwid
+        </if>
+        <if test="yhid != null and yhid != ''">
+            ,yhid
+        </if>
+        <if test="bfpc != null and bfpc != ''">
+            ,bfpc
+        </if>
+        <if test="pclx != null and pclx != ''">
+            ,pclx
+        </if>
+        <if test="pczq != null and pczq != ''">
+            ,pczq
+        </if>
+        <if test="qsrq != null and qsrq != ''">
+            ,qsrq
+        </if>
+        ,bfbj)
+        values(#{plszid}
+        <if test="lxrid != null and lxrid != ''">
+            ,#{lxrid}
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,#{dwid}
+        </if>
+        <if test="yhid != null and yhid != ''">
+            ,#{yhid}
+        </if>
+        <if test="bfpc != null and bfpc != ''">
+            ,cast (#{bfpc} as numeric)
+        </if>
+        <if test="pclx != null and pclx != ''">
+            ,#{pclx}
+        </if>
+        <if test="pczq != null and pczq != ''">
+            ,cast (#{pczq} as numeric)
+        </if>
+        <if test="qsrq != null and qsrq != ''">
+            , cast (#{qsrq} as date)
+        </if>
+        ,'0')
+    </insert>
+
+    <update id="update" parameterType="BfplszDto">
+        update igams_bfplsz set plszid=#{plszid}
+        <if test="lxrid != null and lxrid != ''">
+            ,lxrid=#{lxrid}
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,dwid=#{dwid}
+        </if>
+        <if test="yhid != null and yhid != ''">
+            ,yhid=#{yhid}
+        </if>
+        <if test="bfpc != null and bfpc != ''">
+            ,bfpc=cast (#{bfpc} as numeric)
+        </if>
+        <if test="pclx != null and pclx != ''">
+            ,pclx=#{pclx}
+        </if>
+        <if test="pczq != null and pczq != ''">
+            ,pczq=cast (#{pczq} as numeric)
+        </if>
+        <if test="qsrq != null and qsrq != ''">
+            , qsrq=cast (#{qsrq} as date)
+        </if>
+        <if test="bfbj != null and bfbj != ''">
+            , bfbj=#{bfbj}
+        </if>
+        <where>
+            plszid=#{plszid}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="BfplszDto">
+        delete from igams_bfplsz where plszid=#{plszid}
+    </delete>
+    
+    <update id="updateTimedTaskDates"  >
+        update
+        igams_bfplsz bfplsz
+        set
+        bfbj = '0' ,
+        qsrq = tmp.qsrq
+        from
+        (
+        select
+        plszid,
+        (bfplsz.qsrq + (jc_pclx.cskz1 || ' ' || jc_pclx.cskz2)::interval) as qsrq
+        from
+        igams_bfplsz bfplsz
+        left outer join matridx_jcsj jc_pclx on
+        bfplsz.pclx = jc_pclx.csid
+        where
+        (bfplsz.qsrq + (jc_pclx.cskz1 || ' ' || jc_pclx.cskz2)::interval) &lt;= current_date
+        ) tmp
+        where
+        tmp.plszid = bfplsz.plszid
+    </update>
+
+    <update id="updateTimedTaskVisitMarkers">
+        update
+        igams_bfplsz plsz
+        set
+        bfbj = tab.bfbj
+        from
+        (
+        select
+        bfplsz.plszid,
+        case
+        when count(bfgl.bfid) >= bfplsz.bfpc then '1'
+        else '0'
+        end bfbj
+        from
+        igams_bfplsz bfplsz
+        left outer join matridx_jcsj jc_pclx on
+        bfplsz.pclx = jc_pclx.csid
+        left outer join igams_bfgl bfgl on
+        bfgl.dwid = bfplsz.dwid
+        and bfgl.lxrid = bfplsz.lxrid
+        and bfgl.bfr = bfplsz.yhid
+        and bfgl.scbj = '0'
+        and bfgl.bfsjqs &gt;= bfplsz.qsrq
+        and bfgl.bfsjqs &lt; bfplsz.qsrq + (jc_pclx.cskz1 || ' ' || jc_pclx.cskz2)::interval
+        group by
+        bfplsz.plszid,
+        bfplsz.bfpc
+        ) tab
+        where
+        tab.plszid = plsz.plszid
+    </update>
+
+</mapper>

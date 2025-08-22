@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjnyxDao" >
+	<!-- 批量新增送检耐药性信息 -->
+	<insert  id="insertBysjnyxDtos" parameterType="list">
+		insert into igams_sjnyx (sjnyxid,sjid, xh, jy, jyl, tx, jl, ds, yp, xgwz,jclx,nyjyid,jyfx,xls,qyz,json,report_taxids,wkbh,sfhb,ysyp,jczlx)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjnyxid},#{item.sjid},cast(#{item.xh} as numeric),#{item.jy},#{item.jyl},#{item.tx},#{item.jl},
+				#{item.ds},#{item.yp},#{item.xgwz},#{item.jclx},#{item.nyjyid},#{item.jyfx},#{item.xls},#{item.qyz},cast(#{item.json} as json),
+				#{item.report_taxids},#{item.wkbh},#{item.sfhb},#{item.ysyp},coalesce(#{item.jczlx},''))
+			</foreach>
+		</if>
+	</insert>
+	<!--根据送检ID删除信息-->
+	<delete id="deleteById" parameterType="String">
+		delete from igams_sjnyx
+		<where>
+			sjid = #{sjid}
+		</where>
+	</delete>
+	<!--根据送检ID删除信息-->
+	<delete id="deleteBySjnyxDto" parameterType="SjnyxDto">
+		delete from igams_sjnyx
+		<where>
+			sjid = #{sjid} and jclx = #{jclx}
+			<if test="jczlx !=null and jczlx != ''">
+				and jczlx = #{jczlx}
+			</if>
+			<if test="sjnyxids !=null and sjnyxids.size > 0">
+				and sjnyxid in
+				<foreach collection="sjnyxids" item="item" separator="," close=")" open="(">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<!--批量删除耐药信息-->
+	<delete id="deleteBySjidsAndJclx" parameterType="SjwzxxDto">
+		delete from igams_sjnyx
+		where sjid in
+		<foreach collection="ids" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+		and jclx = #{jclx}
+		<if test="jczlx !=null and jczlx != ''">
+			and jczlx = #{jczlx}
+		</if>
+	</delete>
+	<!-- 根据送检ID查询相应的耐药信息 -->
+	<select id="getNyxBySjid" parameterType="SjxxDto" resultType="SjnyxDto">
+		select nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jclx,nyx.nyjyid,nyx.qyz,nyx.jyfx,nyx.xls,nyx.json,
+		nyx.bjtb,nyx.sjnyxid,nyx.report_taxids,jclx.cskz1 jclx,jclx.csid jcxmid
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl
+		,json ->> '背景突变' AS bjtb,json ->> 'ID' AS wkbh
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+				nyx.sjid=#{sjid}
+			<if test="jclx != null and jclx != ''">
+				and nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx != ''">
+				and nyx.jczlx = #{jczlx}
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据Wkbh查询相应的耐药信息 -->
+	<select id="getNyxByWkbh" parameterType="SjnyxDto" resultType="SjnyxDto">
+		select nyx.sjnyxid,nyx.json,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.ysyp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+			1=1
+			<if test="wkbh !=null and wkbh !=''">
+				and nyx.wkbh=#{wkbh}
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				and nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx != ''">
+				and nyx.jczlx = #{jczlx}
+			</if>
+		</where>
+	</select>
+
+	<select id="getNyxMapBySjid" parameterType="SjxxDto" resultType="SjwzxxDto">
+		select nyx.sjnyxid,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid,nyx.sfhb
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl,json ->> '背景突变' AS bjtb,nyx.json
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+			<if test="sjid !=null and sjid !=''">
+				AND nyx.sjid=#{sjid}
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				AND nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx !=''">
+				AND nyx.jczlx=#{jczlx}
+			</if>
+		</where>
+	</select>
+
+	<select id="getNyxListBySjid" parameterType="SjxxDto" resultType="SjnyxDto">
+		select nyx.sjnyxid,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid,nyx.sfhb
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl,json ->> '背景突变' AS bjtb,nyx.json
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+			<if test="sjid !=null and sjid !=''">
+				AND nyx.sjid=#{sjid}
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				AND nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx !=''">
+				AND nyx.jczlx=#{jczlx}
+			</if>
+		</where>
+	</select>
+
+	<select id="getNyxYpListBySjid" parameterType="SjxxDto" resultType="SjnyxDto">
+		select nyx.*,ypxx.ypdj,ypxx.xgyp from (
+		select nyx.sjnyxid,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid,nyx.sfhb
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx
+		,json ->> '蛋白突变' AS dbtb,json ->> '核苷酸突变' AS hgstb,json ->> '分类' AS nyfl
+		,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl,json ->> '背景突变' AS bjtb,nyx.json,
+		string_to_table(substr(json ->> '耐药性',POSITION('(' IN json ->> '耐药性')+1 ,POSITION(')' IN json ->> '耐药性')-POSITION('(' IN json ->> '耐药性') -1),'/') as nyzl
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+			<if test="sjid !=null and sjid !=''">
+				AND nyx.sjid=#{sjid}
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				AND nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx !=''">
+				AND nyx.jczlx=#{jczlx}
+			</if>
+		</where>
+		) nyx
+		left join igams_nyypxx ypxx on nyx.nyzl = ypxx.nyzwm and ypxx.scbj ='0'
+	</select>
+
+	<select id="getExplanationForWord" parameterType="SjxxDto" resultType="SjnyxDto">
+		select zsgl.jyjzmc,zsgl.zsnr 
+			from igams_nyjyzsgl  zsgl
+		<where>
+			exists(
+				select  distinct sjnyx.jy 
+				from igams_sjnyx sjnyx
+				where
+				sjnyx.sjid=#{sjid} 
+				and sjnyx.jclx=#{jclx}
+				<if test="jczlx !=null and jczlx != ''">
+					and sjnyx.jczlx = #{jczlx}
+				</if>
+				and zsgl.jyjzmc=sjnyx.jy
+			)
+		</where>
+	</select>
+	<select id="getNyxMapList" parameterType="SjxxDto" resultType="Map">
+		SELECT ny.sjnyxid,ny.nyjyid,ny.xls,ny.qyz,ny.jyfx,ny.yp,ny.jl,ny.jy,nyzs.jyjzmc,nyzs.zsnr
+		FROM igams_sjnyx ny
+				 LEFT JOIN igams_sjxx sj ON sj.sjid = ny.sjid
+				 LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = ny.jclx
+				 LEFT JOIN matridx_jcsj jc_yblx on jc_yblx.csid = sj.yblx
+				 LEFT JOIN igams_nyjyzsgl nyzs ON nyzs.nyjyid = ny.nyjyid
+		WHERE sj.sjid = #{sjid}
+		  AND (jc_jcxm.cskz3 || '_' || jc_jcxm.cskz1) = #{ywlx}
+	</select>
+
+	<!-- 更新送检耐药性信息 -->
+	<update id="updateBySjnyxDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_sjnyx sjnyx
+			set
+			xh= cast(tmp.xh as numeric),
+			bjtb= tmp.bjtb,
+			json= tmp.json::json,
+			sfhb= tmp.sfhb
+			from
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.bjtb} bjtb,#{item.xh} xh,
+				#{item.json} json,#{item.sjnyxid} sjnyxid,#{item.sfhb} sfhb
+			</foreach>
+			tmp
+			where
+			sjnyx.sjnyxid=tmp.sjnyxid
+		</if>
+	</update>
+
+	<!-- 根据送检ID和检测类型查询相应的耐药信息 -->
+	<select id="getNyxBySjidAndJclx" parameterType="SjxxDto" resultType="SjnyxDto">
+		select nyx.sjnyxid,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid,nyx.jczlx jczxmid
+		,json ->> '突变基因' AS tbjy,json ->> '突变结果' AS tbjg,json ->> '耐药性' AS nyx,json ->> '突变深度' AS tbsd,json ->> '突变频率' AS tbpl
+		,json ->> '背景突变' AS bjtb,json ->> 'ID' AS wkbh,
+		(select count(case when t_nyx.sjid is not null then t_wksjmx.wksjmxid else null end)  ||'/'||count(t_wksjmx.wksjmxid)
+		from IGAMS_WKSJMX t_wksjmx
+		left join IGAMS_SJNYX t_nyx on t_wksjmx.WKBM = t_nyx.JSON ->> 'ID'
+		and NYX.JSON ->> '突变基因' = t_NYX.JSON ->> '突变基因' and NYX.JSON ->> '突变结果' = t_NYX.JSON ->> '突变结果'
+		and t_NYX.jclx = NYX.jclx and t_NYX.jczlx = NYX.jczlx
+		where t_wksjmx.wksjid = SJMX.WKSJID ) jcbl,json ->> '分类' AS fl,nyjyzs.zsnr,nyjyzs.jyjzmc,nyx.sfhb
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		left join matridx_jcsj jczlx on jczlx.csid=nyx.jczlx
+		left join igams_nyjyzsgl nyjyzs on nyjyzs.jyjzmc=nyx.jy
+		LEFT JOIN IGAMS_WKSJMX SJMX ON SJMX.WKBM = NYX.JSON ->> 'ID'
+		LEFT JOIN IGAMS_WKSJGL SJGL ON SJMX.WKSJID = SJGL.WKSJID
+		<where>
+				nyx.sjid=#{sjid} and SJGL.scbj ='0'
+			<if test="jclx !=null and jclx !=''">
+				and nyx.jclx=#{jclx}
+			</if>
+			<if test="jczlx !=null and jczlx != ''">
+				and nyx.jczlx = #{jczlx}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getSamePositionNy" parameterType="SjnyxDto" resultType="SjnyxDto">
+		select tnyx.sjnyxid ,sjmx.ybbh,tnyx.json->>'突变基因' tbjy,tnyx.json ->> '突变结果' AS tbjg,tnyx.json ->> '耐药性' AS nyx,tnyx.json ->> '突变深度' AS tbsd,tnyx.json ->> '突变频率' AS tbpl
+		,tnyx.json ->> '背景突变' AS bjtb,tnyx.json ->> 'ID' AS wkbh from igams_wksjmx sjmx
+		left join igams_sjnyx tnyx on tnyx.json ->>'ID'=sjmx.wkbm
+		where wksjid in
+			(
+				select sjmx.wksjid  from
+				igams_sjnyx nyx
+				left join igams_wksjmx sjmx on sjmx.wkbm =nyx.json ->> 'ID'
+				left join igams_wksjgl sjgl ON sjgl.wksjid = sjmx.wksjid
+				where sjgl.scbj ='0'  and nyx.sjid=#{sjid} and jclx=#{jclx}
+				<if test="jczlx !=null and jczlx != ''">
+					and nyx.jczlx = #{jczlx}
+				</if>
+				group by sjmx.wksjid
+			)
+		<if test="tbjy !=null and tbjy != ''">
+			and tnyx.json->>'突变结果' like #{tbjy}||'_%'
+		</if>
+		<if test="tbjg !=null and tbjg != ''">
+			and tnyx.json->>'突变结果' = #{tbjg}
+		</if>
+	</select>
+</mapper>

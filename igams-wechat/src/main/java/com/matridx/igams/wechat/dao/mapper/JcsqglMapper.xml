@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IJcsqglDao" >
+
+	<select id="getPagedDtoList" parameterType="JcsqglDto" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		       jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc,jcsqgl.lrry,jcsqgl.ybxx,jcsqgl.wkxx,jcsqgl.hbxx
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj='0'
+			<if test="entire != null and entire != ''">
+				and (jcsqgl.hb ILIKE '%'||#{entire}||'%'
+				or jcsqgl.sqyy ILIKE '%'||#{entire}||'%'
+				or jcsqgl.xqsm ILIKE '%'||#{entire}||'%'
+				or jcsqgl.wkxx ILIKE '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="lrry != null and lrry != ''">
+				and jcsqgl.lrry =#{lrry}
+			</if>
+			<if test="hb != null and hb != ''">
+				and jcsqgl.hb ILIKE '%'||#{hb}||'%'
+			</if>
+			<if test="sqyy != null and sqyy != ''">
+				and jcsqgl.sqyy ILIKE '%'||#{sqyy}||'%'
+			</if>
+			<if test="xqsm != null and xqsm != ''">
+				and jcsqgl.xqsm ILIKE '%'||#{xqsm}||'%'
+			</if>
+			<if test="wkxx != null and wkxx != ''">
+				and jcsqgl.wkxx ILIKE '%'||#{wkxx}||'%'
+			</if>
+			<if test="zts != null and zts.length >0">
+				and jcsqgl.zt in
+				<foreach collection="zts" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqlxs != null and sqlxs.length >0">
+				and jcsqgl.sqlx in
+				<foreach collection="sqlxs" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lxs != null and lxs.length >0">
+				and jcsqgl.lx in
+				<foreach collection="lxs" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lrsjstart != null and lrsjstart != ''">
+				and to_char(jcsqgl.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+			</if>
+			<if test="lrsjend != null and lrsjend != ''">
+				and to_char(jcsqgl.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDto" parameterType="JcsqglDto" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,sqlx.csdm as sqlxcsdm,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.ddslid,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc,sqlx.csdm as sqlxdm,jcsqgl.ybxx,jcsqgl.wkxx,jcsqgl.hbxx
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj='0'
+			<if test="sqglid != null and sqglid != ''">
+				and jcsqgl.sqglid =#{sqglid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="JcsqglDto" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc,sqlx.csdm as sqlxdm,jcsqgl.ybxx,jcsqgl.wkxx,jcsqgl.hbxx
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj='0'
+			and jcsqgl.sqglid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<select id="getDtoById" parameterType="String" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc,jcsqgl.ddslid,jcsqgl.hbxx
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj='0'
+			and jcsqgl.sqglid =#{sqglid}
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="JcsqglDto">
+		insert into igams_jcsqgl(sqglid
+		<if test="sqlx != null and sqlx != ''">
+			,sqlx
+		</if>
+		<if test="hb != null and hb != ''">
+			,hb
+		</if>
+		<if test="sqyy != null and sqyy != ''">
+			,sqyy
+		</if>
+		<if test="xqsm != null and xqsm != ''">
+			,xqsm
+		</if>
+		<if test="lx != null and lx != ''">
+			,lx
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		<if test="ybxx != null and ybxx != ''">
+			,ybxx
+		</if>
+		<if test="wkxx != null and wkxx != ''">
+			,wkxx
+		</if>
+		<if test="hbxx != null and hbxx != ''">
+			,hbxx
+		</if>
+		<if test="wzxx != null and wzxx != ''">
+			,wzxx
+		</if>
+		,lrry,lrsj,scbj
+		)
+		values (#{sqglid}
+		<if test="sqlx != null and sqlx != ''">
+			,#{sqlx}
+		</if>
+		<if test="hb != null and hb != ''">
+			,#{hb}
+		</if>
+		<if test="sqyy != null and sqyy != ''">
+			,#{sqyy}
+		</if>
+		<if test="xqsm != null and xqsm != ''">
+			,#{xqsm}
+		</if>
+		<if test="lx != null and lx != ''">
+			,#{lx}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="ybxx != null and ybxx != ''">
+			,#{ybxx}
+		</if>
+		<if test="wkxx != null and wkxx != ''">
+			,#{wkxx}
+		</if>
+		<if test="hbxx != null and hbxx != ''">
+			,#{hbxx}
+		</if>
+		<if test="wzxx != null and wzxx != ''">
+			,#{wzxx}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<update id="update" parameterType="JcsqglDto">
+		update igams_jcsqgl
+		<set>
+			xgry=#{xgry},
+		    xgsj=LOCALTIMESTAMP
+			<if test="sqlx != null and sqlx != ''">
+				,sqlx=#{sqlx}
+			</if>
+			<if test="lx != null and lx != '' and lx=='0'.toString()">
+				,hb=null
+				<if test="ybxx != null and ybxx != ''">
+					,ybxx=#{ybxx}
+				</if>
+				<if test="wkxx != null and wkxx != ''">
+					,wkxx=#{wkxx}
+				</if>
+				<if test="hbxx != null and hbxx != ''">
+					,hbxx=#{hbxx}
+				</if>
+				<if test="wzxx != null and wzxx != ''">
+					,wzxx=#{wzxx}
+				</if>
+			</if>
+			<if test="lx != null and lx != '' and lx=='1'.toString()">
+				<if test="hb != null and hb != ''">
+					,hb=#{hb}
+				</if>
+				,ybxx=null,wkxx=null,hbxx=null
+			</if>
+			<if test="sqyy != null and sqyy != ''">
+				,sqyy=#{sqyy}
+			</if>
+			<if test="xqsm != null and xqsm != ''">
+				,xqsm=#{xqsm}
+			</if>
+			<if test="lx != null and lx != ''">
+				,lx=#{lx}
+			</if>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="ddslid != null and ddslid != ''">
+				,ddslid=#{ddslid}
+			</if>
+		</set>
+		<where>
+			sqglid=#{sqglid}
+		</where>
+	</update>
+
+	<update id="delete" parameterType="JcsqglDto">
+		update igams_jcsqgl
+		<set>
+			scbj='1',
+			scsj=LOCALTIMESTAMP,
+			scry=#{scry}
+		</set>
+		<where>
+			sqglid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getPagedAuditDetectionApplication" parameterType="JcsqglDto" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj='0'
+			<if test="lrry != null and lrry != ''">
+				and jcsqgl.lrry =#{lrry}
+			</if>
+			<if test="hb != null and hb != ''">
+				and jcsqgl.hb ILIKE '%'||#{hb}||'%'
+			</if>
+			<if test="sqyy != null and sqyy != ''">
+				and jcsqgl.sqyy ILIKE '%'||#{sqyy}||'%'
+			</if>
+			<if test="xqsm != null and xqsm != ''">
+				and jcsqgl.xqsm ILIKE '%'||#{xqsm}||'%'
+			</if>
+			<if test="zts != null and zts.length >0">
+				and jcsqgl.zt in
+				<foreach collection="zts" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqlxs != null and sqlxs.length >0">
+				and jcsqgl.sqlx in
+				<foreach collection="sqlxs" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lxs != null and lxs.length >0">
+				and jcsqgl.lx in
+				<foreach collection="lxs" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lrsjstart != null and lrsjstart != ''">
+				and to_char(jcsqgl.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+			</if>
+			<if test="lrsjend != null and lrsjend != ''">
+				and to_char(jcsqgl.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+			</if>
+		</where>
+	</select>
+
+	<select id="getAuditListDetectionApplication" parameterType="List" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		join
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.sqglid} sqglid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach>
+		tmp on tmp.sqglid = jcsqgl.sqglid
+		order by tmp.rownum
+	</select>
+
+	<update id="updateDdslidToNull" parameterType="JcsqglDto">
+		update igams_jcsqgl set ddslid = null
+		<where>
+			scbj !='1' and sqglid =#{sqglid}
+		</where>
+	</update>
+
+	<select id="getDtoByDdslid" parameterType="String" resultType="JcsqglDto">
+		select jcsqgl.sqglid,jcsqgl.sqlx,sqlx.csmc as sqlxmc,jcsqgl.hb,jcsqgl.sqyy,jcsqgl.xqsm,jcsqgl.lx,jcsqgl.wzxx,
+		jcsqgl.scbj,jcsqgl.zt,to_char(jcsqgl.lrsj,'yyyy-MM-dd HH24:mi:ss') as lrsj,yh.zsxm as lrrymc
+		from igams_jcsqgl jcsqgl
+		left join matridx_jcsj sqlx on sqlx.csid=jcsqgl.sqlx and sqlx.scbj='0'
+		left join matridx_xtyh yh on jcsqgl.lrry = yh.yhid and yh.scbj='0'
+		<where>
+			jcsqgl.scbj!='1'
+			and jcsqgl.ddslid=#{ddslid}
+		</where>
+	</select>
+
+	<select id="getSprjsBySprid" parameterType="String" resultType="JcsqglDto">
+		select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+		from matridx_yhjs yhjs
+		left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		<where>
+			yhjs.yhid=#{sprid}
+		</where>
+	</select>
+
+	<select id="getWkbmsByYbbhs" parameterType="JcsqglDto" resultType="JcsqglDto">
+
+		select wkbh as wkbm,sjid
+		from igams_sjbgsm
+		<where>
+			sjid in
+			<foreach collection="ybbhs" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+			and wkbh is not null
+		</where>
+		group by wkbm,sjid
+	</select>
+
+	<select id="getWxyhByYhid" parameterType="String" resultType="Map">
+		select yhid,wxid
+		from matridx_wxyh
+		<where>
+			scbj!='1' and yhid =#{yhid}
+		</where>
+	</select>
+</mapper>

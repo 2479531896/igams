@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWzysxxDao" >
+
+    <insert id="insertDtoList" parameterType="List">
+        insert into igams_wzysxx(sjwzid,sjid,wzid,wzzwm,wzywm,wzfl,jglx,xpxx,xh,jclx,json,lrry,lrsj,scbj,llh,sfhb)
+        values
+        <foreach collection="list" item="item" separator="," index="index">
+            (#{item.sjwzid},#{item.sjid},#{item.wzid},#{item.wzzwm},#{item.wzywm},#{item.wzfl},#{item.jglx},#{item.xpxx},cast(#{item.xh} as numeric),#{item.jclx},cast(#{item.json} as json),#{item.lrry},LOCALTIMESTAMP,'0',#{item.llh},'1')
+        </foreach>
+    </insert>
+
+    <select id="getDtoList" parameterType="WzysxxDto" resultType="WzysxxDto">
+        select sjwzid,sjid,wzid,wzzwm,wzywm,wzfl,jglx,xpxx,xh,jclx,json,lrry,lrsj,scbj,llh,json ->> 'nbbm' AS nbbm,sfhb
+        ,json ->> 'MappingReads' AS MappingReads,json ->> 'reads' AS reads,ROUND(CAST(NULLIF(json ->> 'refANI', '') AS numeric), 2) refANI,json ->> 'target' AS target,json
+        ,json ->> 'CleanQ30' AS CleanQ30,json ->> 'RawReads' AS RawReads,json ->> 'CleanReads' AS CleanReads,json ->> 'spike' AS spike,json ->> 'NTM' AS ntm,json ->> 'TB' AS tb
+        from igams_wzysxx
+        where scbj='0' and jclx=#{jclx}
+        <if test="sjid != null and sjid !=''">
+            and sjid=#{sjid}
+        </if>
+        <if test="llh != null and llh !=''">
+            and llh=#{llh}
+        </if>
+    </select>
+
+    <select id="getLlh" parameterType="WzysxxDto" resultType="WzysxxDto">
+        select to_char(to_timestamp(llh::bigint),'yyyy-mm-dd hh24:mi:ss') llhsj,llh,json ->> 'ID' wkbh
+        from igams_wzysxx
+        where sjid=#{sjid} and jclx=#{jclx}
+        group by llh,json ->> 'ID'
+        order by llh desc
+    </select>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IDzglDao" >
+    <!-- 根据ID查询地址列表 -->
+    <select id="getListByUser" parameterType="String" resultType="DzglDto">
+        SELECT dzgl.sfmr,dzgl.dzid,dzgl.ryid,dzgl.xxdz,dzgl.sf,dzgl.cs,dzgl.xm,dzgl.dh
+        from igams_dzgl dzgl
+        LEFT JOIN matridx_xtyh yh on yh.yhid= dzgl.ryid
+        <where>
+            yh.scbj!='1'
+            and dzgl.ryid=#{ryid}
+            and dzgl.scbj!='1'
+        </where>
+        order by dzgl.sfmr desc
+    </select>
+
+    <insert id="insert" parameterType="DzglDto" >
+        insert into igams_dzgl(
+
+        ryid,dzid,sf,cs,xxdz,dh,xm,scbj,sfmr
+        )values(#{ryid},
+        #{dzid},#{sf},#{cs},#{xxdz},#{dh}
+        ,#{xm},'0','0'
+        )
+    </insert>
+
+
+    <update id="update">
+        update igams_dzgl
+        <set>
+           xm=#{xm},cs=#{cs},sf=#{sf},xxdz=#{xxdz},dh=#{dh}
+        </set>
+        <where>
+            dzid=#{dzid}
+        </where>
+    </update>
+
+    <!-- 删除信息 -->
+    <update id="delete" parameterType="DzglDto">
+        update igams_dzgl  set scbj='1',sfmr='0'
+        <where>
+            dzid =#{dzid}
+        </where>
+    </update>
+    <!-- 处理默认地址 -->
+    <update id="cleardefault" parameterType="DzglDto">
+        update igams_dzgl  set sfmr='0'
+        <where>
+            ryid =#{ryid}
+            and sfmr='1'
+        </where>
+    </update>
+
+    <update id="changedefault" parameterType="DzglDto">
+        update igams_dzgl  set sfmr='1'
+        <where>
+            dzid =#{dzid}
+            and sfmr='0'
+
+        </where>
+    </update>
+
+</mapper>

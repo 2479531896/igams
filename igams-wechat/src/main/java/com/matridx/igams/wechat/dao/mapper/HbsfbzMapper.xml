@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IHbsfbzDao" >
+	<!-- 从基础数据中查出来检测项目 -->
+	<select id="jcsjjcxm" resultType="HbsfbzDto">
+		select 
+			jcsj.csmc,jcsj.csid
+		from  
+		 matridx_jcsj jcsj 
+		<where>
+			jcsj.scbj='0' and
+		 	jcsj.jclb='DETECT_TYPE'
+		</where>
+        order by jcsj.cspx
+	</select>
+	<!-- 新增 -->
+	<insert id="insertsfbz" parameterType="list">
+		<if test="list != null and list.size>0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				insert into igams_hbsfbz (
+					hbsfbzid,hbid,lrsj
+					<if test="item.xm != null and item.xm !=''">
+						,xm
+					</if>
+					<if test="item.zxm != null and item.zxm !=''">
+						,zxm
+					</if>
+					<if test="item.sfbz != null and item.sfbz !=''">
+						,sfbz
+					</if>
+					<if test="item.tqje != null and item.tqje !=''">
+						,tqje
+					</if>
+					<if test="item.ksrq != null and item.ksrq !=''">
+						,ksrq
+					</if>
+					<if test="item.jsrq != null and item.jsrq !=''">
+						,jsrq
+					</if>
+					<if test="item.htmxid != null and item.htmxid !=''">
+						,htmxid
+					</if>
+					<if test="item.lrry != null and item.lrry !=''">
+						,lrry
+					</if>
+				)
+				values
+				(
+				    #{item.hbsfbzid},#{item.hbid},LOCALTIMESTAMP
+					<if test="item.xm != null and item.xm !=''">
+						,#{item.xm}
+					</if>
+					<if test="item.zxm != null and item.zxm !=''">
+						,#{item.zxm}
+					</if>
+					<if test="item.sfbz != null and item.sfbz !=''">
+						,cast(#{item.sfbz} as numeric)
+					</if>
+					<if test="item.tqje != null and item.tqje !=''">
+						,cast(#{item.tqje} as numeric)
+					</if>
+					<if test="item.ksrq != null and item.ksrq !=''">
+						,cast(#{item.ksrq} as timestamp)
+					</if>
+					<if test="item.jsrq != null and item.jsrq !=''">
+						,cast(#{item.jsrq} as timestamp)
+					</if>
+					<if test="item.htmxid != null and item.htmxid !=''">
+						,#{item.htmxid}
+					</if>
+					<if test="item.lrry != null and item.lrry !=''">
+						,#{item.lrry}
+					</if>
+				)
+			</foreach>
+		</if>
+	</insert>
+	<update id="batchModSfbz">
+		<if test="list != null and list.size>0">
+			<foreach collection="list" separator=";" item="item">
+				update igams_hbsfbz
+				<set>
+						<if test="item.sfbz != null and item.sfbz !=''">
+							sfbz = cast(#{item.sfbz} as numeric),
+						</if>
+						<if test="item.tqje != null and item.tqje !=''">
+							tqje = cast(#{item.tqje} as numeric),
+						</if>
+						<if test="item.ksrq != null and item.ksrq !=''">
+							ksrq = cast(#{item.ksrq} as timestamp),
+						</if>
+						<if test="item.jsrq != null and item.jsrq !=''">
+							jsrq = cast(#{item.jsrq} as timestamp),
+						</if>
+				        htmxid = null
+				</set>
+				where hbid = #{item.hbid} and xm=#{item.xm}
+				    <choose>
+						<when test="item.zxm != null and item.zxm != '' ">
+							and zxm=#{item.zxm}
+						</when>
+						<otherwise>
+							and zxm is null
+						</otherwise>
+					</choose>
+			</foreach>
+		</if>
+	</update>
+	<!-- 修改时先查询单个 -->
+	<select id="selectByid" parameterType="String" resultType="HbsfbzDto">
+		select 
+			sfbz.hbid,sfbz.sfbz,sfbz.tqje,jcsj.csmc,jcsj.csid,sfbz.zxm
+		from matridx_jcsj jcsj
+		left join igams_hbsfbz sfbz  on sfbz.xm=jcsj.csid and hbid=#{hbid}
+		<where>
+			jcsj.scbj='0' and
+		 	jcsj.jclb='DETECT_TYPE' order by sfbz.sfbz desc nulls last, jcsj.cspx asc
+		</where>
+	</select>
+	<!-- 修改时先查询单个 -->
+	<select id="getDtosByHbid" parameterType="String" resultType="HbsfbzDto">
+		select sfbz.hbid,sfbz.sfbz,sfbz.tqje,sfbz.xm,sfbz.zxm,sfbz.ksrq,sfbz.jsrq,sfbz.htmxid,swhtgl.htid,swhtgl.htbh
+		from igams_hbsfbz sfbz
+		left join igams_swhtmx swhtmx on swhtmx.htmxid = sfbz.htmxid
+		left join igams_swhtgl swhtgl on swhtgl.htid = swhtmx.htid
+		<where>
+			sfbz.hbid=#{hbid}
+		</where>
+	</select>
+	<!-- 删除 -->
+	<delete id="deleteById" parameterType="String">
+	  	delete from 
+	  		igams_hbsfbz
+		<where>
+			hbid=#{hbid}
+		</where>
+	</delete>
+	
+	<!--查看-->
+	<select id="viewByid" parameterType="String" resultType="HbsfbzDto">
+		select 
+			sfbz.hbid,sfbz.sfbz,sfbz.tqje,jcsj.csmc,jcsj.csid,jc_zxm.csmc zxm,to_char(sfbz.ksrq,'YYYY-MM-DD') ksrq,to_char(sfbz.jsrq,'YYYY-MM-DD') jsrq,swhtgl.htbh,sfbz.xm jcxmid,sfbz.zxm jczxmid
+		from matridx_jcsj jcsj
+		left join igams_hbsfbz sfbz  on sfbz.xm=jcsj.csid
+		left join matridx_jcsj jc_zxm  on sfbz.zxm=jc_zxm.csid
+		left join igams_swhtmx swhtmx on swhtmx.htmxid = sfbz.htmxid
+		left join igams_swhtgl swhtgl on swhtgl.htid = swhtmx.htid
+		<where>
+		 	jcsj.jclb='DETECT_TYPE' 
+		 	and hbid=#{hbid}
+		</where>
+	</select>
+	<!--获取默认收费标准-->
+	<select id="getDefaultDto" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select xm,sfbz,tqje
+			from igams_hbsfbz
+			<where>
+				hbid= 'default' and xm = #{xm}
+			</where>
+	</select>
+	
+	<select id="getDto" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select hbid,xm,sfbz,tqje
+		from igams_hbsfbz
+			<where>
+				hbid=#{hbid} and xm = #{xm}
+			</where>
+	</select>
+	
+	<select id="getHbsfbzByHbmxAndXm" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select hbsfbz.hbid,hbsfbz.xm,hbsfbz.sfbz,hbsfbz.tqje
+			from igams_hbsfbz hbsfbz
+			left join igams_sjhbxx sjhbxx on sjhbxx.hbid=hbsfbz.hbid and sjhbxx.scbj = '0'
+			<where>
+	 			hbsfbz.xm = #{xm}
+				and  trim(sjhbxx.hbmc)=trim(#{hbmc})
+			</where>
+	</select>
+	
+	<select id="getListBySjxxDtos" parameterType="java.util.List" resultType="HbsfbzDto">
+		select hbid,xm,sfbz,tqje
+		from igams_hbsfbz
+		<where> 
+			1 = 2
+			or (hbid, xm) in
+			<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+				(#{item.hbid},#{item.jcxmid})
+			</foreach>
+		</where>
+	</select>
+
+	<update id="updateSfbzByHt" parameterType="SwhtmxDto">
+		update igams_hbsfbz set sfbz=tmp.sfbz,ksrq=tmp.ksrq,jsrq=tmp.jsrq,htmxid=tmp.htmxid from (
+		select hbid,xm,zxm,sfbz,ksrq,jsrq,htmxid from (
+		select hbhzkh.hbid,case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end zxm,swhtmx.jcxmid xm,swhtmx.jg sfbz,swhtgl.htksrq ksrq,swhtgl.htjsrq jsrq,ROW_NUMBER() over (partition by hbhzkh.hbid,swhtmx.jcxmid,swhtmx.jczxmid order by swhtmx.lrsj desc) path,swhtmx.htmxid
+		from igams_swhtmx swhtmx
+		left join igams_swhtgl swhtgl on swhtgl.htid = swhtmx.htid and swhtgl.scbj = '0'
+		left join igams_khhtgl khhtgl on khhtgl.htid =swhtgl.htid
+		left join igams_hbhzkh hbhzkh on hbhzkh.khid = khhtgl.khid
+		LEFT JOIN matridx_jcsj jczxm on jczxm.fcsid = swhtmx.jcxmid and jczxm.scbj != '1' and jczxm.jclb = 'DETECT_SUBTYPE'
+		left join igams_hbsfbz hbsfbz on hbhzkh.hbid = hbsfbz.hbid and (swhtmx.jcxmid=hbsfbz.xm and (case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end=hbsfbz.zxm or ((case when swhtmx.jczxmid != null and case when swhtmx.jczxmid != null and swhtmx.jczxmid != '' then swhtmx.jczxmid else jczxm.csid end != '' then swhtmx.jczxmid else jczxm.csid end is null or swhtmx.jczxmid = '' )and (hbsfbz.zxm is null or hbsfbz.zxm = ''))))
+		left join igams_sjhbxx hb on hb.hbid=hbsfbz.hbid
+		where  hb.scbj='0' and swhtmx.scbj = '0'   and hbhzkh.hbid is not null
+		<if test="zt != null and zt != ''">
+			and swhtgl.zt = #{zt}
+		</if>
+		<if test="cxbj == '1'">
+			and ( swhtgl.htzt = '10' or swhtgl.htzt = '30' )
+		</if>
+		<if test="htid !=null and htid !=''">
+			and swhtgl.htid=#{htid}
+		</if>
+		and swhtgl.htksrq &lt;= CURRENT_DATE and swhtgl.htjsrq &gt;=  CURRENT_DATE)tb where tb.path=1
+		) as tmp(hbid,xm,zxm,sfbz,ksrq,jsrq,htmxid)
+		where igams_hbsfbz.hbid=tmp.hbid
+		and igams_hbsfbz.xm=tmp.xm
+		and (igams_hbsfbz.zxm=tmp.zxm or ((igams_hbsfbz.zxm is null or igams_hbsfbz.zxm='') and (tmp.zxm is null or tmp.zxm='')))
+		and (igams_hbsfbz.htmxid!=tmp.htmxid or igams_hbsfbz.htmxid is null)
+	</update>
+
+
+	<select id="getDtoList" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select sfbz.hbid,sfbz.sfbz,sfbz.tqje,sfbz.xm,sfbz.zxm,sfbz.ksrq,sfbz.jsrq,jc_xm.csmc xmmc,jc_zxm.csmc zxmmc,sjhbxx.hbmc
+		,jc_xm.cskz1 as xmcskz1,jc_xm.cskz3 as xmcskz3
+		from igams_hbsfbz sfbz
+		left join matridx_jcsj jc_xm  on sfbz.xm=jc_xm.csid
+		left join matridx_jcsj jc_zxm  on sfbz.zxm=jc_zxm.csid
+		left join igams_sjhbxx sjhbxx on sjhbxx.hbid=sfbz.hbid and sjhbxx.scbj='0'
+
+		<where>
+			<if test="hbmc != null and hbmc != ''">
+				sjhbxx.hbmc=#{hbmc}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and sfbz.hbid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getYxAndZt" parameterType="List" resultType="HbsfbzDto">
+		select sfbz.hbid,sfbz.sfbz,sfbz.tqje,sfbz.xm,sfbz.zxm,sfbz.ksrq,sfbz.jsrq,sfbz.htmxid,swhtgl.htid,swhtgl.htbh
+		from igams_hbsfbz sfbz
+		left join igams_sjhbxx hbxx on hbxx.hbid = sfbz.hbid
+		left join igams_swhtmx swhtmx on swhtmx.htmxid = sfbz.htmxid
+		left join igams_swhtgl swhtgl on swhtgl.htid = swhtmx.htid
+		left join (
+			<foreach collection="modList" item="item" separator="union all">
+				select #{item.hbid} hbid, #{item.xm} xm, #{item.zxm} zxm
+			</foreach>
+		)tmp on tmp.hbid = hbxx.hbid and tmp.xm = sfbz.xm and tmp.zxm = sfbz.zxm
+		where tmp.hbid is not null and swhtmx.sfyx='1' and (swhtgl.zt = '10' or swhtgl.zt = '30') and swhtgl.scbj='0' and swhtmx.scbj='0'
+	</select>
+
+	<select id="getYxAndZtZxmIsNull" parameterType="List" resultType="HbsfbzDto">
+		select sfbz.hbid,sfbz.sfbz,sfbz.tqje,sfbz.xm,sfbz.zxm,sfbz.ksrq,sfbz.jsrq,sfbz.htmxid,swhtgl.htid,swhtgl.htbh
+		from igams_hbsfbz sfbz
+		left join igams_sjhbxx hbxx on hbxx.hbid = sfbz.hbid
+		left join igams_swhtmx swhtmx on swhtmx.htmxid = sfbz.htmxid
+		left join igams_swhtgl swhtgl on swhtgl.htid = swhtmx.htid
+		left join (
+		<foreach collection="list" item="item" separator="union all">
+			select #{item.hbid} hbid, #{item.xm} xm, #{item.zxm} zxm
+		</foreach>
+		)tmp on tmp.hbid = hbxx.hbid and tmp.xm = sfbz.xm
+		where tmp.hbid is not null and swhtmx.sfyx='1' and (swhtgl.zt = '10' or swhtgl.zt = '30') and swhtgl.scbj='0' and swhtmx.scbj='0'
+	</select>
+
+	<select id="getAddFromTmp" parameterType="List" resultType="HbsfbzDto">
+		select tmp.hbid, tmp.sfbz, tmp.tqje, tmp.xm, tmp.zxm, tmp.ksrq, tmp.jsrq, tmp.lrry
+		from(
+			<foreach collection="modList" item="item" separator="union all">
+				select #{item.hbid} hbid,
+				       CAST(#{item.sfbz} as numeric) sfbz,
+				       <choose>
+						   <when test="item.tqje != null and item.tqje !=''">CAST(#{item.tqje} as numeric) tqje,</when>
+				           <otherwise>CAST(null as numeric) tqje,</otherwise>
+					   </choose>
+				       #{item.xm} xm,
+						<choose>
+							<when test="item.zxm != null and item.zxm !=''">#{item.zxm} zxm,</when>
+							<otherwise>null zxm,</otherwise>
+						</choose>
+						<choose>
+							<when test="item.ksrq != null and item.ksrq !=''">cast(#{item.ksrq} as date) ksrq,</when>
+							<otherwise>cast(null as date) ksrq,</otherwise>
+						</choose>
+						<choose>
+							<when test="item.jsrq != null and item.jsrq !=''">cast(#{item.jsrq} as date) jsrq,</when>
+							<otherwise>cast(null as date) jsrq,</otherwise>
+						</choose>
+				       #{item.lrry} lrry
+			</foreach>
+		)tmp where(tmp.hbid, tmp.sfbz, tmp.tqje, tmp.xm, tmp.zxm, tmp.ksrq, tmp.jsrq) not in
+		(
+			select sfbz.hbid,sfbz.sfbz,sfbz.tqje,sfbz.xm,sfbz.zxm,sfbz.ksrq,sfbz.jsrq
+			from igams_hbsfbz sfbz
+			left join igams_sjhbxx hbxx on hbxx.hbid = sfbz.hbid
+		)
+	</select>
+
+	<select id="getPagedSfbzDtoList" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hbxx.hbmc, fl.csmc flmc, xtyh.zsxm , pt.csmc ptgsmc ,hbxx.hzgsmc as hzgs, htgl.htbh, xm.csmc xm, sfbz.sfbz, sfbz.ksrq, sfbz.jsrq, htmx.sfyx, sf.csmc sfmc, case when htmx.sfyx='1' then '有效' else '无效' end sfyxmc
+		from igams_hbsfbz sfbz
+		 left join igams_sjhbxx hbxx on hbxx.hbid= sfbz.hbid
+		 left join matridx_xtyh xtyh on hbxx.yhid=xtyh.yhid
+		 left join igams_swhtmx htmx on htmx.htmxid = sfbz.htmxid
+		 left join igams_swhtgl htgl on htgl.htid = htmx.htid
+		 left join matridx_jcsj fl on fl.csid = hbxx.fl
+		 left join matridx_jcsj pt on pt.csid = hbxx.ptgs
+		 left join matridx_jcsj xm on xm.csid = sfbz.xm
+		 left join matridx_jcsj sf on sf.csid= hbxx.sf
+		 left join igams_hbhzkh hbhzkh on hbhzkh.hbid=hbxx.hbid
+		 left join igams_swkhgl swkhgl on swkhgl.khid=hbhzkh.khid and swkhgl.scbj='0'
+		<where>
+			hbxx.scbj='0'
+			<if test="htbh!=null and htbh !=''">
+				and htgl.htbh ILIKE '%' ||#{htbh}||'%'
+			</if>
+			<if test="hbmc!=null and hbmc !=''">
+				and hbxx.hbmc ILIKE '%' ||#{hbmc}||'%'
+			</if>
+			<if test="sfmc !=null and sfmc !=''">
+				and sf.csmc ILIKE '%'||#{sfmc}||'%'
+			</if>
+			<if test="sfyx !=null and sfyx !=''">
+				and htmx.sfyx = #{sfyx}
+			</if>
+			<if test = "xms != null and xms.length > 0 "  >
+				and sfbz.xm in
+				<foreach collection="xms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "sfs != null and sfs.length > 0 "  >
+				and sf.csid in
+				<foreach collection="sfs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ptgss != null and ptgss.length > 0 "  >
+				and hbxx.yptgs in
+				<foreach collection="ptgss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xsbms != null and xsbms.length > 0 "  >
+				and hbxx.ptgs in
+				<foreach collection="xsbms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ksrqstart != null and ksrqstart != ''">
+				and to_char(sfbz.ksrq,'yyyy-mm-dd') &gt;= #{ksrqstart}
+			</if>
+			<if test="ksrqend != null and ksrqend != ''">
+				and to_char(sfbz.ksrq,'yyyy-mm-dd') &lt;= #{ksrqend}
+			</if>
+			<if test="jsrqstart != null and jsrqstart != ''">
+				and to_char(sfbz.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+			</if>
+			<if test="jsrqend != null and jsrqend != ''">
+				and to_char(sfbz.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+			</if>
+		</where>
+	</select>
+</mapper>

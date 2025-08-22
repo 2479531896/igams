@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.INyjyzsglDao" >
+
+	<select id="getDtoList" parameterType="NyjyzsglDto" resultType="NyjyzsglDto">
+		select nyjyid,jyjzmc,zsnr,mainmechanism,drugclass,lrry,lrsj,xgry,xgsj
+		from igams_nyjyzsgl
+		<where>
+			scbj!='1'
+			<if test="mcs !=null and mcs.size >0" >
+				and jyjzmc in
+				<foreach collection="mcs" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoById" parameterType="NyjyzsglDto" resultType="NyjyzsglDto">
+		select nyjyid,jyjzmc,zsnr,lrry,lrsj,xgry,xgsj
+		from igams_nyjyzsgl
+		<where>
+			scbj!='1'
+			and nyjyid=#{nyjyid}
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="NyjyzsglDto">
+		insert into igams_nyjyzsgl(nyjyid,
+		<if test="jyjzmc != null and jyjzmc != ''">
+			,jyjzmc
+		</if>
+		<if test="zsnr != null and zsnr != ''">
+			,zsnr
+		</if>
+		lrry,lrsj,scbj)
+		values
+		(#{nyjyid}
+		<if test="jyjzmc != null and jyjzmc != ''">
+			,#{jyjzmc}
+		</if>
+		<if test="zsnr != null and zsnr != ''">
+			,#{zsnr}
+		</if>
+		,#{lrry},cast(#{lrsj} as TIMESTAMP),'0')
+	</insert>
+	
+	<update id="update" parameterType="NyjyzsglDto">
+		update igams_nyjyzsgl
+		<set>
+		xgry=#{xgry},xgsj=cast(#{xgsj} as TIMESTAMP)
+			<if test="jyjzmc != null and jyjzmc != ''">
+			,jyjzmc=#{jyjzmc}
+		</if>
+		<if test="zsnr != null and zsnr != ''">
+			,zsnr=#{zsnr}
+		</if>
+		</set>
+		<where>
+			nyjyid=#{nyjyid}
+		</where>
+	</update>
+	
+	<insert id="insertByListDto" parameterType="List">
+		insert into igams_nyjyzsgl(nyjyid,jyjzmc,zsnr,lrry,lrsj,scbj)
+		values
+		<foreach collection="list" item="item" index="index" separator="," open="" close="">
+			(#{item.nyjyid},#{item.jyjzmc},#{item.zsnr},#{item.lrry},cast(#{item.lrsj} as TIMESTAMP),'0')
+		</foreach>
+	</insert>
+	
+	<select id="queryByIds" parameterType="NyjyzsglDto" resultType="NyjyzsglDto">
+		select nyjyid,jyjzmc,zsnr,lrry,lrsj,xgry,xgsj
+		from igams_nyjyzsgl
+		<where>
+			scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and nyjyid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertByList" parameterType="List">
+				
+		insert into igams_nyjyzsgl(nyjyid,jyjzmc,zsnr,lrry,lrsj,scbj)
+		select tmp.* from 
+		<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select 
+			#{item.id} nyjyid,#{item.name} jyjzmc,#{item.comment} zsnr,'' lrry,cast(#{item.last_update} as TIMESTAMP),'0'
+		</foreach>
+		left outer join igams_nyjyzsgl nyjy on nyjy.nyjyid = tmp.nyjyid
+		where nyjy.nyjyid is null
+	</insert>
+	
+	<update id="updateByList" parameterType="List">	
+		with recursive t (nyjyid,jyjzmc,zsnr,xgsj) as (
+			select tmp.nyjyid,tmp.jyjzmc,tmp.zsnr,tmp.xgsj from 
+				<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+					select 
+					#{item.id} nyjyid,#{item.name} jyjzmc,#{item.comment} zsnr,cast(#{item.last_update} as TIMESTAMP) xgsj 
+				</foreach>
+					left outer join igams_nyjyzsgl nyjy on nyjy.nyjyid = tmp.nyjyid
+					where nyjy.nyjyid is not null and ((nyjy.xgsj is null and tmp.xgsj &gt; nyjy.lrsj ) 
+					or (nyjy.xgsj is not null and tmp.xgsj &gt; nyjy.xgsj) )
+			)		
+			update igams_nyjyzsgl nyjyzsgl set jyjzmc=(select jyjzmc from t where nyjyid=nyjyzsgl.nyjyid),
+				zsnr=(select zsnr from t where nyjyid=nyjyzsgl.nyjyid),xgsj=(select xgsj from t where nyjyid=nyjyzsgl.nyjyid)
+		 	where nyjyzsgl.nyjyid in (
+		 			select nyjyid from t
+		 		)
+	</update>
+</mapper>

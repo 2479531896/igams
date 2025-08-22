@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjwltzDao" >
+
+    <select id="getYhinfo" parameterType="list" resultType="SjwltzDto">
+        select yh.yhid ryid , yh.ddid ddid, yh.zsxm rymc,yh.yhm
+        from(
+            <foreach collection="list" separator=" union all " open="" close="" item="item" index="index">
+                select #{item.ryid} yhid
+            </foreach>
+        ) tmp
+        left join matridx_xtyh yh on yh.yhid = tmp.yhid
+    </select>
+
+    <select id="getDtoListBySjpdid" parameterType="String" resultType="SjwltzDto">
+        select ywid, ywlx, ryid, xsmc, yh.zsxm rymc,yh.ddid
+        from igams_sjwltz sjwltz
+        left join matridx_xtyh yh on sjwltz.ryid=yh.yhid
+        where sjwltz.ywid=#{sjpdid}
+    </select>
+
+
+    <select id="getDtoListBySjpd" parameterType="String" resultType="SjwltzDto">
+        select ywid, ywlx, ryid, xsmc, yh.zsxm rymc,yh.ddid
+        from igams_sjwltz sjwltz
+                 left join matridx_xtyh yh on sjwltz.ryid=yh.yhid
+        where sjwltz.ywid in
+              (select sjwlxx.wlid
+               from igams_sjwlxx sjwlxx
+               where sjwlxx.sjpdid=#{sjpdid})
+    </select>
+
+    <select id="getDtoListByYwid" parameterType="String" resultType="SjwltzDto">
+        select ywid, ywlx, ryid, xsmc, yh.zsxm rymc,yh.ddid, yh.yhm
+        from igams_sjwltz sjwltz
+        left join matridx_xtyh yh on sjwltz.ryid=yh.yhid
+        where sjwltz.ywid =#{ywid}
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_sjwltz(ywid,
+        ywlx,
+        ryid,
+        ddid,
+        xsmc
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ywid},#{item.ywlx},#{item.ryid},#{item.ddid},#{item.xsmc})
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="deleteByYwid" parameterType="String">
+        delete from igams_sjwltz where ywid=#{ywid}
+    </delete>
+
+</mapper>

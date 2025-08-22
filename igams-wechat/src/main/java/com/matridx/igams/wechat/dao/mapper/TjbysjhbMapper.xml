@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ITjbysjhbDao" >
+	
+	<!-- 根据标本类型统计个数 -->
+	<select id="getStatisByYblxAndDb" parameterType="SjxxDto" resultType="Map">
+		select count(sjxx.sjid) as cn,jcsj.csmc
+			from igams_sjxx sjxx 
+			left join matridx_jcsj jcsj on jcsj.csid=sjxx.yblx
+			where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null) and sjxx.sfjs = '1'
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+			<if test="jsrqstart != null and jsrqstart != ''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq), 'yyyy-MM-dd') &gt;= #{jsrqstart}
+			</if>
+			<if test="jsrqend !=null and jsrqend !=''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+			</if>
+			<if test="jsrqMstart != null and jsrqMstart != ''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart}
+			</if>
+			<if test="jsrqMend !=null and jsrqMend !=''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend}
+			</if>
+			<if test="jsrqYstart != null and jsrqYstart != ''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart}
+			</if>
+			<if test="jsrqYend !=null and jsrqYend !=''">
+				and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend}
+			</if>
+			group by sjxx.yblx,jcsj.csmc
+			order by cn desc
+	</select>
+	
+	<!-- 按照日期统计报告数量，可按照日，月，年，显示指定前几个 -->
+	<select id="getStatisSjbgByBgrqAndDb" parameterType="SjxxDto" resultType="Map">
+		select tjrq.rq,COALESCE(tmp.num,0) num from 
+		<if test = "rqs != null and rqs.size > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+			item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(sjxx.sjid) as num
+				<if test="bgrqstart != null and bgrqstart != ''">
+					,to_char(sjxx.bgrq,'yyyy-MM-dd') rq
+				</if>
+				<if test="bgrqMstart != null and bgrqMstart != ''">
+					,to_char(sjxx.bgrq,'yyyy-MM') rq
+				</if>
+				<if test="bgrqYstart != null and bgrqYstart != ''">
+					,to_char(sjxx.bgrq,'yyyy') rq
+				</if>
+				from igams_sjxx sjxx 
+				where sjxx.scbj = '0' and sjxx.bgrq is not null and sjxx.sfsc ='1'
+				and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+				<if test="bgrqstart != null and bgrqstart != ''">
+					and to_char(sjxx.bgrq,'yyyy-MM-dd') &gt;= #{bgrqstart}
+				</if>
+				<if test="bgrqend !=null and bgrqend !=''">
+					and to_char(sjxx.bgrq,'yyyy-MM-dd') &lt;= #{bgrqend}
+				</if>
+				<if test="bgrqMstart != null and bgrqMstart != ''">
+					and to_char(sjxx.bgrq,'yyyy-MM') &gt;= #{bgrqMstart}
+				</if>
+				<if test="bgrqMend !=null and bgrqMend !=''">
+					and to_char(sjxx.bgrq,'yyyy-MM') &lt;= #{bgrqMend}
+				</if>
+				<if test="bgrqYstart != null and bgrqYstart != ''">
+					and to_char(sjxx.bgrq,'yyyy') &gt;= #{bgrqYstart}
+				</if>
+				<if test="bgrqYend !=null and bgrqYend !=''">
+					and to_char(sjxx.bgrq,'yyyy') &lt;= #{bgrqYend}
+				</if>
+				<if test="yblx!=null and yblx!=''">
+					and sjxx.yblx=#{yblx}
+				</if>
+				group by 
+				<if test="bgrqstart != null and bgrqstart != ''">
+					to_char(sjxx.bgrq,'yyyy-MM-dd')
+				</if>
+				<if test="bgrqMstart != null and bgrqMstart != ''">
+					to_char(sjxx.bgrq,'yyyy-MM')
+				</if>
+				<if test="bgrqYstart != null and bgrqYstart != ''">
+					to_char(sjxx.bgrq,'yyyy')
+				</if>
+				) tmp on tjrq.rq = tmp.rq
+				order by tjrq.rq
+	</select>
+	
+	<!-- 按照合作伙伴进行统计 -->
+	<select id="getStatisBysjhbAndDb" parameterType="SjxxDto" resultType="Map">
+		select sum(num) num,case when indx &lt;=8 then mc else 'other' end mc,case when indx &lt;=8 then '1' else '0' end ind from (
+			select  count(sjxx.db) as num,sjxx.db as mc,row_number() over(order by count(sjxx.db) desc) indx
+						from igams_sjxx sjxx 
+						where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null) and sjxx.sfjs = '1'
+						and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+						left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+						where hbqx.yhid=#{yhid})
+						<if test="jsrqstart != null and jsrqstart != ''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+						</if>
+						<if test="jsrqend !=null and jsrqend !=''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+						</if>
+						<if test="jsrqMstart != null and jsrqMstart != ''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart}
+						</if>
+						<if test="jsrqMend !=null and jsrqMend !=''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend}
+						</if>
+						<if test="jsrqYstart != null and jsrqYstart != ''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart}
+						</if>
+						<if test="jsrqYend != null and jsrqYend != ''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend}
+						</if>
+						group by sjxx.db 
+						<if test="jsrqstart != null and jsrqstart != ''">
+							,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd')
+						</if>
+						<if test="jsrqMstart != null and jsrqMstart != ''">
+							,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM')
+						</if>
+						<if test="jsrqYstart != null and jsrqYstart != ''">
+							,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy')
+						</if>
+			) tmp group by case when indx &lt;=8 then mc else 'other' end,case when indx &lt;=8 then '1' else '0' end
+		order by ind desc,num desc
+	</select>
+	
+	<!-- 按照周对合作伙伴进行统计 -->
+	<select id="getStatisWeekBysjhbAndDb" parameterType="SjxxDto" resultType="Map">
+		select sum(num) num,case when indx &lt;=8 then mc else 'other' end mc,case when indx &lt;=8 then '1' else '0' end ind from (
+			select  count(sjxx.db) as num,sjxx.db as mc,row_number() over(order by count(sjxx.db) desc) indx
+						from igams_sjxx sjxx 
+						where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null) and sjxx.sfjs = '1'
+						and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+						left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+						where hbqx.yhid=#{yhid})
+						<if test="jsrqstart != null and jsrqstart != ''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+						</if>
+						<if test="jsrqend !=null and jsrqend !=''">
+							and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+						</if>
+						group by sjxx.db 
+			) tmp group by case when indx &lt;=8 then mc else 'other' end,case when indx &lt;=8 then '1' else '0' end
+		order by ind desc,num desc
+	</select>
+	
+	<!-- 按照高关注度-->
+	<select id="getWzxxByGgzdAndDb"  parameterType="SjxxDto"  resultType="Map">
+		select sum(wznum) wznum,wzfl,wzywm,wzzwm from (
+			select wznum,wzfl,case when ind &lt;=3 then wzywm else 'other' end wzywm,case when ind &lt;=3 then wzzwm else 'other' end wzzwm from (
+				select count(sjwzxx.wzid) as wznum,sjwzxx.wzfl ,wzywm,wzzwm,row_number() over(partition by sjwzxx.wzfl order by count(sjwzxx.wzid) desc) ind
+				from igams_sjxx sjxx 
+				left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid
+				where sjwzxx.scbj!='1' and jglx ='pathogen' and sjxx.scbj ='0' and sjxx.sfjs = '1'
+				and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+				</if>
+				<if test="jsrqend !=null and jsrqend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart}
+				</if>
+				<if test="jsrqMend !=null and jsrqMend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend}
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart}
+				</if>
+				<if test="jsrqYend != null and jsrqYend != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend}
+				</if>
+				group by sjwzxx.wzfl ,sjwzxx.wzid,wzywm,wzzwm
+				<if test="jsrqstart != null and jsrqstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd')
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM')
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy')
+				</if>
+			) tmp
+		) tp
+		group by wzfl,wzywm,wzzwm
+		order by wzfl,wznum
+	</select>
+	
+	<!-- 统计结果类型为高关，疑似以及无的标本数量 -->
+	<select id="getYbnumByJglxAndDb" parameterType="SjxxDto"  resultType="Map">
+		select lx,count(sjid) num ,jyjg from (
+			select sjxx.sjid,case when sjxx.jyjg ='1' then '阳性'  when sjxx.jyjg ='2' then '疑似' else '阴性' end lx,
+			case when sjxx.jyjg ='1' then '1' when sjxx.jyjg ='2' then '2' else '3' end indd,sjxx.jyjg
+			 from igams_sjxx sjxx 
+			where sjxx.bgrq is not null and sjxx.scbj = '0' and sjxx.sfsc ='1'
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+			<if test="jsrqstart != null and jsrqstart != ''">
+				and to_char(sjxx.bgrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+			</if>
+			<if test="jsrqend !=null and jsrqend !=''">
+				and to_char(sjxx.bgrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+			</if>
+			<if test="jsrqMstart != null and jsrqMstart != ''">
+				and to_char(sjxx.bgrq,'yyyy-MM') &gt;= #{jsrqMstart}
+			</if>
+			<if test="jsrqMend !=null and jsrqMend !=''">
+				and to_char(sjxx.bgrq,'yyyy-MM') &lt;= #{jsrqMend}
+			</if>
+			<if test="jsrqYstart != null and jsrqYstart != ''">
+				and to_char(sjxx.bgrq,'yyyy') &gt;= #{jsrqYstart}
+			</if>
+			<if test="jsrqYend != null and jsrqYend != ''">
+				and to_char(sjxx.bgrq,'yyyy') &lt;= #{jsrqYend}
+			</if>
+			<if test="bgrq != null and bgrq != ''">
+			and to_char(sjxx.bgrq,'yyyy-MM-dd') = #{bgrq}
+			</if>
+		) tmp 
+		group by tmp.lx,indd,jyjg
+		order by indd
+	</select>
+	
+	<select id="getStatisYxlBybgrqAndDb" parameterType="SjxxDto" resultType="Map">
+		select tjrq.rq,COALESCE(tmp.num,0) num from 
+			<if test = "rqs != null and rqs.size > 0 "  >
+			  <foreach collection="rqs" separator=" union all " open="(" close=") "
+			  item="item" index="index">
+			    select #{item} rq
+			  </foreach>
+			</if> tjrq
+			left outer join (
+			   select 
+			   bgrq,
+				sum(lx),count(sjid),round(cast (sum(lx) as numeric )/cast (count(sjid) as numeric ),2) num from (
+			    select sjxx.sjid,
+				<if test="bgrqstart != null and bgrqstart != ''">
+					to_char(sjxx.bgrq,'yyyy-MM-dd') bgrq,
+				</if>
+				<if test="bgrqMstart != null and bgrqMstart != ''">
+					to_char(sjxx.bgrq,'yyyy-MM') bgrq,
+				</if>
+				<if test="bgrqYstart != null and bgrqYstart != ''">
+					to_char(sjxx.bgrq,'yyyy') bgrq,
+				</if>
+				case when wz.sjid is not null then 1 else 0 end lx
+			    from igams_sjxx sjxx 
+			    left outer join (select sjid from igams_sjwzxx group by sjid ) wz on sjxx.sjid = wz.sjid
+			    where sjxx.bgrq is not null and sjxx.scbj = '0'
+		and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+			    <if test="jsrqstart != null and jsrqstart != ''">
+			      and to_char(sjxx.bgrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+			    </if>
+			    <if test="jsrqend !=null and jsrqend !=''">
+			      and to_char(sjxx.bgrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+			    </if>
+			    <if test="jsrqMstart != null and jsrqMstart != ''">
+			      and to_char(sjxx.bgrq,'yyyy-MM') &gt;= #{jsrqMstart}
+			    </if>
+			    <if test="jsrqMend !=null and jsrqMend !=''">
+			      and to_char(sjxx.bgrq,'yyyy-MM') &lt;= #{jsrqMend}
+			    </if>
+			    <if test="jsrqYstart != null and jsrqYstart != ''">
+			      and to_char(sjxx.bgrq,'yyyy') &gt;= #{jsrqYstart}
+			    </if>
+			    <if test="jsrqYend != null and jsrqYend != ''">
+			      and to_char(sjxx.bgrq,'yyyy') &lt;= #{jsrqYend}
+			    </if>
+			  ) tt 
+			  group by tt.bgrq
+			)   tmp on tjrq.rq = tmp.bgrq
+			        order by tjrq.rq
+	</select>
+	
+	<!-- 查询当天标本数量,报告数量 -->
+	<select id="getYbslBydayAndDb" parameterType="SjxxDto"  resultType="Map">
+		select count(sjxx.sjid) as num
+		from igams_sjxx sjxx
+		<where>
+			sjxx.scbj = '0'
+			and sjxx.sfjs='1'
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+			<if test="jsrq != null and jsrq != ''">
+			and to_char(sjxx.jsrq,'yyyy-MM-dd') = #{jsrq}
+			</if>
+			<if test="syrq != null and syrq != ''">
+			and (to_char(sjxx.syrq,'yyyy-MM-dd') = #{syrq} or to_char(sjxx.dsyrq,'yyyy-MM-dd') = #{syrq})
+			</if>
+			<if test="bgrq != null and bgrq != ''">
+			and to_char(sjxx.bgrq,'yyyy-MM-dd') = #{bgrq} and sjxx.sfsc ='1'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询最近一周内送至杭州的标本的线路信息(默认认为送检合作伙伴不存在重复) -->
+	<select id="getSjxlxxAndDb" parameterType="SjxxDto" resultType="Map">
+		SELECT count(sjxx.sjid) num, jcsj.csmc,sjxx.db
+		FROM igams_sjxx sjxx
+			LEFT JOIN igams_sjhbxx sjhb ON sjxx.db = sjhb.hbmc and sjhb.scbj = '0'
+			LEFT JOIN matridx_jcsj jcsj ON jcsj.csid = sjhb.cs
+		<where>
+			sjxx.scbj = '0'
+			and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+			and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+			and sjxx.db=sjhb.hbmc
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+			group by jcsj.csmc,sjxx.db
+		</where>
+	</select>
+	
+	<!-- 按照日期统计收费标本，不收费标本，可按照日，月，年，显示指定前几个 -->
+	<select id="getSjxxBySyAndDb" parameterType="SjxxDto" resultType="Map">
+		select tjrq.sfjs,tjrq.sfsf,tjrq.rq,COALESCE(tmp.num, '0') num from 
+		<if test = "rqs != null and rqs.size > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+			item="item" index="index">
+				select #{item} rq,'0' sfsf,'1' sfjs
+				union all 
+				select #{item} rq,'0' sfsf,'0' sfjs
+				union all
+				select #{item} rq,'1' sfsf,'1' sfjs
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(sjxx.sjid)||'' as num,case when sjxx.sfjs = '1' then sjxx.sfsf else '0' end sfsf,sjxx.sfjs
+				<if test="jsrqstart != null and jsrqstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq),'yyyy-MM-dd') rq
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq),'yyyy-MM') rq
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq),'yyyy') rq
+				</if>
+				from igams_sjxx sjxx 
+				where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null or (sjxx.jsrq is not null and sfjs = '0'))
+				and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart} or (to_char(sjxx.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart} and sfjs = '0'))
+				</if>
+				<if test="jsrqend !=null and jsrqend !=''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend} or (to_char(sjxx.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend} and sfjs = '0'))
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart} or (to_char(sjxx.jsrq,'yyyy-MM') &gt;= #{jsrqMstart} and sfjs = '0'))
+				</if>
+				<if test="jsrqMend !=null and jsrqMend !=''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend} or (to_char(sjxx.jsrq,'yyyy-MM') &lt;= #{jsrqMend} and sfjs = '0'))
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart} or (to_char(sjxx.jsrq,'yyyy') &gt;= #{jsrqYstart} and sfjs = '0'))
+				</if>
+				<if test="jsrqYend !=null and jsrqYend !=''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend} or (to_char(sjxx.jsrq,'yyyy') &lt;= #{jsrqYend} and sfjs = '0'))
+				</if>
+				<if test="yblx!=null and yblx!=''">
+					and sjxx.yblx=#{yblx}
+				</if>
+				group by rq,sfjs,case when sjxx.sfjs = '1' then sjxx.sfsf else '0' end
+				) tmp on tjrq.rq = tmp.rq and tmp.sfsf = tjrq.sfsf and tmp.sfjs = tjrq.sfjs
+				order by tjrq.rq,tjrq.sfjs,tjrq.sfsf
+	</select>
+	
+	<!-- 按照日期统计收费标本，不收费标本，可按照日，月，年，显示指定前几个 -->
+	<select id="getSjxxWeekBySyAndDb" parameterType="SjxxDto" resultType="Map">
+		select tjrq.sfjs,tjrq.sfsf,tjrq.rq,COALESCE(tmp.num, '0') num from 
+		<if test = "rqs != null and rqs.size > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+			item="item" index="index">
+				select #{item} rq,'0' sfsf,'1' sfjs
+				union all 
+				select #{item} rq,'0' sfsf,'0' sfjs
+				union all
+				select #{item} rq,'1' sfsf,'1' sfjs
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(sjxx.sjid)||'' as num,case when sjxx.sfjs = '1' then sjxx.sfsf else '0' end sfsf,sjxx.sfjs,
+				case when to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq),'yyyy-MM-dd') &gt;= #{jsrqstart}  and to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'-6 D','yyyy-MM-dd') &lt;= #{jsrqstart} then  #{jsrqstart}
+				 when to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'7 D','yyyy-MM-dd') &gt;= #{jsrqstart} and to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'1 D','yyyy-MM-dd') &lt;= #{jsrqstart} then to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -7,'yyyy-MM-dd')
+				 when to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'14 D','yyyy-MM-dd') &gt;= #{jsrqstart} and to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'8 D','yyyy-MM-dd') &lt;= #{jsrqstart} then to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -14,'yyyy-MM-dd')
+				 when to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'21 D','yyyy-MM-dd') &gt;= #{jsrqstart} and to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'15 D','yyyy-MM-dd') &lt;= #{jsrqstart} then to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -21,'yyyy-MM-dd')
+				 when to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'28 D','yyyy-MM-dd') &gt;= #{jsrqstart} and to_char(coalesce(sjxx.dsyrq,sjxx.syrq,sjxx.jsrq) +'22 D','yyyy-MM-dd') &lt;= #{jsrqstart} then to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -28,'yyyy-MM-dd')
+				end rqz
+				from igams_sjxx sjxx 
+				where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null or (sjxx.jsrq is not null and sfjs = '0')) and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -28,'yyyy-MM-dd') or (to_char(sjxx.jsrq,'yyyy-MM-dd') &gt;= to_char(to_date(#{jsrqstart},'yyyy-MM-dd') -28,'yyyy-MM-dd') and sfjs = '0'))
+					and (to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= to_char(to_date(#{jsrqstart},'yyyy-MM-dd') +6,'yyyy-MM-dd') or (to_char(sjxx.jsrq,'yyyy-MM-dd') &lt;= to_char(to_date(#{jsrqstart},'yyyy-MM-dd') +6,'yyyy-MM-dd') and sfjs = '0'))
+				</if>
+				group by rqz,sfjs,case when sjxx.sfjs = '1' then sjxx.sfsf else '0' end
+				) tmp on tjrq.rq = tmp.rqz and tmp.sfsf = tjrq.sfsf and tmp.sfjs = tjrq.sfjs
+				order by tjrq.rq,tjrq.sfjs,tjrq.sfsf
+	</select>
+	
+	<!-- 按照日期统计标本个数，可按照日，月，年，显示指定前几个 -->
+	<select id="getStatisYblxByJsrqAndDb" parameterType="SjxxDto" resultType="Map">
+		select tjrq.rq,COALESCE(tmp.num,0) num from 
+		<if test = "rqs != null and rqs.size > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+			item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(sjxx.sjid) as num
+				<if test="jsrqstart != null and jsrqstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') rq
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') rq
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					,to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') rq
+				</if>
+				from igams_sjxx sjxx 
+				where sjxx.scbj = '0' and (sjxx.dsyrq is not null or sjxx.syrq is not null) and sjxx.sfjs = '1'
+				and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+				left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+				where hbqx.yhid=#{yhid})
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+				</if>
+				<if test="jsrqend !=null and jsrqend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart}
+				</if>
+				<if test="jsrqMend !=null and jsrqMend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend}
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart}
+				</if>
+				<if test="jsrqYend !=null and jsrqYend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend}
+				</if>
+				<if test="yblx!=null and yblx!=''">
+					and sjxx.yblx=#{yblx}
+				</if>
+				group by rq
+				) tmp on tjrq.rq = tmp.rq
+				order by tjrq.rq
+	</select>
+	
+		<!-- 查询前一天进行实验标本数量 -->
+	<select id="getybwcd" parameterType="SjxxDto" resultType="Map">
+		select count(sjxx.sjid) as num from igams_sjxx sjxx 
+		<where>
+			sjxx.scbj = '0'
+			and sjxx.sfjs='1'
+			and (to_char(sjxx.syrq,'yyyy-MM-dd') = #{syrq} or to_char(sjxx.dsyrq,'yyyy-MM-dd')= #{dsyrq})
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+		</where> 
+	</select>
+		<!--查询当天录入的标本数量 -->
+	<select id="getLrYbslBydayAndDb" parameterType="SjxxDto"  resultType="Map">
+		select count(sjxx.sjid) as num 
+		from igams_sjxx sjxx
+		<where>
+			sjxx.scbj = '0'
+			and to_char(sjxx.lrsj,'yyyy-MM-dd') = #{lrsj}
+			and sjxx.db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+		</where>
+	</select>
+	<select id="getJcbjBySyrqAndDb" parameterType="SjxxDto" resultType="int"> 
+		select count(sjid) from igams_sjxx 
+			where scbj !='1'
+			and db in (select hbxx.hbmc from igams_hbqx hbqx 
+			left join igams_sjhbxx hbxx on hbxx.hbid=hbqx.hbid and hbxx.scbj = '0'
+			where hbqx.yhid=#{yhid})
+			<if test="jsrq!=null and jsrq !=''">
+				and to_char(coalesce(dsyrq,syrq),'yyyy-MM-dd')=#{jsrq}
+			</if> 
+	</select>
+</mapper>

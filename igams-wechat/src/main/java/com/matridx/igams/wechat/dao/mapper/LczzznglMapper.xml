@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ILczzznglDao" >
+	<!-- 根据指导ID获取临床症状指南信息 -->
+	<select id="getListByIds" parameterType="List" resultType="LczzznglDto">
+		select znid,yblx,qsnl,jsnl,xb,glwz,yygs
+		from igams_lczzzngl
+		<where>
+			scbj!='1'
+			<if test="ids != null and ids.size()>0">
+				and znid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="LczzznglDto">
+		insert into igams_lczzzngl(znid
+		<if test="yblx != null and yblx != ''">
+			,yblx
+		</if>
+		<if test="qsnl != null and qsnl != ''">
+			,qsnl
+		</if>
+		<if test="jsnl != null and jsnl != ''">
+			,jsnl
+		</if>
+		<if test="xb != null and xb != ''">
+			,xb
+		</if>
+		<if test="glwz != null and glwz != ''">
+			,glwz
+		</if>
+		<if test="yygs != null and yygs != ''">
+			,yygs
+		</if>
+		,lrry,lrsj,scbj)
+		values(#{znid},
+		<if test="yblx != null and yblx != ''">
+			,#{yblx}
+		</if>
+		<if test="qsnl != null and qsnl != ''">
+			,#{qsnl}
+		</if>
+		<if test="jsnl != null and jsnl != ''">
+			,#{jsnl}
+		</if>
+		<if test="xb != null and xb != ''">
+			,#{xb}
+		</if>
+		<if test="glwz != null and glwz != ''">
+			,#{glwz}
+		</if>
+		<if test="yygs != null and yygs != ''">
+			,#{yygs}
+		</if>	
+		,#{lrry},cast(#{lrsj} as TIMESTAMP),'0')
+	</insert>
+	
+	<update id="update" parameterType="LczzznglDto">
+		update igams_lczzzngl
+		<set>
+			xgry=#{xgry},xgsj=cast(#{xgsj} as TIMESTAMP)
+			<if test="yblx != null and yblx != ''">
+				,yblx=#{yblx}
+			</if>
+			<if test="qsnl != null and qsnl != ''">
+				,qsnl=#{qsnl}
+			</if>
+			<if test="jsnl != null and jsnl != ''">
+				,jsnl=#{jsnl}
+			</if>
+			<if test="xb != null and xb != ''">
+				,xb=#{xb}
+			</if>
+			<if test="glwz != null and glwz != ''">
+				,glwz=#{glwz}
+			</if>
+			<if test="yygs != null and yygs != ''">
+				,yygs=#{yygs}
+			</if>
+		</set>
+		<where>
+			znid=#{znid}
+		</where>
+	</update>
+	
+	<select id="getDtoById" parameterType="String" resultType="LczzznglDto">
+		select znid,yblx,qsnl,jsnl,xb,glwz,yygs,lrry,lrsj,xgry,xgsj
+		from igams_lczzzngl 
+		<where>
+		znid=#{znid}
+		</where>
+	</select>
+	
+	<insert id="insertByListDto" parameterType="List">
+		insert into igams_lczzzngl(znid,yblx,qsnl,jsnl,xb,glwz,yygs,lrry,lrsj,scbj)
+		values
+		<foreach collection="list" item="item" index="index" separator="," open="" close="">
+			(#{item.znid},#{item.yblx},#{item.qsnl},#{item.jsnl},#{item.xb},#{item.glwz},#{item.yygs},#{item.lrry},cast(#{item.lrsj} as TIMESTAMP),'0')
+		</foreach>
+	</insert>
+	
+	<insert id="insertByList" parameterType="List">
+		insert into igams_lczzzngl(znid,glwz,yygs,lrry,lrsj,scbj)
+		select tmp.* from 
+		<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select 
+			#{item.id} znid,#{item.species} glwz,#{item.detail} yygs,'' lrry,cast(#{item.last_update} as TIMESTAMP),'0'
+		</foreach>
+		left outer join igams_lczzzngl zngl on zngl.znid = tmp.znid
+		where zngl.znid is null
+	</insert>
+	
+	<update id="updateByList" parameterType="List">
+	
+	with recursive t (znid,glwz,yygs,xgsj) as (
+		select tmp.znid,tmp.glwz,tmp.yygs,tmp.xgsj from 
+			<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+				select 
+				#{item.id} znid,#{item.species} glwz,#{item.detail} yygs,cast(#{item.last_update} as TIMESTAMP) xgsj 
+			</foreach>
+				left outer join igams_lczzzngl zngl on zngl.znid = tmp.znid
+				where zngl.znid is not null and ((zngl.xgsj is null and tmp.xgsj &gt; zngl.lrsj ) 
+				or (zngl.xgsj is not null and tmp.xgsj &gt; zngl.xgsj) )
+		)		
+		update igams_lczzzngl lczn set glwz=(select glwz from t where znid=lczn.znid),
+			yygs=(select yygs from t where znid=lczn.znid),xgsj=(select xgsj from t where znid=lczn.znid)
+	 	where lczn.znid in (
+	 			select znid from t
+	 		)
+	</update>
+
+	<select id="getDtoList" parameterType="LczzznglDto" resultType="LczzznglDto">
+		select znid ,yblx ,nlz ,xb ,glwz ,yygs ,lrry ,lrsj ,xgry ,xgsj ,scry ,scsj ,scbj ,mc ,ly ,fbsj ,url
+		from igams_lczzzngl lczzzngl
+		<where>
+			lczzzngl.scbj = '0'
+			<if test="yblx != null and yblx != ''">
+				and yblx= #{yblx}
+			</if>
+			<if test="nlz != null and nlz != ''">
+				and nlz= #{nlz}
+			</if>
+			<if test="xb != null and xb != ''">
+				and (xb= #{xb} or xb= '0')
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoListByIds" parameterType="LczzznglDto" resultType="LczzznglDto">
+		select znid as id ,yygs as detail ,glwz as species ,yblx,xgsj as last_update,yblx
+		from igams_lczzzngl lczzzngl
+		<where>
+			lczzzngl.scbj = '0'
+			<if test="ids != null and ids.size>0">
+				and lczzzngl.znid in
+				<foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+</mapper>

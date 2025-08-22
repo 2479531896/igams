@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjjcjgDao" >
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_sjjcjg(jcjgid,xh,ywid,lx,jclx,jcjg,jl,jgsz,lrsj,lrry,pdz,ncysz,ncjsz,ncysz2,ncjsz2,ckbl1,ckbl2,pjz,jczlx)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.jcjgid},cast(#{item.xh} as numeric),#{item.ywid},#{item.lx},#{item.jclx},#{item.jcjg},#{item.jl},#{item.jgsz},LOCALTIMESTAMP,#{item.lrry},#{item.pdz},
+                #{item.ncysz},#{item.ncjsz},#{item.ncysz2},#{item.ncjsz2},#{item.ckbl1},#{item.ckbl2},#{item.pjz},#{item.jczlx}
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_sjjcjg set jcjgid = #{item.jcjgid}
+            <if test="item.jl != '' and item.jl != null">
+                ,jl = #{item.jl}
+            </if>
+            <if test="item.xgry != '' and item.xgry != null">
+                ,xgry = #{item.xgry},xgsj = LOCALTIMESTAMP
+            </if>
+            where jcjgid = #{item.jcjgid}
+        </foreach>
+    </update>
+
+    <delete id="delete" parameterType="SjjcjgDto">
+        delete from igams_sjjcjg where ywid = #{ywid}
+        <if test="bbh != null and bbh != ''">
+            and exists (select csid from matridx_jcsj where jclb = 'RFS_RESULTS_TYPE' and csid = jcjg and cskz4 = #{bbh})
+        </if>
+    </delete>
+    
+    <select id="getSjjcjgList" parameterType="SjjcjgDto" resultType="Map">
+        select sjjcjg.ywid, sjjcjg.jcjgid, sjjcjg.pdz,sjjcjg.ncysz,sjjcjg.ncjsz,sjjcjg,ckbl2,sjjcjg.ckbl1,pjz
+        , sjjcjg.jcjg, jcjg_jcsj.csmc jcjgmc,sjjcjg.ncysz2,case when sjjcjg.ncjsz2 != '0' then sjjcjg.ncjsz2 else '' end ncjsz2
+             , sjjcjg.jl, jl_jcsj.csmc jlmc,jl_jcsj.csdm jldm
+             , sjjcjg.jclx, jclx_jcsj.csmc jclxmc
+             , jcjg_jcsj.cskz2 kw, sjjcjg.jgsz,jcjg_jcsj.csdm jcjgdm,sjxx.yblx
+        from igams_sjjcjg sjjcjg
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = sjjcjg.jcjg
+        left join matridx_jcsj jl_jcsj on jl_jcsj.csid = sjjcjg.jl
+        left join matridx_jcsj jclx_jcsj on jclx_jcsj.csid = sjjcjg.jclx
+        left join igams_sjxx sjxx on sjjcjg.ywid=sjxx.sjid
+        <where>
+            <if test="ywid != null and ywid != ''">
+                ywid = #{ywid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="SjjcjgDto" resultType="SjjcjgDto">
+        select sjjcjg.ywid, sjjcjg.jcjgid, sjjcjg.pdz,sjjcjg.ncysz,sjjcjg.ncjsz,ckbl2,sjjcjg.ckbl1,pjz
+        , sjjcjg.jcjg, jcjg_jcsj.csmc jcjgmc,sjjcjg.ncysz2,case when sjjcjg.ncjsz2 != '0' then sjjcjg.ncjsz2 else '' end ncjsz2
+        , sjjcjg.jl, jl_jcsj.csmc jlmc,jl_jcsj.csdm jldm
+        , sjjcjg.jclx, jclx_jcsj.csmc jclxmc
+        , jcjg_jcsj.cskz2 kw, sjjcjg.jgsz,jcjg_jcsj.csdm jcjgdm,sjxx.yblx,jcjg_jcsj.cskz4 as jcjgcskz4,sjjcjg.pjz
+        from igams_sjjcjg sjjcjg
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = sjjcjg.jcjg
+        left join matridx_jcsj jl_jcsj on jl_jcsj.csid = sjjcjg.jl
+        left join matridx_jcsj jclx_jcsj on jclx_jcsj.csid = sjjcjg.jclx
+        left join igams_sjxx sjxx on sjjcjg.ywid=sjxx.sjid
+        <where>
+        1=1
+            <if test="ywid != null and ywid != ''">
+               and ywid = #{ywid}
+            </if>
+            <if test="ids !=null and ids.size>0">
+                and sjjcjg.ywid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by jcjg_jcsj.cspx asc
+    </select>
+
+    <update id="modSj" parameterType="SjjcjgDto">
+        update igams_sjxx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="xgry != null and xgry != ''">
+                    ,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+                </if>
+                <if test="zt != null and zt != ''">
+                    ,zt = #{zt}
+                </if>
+            </trim>
+        </set>
+        where sjid = #{ywid}
+    </update>
+    <update id="modFc" parameterType="SjjcjgDto">
+        update igams_fjsq
+        <set>
+            <trim prefixOverrides=",">
+                <if test="xgry != null and xgry != ''">
+                    ,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+                </if>
+                <if test="zt != null and zt != ''">
+                    ,zt = #{zt}
+                </if>
+            </trim>
+        </set>
+        where fjid = #{ywid}
+    </update>
+
+    <select id="getXgwxList" parameterType="SjjcjgDto" resultType="SjjcjgDto">
+        select wxid as id,zz as author,bt as title,qk as journal,taxid as species_taxid,yblx as sample_type,mrwx
+        from matridx_xgwx xgwx
+        <where>
+            xgwx.scbj = '0' and xgwx.mrwx='1'
+            <if test="ids !=null and ids.size >0" >
+                and xgwx.taxid in
+                <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getYwidList" parameterType="SjxxDto" resultType="String">
+       select sjxx.sjid as ywid from igams_sjxx sjxx
+        left outer join igams_sjjcxm jcxm on sjxx.sjid = jcxm.sjid and jcxm.scbj='0'
+        left outer join matridx_jcsj jc_xm on jcxm.jcxmid = jc_xm.csid
+        where (sjxx.sjid= #{sjid} or (sjxx.hzxm = #{hzxm} and sjxx.sjdw = #{sjdw})) and jc_xm.cskz1 = 'F' and sjxx.jcdw = #{jcdw} and sjxx.scbj = '0'
+        union all
+        select fjsq.fjid as ywid from igams_fjsq fjsq
+        left join igams_sjxx sjxx on fjsq.sjid = sjxx.sjid
+        left outer join matridx_jcsj jc_xm on jc_xm.csid = fjsq.jcxm
+        where (sjxx.sjid= #{sjid} or (sjxx.hzxm = #{hzxm} and sjxx.sjdw = #{sjdw})) and jc_xm.cskz1 = 'F' and fjsq.jcdw = #{jcdw} and fjsq.scbj = '0'
+    </select>
+
+    <select id="getAllList" parameterType="SjjcjgDto" resultType="SjjcjgDto">
+        select sjjcjg.ywid, sjjcjg.jcjgid, sjjcjg.pdz,sjjcjg.ncysz,sjjcjg.ncjsz,ckbl2,sjjcjg.ckbl1,pjz
+        , sjjcjg.jcjg, jcjg_jcsj.csmc jcjgmc,sjjcjg.ncysz2,case when sjjcjg.ncjsz2 != '0' then sjjcjg.ncjsz2 else '' end ncjsz2
+        , sjjcjg.jl, jl_jcsj.csmc jlmc,jl_jcsj.csdm jldm
+        , sjjcjg.jclx, jclx_jcsj.csmc jclxmc
+        , jcjg_jcsj.cskz2 kw, sjjcjg.jgsz,jcjg_jcsj.csdm jcjgdm,sjxx.yblx,jcjg_jcsj.cskz4 as jcjgcskz4
+        from igams_sjjcjg sjjcjg
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = sjjcjg.jcjg
+        left join matridx_jcsj jl_jcsj on jl_jcsj.csid = sjjcjg.jl
+        left join matridx_jcsj jclx_jcsj on jclx_jcsj.csid = sjjcjg.jclx
+        left join igams_sjxx sjxx on sjjcjg.ywid=sjxx.sjid
+        where sjjcjg.lrsj &gt;=  to_date( TO_CHAR(now() - interval '1 week', 'yyyy-MM-dd' ) ,'yyyy-MM-dd') and jl_jcsj.csdm ='001'
+        and jcjg_jcsj.csmc not like 'PC%' and jcjg_jcsj.csmc not like 'NC%'
+        <if test="ids !=null and ids.size>0">
+            and sjjcjg.ywid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        
+        order by sjjcjg.ywid,sjjcjg.lrsj desc,jcjg_jcsj.cskz4,jcjg_jcsj.cspx asc
+    </select>
+
+
+    <update id="updatesjjcjgJlList" parameterType="list">
+        <if test="list != null and list.size>0">
+            update igams_sjjcjg sjjcjg
+            set jl = tmp.jl
+            from (
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+                select #{item.jcjgid} as jcjgid,#{item.jl} as jl
+            </foreach>
+            ) tmp
+            where sjjcjg.jcjgid = tmp.jcjgid
+        </if>
+
+
+    </update>
+</mapper>

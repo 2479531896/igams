@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWbhbyzDao" >
+	<!-- 根据代码查询合作伙伴 -->
+	<select id="getSjhbByCode" parameterType="String" resultType="WbhbyzDto">
+		SELECT hbyz.code,hbyz.hbid,hb.hbmc
+	    FROM matridx_wbhbyz hbyz
+	      LEFT JOIN igams_sjhbxx hb ON hb.hbid = hbyz.hbid and hb.scbj = '0'
+	    WHERE
+	    	hbyz.code=#{code}
+	</select>
+	<select id="getSjhbAll" resultType="WbhbyzDto">
+		SELECT hbyz.code,hbyz.hbid,hb.hbmc
+	    FROM matridx_wbhbyz hbyz
+	    LEFT JOIN igams_sjhbxx hb ON hb.hbid = hbyz.hbid and hb.scbj = '0'
+		order by hbyz.code
+	</select>
+
+	<select id="getInfoByHbid" parameterType="String" resultType="WbhbyzDto">
+		SELECT hbyz.code,hbyz.hbid,wbaqyz.word,wbaqyz.key,wbaqyz.address
+	    FROM matridx_wbhbyz hbyz
+	      LEFT JOIN matridx_wbaqyz wbaqyz ON wbaqyz.code = hbyz.code
+	    WHERE
+	    	hbyz.hbid=#{hbid}
+	</select>
+	<!-- 通过外部安全验证code查询伙伴信息 -->
+	<select id="getListByCode" parameterType="WbhbyzDto" resultType="WbhbyzDto">
+			select hb.hbid,hb.hbmc,wbhbyz.sz from matridx_wbhbyz wbhbyz
+			 left join igams_sjhbxx hb on  hb.hbid =wbhbyz.hbid
+			where wbhbyz.code =#{code} and wbhbyz.hbid is not null
+	</select>
+	<delete id="delete" parameterType="WbhbyzDto">
+		delete from matridx_wbhbyz
+		<where>
+			<if test = "ids != null and ids.size > 0 ">
+				code in
+				<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "code != null and code !='' ">
+				code = #{code}
+			</if>
+		</where>
+	</delete>
+
+	<!-- 插入伙伴信息 -->
+
+	<insert id="insertPartner" parameterType="List">
+		insert into matridx_wbhbyz(code,hbid
+		)values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.code},#{item.hbid}
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<update id="update" parameterType="WbhbyzDto">
+		update matridx_wbhbyz
+		set code=#{code}
+		<where>
+			code=#{beforeCode}
+		</where>
+	</update>
+
+</mapper>

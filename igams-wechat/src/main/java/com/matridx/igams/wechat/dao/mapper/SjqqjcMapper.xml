@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjqqjcDao" >
+
+	<!-- 增加送检前期检测信息 -->
+	<insert  id="insertSjqqjcDtos" parameterType="list">
+		insert into igams_sjqqjc (sjid, yjxm,jcz)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjid},#{item.yjxm},#{item.jcz})
+			</foreach>
+		</if>
+	</insert>
+	<!--根据送检ID删除前期检测-->
+	<delete id="deleteBySjxx" parameterType="SjxxDto">
+		delete from igams_sjqqjc
+		<where>
+			sjid = #{sjid}
+		</where>
+	</delete>
+	<delete id="deleteSjqqjc" parameterType="SjxxDto">
+		delete from igams_sjqqjc
+		<where>
+			sjid = #{sjid}
+		</where>
+	</delete>
+	<!--根据送检ID查询前期检测清单-->
+	<select id="getDtoList" parameterType="SjqqjcDto" resultType="SjqqjcDto">
+		select qqjc.sjid,qqjc.yjxm,qqjc.jcz,sj.csdm,sj.csmc,sj.cskz1 from igams_sjqqjc qqjc
+		left outer join matridx_jcsj sj on qqjc.yjxm = sj.csid
+		<where>
+			    sjid = #{sjid}
+		</where>
+	</select>
+	<!-- 查询检测值 -->
+	<select id="getJcz" parameterType="SjqqjcDto" resultType="SjqqjcDto">
+	  	select qqjc.sjid,qqjc.yjxm,qqjc.jcz,sj.csmc,sj.csid,sj.csdm,sj.cskz1,sj.cskz2 from
+		matridx_jcsj sj 
+		left outer join igams_sjqqjc qqjc on sj.csid =qqjc.yjxm and qqjc.sjid = #{sjid}
+		<where>
+			sj.jclb='DETECTION_TYPE' and sj.scbj!='1'
+		</where>
+		order by sj.cspx,sj.csid
+	</select>
+</mapper>

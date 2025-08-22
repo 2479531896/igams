@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IHbqxDao" >
+	<select id="getHbidByYhid" parameterType="String" resultType="String">
+		select hbqx.hbid from igams_hbqx hbqx
+		where hbqx.yhid=#{yhid}
+	</select>
+	
+		<!-- 添加伙伴权限信息 -->
+	<insert id="insertHbqx" parameterType="HbqxDto">
+		insert into igams_hbqx(yhid,xh,hbid)
+		values
+			<foreach collection="ids" separator="," open="" close="" item="item" index="index">
+				(#{yhid},#{index},#{item})
+			</foreach>
+	</insert>
+	<!-- 根据yhid查询伙伴权限信息 -->
+	<select id="getHbqxxx" parameterType="HbqxDto" resultType="HbqxDto">
+		select hb.hbid,sf.csid sfid,sf.csmc sfmc,hbqx.hbid hbxx,fl.cskz3 hbys,fl.csmc hbflmc,fl.csid hbflid,COALESCE(hb.hbmc||'('||ptgs.csmc||')',hb.hbmc) hbmc,hb.ptgs,hb.scbj,hb.yptgs
+		from igams_sjhbxx hb
+		left outer join igams_hbqx hbqx on hb.hbid = hbqx.hbid and hbqx.yhid=#{yhid}
+		left outer join matridx_jcsj sf on sf.csid = hb.sf
+		left join matridx_jcsj fl on fl.csid = hb.fl
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+
+		where hb.scbj!='1'
+		order by sf.cspx,sf.csmc,hbmc
+	</select>
+	
+	<!-- 删除用户伙伴权限信息 -->
+	<delete id="delyhqxxx" parameterType="HbqxDto">
+		delete from igams_hbqx
+		<where>
+			yhid=#{yhid}
+		</where>
+	</delete>
+	
+	<!--通过用户id获取伙伴信息 -->
+	<select id="getHbxxByYhid" parameterType="String" resultType="HbqxDto">
+		select hbqx.yhid,hbqx.xh,hbqx.hbid,sjhb.hbmc,bgfs.csdm bgfsdm from igams_hbqx hbqx
+		left join igams_sjhbxx sjhb on sjhb.hbid=hbqx.hbid and sjhb.scbj != '1'
+		left join matridx_jcsj bgfs on bgfs.csid=sjhb.bgfs
+		<where>
+			hbqx.yhid=#{yhid}
+		</where>
+	</select>
+	
+	<!--通过用户id获取伙伴信息 -->
+	<select id="getHbxxGroupByYhid" parameterType="String" resultType="HbqxDto">
+		select hbqx.yhid,coalesce(sjhb.tjmc,sjhb.hbmc) as hbmc from igams_hbqx hbqx
+		left join igams_sjhbxx sjhb on sjhb.hbid=hbqx.hbid and sjhb.scbj = '0'
+		<where>
+			hbqx.yhid=#{yhid}
+		</where>
+		group by hbqx.yhid,coalesce(sjhb.tjmc,sjhb.hbmc)
+	</select>
+	
+<!-- 设置上级用户的伙伴权限 -->
+<insert id="insertSjhbqx" parameterType="map">
+     insert into igams_hbqx (yhid,hbid,xh)
+     select temp1.yhid, temp1.hbid, coalesce( (select max(xh) from igams_hbqx where yhid =temp1.yhid) , -1) +row_number() over(partition by temp1.yhid order by temp1.hbid)
+     from
+     <foreach collection="sjids" separator=" union all " open="(" item="userid" close=")" index="index">
+         <foreach collection="ids" separator=" union all " open=" " item="hbqxid" close=" " index="index">
+             select #{userid} as yhid, #{hbqxid} as hbid 
+         </foreach>     
+     </foreach> temp1
+     left outer join igams_hbqx hbqx on hbqx.yhid = temp1.yhid and hbqx.hbid = temp1.hbid
+     where hbqx.yhid is null
+</insert>
+	<select id="getHbmcByYhid" parameterType="java.lang.String" resultType="String">
+		select sjhbxx.hbmc
+		from igams_hbqx hbqx
+		left join igams_sjhbxx sjhbxx on hbqx.hbid=sjhbxx.hbid
+		where hbqx.yhid=#{yhid} and sjhbxx.scbj='0'
+	</select>
+</mapper>

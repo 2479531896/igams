@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWbsjxxDao" >
+    <select id="getDtoList" parameterType="WbsjxxDto" resultType="WbsjxxDto">
+        select wbsjxx.id,sj.ybbh,wbsjxx.sjbm,wbsjxx.hzxm,wbsjxx.wbbm,wbsjxx.sjid,wbsjxx.jcxmid,wbsjxx.zyh,wbsjxx.yblx,wbsjxx.cyrq,
+        	jcxmlx.cskz1 jcxmcskz1,jcxmlx.cskz3 jcxmcskz3,to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') jsrq,wbsjxx.wbqtxx
+        from igams_wbsjxx wbsjxx
+        LEFT JOIN igams_sjxx sj ON sj.sjid = wbsjxx.sjid
+        LEFT JOIN matridx_jcsj jcxmlx on jcxmlx.csid = wbsjxx.jcxmid and jcxmlx.scbj = '0'
+        <where>
+            jcxmlx.cskz3 = 'IMP_REPORT_SEQ_INDEX_TEMEPLATE' and jcxmlx.cskz1 in ('D','R')
+            <if test="hzxm != null and hzxm !=''">
+                and wbsjxx.hzxm = #{hzxm}
+            </if>
+            <if test="zyh != null and zyh !=''">
+                and wbsjxx.zyh = #{zyh}
+            </if>
+            <if test="yblx != null and yblx !=''">
+                and wbsjxx.yblx = #{yblx}
+            </if>
+            <if test="cyrq != null and cyrq !=''">
+                and wbsjxx.cyrq = cast(#{cyrq} as date)
+            </if>
+            <if test="sjid != null and sjid !=''">
+                and wbsjxx.sjid = #{sjid}
+            </if>
+        </where>
+        order by sj.lrsj desc
+    </select>
+    <select id="getSimilarDtoList" parameterType="WbsjxxDto" resultType="WbsjxxDto">
+        select wbsjxx.id,sj.ybbh,wbsjxx.sjbm,wbsjxx.hzxm,wbsjxx.wbbm,wbsjxx.sjid,wbsjxx.jcxmid,wbsjxx.zyh,wbsjxx.yblx,wbsjxx.cyrq,
+        	jcxmlx.cskz1 jcxmcskz1,jcxmlx.cskz3 jcxmcskz3,to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') jsrq,wbsjxx.wbqtxx
+        from igams_wbsjxx wbsjxx
+        LEFT JOIN igams_sjxx sj ON sj.sjid = wbsjxx.sjid
+        LEFT JOIN matridx_jcsj jcxmlx on jcxmlx.csid = wbsjxx.jcxmid and jcxmlx.scbj = '0'
+        <where>
+            sj.scbj = '0'
+            and case when wbsjxx.jcxmid is not null and wbsjxx.jcxmid != ''
+            then
+                <if test="jcxmcskz3 != null and jcxmcskz3 !=''">
+                    jcxmlx.cskz3 = #{jcxmcskz3}
+                </if>
+                <if test="jcxmcskz3 == null or jcxmcskz3 ==''">
+                    jcxmlx.cskz3 = 'IMP_REPORT_SEQ_INDEX_TEMEPLATE'
+                </if>
+                <if test="jcxmcskz1 != null and jcxmcskz1 !='' and jcxmcskz3 != 'C'.toString()">
+                    and jcxmlx.cskz1 = #{jcxmcskz1}
+                </if>
+            else 1=1 end
+            <if test="hzxm != null and hzxm !=''">
+                and wbsjxx.hzxm = #{hzxm}
+            </if>
+            <if test="zyh != null and zyh !=''">
+                and wbsjxx.zyh = #{zyh}
+            </if>
+            <if test="yblx != null and yblx !=''">
+                and wbsjxx.yblx = #{yblx}
+            </if>
+            <if test="cyrq != null and cyrq !=''">
+                and wbsjxx.cyrq = cast(#{cyrq} as date)
+            </if>
+            <if test="sjid != null and sjid !=''">
+                and wbsjxx.sjid = #{sjid}
+            </if>
+        </where>
+        order by sj.lrsj desc
+    </select>
+
+    <!-- 根据外部编码查询送检信息 -->
+    <select id="getDtoById" parameterType="String" resultType="WbsjxxDto">
+        select wbsjxx.id,wbsjxx.sjbm,wbsjxx.hzxm,wbsjxx.wbbm,wbsjxx.sjid,wbsjxx.jcxmid,wbsjxx.zyh,wbsjxx.yblx,wbsjxx.cyrq,wbsjxx.wbqtxx
+        from igams_wbsjxx wbsjxx
+        where wbsjxx.sjbm = #{sjbm}
+    </select>
+    <!-- 根据外部编码查询送检信息 -->
+    <select id="getDtoBySjid" parameterType="String" resultType="WbsjxxDto">
+        select wbsjxx.id,wbsjxx.sjbm,wbsjxx.hzxm,wbsjxx.wbbm,wbsjxx.sjid,wbsjxx.jcxmid,wbsjxx.zyh,wbsjxx.yblx,wbsjxx.cyrq,wbsjxx.wbqtxx
+        from igams_wbsjxx wbsjxx
+        where wbsjxx.sjid = #{sjid}
+    </select>
+    <!-- 根据外部编码查询送检信息 -->
+    <select id="getListByWbbm" parameterType="WbsjxxDto" resultType="WbsjxxDto">
+        select wbsjxx.sjid,wbsjxx.sjbm,wbsjxx.wbbm,jcxmlx.cskz1 jclx,jcxmlx.cskz3,wbsjxx.wbqtxx
+        from igams_wbsjxx wbsjxx
+        left join igams_sjxx sjxx on wbsjxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcxmlx on jcxmlx.csid = wbsjxx.jcxmid
+        <where>
+            sjxx.scbj = '0'
+            <if test="sjbm != null and sjbm != ''">
+                and wbsjxx.sjbm = #{sjbm}
+            </if>
+            <if test="dbs !=null and dbs.size>0">
+                and sjxx.db in
+                <foreach collection="dbs" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dbs ==null or dbs.size==0">
+                and 1=2
+            </if>
+        </where>
+        order by sjxx.lrsj limit 50
+    </select>
+
+    <!-- 根据lastwbbm获取送检报告 -->
+    <select id="getListByLastWbbm" parameterType="WbsjxxDto" resultType="WbsjxxDto">
+        SELECT sjxx.sjid,sjxx.wbbm,jcxmlx.cskz1 jclx,jcxmlx.cskz3
+        FROM igams_sjxx sjxx
+        LEFT JOIN igams_wbsjxx wbsjxx ON wbsjxx.sjid = sjxx.sjid
+        LEFT JOIN matridx_jcsj jcxmlx on jcxmlx.csid= wbsjxx.jcxmid
+        <where>
+            sjxx.scbj = '0'
+            <if test="lastwbbm != null and lastwbbm != ''">
+                and to_char(sjxx.lrsj, 'yyyy-mm-dd') &gt; to_char(
+                COALESCE((SELECT lrsj FROM igams_sjxx sj
+                    LEFT JOIN igams_wbsjxx wbsj ON wbsj.sjid = sj.sjid
+                    WHERE wbsj.sjbm  = #{lastwbbm} LIMIT 1), LOCALTIMESTAMP)
+                ,'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="dbs !=null and dbs.size>0">
+                and sjxx.db in
+                <foreach collection="dbs" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dbs ==null or dbs.size==0">
+                and 1=2
+            </if>
+        </where>
+        order by sjxx.lrsj limit 50
+    </select>
+    <select id="getDtoBySjidAndJcxm" resultType="WbsjxxDto" parameterType="WbsjxxDto">
+        select id,sjbm,hzxm,wbbm,sjid,jcxmid,yblx,wbqtxx from igams_wbsjxx
+        where sjid = #{sjid} and jcxmid = #{jcxmid} limit 1
+    </select>
+
+    <insert id="insert" parameterType="WbsjxxDto">
+        insert into igams_wbsjxx(
+        id
+        <if test="sjbm!=null and sjbm!=''">
+            ,sjbm
+        </if>
+        <if test="hzxm!=null and hzxm!=''">
+            ,hzxm
+        </if>
+        <if test="wbbm!=null and wbbm!=''">
+            ,wbbm
+        </if>
+        <if test="sjid!=null and sjid!=''">
+            ,sjid
+        </if>
+        <if test="jcxmid!=null and jcxmid!=''">
+            ,jcxmid
+        </if>
+        <if test="zyh!=null and zyh!=''">
+            ,zyh
+        </if>
+        <if test="yblx!=null and yblx!=''">
+            ,yblx
+        </if>
+        <if test="cyrq!=null and cyrq!=''">
+            ,cyrq
+        </if>
+        <if test="wbqtxx!=null and wbqtxx!=''">
+            ,wbqtxx
+        </if>
+        <if test="infojson != null and infojson != ''!=null and wbqtxx!=''">
+            ,infojson
+        </if>
+        )values(
+        #{id}
+        <if test="sjbm!=null and sjbm!=''">
+            ,#{sjbm}
+        </if>
+        <if test="hzxm!=null and hzxm!=''">
+            ,#{hzxm}
+        </if>
+        <if test="wbbm!=null and wbbm!=''">
+            ,#{wbbm}
+        </if>
+        <if test="sjid!=null and sjid!=''">
+            ,#{sjid}
+        </if>
+        <if test="jcxmid!=null and jcxmid!=''">
+            ,#{jcxmid}
+        </if>
+        <if test="zyh!=null and zyh!=''">
+            ,#{zyh}
+        </if>
+        <if test="yblx!=null and yblx!=''">
+            ,#{yblx}
+        </if>
+        <if test="cyrq!=null and cyrq!=''">
+            ,cast (#{cyrq} as date )
+        </if>
+        <if test="wbqtxx!=null and wbqtxx!=''">
+            ,#{wbqtxx}
+        </if>
+        <if test="infojson != null and infojson != ''">
+            ,CAST( #{infojson} AS json)
+        </if>
+        )
+    </insert>
+
+    <update id="update" parameterType="WbsjxxDto">
+        update igams_wbsjxx set id = #{id}
+        <if test="hzxm!=null and hzxm!=''">
+            ,hzxm=#{hzxm}
+        </if>
+        <if test="jcxmid!=null and jcxmid!=''">
+            ,jcxmid=#{jcxmid}
+        </if>
+        <if test="zyh!=null and zyh!=''">
+            ,zyh=#{zyh}
+        </if>
+        <if test="yblx!=null and yblx!=''">
+            ,yblx=#{yblx}
+        </if>
+        <if test="cyrq!=null and cyrq!=''">
+            ,cyrq=cast (#{cyrq} as date )
+        </if>
+        <if test="wbqtxx!=null and wbqtxx!=''">
+            ,wbqtxx=#{wbqtxx}
+        </if>
+        <if test="infojson != null and infojson != ''">
+            ,infojson = CAST( #{infojson} AS json)
+        </if>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    <update id="copyUpdate" parameterType="WbsjxxDto">
+        update igams_wbsjxx set sjid = #{sjid}
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    <update id="updateInfojsonBySjid" parameterType="WbsjxxDto">
+        update igams_wbsjxx set infojson = CAST( #{infojson} AS json)
+        <where>
+            sjid = #{sjid}
+        </where>
+    </update>
+
+    <select id="getListBySjid" parameterType="String"  resultType="WbsjxxDto">
+        select wbsjxx.id,wbsjxx.sjid,wbsjxx.sjbm,wbsjxx.hzxm,wbsjxx.wbbm,wbsjxx.zyh,wbsjxx.yblx,wbsjxx.cyrq,wbsjxx.wbqtxx,wbsjxx.infojson,jcxmlx.csmc jcxmmc,jcxmlx.cskz1 jclx,jcxmlx.cskz3
+        from igams_wbsjxx wbsjxx
+        left join matridx_jcsj jcxmlx on jcxmlx.csid = wbsjxx.jcxmid
+        <where>
+            wbsjxx.sjid = #{sjid}
+        </where>
+    </select>
+
+    <update id="updateList" parameterType="List">
+
+        <foreach collection="list" separator=";" open="" close=""
+                 item="item" index="index">
+            update igams_wbsjxx set wbqtxx = #{item.wbqtxx}
+            where  id=#{item.id}
+        </foreach>
+    </update>
+</mapper>

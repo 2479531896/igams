@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjyzjgDao" >
+    <insert id="insert" parameterType="SjyzjgDto">
+        insert into igams_sjyzjg(yzjgid,yzid,yzlb,yzjg,jl,scbj,zt,lrry,lrsj,ctbs,nctbs,pctbs
+        )values(#{yzjgid},#{yzid},#{yzlb},#{yzjg},#{jl},'0','80',#{lrry},LOCALTIMESTAMP,'1','1','1'
+        )
+    </insert>
+
+    <update id="update" parameterType="SjyzjgDto">
+        update igams_sjyzjg set xgry=#{xgry},xgsj=LOCALTIMESTAMP,jl=#{jl}
+        where yzid=#{yzid} and yzlb=#{yzlb} and yzjg=#{yzjg} and scbj != '1'
+    </update>
+
+    <update id="updateListJl" parameterType="list">
+        <if test="list != null and list.size() > 0">
+            <foreach collection="list" close="" open="" item="item" separator=";" index="index">
+                update igams_sjyzjg set jl=#{item.jl}
+                where yzid=#{item.yzid} and yzlb=#{item.yzlb} and yzjg=#{item.yzjg} and scbj = '0'
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateListCzbs" parameterType="list">
+        update igams_sjyzjg set ctbs = '1',nctbs = '1',pctbs = '1' where yzjgid in
+        <foreach collection="list" close=")" open="(" item="item" separator="," index="index">
+             #{item}
+        </foreach>
+    </update>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_sjyzjg
+            (yzjgid,yzid,yzlb,yzjg,jl,scbj,zt,lrry,lrsj,ctbs,nctbs,pctbs)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.yzjgid},#{item.yzid},#{item.yzlb},#{item.yzjg},#{item.jl},
+             '0','80',#{item.lrry},LOCALTIMESTAMP,'1','1','1')
+        </foreach>
+    </insert>
+
+    <select id="getByYzlbYzidYzjg" parameterType="list" resultType="SjyzjgDto">
+        select tmp.*
+        from(
+            <foreach collection="list" index="index" item="item" separator=" union all ">
+                select cast(#{index} as VARCHAR) lsxh, yzjgid, yzid, yzlb, yzjg
+                from igams_sjyzjg
+                where yzid=#{item.yzid} and yzlb=#{item.yzlb} and yzjg=#{item.yzjg} and scbj = '0'
+            </foreach>
+            )tmp
+    </select>
+
+    <select id="getInfoByYbbh" parameterType="SjyzjgDto" resultType="SjyzjgDto">
+        SELECT
+        sjxx.ybbh,sjxx.nbbm,
+        yzlb.csmc AS yzlbmc,
+        yzlb.cskz1 as yzlbcs,
+        to_char( sjyz.lrsj, 'yyyy-mm-dd hh24:mi:ss' ) AS bgsj,
+        sjxx.jcxmmc,yzjg.cskz2,
+        yzjg.csmc AS yzjgjgmc,
+        yzjg.cskz1 as cskz1,
+        jl.csmc AS jlmc,
+        sjyzjg.yzjgid,
+        qf.cskz1 as qfcskz,
+        sjyzjg.pctbs,sjyzjg.nctbs,sjyzjg.ctbs
+        ,  ct1   ,   ct2   ,  ct3
+        , round(CAST(coalesce(sjyzjg.tm11,'0') AS numeric), 2) AS tm11 , round(CAST(coalesce(sjyzjg.tm12,'0') AS numeric), 2) AS tm12, round(CAST(coalesce(sjyzjg.tm13,'0') AS numeric), 2) AS tm13
+        , round(CAST(coalesce(sjyzjg.tm21,'0') AS numeric), 2) AS tm21 , round(CAST(coalesce(sjyzjg.tm22,'0') AS numeric), 2) AS tm22, round(CAST(coalesce(sjyzjg.tm23,'0') AS numeric), 2) AS tm23
+        , round(CAST(coalesce(sjyzjg.tm31,'0') AS numeric), 2) AS tm31 , round(CAST(coalesce(sjyzjg.tm32,'0') AS numeric), 2) AS tm32, round(CAST(coalesce(sjyzjg.tm33,'0') AS numeric), 2) AS tm33
+        , round(CAST(coalesce(sjyzjg.fz11,'0') AS numeric), 2) AS fz11 , round(CAST(coalesce(sjyzjg.fz12,'0') AS numeric), 2) AS fz12, round(CAST(coalesce(sjyzjg.fz13,'0') AS numeric), 2) AS fz13
+        , round(CAST(coalesce(sjyzjg.fz21,'0') AS numeric), 2) AS fz21 , round(CAST(coalesce(sjyzjg.fz22,'0') AS numeric), 2) AS fz22, round(CAST(coalesce(sjyzjg.fz23,'0') AS numeric), 2) AS fz23
+        , round(CAST(coalesce(sjyzjg.fz31,'0') AS numeric), 2) AS fz31 , round(CAST(coalesce(sjyzjg.fz32,'0') AS numeric), 2) AS fz32, round(CAST(coalesce(sjyzjg.fz33,'0') AS numeric), 2) AS fz33
+
+        ,  nct1   , nct2   ,  nct3
+        , round(CAST(coalesce(sjyzjg.ntm11,'0') AS numeric), 2) AS ntm11 , round(CAST(coalesce(sjyzjg.ntm12,'0') AS numeric), 2) AS ntm12, round(CAST(coalesce(sjyzjg.ntm13,'0') AS numeric), 2) AS ntm13
+        , round(CAST(coalesce(sjyzjg.ntm21,'0') AS numeric), 2) AS ntm21 , round(CAST(coalesce(sjyzjg.ntm22,'0') AS numeric), 2) AS ntm22, round(CAST(coalesce(sjyzjg.ntm23,'0') AS numeric), 2) AS ntm23
+        , round(CAST(coalesce(sjyzjg.ntm31,'0') AS numeric), 2) AS ntm31 , round(CAST(coalesce(sjyzjg.ntm32,'0') AS numeric), 2) AS ntm32, round(CAST(coalesce(sjyzjg.ntm33,'0') AS numeric), 2) AS ntm33
+        , round(CAST(coalesce(sjyzjg.nfz11,'0') AS numeric), 2) AS nfz11 , round(CAST(coalesce(sjyzjg.nfz12,'0') AS numeric), 2) AS nfz12, round(CAST(coalesce(sjyzjg.nfz13,'0') AS numeric), 2) AS nfz13
+        , round(CAST(coalesce(sjyzjg.nfz21,'0') AS numeric), 2) AS nfz21 , round(CAST(coalesce(sjyzjg.nfz22,'0') AS numeric), 2) AS nfz22, round(CAST(coalesce(sjyzjg.nfz23,'0') AS numeric), 2) AS nfz23
+        , round(CAST(coalesce(sjyzjg.nfz31,'0') AS numeric), 2) AS nfz31 , round(CAST(coalesce(sjyzjg.nfz32,'0') AS numeric), 2) AS nfz32, round(CAST(coalesce(sjyzjg.nfz33,'0') AS numeric), 2) AS nfz33
+
+        , pct1   ,  pct2   ,  pct3
+        , round(CAST(coalesce(sjyzjg.ptm11,'0') AS numeric), 2) AS ptm11 , round(CAST(coalesce(sjyzjg.ptm12,'0') AS numeric), 2) AS ptm12, round(CAST(coalesce(sjyzjg.ptm13,'0') AS numeric), 2) AS ptm13
+        , round(CAST(coalesce(sjyzjg.ptm21,'0') AS numeric), 2) AS ptm21 , round(CAST(coalesce(sjyzjg.ptm22,'0') AS numeric), 2) AS ptm22, round(CAST(coalesce(sjyzjg.ptm23,'0') AS numeric), 2) AS ptm23
+        , round(CAST(coalesce(sjyzjg.ptm31,'0') AS numeric), 2) AS ptm31 , round(CAST(coalesce(sjyzjg.ptm32,'0') AS numeric), 2) AS ptm32, round(CAST(coalesce(sjyzjg.ptm33,'0') AS numeric), 2) AS ptm33
+        , round(CAST(coalesce(sjyzjg.pfz11,'0') AS numeric), 2) AS pfz11 , round(CAST(coalesce(sjyzjg.pfz12,'0') AS numeric), 2) AS pfz12, round(CAST(coalesce(sjyzjg.pfz13,'0') AS numeric), 2) AS pfz13
+        , round(CAST(coalesce(sjyzjg.pfz21,'0') AS numeric), 2) AS pfz21 , round(CAST(coalesce(sjyzjg.pfz22,'0') AS numeric), 2) AS pfz22, round(CAST(coalesce(sjyzjg.pfz23,'0') AS numeric), 2) AS pfz23
+        , round(CAST(coalesce(sjyzjg.pfz31,'0') AS numeric), 2) AS pfz31 , round(CAST(coalesce(sjyzjg.pfz32,'0') AS numeric), 2) AS pfz32, round(CAST(coalesce(sjyzjg.pfz33,'0') AS numeric), 2) AS pfz33
+        , bz1 ,bz2
+        FROM
+        igams_sjyz sjyz
+        LEFT JOIN igams_sjxx sjxx ON sjxx.sjid = sjyz.sjid
+        LEFT JOIN igams_sjyzjg sjyzjg ON sjyzjg.yzid = sjyz.yzid AND sjyzjg.scbj != '1'
+        LEFT JOIN matridx_jcsj yzlb ON sjyz.yzlb = yzlb.csid
+        LEFT JOIN matridx_jcsj yzjg ON sjyzjg.yzjg = yzjg.csid
+        LEFT JOIN matridx_jcsj jl ON sjyzjg.jl = jl.csid
+        LEFT JOIN matridx_jcsj qf ON sjyz.qf = qf.csid
+        WHERE
+        sjyz.scbj != '1'
+        <if test="yzid != null and yzid != ''">
+            AND sjyz.yzid = #{yzid}
+        </if>
+        <if test="yzid == null or yzid == ''">
+            AND sjyz.yzid in (
+            SELECT
+            sjyz.yzid
+            FROM
+            igams_sjyz sjyz
+            LEFT JOIN igams_sjxx sjxx ON sjxx.sjid = sjyz.sjid
+            LEFT JOIN matridx_jcsj qf ON sjyz.qf = qf.csid
+            WHERE
+            sjyz.scbj != '1'
+            <if test="ybbh != null and ybbh != ''">
+                and (sjyz.yzjg != null or sjyz.yzjg != '') AND sjxx.ybbh = #{ybbh}
+            </if>
+            <if test="qfcskz != null and qfcskz != ''">
+                and qf.cskz1 = #{qfcskz}
+            </if>
+            <if test="qfcskz == null or qfcskz == ''">
+                and qf.cskz1  = ''
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                AND sjxx.nbbm = #{nbbm}
+            </if>
+            <if test="yzlb != null and yzlb != ''">
+                AND sjyz.yzlb = #{yzlb}
+            </if>
+            <if test="czbs != '1'.toString() ">
+                ORDER BY
+                sjyz.lrsj DESC
+                LIMIT 1
+            </if>
+            )
+        </if>
+
+    </select>
+
+    <update id="updateDto" parameterType="SjyzjgDto">
+        update igams_sjyzjg set  yzjgid=#{yzjgid}
+        <if test="mbjy !=null and  mbjy !=''">
+            , mbjy=#{mbjy}
+        </if>
+        <if test="jcqf !=null and  jcqf !=''">
+            , jcqf=#{jcqf}
+        </if>
+        <if test="jl !=null and jl !=''">
+            , jl=#{jl}
+        </if>
+        <if test="ctbs !=null and  ctbs !=''">
+            , ctbs=#{ctbs}
+        </if>
+        <if test="nctbs !=null and  nctbs !=''">
+            , nctbs=#{nctbs}
+        </if>
+        <if test="pctbs !=null and  pctbs !=''">
+            , pctbs=#{pctbs}
+        </if>
+        <if test="kw1 !=null and  kw1 !=''">
+            , kw1=#{kw1}
+        </if>
+        <if test="kw2 !=null and  kw2 !=''">
+            , kw2=#{kw2}
+        </if>
+        <if test="kw3 !=null and  kw3 !=''">
+            , kw3=#{kw3}
+        </if>
+        <if test="pkw1 !=null and  pkw1 !=''">
+            , pkw1=#{pkw1}
+        </if>
+        <if test="pkw2 !=null and  pkw2 !=''">
+            , pkw2=#{pkw2}
+        </if>
+        <if test="pkw3 !=null and  pkw3 !=''">
+            , pkw3=#{pkw3}
+        </if>
+        <if test="nkw1 !=null and  nkw1 !=''">
+            , nkw1=#{nkw1}
+        </if>
+        <if test="nkw2 !=null and  nkw2 !=''">
+            , nkw2=#{nkw2}
+        </if>
+        <if test="nkw3 !=null and  nkw3 !=''">
+            , nkw3=#{nkw3}
+        </if>
+        <if test="ct1 !=null and  ct1 !=''">
+            , ct1=#{ct1}
+        </if>
+        <if test="ct2 !=null and  ct2 !=''">
+            , ct2=#{ct2}
+        </if>
+        <if test="ct3 !=null and  ct3 !=''">
+            , ct3=#{ct3}
+        </if>
+        <if test="pct1 !=null and  pct1 !=''">
+            , pct1=#{pct1}
+        </if>
+        <if test="pct2 !=null and  pct2 !=''">
+            , pct2=#{pct2}
+        </if>
+        <if test="pct3 !=null and  pct3 !=''">
+            , pct3=#{pct3}
+        </if>
+        <if test="nct1 !=null and  nct1 !=''">
+            , nct1=#{nct1}
+        </if>
+        <if test="nct2 !=null and  nct2 !=''">
+            , nct2=#{nct2}
+        </if>
+        <if test="nct3 !=null and  nct3 !=''">
+            , nct3=#{nct3}
+        </if>
+        <if test="scbj !=null and  scbj !=''">
+            , scbj=#{scbj}
+        </if>
+        <if test="bz1 !=null and  bz1 !=''">
+            , bz1=#{bz1}
+        </if>
+        <if test="bz2 !=null and  bz2 !=''">
+            , bz2=#{bz2}
+        </if>
+        where yzjgid=#{yzjgid} and scbj != '1'
+    </update>
+    <update id="delete" parameterType="SjyzjgDto">
+        update igams_sjyzjg set scry=#{scry},scsj=LOCALTIMESTAMP,scbj ='1'
+        where yzid=#{yzid} and yzlb != #{yzlb} and scbj = '0'
+    </update>
+    <delete id="deleteByYzid" parameterType="SjyzjgDto">
+        update igams_sjyzjg set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="yzid !=null and  yzid !=''">
+                or yzid=#{yzid}
+            </if>
+            <if test="ids !=null and ids.size>0">
+                or yzid in
+                <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <select id="getDtoList"  parameterType="SjyzjgDto" resultType="SjyzjgDto">
+        SELECT yzjg.jcqf, yzjg.mbjy,sjxx.sfsc as sfsc,jcyzjg.csmc as yzjgmc,yzjg.scbj
+        ,  ct1   ,  ct2   ,  ct3
+        , round(CAST(coalesce(yzjg.tm11,'0') AS numeric), 2) AS tm11 , round(CAST(coalesce(yzjg.tm12,'0') AS numeric), 2) AS tm12, round(CAST(coalesce(yzjg.tm13,'0') AS numeric), 2) AS tm13
+        , round(CAST(coalesce(yzjg.tm21,'0') AS numeric), 2) AS tm21 , round(CAST(coalesce(yzjg.tm22,'0') AS numeric), 2) AS tm22, round(CAST(coalesce(yzjg.tm23,'0') AS numeric), 2) AS tm23
+        , round(CAST(coalesce(yzjg.tm31,'0') AS numeric), 2) AS tm31 , round(CAST(coalesce(yzjg.tm32,'0') AS numeric), 2) AS tm32, round(CAST(coalesce(yzjg.tm33,'0') AS numeric), 2) AS tm33
+        , round(CAST(coalesce(yzjg.fz11,'0') AS numeric), 2) AS fz11 , round(CAST(coalesce(yzjg.fz12,'0') AS numeric), 2) AS fz12, round(CAST(coalesce(yzjg.fz13,'0') AS numeric), 2) AS fz13
+        , round(CAST(coalesce(yzjg.fz21,'0') AS numeric), 2) AS fz21 , round(CAST(coalesce(yzjg.fz22,'0') AS numeric), 2) AS fz22, round(CAST(coalesce(yzjg.fz23,'0') AS numeric), 2) AS fz23
+        , round(CAST(coalesce(yzjg.fz31,'0') AS numeric), 2) AS fz31 , round(CAST(coalesce(yzjg.fz32,'0') AS numeric), 2) AS fz32, round(CAST(coalesce(yzjg.fz33,'0') AS numeric), 2) AS fz33
+
+        ,  nct1   ,  nct2   ,  nct3
+        , round(CAST(coalesce(yzjg.ntm11,'0') AS numeric), 2) AS ntm11 , round(CAST(coalesce(yzjg.ntm12,'0') AS numeric), 2) AS ntm12, round(CAST(coalesce(yzjg.ntm13,'0') AS numeric), 2) AS ntm13
+        , round(CAST(coalesce(yzjg.ntm21,'0') AS numeric), 2) AS ntm21 , round(CAST(coalesce(yzjg.ntm22,'0') AS numeric), 2) AS ntm22, round(CAST(coalesce(yzjg.ntm23,'0') AS numeric), 2) AS ntm23
+        , round(CAST(coalesce(yzjg.ntm31,'0') AS numeric), 2) AS ntm31 , round(CAST(coalesce(yzjg.ntm32,'0') AS numeric), 2) AS ntm32, round(CAST(coalesce(yzjg.ntm33,'0') AS numeric), 2) AS ntm33
+        , round(CAST(coalesce(yzjg.nfz11,'0') AS numeric), 2) AS nfz11 , round(CAST(coalesce(yzjg.nfz12,'0') AS numeric), 2) AS nfz12, round(CAST(coalesce(yzjg.nfz13,'0') AS numeric), 2) AS nfz13
+        , round(CAST(coalesce(yzjg.nfz21,'0') AS numeric), 2) AS nfz21 , round(CAST(coalesce(yzjg.nfz22,'0') AS numeric), 2) AS nfz22, round(CAST(coalesce(yzjg.nfz23,'0') AS numeric), 2) AS nfz23
+        , round(CAST(coalesce(yzjg.nfz31,'0') AS numeric), 2) AS nfz31 , round(CAST(coalesce(yzjg.nfz32,'0') AS numeric), 2) AS nfz32, round(CAST(coalesce(yzjg.nfz33,'0') AS numeric), 2) AS nfz33
+
+        ,  pct1   ,  pct2   ,  pct3
+        , round(CAST(coalesce(yzjg.ptm11,'0') AS numeric), 2) AS ptm11 , round(CAST(coalesce(yzjg.ptm12,'0') AS numeric), 2) AS ptm12, round(CAST(coalesce(yzjg.ptm13,'0') AS numeric), 2) AS ptm13
+        , round(CAST(coalesce(yzjg.ptm21,'0') AS numeric), 2) AS ptm21 , round(CAST(coalesce(yzjg.ptm22,'0') AS numeric), 2) AS ptm22, round(CAST(coalesce(yzjg.ptm23,'0') AS numeric), 2) AS ptm23
+        , round(CAST(coalesce(yzjg.ptm31,'0') AS numeric), 2) AS ptm31 , round(CAST(coalesce(yzjg.ptm32,'0') AS numeric), 2) AS ptm32, round(CAST(coalesce(yzjg.ptm33,'0') AS numeric), 2) AS ptm33
+        , round(CAST(coalesce(yzjg.pfz11,'0') AS numeric), 2) AS pfz11 , round(CAST(coalesce(yzjg.pfz12,'0') AS numeric), 2) AS pfz12, round(CAST(coalesce(yzjg.pfz13,'0') AS numeric), 2) AS pfz13
+        , round(CAST(coalesce(yzjg.pfz21,'0') AS numeric), 2) AS pfz21 , round(CAST(coalesce(yzjg.pfz22,'0') AS numeric), 2) AS pfz22, round(CAST(coalesce(yzjg.pfz23,'0') AS numeric), 2) AS pfz23
+        , round(CAST(coalesce(yzjg.pfz31,'0') AS numeric), 2) AS pfz31 , round(CAST(coalesce(yzjg.pfz32,'0') AS numeric), 2) AS pfz32, round(CAST(coalesce(yzjg.pfz33,'0') AS numeric), 2) AS pfz33
+        , yzjg.lrry,to_char( yzjg.lrsj, 'yyyy/mm/dd hh24:mi' ) lrsj, bz1 ,bz2,to_char(coalesce(yzjg.xgsj,yzjg.lrsj), 'yyyy/mm/dd hh24:mi' ) xssj
+        FROM igams_sjyzjg yzjg
+        left join matridx_jcsj jcyzjg on yzjg.yzjg = jcyzjg.csid
+        left join igams_sjyz sjyz on sjyz.yzid = yzjg.yzid
+        left join igams_sjxx sjxx on sjxx.sjid = sjyz.sjid
+
+        <where>
+            <if test="yzid != null and yzid !=''">
+                and yzjg.yzid=#{yzid}
+            </if>
+        </where>
+        order by  yzjg.lrsj desc
+    </select>
+</mapper>

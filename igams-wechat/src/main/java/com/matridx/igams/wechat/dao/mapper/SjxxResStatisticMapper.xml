@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjxxResStatisticDao" >
+	<select id="getRYbStatisByDay" parameterType="SjxxDto" resultType="Map">
+		SELECT
+			COALESCE( SUM ( jss ), 0 ) zjs,
+			COALESCE ( SUM ( sys ), 0 ) ysys,
+			COALESCE ( SUM ( bgs ), 0 ) yfbgs,
+			COALESCE ( SUM ( sys ) - SUM ( bgs ) - SUM ( fjs ), 0 ) sfbgs,
+			COALESCE ( SUM ( jss ) - SUM ( bgs ), 0 ) zwfbgs
+		FROM
+			(
+				SELECT
+					sjxx.sjid,
+					CASE
+
+						WHEN jsrq IS NOT NULL THEN
+							1 ELSE 0
+						END jss,
+					CASE
+
+						WHEN sjxx.qtsyrq IS NOT NULL THEN
+							1 ELSE 0
+						END sys,
+					CASE
+
+						WHEN to_char( sjxx.bgrq, 'YYYY-MM-DD' ) = #{jsrq}
+							AND sfsc = '1' THEN
+							1 ELSE 0
+						END bgs,
+					CASE
+
+						WHEN fjsq.sjid IS NOT NULL THEN
+							1 ELSE 0
+						END fjs
+				FROM
+					igams_sjxx sjxx
+						LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj='0'
+						LEFT OUTER JOIN igams_fjsq fjsq ON sjxx.sjid = fjsq.sjid
+				WHERE
+					xm.jcxmid = #{jcxm}
+				  AND sjxx.scbj = '0'
+				  AND (
+						( to_char( sjxx.jsrq, 'YYYY-MM-DD' ) =  #{jsrq} OR to_char( sjxx.qtsyrq, 'YYYY-MM-DD' ) =  #{jsrq} )
+						OR ( to_char( sjxx.jsrq + '3 D', 'YYYY-MM-DD' ) &gt;=  #{jsrq} AND sjxx.qtsyrq IS NULL )
+					) UNION ALL
+				SELECT
+					fjsq.sjid,
+					1 jss,
+					CASE
+
+						WHEN fjsq.qtsyrq IS NOT NULL THEN
+							1 ELSE 0
+						END sys,
+					CASE
+
+						WHEN to_char( sjxx.bgrq, 'YYYY-MM-DD' ) =  #{jsrq} THEN
+							1 ELSE 0
+						END bgs,
+					0 fjs
+				FROM
+					igams_fjsq fjsq
+						LEFT OUTER JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+						LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj='0'
+				WHERE
+					xm.jcxmid = #{jcxm}
+				  AND (
+							to_char( fjsq.qtsyrq, 'YYYY-MM-DD' ) =  #{jsrq}
+						OR ( to_char( fjsq.lrsj + '3 D', 'YYYY-MM-DD' ) &gt;=  #{jsrq} AND fjsq.zt = '10' AND fjsq.qtsyrq IS NULL )
+					)
+			) tmp
+	</select>
+	<!-- 统计日报 (饼状图) 按照标本个数进行统计(ResFirst™)-->
+	<select id="getRYbxxByDay" parameterType="SjxxDto" resultType="Map">
+		SELECT sjxx.sfsf, sjxx.sfjs, COALESCE(tmp.num, '0') AS num
+		FROM (
+		SELECT '0' AS sfsf, '1' AS sfjs
+		UNION ALL
+		SELECT '0' AS sfsf, '0' AS sfjs
+		UNION ALL
+		SELECT '1' AS sfsf, '1' AS sfjs
+		) sjxx
+		LEFT JOIN (
+		SELECT COUNT(sjxx.sjid) || '' AS num
+		, CASE
+		WHEN sjxx.sfjs = '1' THEN case when sjxx.sfsf = '0' then '0' else '1' end
+		ELSE '0'
+		END AS sfsf,sjxx.sfjs
+		FROM igams_sjxx sjxx
+		left outer join igams_sjjcxm xm on sjxx.sjid = xm.sjid and xm.scbj='0'
+		left outer join matridx_jcsj jc_xm on jc_xm.csid = xm.jcxmid
+		WHERE sjxx.scbj = '0'
+		AND to_char(sjxx.qtsyrq, 'yyyy-MM-dd') =#{jsrq}
+		AND jc_xm.cskz3 ='IMP_REPORT_RFS_TEMEPLATE'
+		<if test="dbs !=null and dbs.size() >0">
+			AND sjxx.db in
+			<foreach collection="dbs" open="(" close=")" item="item" separator="," index="index">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY sfjs, CASE
+		WHEN sjxx.sfjs = '1' THEN case when sjxx.sfsf = '0' then '0' else '1' end
+		ELSE '0'
+		END,sjxx.sfjs
+		) tmp ON sjxx.sfsf = tmp.sfsf AND sjxx.sfjs = tmp.sfjs
+		ORDER BY sjxx.sfsf, sjxx.sfjs
+	</select>
+	<!-- 送检复检实验数 -->
+	<select id="getSjFjNum" parameterType="Map" resultType="Map">
+		SELECT
+		COALESCE(SUM ( sjnum ),0) sjnum ,
+		COALESCE(SUM( fjnum ),0) fjnum
+		FROM
+		(
+		SELECT
+		CASE
+		WHEN
+		to_char( coalesce(sjxx.dsyrq, sjxx.syrq,sjxx.qtsyrq), 'yyyy-MM-dd' ) = #{jsrq}
+		<if test="cskz3 !=null and cskz3 !=''">
+			AND jc_xm.cskz3 = #{cskz3}
+		</if>
+		THEN
+		1
+		END sjnum,
+		CASE
+		WHEN fjid IS NOT NULL and to_char( coalesce(fjsq.dsyrq, fjsq.rsyrq,fjsq.qtsyrq), 'yyyy-MM-dd' ) = #{jsrq}
+		<if test="cskz3 !=null and cskz3 !=''">
+			AND fj_xm.cskz3 = #{cskz3}
+		</if>
+		THEN
+		1
+		END fjnum
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_fjsq fjsq ON sjxx.sjid = fjsq.sjid AND fjsq.scbj = '0'
+		left join igams_sjjcxm jcxm on jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+		left join matridx_jcsj jc_xm on jc_xm.csid = jcxm.jcxmid
+		left join matridx_jcsj fj_xm on fj_xm.csid = fjsq.jcxm
+		WHERE sjxx.scbj ='0'
+		AND ( to_char( coalesce(sjxx.dsyrq, sjxx.syrq,sjxx.qtsyrq), 'yyyy-MM-dd' ) = #{jsrq}  or  to_char( coalesce(fjsq.dsyrq, fjsq.rsyrq,fjsq.qtsyrq), 'yyyy-MM-dd' ) = #{jsrq}  )
+		<if test="cskz3 !=null and cskz3 !=''">
+			AND (fj_xm.cskz3 = #{cskz3} or jc_xm.cskz3 = #{cskz3})
+		</if>
+		<if test="dbs !=null and dbs.size() >0">
+			AND sjxx.db in
+			<foreach collection="dbs" open="(" close=")" item="item" separator="," index="index">
+				#{item}
+			</foreach>
+		</if>
+		) tpp
+	</select>
+	<!-- 获取生命周期平均用时 -->
+	<select id="getAvgTime" parameterType="SjxxDto" resultType="Map">
+		select tjrq.rq
+		<if test="tj != null and tj != '' and tj != 'week'">
+			,coalesce(tmp.jsdqy,0) jsdqy,coalesce(tmp.qydtq,0) qydtq,coalesce(tmp.tqdkz,0) tqdkz,coalesce(tmp.kzdjc,0) kzdjc,coalesce(tmp.jcdbg,0) jcdbg
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			,SUM(coalesce(tmp.jsdqy,0)) jsdqy,SUM(coalesce(tmp.qydtq,0)) qydtq,SUM(coalesce(tmp.tqdkz,0)) tqdkz,SUM(coalesce(tmp.kzdjc,0)) kzdjc,SUM(coalesce(tmp.jcdbg,0)) jcdbg
+		</if>
+		from
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+					 item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		tjrq
+		left outer join(
+		SELECT
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sygl.qysj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.jsrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ) ),1 ),0) jsdqy,
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sygl.syrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.qysj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ) ),1 ),0) qydtq,
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sygl.kzsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.syrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ) ),1 ),0) tqdkz,
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sygl.jcsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.kzsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ) ),1 ),0) kzdjc,
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sjbgsm.bgrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.jcsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ) ),1 ),0) jcdbg,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sygl.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sygl.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sygl.jsrq,'yyyy') rq
+		</if>
+		FROM
+			igams_sjsygl sygl
+			left outer join igams_xmsygl xmsygl on sygl.syglid = xmsygl.syglid
+			LEFT JOIN igams_sjbgsm sjbgsm ON sjbgsm.sjid = sygl.sjid AND xmsygl.jcxmid = sjbgsm.jclx AND xmsygl.jczxmid = sjbgsm.jczlx
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = xmsygl.jcxmid
+		WHERE
+			sygl.scbj ='0' AND jc_xm.cskz3 ='IMP_REPORT_RFS_TEMEPLATE'
+		<if test="jsrqstart != null and jsrqstart != ''">
+			and to_char(sygl.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''">
+			and to_char(sygl.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sygl.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sygl.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sygl.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sygl.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		GROUP BY
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			 to_char(sygl.jsrq, 'yyyy-MM-dd')
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			 to_char(sygl.jsrq,'yyyy-MM')
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			 to_char(sygl.jsrq,'yyyy')
+		</if>)tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq.rq = tmp.rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tjrq.rq as TIMESTAMP) &gt;= cast(tmp.rq as TIMESTAMP) and (cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval) &lt;  cast(tmp.rq as TIMESTAMP)
+			GROUP BY tjrq.rq
+		</if>
+		order by tjrq.rq
+	</select>
+	<select id="getLifeCount" parameterType="SjxxDto" resultType="Map">
+		SELECT SUM(tmp.jswqy) jswqy,SUM(tmp.qywtq) qywtq,SUM(tmp.tqwkz) tqwkz,SUM(tmp.kzwjc) kzwjc,SUM(tmp.jcwbg) jcwbg,SUM(tmp.yfbg) yfbg from (
+		SELECT
+		CASE WHEN sygl.jsrq IS NOT NULL AND sygl.qysj is NULL AND sygl.syrq IS NULL THEN 1 ELSE 0 END jswqy,
+		CASE WHEN sygl.qysj IS NOT NULL AND sygl.syrq is NULL THEN 1 ELSE 0 END qywtq,
+		CASE WHEN sygl.syrq IS NOT NULL AND sygl.kzsj is NULL THEN 1 ELSE 0 END tqwkz,
+		CASE WHEN sygl.kzsj IS NOT NULL AND sygl.jcsj is NULL THEN 1 ELSE 0 END kzwjc,
+		CASE WHEN sygl.jcsj IS NOT NULL AND sjbgsm.bgrq is NULL THEN 1 ELSE 0 END jcwbg,
+		CASE WHEN sjbgsm.bgrq IS NOT NULL THEN 1 ELSE 0 END yfbg
+		FROM
+		igams_sjsygl sygl
+		left outer join igams_xmsygl xmsygl on sygl.syglid = xmsygl.syglid
+		LEFT JOIN
+		igams_sjbgsm sjbgsm
+		ON sjbgsm.sjid = sygl.sjid
+		AND xmsygl.jcxmid = sjbgsm.jclx AND xmsygl.jczxmid = sjbgsm.jczlx
+		left outer join matridx_jcsj jc_xm on jc_xm.csid = xmsygl.jcxmid
+		WHERE
+		sygl.scbj ='0' AND jc_xm.cskz3 ='IMP_REPORT_RFS_TEMEPLATE'
+		AND to_char(sygl.jsrq, 'yyyy-MM-dd') = #{jsrq}
+		)tmp
+	</select>
+	<!-- 获取生命周期 -->
+	<select id="getLifeCycle" parameterType="SjxxDto" resultType="Map">
+		select tjrq.rq
+		<if test="tj != null and tj != '' and tj != 'week'">
+			,coalesce(tmp.zqsj,0) zqsj
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			,SUM(coalesce(tmp.zqsj,0)) zqsj
+		</if>
+		from
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+					 item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		tjrq left outer join(
+		SELECT
+		coalesce(round(AVG (CAST (date_part( 'epoch', to_timestamp( sjbgsm.bgrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+		to_timestamp( sygl.jsrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 / 60 AS NUMERIC ) ),1 ),0) zqsj,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sygl.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sygl.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sygl.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_sjsygl sygl
+		left outer join igams_xmsygl xmsygl on sygl.syglid = xmsygl.syglid
+		LEFT JOIN igams_sjbgsm sjbgsm ON sjbgsm.sjid = sygl.sjid AND xmsygl.jcxmid = sjbgsm.jclx AND xmsygl.jczxmid = sjbgsm.jczlx
+		left outer join matridx_jcsj jc_xm on jc_xm.csid = xmsygl.jcxmid
+		WHERE
+		sygl.scbj ='0' AND jc_xm.cskz3 ='IMP_REPORT_RFS_TEMEPLATE'
+		<if test="jsrqstart != null and jsrqstart != ''">
+			and to_char(sygl.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''">
+			and to_char(sygl.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sygl.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sygl.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sygl.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sygl.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		GROUP BY
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week') ">
+			to_char(sygl.jsrq, 'yyyy-MM-dd')
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sygl.jsrq,'yyyy-MM')
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sygl.jsrq,'yyyy')
+		</if>) tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq.rq = tmp.rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tjrq.rq as TIMESTAMP) &gt;= cast(tmp.rq as TIMESTAMP) and (cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval) &lt;  cast(tmp.rq as TIMESTAMP)
+			GROUP BY tjrq.rq
+		</if>
+		order by tjrq.rq
+	</select>
+	<select id="getLifeTimeCount" parameterType="SjxxDto" resultType="Map">
+		SELECT
+			CASE WHEN sygl.jsrq IS NOT NULL AND sygl.qysj is NULL AND sygl.syrq IS NULL THEN round(CAST (date_part( 'epoch', to_timestamp( #{lrsj} :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+																															 to_timestamp( sygl.jsrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ),1) ELSE -1 END jswqy,
+			CASE WHEN sygl.qysj IS NOT NULL AND sygl.syrq is NULL THEN round(CAST (date_part( 'epoch', to_timestamp( #{lrsj} :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+																									   to_timestamp( sygl.qysj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ),1) ELSE -1 END qywtq,
+			CASE WHEN sygl.syrq IS NOT NULL AND sygl.kzsj is NULL THEN round(CAST (date_part( 'epoch', to_timestamp( #{lrsj} :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+																									   to_timestamp( sygl.syrq :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ),1) ELSE -1 END tqwkz,
+			CASE WHEN sygl.kzsj IS NOT NULL AND sygl.jcsj is NULL THEN round(CAST (date_part( 'epoch', to_timestamp( #{lrsj} :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+																									   to_timestamp( sygl.kzsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ),1) ELSE -1 END kzwjc,
+			CASE WHEN sygl.jcsj IS NOT NULL AND sjbgsm.bgrq is NULL THEN round(CAST (date_part( 'epoch', to_timestamp( #{lrsj} :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) -
+																										 to_timestamp( sygl.jcsj :: TEXT, 'yyyy-mm-dd hh24:MI:SS' ) ) / 60 AS NUMERIC ),1) ELSE -1 END jcwbg
+		FROM
+			igams_sjsygl sygl
+			left outer join igams_xmsygl xmsygl on sygl.syglid = xmsygl.syglid
+			LEFT JOIN igams_sjbgsm sjbgsm ON sjbgsm.sjid = sygl.sjid AND xmsygl.jcxmid = sjbgsm.jclx AND xmsygl.jczxmid = sjbgsm.jczlx
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = xmsygl.jcxmid
+		WHERE
+			sygl.scbj ='0' AND jc_xm.cskz3 ='IMP_REPORT_RFS_TEMEPLATE'
+		  AND to_char(sygl.jsrq, 'yyyy-MM-dd') = #{jsrq}
+	</select>
+</mapper>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IKhzyfpDao" >
+
+    <insert id="insert" parameterType="KhzyfpDto">
+        insert into igams_khzyfp(zyfpid
+        <if test="dwid != null and dwid != ''">
+            ,dwid
+        </if>
+        <if test="yhid != null and yhid != ''">
+            ,yhid
+        </if>
+       ,lrry,lrsj,scbj)
+        values(#{zyfpid}
+        <if test="dwid != null and dwid != ''">
+            ,#{dwid}
+        </if>
+        <if test="yhid != null and yhid != ''">
+            ,#{yhid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <select id="getDtoList" parameterType="KhzyfpDto" resultType="KhzyfpDto">
+        select khzyfp.zyfpid,khzyfp.dwid,khzyfp.yhid,yh.zsxm as yhmc,bfdx.dwmc,yh.yhm,yh.ddid,bfdx.sfrk,bfdx.dwjc
+        from igams_khzyfp khzyfp
+        left join matridx_xtyh yh on yh.yhid=khzyfp.yhid and yh.scbj='0'
+        left join igams_bfdxgl bfdx on bfdx.dwid=khzyfp.dwid and bfdx.scbj='0'
+        <where>
+            khzyfp.scbj !='1' and bfdx.scbj!='1'
+            <if test="yhid != null and yhid != ''">
+                and khzyfp.yhid=#{yhid}
+            </if>
+            <if test="dwid != null and dwid != ''">
+                and khzyfp.dwid=#{dwid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and khzyfp.dwid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedCustomerList" parameterType="KhzyfpDto" resultType="KhzyfpDto">
+        select  khzyfp.dwid,bfdx.dwmc,jc_fl.csmc as dwflmc,bfdx.sfrk,bfdx.lrry
+        from igams_khzyfp khzyfp
+        left join igams_bfdxgl bfdx on bfdx.dwid=khzyfp.dwid and bfdx.scbj='0'
+        left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+        left join matridx_jcsj jc_khfj on jc_khfj.csid=bfdx.khfj
+        <where>
+            khzyfp.scbj='0' and bfdx.dwid is not null
+            <if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+                and khzyfp.yhid in
+                <foreach collection="yhlist" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="entire != null and entire != ''">
+                and (bfdx.dwmc like '%'||#{entire}||'%'
+                or jc_fl.csmc like '%'||#{entire}||'%'
+                or exists (select 1 from igams_bfdxlxrgl where dwid=bfdx.dwid and lxrxm like '%'||#{entire}||'%')
+                )
+            </if>
+            <if test="dwflmc != null and dwflmc != ''">
+                and jc_fl.csmc =#{dwflmc}
+            </if>
+            <if test="khfjmc != null and khfjmc != ''">
+                and jc_khfj.csmc =#{khfjmc}
+            </if>
+        </where>
+        group by khzyfp.dwid,bfdx.dwmc,jc_fl.csmc,bfdx.sfrk,bfdx.lrsj,bfdx.lrry
+    </select>
+
+    <select id="getPagedVisitRecordsList" parameterType="KhzyfpDto" resultType="KhzyfpDto">
+        <if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+            select  bfgl.bfid,khzyfp.dwid,bfdx.dwmc,bflxr.lxrxm,yh_bfr.zsxm as bfrmc,jc_bflx.csmc as bflxmc,bfgl.gtnr,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi:ss') bfsjqs
+            ,case when (to_char(bfgl.lrsj,'yyyy-mm-dd')= to_char(CURRENT_DATE,'yyyy-mm-dd') and bfgl.lrry=#{yhid}) then '1' else '0' end ddanbj
+            from igams_khzyfp khzyfp
+            left join igams_bfgl bfgl on bfgl.dwid=khzyfp.dwid and bfgl.scbj='0'
+        </if>
+        <if test="dwxzbj == null or dwxzbj == ''">
+            select  bfgl.bfid,bfgl.dwid,bfdx.dwmc,bflxr.lxrxm,yh_bfr.zsxm as bfrmc,jc_bflx.csmc as bflxmc,bfgl.gtnr,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi:ss') bfsjqs
+            ,case when (to_char(bfgl.lrsj,'yyyy-mm-dd')= to_char(CURRENT_DATE,'yyyy-mm-dd') and bfgl.lrry=#{yhid}) then '1' else '0' end ddanbj
+            from igams_bfgl bfgl
+        </if>
+        left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid and bfdx.scbj='0'
+        left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfgl.lxrid and bflxr.scbj='0'
+        left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr and yh_bfr.scbj='0'
+        left join matridx_jcsj jc_bflx on jc_bflx.csid=bfgl.bflx
+        <where>
+            <if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+                khzyfp.scbj='0'
+                and bfgl.bfid is not null
+                and khzyfp.yhid in
+                <foreach collection="yhlist" item="item" separator="," close=")" open="(">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dwxzbj == null or dwxzbj == ''">
+                bfgl.scbj='0'
+            </if>
+        </where>
+        <if test="entire != null and entire != ''">
+            and (bfdx.dwmc like '%'||#{entire}||'%'
+            or bflxr.lxrxm like '%'||#{entire}||'%'
+            or yh_bfr.zsxm like '%'||#{entire}||'%'
+            or jc_bflx.csmc like '%'||#{entire}||'%'
+            or bfgl.gtnr like '%'||#{entire}||'%'
+            )
+        </if>
+    </select>
+
+    <update id="mergeList" parameterType="List">
+        <if test="list!=null and list.size()>0">
+            update igams_khzyfp khzyfp
+            set scbj=tmp.scbj
+            ,dwid=tmp.dwid
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.zyfpid} zyfpid,#{item.scbj} scbj,#{item.dwid} dwid
+            </foreach>
+            )
+            tmp
+            where
+            khzyfp.zyfpid=tmp.zyfpid
+        </if>
+    </update>
+
+    <insert id="insertList" parameterType="List">
+        <if test="list!=null and list.size()>0">
+            insert into igams_khzyfp(zyfpid,dwid,yhid,lrry,lrsj,scbj)
+            values
+            <foreach collection="list" item="item" separator="," index="index">
+                (#{item.zyfpid},#{item.dwid},#{item.yhid},#{item.lrry},LOCALTIMESTAMP,'0')
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="delUselessData" parameterType="KhzyfpDto">
+        delete from igams_khzyfp
+        <where> scbj='1'
+            <if test="fpbj != null and fpbj != '' and fpbj=='KH'.toString()">
+                and dwid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fpbj != null and fpbj != '' and fpbj=='XS'.toString()">
+                and yhid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <update id="delete" parameterType="KhzyfpDto">
+        <if test="fpbj != null and fpbj != '' and fpbj=='KH'.toString()">
+            update  igams_khzyfp set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1' where
+            dwid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="fpbj != null and fpbj != '' and fpbj=='XS'.toString()">
+            update  igams_khzyfp set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1' where
+            yhid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+    <update id="deleteByYhms" parameterType="KhzyfpDto">
+        update  igams_khzyfp  set scry='admin',scsj=LOCALTIMESTAMP,scbj='1' where
+        yhid in (
+        select yhid from matridx_xtyh where scbj ='0' and yhm in
+        <foreach collection="yhms" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>)
+    </update>
+
+    <update id="restoreData" parameterType="List">
+        update igams_khzyfp khzyfp
+        set
+         scbj='0'
+        ,scry=null
+        ,scsj=null
+        from(
+        <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+            select #{item.zyfpid} zyfpid
+        </foreach>
+        )
+        tmp
+        where
+        khzyfp.zyfpid=tmp.zyfpid
+    </update>
+
+    <delete id="delVisitFrequencyData" parameterType="KhzyfpDto">
+        delete from igams_bfplsz
+        where plszid in (select sz.plszid
+            from igams_bfplsz sz
+            left outer join igams_khzyfp zyfp on sz.dwid = zyfp.dwid and sz.yhid = zyfp.yhid and zyfp.scbj ='0'
+            where zyfp.zyfpid is null
+            <if test="fpbj != null and fpbj != '' and fpbj=='KH'.toString()">
+                and zyfp.dwid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fpbj != null and fpbj != '' and fpbj=='XS'.toString()">
+                and zyfp.yhid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            )
+    </delete>
+</mapper>

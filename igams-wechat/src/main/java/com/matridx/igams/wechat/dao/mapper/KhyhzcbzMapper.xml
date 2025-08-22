@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IKhyhzcbzDao" >
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_khyhzcbz(khyhzcbzid, khid, yhfl, yhzfl, yhqsfw, yhjsfw,yhxs, yh,htyhzcid,htid)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.khyhzcbzid}, #{item.khid}, #{item.yhfl},#{item.yhzfl}
+            , #{item.yhqsfw}, #{item.yhjsfw},#{item.yhxs}
+            ,cast(#{item.yh} as numeric),#{item.htyhzcid},#{item.htid})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_khyhzcbz set htid=tmp.htid,yhfl=tmp.yhfl,yhzfl=tmp.yhzfl,yhqsfw=tmp.yhqsfw,yhjsfw=tmp.yhjsfw,yh=cast(tmp.yh as numeric),khid=tmp.khid,yhxs=tmp.yhxs
+            from(
+            <foreach collection="list" item="item" separator="union all">
+                select #{item.htyhzcid} htyhzcid,#{item.htid} htid,#{item.yhfl} yhfl,#{item.yhzfl} yhzfl,#{item.yhqsfw} yhqsfw,#{item.yhjsfw} yhjsfw,#{item.yh} yh,#{item.khid} khid,#{item.yhxs} yhxs
+            </foreach>
+            )tmp where tmp.htyhzcid=igams_khyhzcbz.htyhzcid
+        </if>
+    </update>
+
+    <delete id="delInfo" parameterType="KhyhzcbzDto">
+        delete from igams_khyhzcbz
+        <where>
+            khyhzcbzid not in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            and htid in
+            <foreach collection="htids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+    <select id="getYhzcByXmcss" parameterType="KhyhzcbzDto" resultType="KhyhzcbzDto">
+        select t_tb.* from (
+        select sum(cast (tb.css as numeric) ) css ,tb.yhxm,tb.khyhzcbzid,tb.yhqsfw,tb.yhjsfw,tb.yh,tb.yhxsdm,
+        case when #{yhflcskz1}='XMCSS' or #{yhflcskz1}='CSS' then '收费测试数' else '结算金额' end yhyjmc
+        from(
+        select tmp.sjid,yhfl.cskz1,yhxs.csdm yhxsdm,yhxmdy.csmc jcxmmc,yhxmdy.cskz2,yhxmdy.cskz1 css,yhzfl.csmc yhxm,khyhzcbz.yhqsfw,khyhzcbz.yhjsfw,khyhzcbz.khyhzcbzid,khyhzcbz.yh  from igams_khyhzcbz khyhzcbz
+        left join matridx_jcsj yhfl on yhfl.csid=khyhzcbz.yhfl
+        left join matridx_jcsj yhzfl on yhzfl.csid=khyhzcbz.yhzfl
+        left join matridx_jcsj yhxs on yhxs.csid=khyhzcbz.yhxs
+        left join matridx_jcsj yhxmdy on yhxmdy.fcsid=yhzfl.csid
+        left join(
+        <foreach collection="sjlist" separator="union all" item="item">
+            select #{item.khid} khid,#{item.jcxmdm} jcxmdm,#{item.sjid} sjid
+        </foreach>
+        )tmp on tmp.khid=khyhzcbz.khid and tmp.jcxmdm=yhxmdy.cskz2
+        where khyhzcbz.khid=#{khid} and yhfl.cskz1=#{yhflcskz1}
+        and yhxmdy.csid is not null and tmp.sjid is not null
+        ) tb group by tb.yhxm,tb.khyhzcbzid,tb.yhqsfw,tb.yhjsfw,tb.yh,tb.yhxsdm)t_tb
+        where cast(t_tb.css as numeric) &gt; cast(t_tb.yhqsfw as numeric) and cast(t_tb.css as numeric) &lt;= cast(t_tb.yhjsfw as numeric)
+    </select>
+
+    <select id="getYhzcByXmje" parameterType="KhyhzcbzDto" resultType="KhyhzcbzDto">
+        select t_tb.* from (
+        select sum(cast (tb.yfje as numeric) ) yfje ,tb.yhxm,tb.khyhzcbzid,tb.yhqsfw,tb.yhjsfw,tb.yh,tb.yhxsdm,
+        case when #{yhflcskz1}='XMCSS' or #{yhflcskz1}='CSS' then '收费测试数' else '结算金额' end yhyjmc
+        from(
+        select tmp.sjid,tmp.yfje,yhfl.cskz1,yhxs.csdm yhxsdm,yhxmdy.csmc jcxmmc,yhxmdy.cskz2,yhzfl.csmc yhxm,khyhzcbz.yhqsfw,khyhzcbz.yhjsfw,khyhzcbz.khyhzcbzid,khyhzcbz.yh  from igams_khyhzcbz khyhzcbz
+        left join matridx_jcsj yhfl on yhfl.csid=khyhzcbz.yhfl
+        left join matridx_jcsj yhzfl on yhzfl.csid=khyhzcbz.yhzfl
+        left join matridx_jcsj yhxs on yhxs.csid=khyhzcbz.yhxs
+        left join matridx_jcsj yhxmdy on yhxmdy.fcsid=yhzfl.csid
+        left join(
+        <foreach collection="sjlist" separator="union all" item="item">
+            select #{item.khid} khid,#{item.jcxmdm} jcxmdm,#{item.sjid} sjid,cast(coalesce(#{item.yfje},0) as numeric) yfje
+        </foreach>
+        )tmp on tmp.khid=khyhzcbz.khid and tmp.jcxmdm=yhxmdy.cskz2
+        where khyhzcbz.khid=#{khid} and yhfl.cskz1=#{yhflcskz1}
+        and yhxmdy.csid is not null and tmp.sjid is not null
+        ) tb group by tb.yhxm,tb.khyhzcbzid,tb.yhqsfw,tb.yhjsfw,tb.yh,tb.yhxsdm)t_tb
+        where cast(t_tb.yfje as numeric) &gt; cast(t_tb.yhqsfw as numeric) and cast(t_tb.yfje as numeric) &lt;= cast(t_tb.yhjsfw as numeric)
+    </select>
+
+    <select id="getYhzcByDcsl" parameterType="KhyhzcbzDto" resultType="KhyhzcbzDto">
+        select yhfl.cskz1,yhxs.csdm yhxsdm,yhxmdy.csmc jcxmmc,yhxmdy.cskz2,yhxmdy.cskz1 css,yhzfl.csmc yhxm,khyhzcbz.yhqsfw,khyhzcbz.yhjsfw,khyhzcbz.khyhzcbzid,khyhzcbz.yh,
+        case when #{yhflcskz1}='XMCSS' or #{yhflcskz1}='CSS' then '收费测试数' else '结算金额' end yhyjmc
+        from igams_khyhzcbz khyhzcbz
+        left join matridx_jcsj yhfl on yhfl.csid=khyhzcbz.yhfl
+        left join matridx_jcsj yhzfl on yhzfl.csid=khyhzcbz.yhzfl
+        left join matridx_jcsj yhxs on yhxs.csid=khyhzcbz.yhxs
+        left join matridx_jcsj yhxmdy on yhxmdy.fcsid=yhzfl.csid
+        where khyhzcbz.khid=#{khid} and yhfl.cskz1=#{yhflcskz1}
+        and cast(#{dcsl} as numeric) &gt; cast(khyhzcbz.yhqsfw as numeric) and cast(#{dcsl} as numeric) &lt;= cast(khyhzcbz.yhjsfw as numeric)
+    </select>
+
+    <select id="getFinalListByXmcss" parameterType="KhyhzcbzDto" resultType="Map">
+        select tb.dzzd,tb.khid,tb.jcxmdm,tb.sjid,tb.jcxmid,tb.xmglid,tb.bz,tb.db,tb.dwmc,tb.fjsrq,tb.yfje,tb.flmc,tb.hzxm,tb.jcdwmc,
+        tb.jcxmmc,tb.jcxmsfje,tb.jczxmmc,tb.kdfl,tb.kdh,tb.sf,tb.sfcss,tb.sfkp,tb.sfsf,tb.sjdwmc,tb.sjqfmc,tb.sjys,tb.ybbh,tb.yblxmc,tb.zyh,
+        case when db.yhxsdm='MONEY' and cast(db.yh as numeric) &lt; cast(tb.fkje as numeric) then cast(db.yh as numeric)
+        when db.yhxsdm='DISCOUNT' and (round(cast(tb.fkje as numeric)* cast(db.yh as numeric)/ 10,1)) &lt; cast(tb.fkje as numeric)
+        then (round(cast(tb.fkje as numeric)*cast(db.yh as numeric)/10,1)) else tb.fkje end fkje,
+        tb.yfkje yfkje from
+        (
+        <foreach collection="sjlist" separator="union all" item="item">
+            select #{item.dzzd} dzzd,#{item.khid} khid,#{item.jcxmdm} jcxmdm,#{item.sjid} sjid,#{item.jcxmid} jcxmid,#{item.xmglid} xmglid,cast(coalesce(#{item.yfje},0) as numeric) yfje,#{item.bz} bz,#{item.db} db,
+            #{item.dwmc} dwmc,#{item.fjsrq} fjsrq,cast(coalesce(#{item.fkje},0) as numeric) fkje,#{item.flmc} flmc,#{item.hzxm} hzxm,#{item.jcdwmc} jcdwmc,
+            #{item.jcxmmc} jcxmmc,cast(coalesce(#{item.jcxmsfje},0) as numeric) jcxmsfje,#{item.jczxmmc} jczxmmc,#{item.kdfl} kdfl,#{item.kdh} kdh,#{item.sf} sf,
+            #{item.sfcss} sfcss,#{item.sfkp} sfkp,#{item.sfsf} sfsf,#{item.sjdwmc} sjdwmc,#{item.sjqfmc} sjqfmc,#{item.sjys} sjys,
+            #{item.ybbh} ybbh,#{item.yblxmc} yblxmc,#{item.zyh} zyh,cast(coalesce(#{item.yfkje},0) as numeric) yfkje
+        </foreach>
+        )tb
+        left join
+        (select tmp.khyhzcbzid,tmp.yh,tmp.yhxsdm,yhxmdy.cskz2 jcxmdm,khyhzcbz.khid from
+        (
+        <foreach collection="yhzclist" separator="union all" item="item">
+            select #{item.khyhzcbzid} khyhzcbzid,cast(#{item.yh} as numeric) yh,#{item.yhxsdm} yhxsdm
+        </foreach>
+        )tmp
+        left join igams_khyhzcbz khyhzcbz on khyhzcbz.khyhzcbzid=tmp.khyhzcbzid and tmp.yhxsdm=#{yhxs_flg}
+        left join matridx_jcsj yhzfl on yhzfl.csid=khyhzcbz.yhzfl
+        left join matridx_jcsj yhxmdy on yhxmdy.fcsid=yhzfl.csid
+        <where>
+            <if test="yhflcskz1=='XMCSS' or yhflcskz1=='XMJE'">
+                yhxmdy.cskz3='1'
+            </if>
+        </where>
+        )db on tb.khid=db.khid
+        <if test="yhflcskz1=='XMCSS' or yhflcskz1=='XMJE'">
+            and tb.jcxmdm=db.jcxmdm
+        </if>
+    </select>
+</mapper>

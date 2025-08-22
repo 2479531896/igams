@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjwzxxDao" >
+
+	<!-- 批量新增送检物种信息 -->
+	<insert  id="insertBysjwzxxDtos" parameterType="list">
+		insert into igams_sjwzxx (sjwzid, sjid, wzid, wzywm, wzzwm, wzfl, jglx, xh, dqs, jyzfgd, xpxx, xdfd, sid, sm, szwm, sdds, sfd, lrry, lrsj, scbj,
+		jclx,wzfllx,wxid,jzryzs,jzryzsbfb,jzryzswz,zcd,fgcd,hslx,xgfx,rpm,json,project_type,sfhb,jczlx,zkzz,bdcgkzz)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjwzid},#{item.sjid},#{item.wzid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.jglx},cast(#{item.xh} as numeric),
+					#{item.dqs},#{item.jyzfgd},#{item.xpxx},#{item.xdfd},#{item.sid},#{item.sm},#{item.szwm},#{item.sdds},#{item.sfd},#{item.lrry},LOCALTIMESTAMP, '0',
+				#{item.jclx},#{item.wzfllx},#{item.wxid},#{item.jzryzs},#{item.jzryzsbfb},#{item.jzryzswz},#{item.zcd},#{item.fgcd},#{item.hslx},#{item.xgfx},#{item.rpm},
+				cast(#{item.json} as json),#{item.project_type},'1',coalesce(#{item.jczlx},''),#{item.zkzz},#{item.bdcgkzz})
+			</foreach>
+		</if>
+	</insert>
+	<!--批量删除送检物种信息-->
+	<delete id="deleteBysjwzxxDto" parameterType="SjwzxxDto">
+		delete from igams_sjwzxx
+		where sjid = #{sjid} and jclx = #{jclx}
+		<if test="jczlx != null and jczlx!=''">
+			and jczlx = #{jczlx}
+		</if>
+		<if test="isnull !=null and isnull != '' and isnull == '0'.toString">
+			and wzid is not null and wzid != ''
+		</if>
+		<if test="ids !=null and ids.size > 0">
+			and sjwzid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+	</delete>
+
+	<!--批量删除送检物种信息-->
+	<delete id="deleteBySjidsAndJclx" parameterType="SjwzxxDto">
+		delete from igams_sjwzxx
+		where sjid in
+		    <foreach collection="ids" item="item" open="(" close=")" separator=",">
+				 #{item}
+			</foreach>
+		  and jclx = #{jclx}
+		<if test="jczlx != null and jczlx!=''">
+			and jczlx = #{jczlx}
+		</if>
+	</delete>
+
+	<!-- 更新送检物种信息 -->
+	<update id="updateBySjwzxxDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_sjwzxx sjwzxx
+			set
+			wzid= tmp.wzid,json= tmp.json::json,sfhb=tmp.sfhb
+			from
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.wzid} wzid,#{item.json} json,#{item.sjwzid} sjwzid,#{item.sfhb} sfhb
+			</foreach>
+			tmp
+			where
+			sjwzxx.sjwzid=tmp.sjwzid
+		</if>
+	</update>
+	<!-- 报告模板高关低关数据 -->
+	<select id="selectAttention" parameterType="SjwzxxDto" resultType="SjwzxxDto">
+		SELECT possible.jglx,array_to_string(ARRAY_AGG(possible.wzzwm), ';') AS bdmc
+			FROM igams_sjwzxx possible
+			WHERE possible.sjid = #{sjid}
+				AND possible.jglx = 'possible'
+				GROUP BY  possible.jglx
+			UNION ALL
+		SELECT pathogen.jglx, array_to_string(ARRAY_AGG(pathogen.wzzwm), ';') AS bdmc
+			FROM igams_sjwzxx pathogen
+			WHERE pathogen.sjid =#{sjid}
+				AND pathogen.jglx = 'pathogen'
+				GROUP BY  pathogen.jglx
+				
+	</select>
+	<!-- 通过sjid和检测类型获取送检物种信息 2023-11-14 注释原因：未使用-->
+<!--	<select id="selectWzxxForWord" parameterType="SjwzxxDto" resultType="SjwzxxDto">
+		SELECT wz.wzzs,sjwzxx.sjid, sjwzxx.wzid, sjwzxx.sid, sjwzxx.jclx,sjwzxx.jglx, sjwzxx.jyzfgd, sjwzxx.zcd, sjwzxx.fgcd
+			, CASE 
+				WHEN wzgl.wzfl != 'Bacteria' AND wzgl.wzfl != 'Mycobacteria' 
+			AND wzgl.wzfl != 'MCR'
+				THEN wzgl.wzfl
+				WHEN wzgl.wzlx = ''
+				OR wzgl.wzlx IS NULL THEN wz.wzlx
+				ELSE wzgl.wzlx
+			END AS wzlx, wzgl.wzzwm AS szwm, wzgl.wzywm AS sm, sjwzxx.sdds
+			, CASE 
+				WHEN sjwzxx.sfd = '&#45;&#45;' THEN '0.000'
+				ELSE CAST(coalesce(sjwzxx.sfd, '0.000') AS double precision)
+			END AS sfd_xh
+			, CASE 
+				WHEN sjwzxx.sfd = '&#45;&#45;' THEN '&#45;&#45;'
+				WHEN sjwzxx.sfd &lt;'0.01' THEN '&lt; 0.01'
+				ELSE CAST(sjwzxx.sfd AS decimal(10, 2)) || ''
+			END AS sfd, sjwzxx.wzzwm, sjwzxx.wzywm, sjwzxx.dqs
+			, CASE 
+				WHEN sjwzxx.xdfd = '&#45;&#45;' THEN '&#45;&#45;'
+				WHEN sjwzxx.xdfd &lt; '0.01' THEN '&lt; 0.01'
+				ELSE CAST(sjwzxx.xdfd AS decimal(10, 2)) || ''
+			END AS xdfd, sjwzxx.jzryzs, sjwzxx.jzryzswz
+			, CASE 
+				WHEN sjwzxx.jzryzsbfb = '0' THEN '0.1'
+				WHEN sjwzxx.jzryzsbfb = '100' THEN '99.9'
+				ELSE sjwzxx.jzryzsbfb
+			END AS jzryzsbfb,hslx
+			,wzgl.wzfl as wzsfl,sjwzxx.wzfl as wzfl,wz.wzfl as wzglwzfl
+	FROM igams_sjwzxx sjwzxx
+		LEFT JOIN igams_wzgl wzgl ON sjwzxx.sid = wzgl.wzid
+		LEFT JOIN igams_wzgl wz ON wz.wzid = sjwzxx.wzid
+		<where>
+			sjwzxx.scbj !='1'
+			<if test="sjid !=null and sjid !=''">
+				and sjwzxx.sjid=#{sjid}
+			</if>
+			<if test="wzfl !=null and wzfl !=''">
+				and sjwzxx.wzfl=#{wzfl}
+			</if>
+			<if test="wzlx !=null and wzlx !=''">
+				and (wz.wzlx=#{wzlx} or wzgl.wzlx=#{wzlx} )
+			</if>
+			<if test="jglx !=null and jglx !=''">
+				and sjwzxx.jglx=#{jglx}
+			</if>
+			<if test="jglx ==null or jglx ==''">
+				and sjwzxx.jglx !='background'
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				and sjwzxx.jclx=#{jclx}
+			</if>
+			<if test="wzfls !=null and wzfls.size()>0">
+				and (wz.wzfl in
+				<foreach collection="wzfls" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+					or wzgl.wzfl in
+				<foreach collection="wzfls" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			order by wzgl.wzfl ASC,sfd_xh DESC ,sjwzxx.sid DESC
+		</where> 
+	</select>-->
+	
+	<!-- 根据送检ID查询相应的耐药信息 -->
+	<select id="getNyxByForWzxx" parameterType="SjxxDto" resultType="SjwzxxDto">
+		select jy,yp,jl,xgwz,jyfx,xls,qyz
+		from igams_sjnyx
+		<where>
+			<if test="sjid !=null and sjid !=''">
+				sjid=#{sjid}
+			</if>
+			<if test="jclx !=null and jclx !=''">
+				and jclx=#{jclx}
+			</if>
+			<if test="jczlx != null and jczlx!=''">
+				and jczlx = #{jczlx}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getJcjgForWord" parameterType="Map" resultType="SjwzxxDto" >
+		select case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, 
+			case when wzgl.sfgl is null then '0' else wzgl.sfgl  end sfgl,sjwzxx.jglx
+			from igams_sjwzxx sjwzxx
+			left join igams_wzgl wzgl on sjwzxx.wzid=wzgl.wzid
+				<where>
+				 sjwzxx.jglx in('possible','pathogen')
+					and sjwzxx.sjid=#{sjid}
+					and sjwzxx.jclx=#{jclx}
+					<if test="jczlx != null and jczlx!=''">
+						and sjwzxx.jczlx = #{jczlx}
+					</if>
+					order by sjwzxx.xdfd DESC
+				</where>
+	</select>
+	<select id="getJcjgForWordNew" parameterType="Map" resultType="SjwzxxDto" >
+		select sjwzxx.dqs,case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, sjwzxx.wzid,sjwzxx.sid,
+			case when wzgl.sfgl is null then '0' else wzgl.sfgl end sfgl,sjwzxx.jglx,
+			case when sjwzxx.wzfl='Bacteria' then '0' when sjwzxx.wzfl='Mycobacteria' then '1'
+				when sjwzxx.wzfl='MCR' then '2' when sjwzxx.wzfl='Fungi' then '3'
+				when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='DNA') then '4' when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='RNA') then '5'
+				when sjwzxx.wzfl='Parasite' then '6' end mbxssx
+			from igams_sjwzxx sjwzxx
+			left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+			<where>
+			 	sjwzxx.jglx in('possible','pathogen')
+				and sjwzxx.sjid=#{sjid}
+				and sjwzxx.jclx=#{jclx}
+				<if test="jczlx != null and jczlx!=''">
+					and sjwzxx.jczlx = #{jczlx}
+				</if>
+				order by sfgl DESC,mbxssx ASC, sjwzxx.xdfd DESC
+			</where>
+	</select>
+	<select id="getBackgroundJcjgForWordNew" parameterType="Map" resultType="SjwzxxDto" >
+		select sjwzxx.dqs,case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, sjwzxx.wzid,sjwzxx.sid,
+		case when wzgl.sfgl is null then '0' else wzgl.sfgl end sfgl,sjwzxx.jglx,
+		case when sjwzxx.wzfl='Bacteria' then '0' when sjwzxx.wzfl='Mycobacteria' then '1'
+		when sjwzxx.wzfl='MCR' then '2' when sjwzxx.wzfl='Fungi' then '3'
+		when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='DNA') then '4' when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='RNA') then '5'
+		when sjwzxx.wzfl='Parasite' then '6' end mbxssx
+		from igams_sjwzxx sjwzxx
+		left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+		<where>
+			sjwzxx.jglx in('background')
+			and sjwzxx.sjid=#{sjid}
+			and sjwzxx.jclx=#{jclx}
+			<if test="jczlx != null and jczlx!=''">
+				and sjwzxx.jczlx = #{jczlx}
+			</if>
+			order by sfgl DESC,mbxssx ASC, sjwzxx.xdfd DESC
+		</where>
+	</select>
+	<select id="getCommensalJcjgForWordNew" parameterType="Map" resultType="SjwzxxDto" >
+		select sjwzxx.dqs,case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, sjwzxx.wzid,sjwzxx.sid,
+		case when wzgl.sfgl is null then '0' else wzgl.sfgl end sfgl,sjwzxx.jglx,
+		case when sjwzxx.wzfl='Bacteria' then '0' when sjwzxx.wzfl='Mycobacteria' then '1'
+		when sjwzxx.wzfl='MCR' then '2' when sjwzxx.wzfl='Fungi' then '3'
+		when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='DNA') then '4' when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='RNA') then '5'
+		when sjwzxx.wzfl='Parasite' then '6' end mbxssx
+		from igams_sjwzxx sjwzxx
+		left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+		<where>
+			sjwzxx.jglx in('commensal')
+			and sjwzxx.sjid=#{sjid}
+			and sjwzxx.jclx=#{jclx}
+			<if test="jczlx != null and jczlx!=''">
+				and sjwzxx.jczlx = #{jczlx}
+			</if>
+			order by sfgl DESC,mbxssx ASC, sjwzxx.xdfd DESC
+		</where>
+	</select>
+	
+	<select id="getJcjgByJglx" parameterType="SjwzxxDto" resultType="SjwzxxDto" >
+		select sjwzxx.dqs,case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, sjwzxx.wzid,sjwzxx.sid,
+		case when wzgl.sfgl is null then '0' else wzgl.sfgl end sfgl,sjwzxx.jglx,
+		case when sjwzxx.wzfl='Bacteria' then '0' when sjwzxx.wzfl='Mycobacteria' then '1'
+		when sjwzxx.wzfl='MCR' then '2' when sjwzxx.wzfl='Fungi' then '3'
+		when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='DNA') then '4' when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='RNA') then '5'
+		when sjwzxx.wzfl='Parasite' then '6' end mbxssx,sjwzxx.wzfl
+		from igams_sjwzxx sjwzxx
+		left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+		<where>
+			sjwzxx.jglx in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+			and sjwzxx.sjid=#{sjid}
+			and sjwzxx.jclx=#{jclx}
+			<if test="jczlx != null and jczlx!=''">
+				and sjwzxx.jczlx = #{jczlx}
+			</if>
+			order by (case when regexp_replace(dqs, '[^0-9]', '', 'g') = '' then '0' else regexp_replace(dqs, '[^0-9]', '', 'g') end) desc, sjwzxx.xdfd DESC
+		</where>
+	</select>
+	
+	<select id="getComment" parameterType="map" resultType="SjwzxxDto">
+		select
+		sjwzxx.wzid,
+		case when sjwzxx.wzid is null then sjwzxx.sm else sjwzxx.wzywm end wzywm,
+		case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm,
+			case when wzgl.sfgl is null then '0' else wzgl.sfgl end sfgl,sjwzxx.jglx, wzgl.wzzs,
+			case when sjwzxx.wzfl='Bacteria' then '0' when sjwzxx.wzfl='Mycobacteria' then '1' 
+				when sjwzxx.wzfl='MCR' then '2' when sjwzxx.wzfl='Fungi' then '3' 
+				when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='DNA') then '4' when (sjwzxx.wzfl='Viruses' and wzgl.wzlx='RNA') then '5' 
+				when sjwzxx.wzfl='Parasite' then '6' end mbxssx
+			from  igams_sjwzxx sjwzxx 
+			left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+			<where>
+				sjwzxx.jglx in('possible','pathogen')
+				and sjwzxx.sjid=#{sjid}
+				<if test="jglx != null and jglx !=''">
+					and sjwzxx.jglx=#{jglx}
+				</if>
+				<if test="jclx != null and jclx !=''">
+					and sjwzxx.jclx=#{jclx}
+				</if>
+				<if test="jczlx != null and jczlx!=''">
+					and sjwzxx.jczlx = #{jczlx}
+				</if>
+				order by sfgl DESC,mbxssx ASC,sjwzxx.xdfd DESC 
+			</where>
+	</select>
+	
+	<select id="getPathogen_comment" parameterType="map" resultType="SjwzxxDto">
+		select sjwzxx.wzid,sjwzxx.sid,case when sjwzxx.wzid is null then sjwzxx.szwm else sjwzxx.wzzwm end wzzwm, sjwzxx.jglx, wzgl.wzzs,
+				case when wzgl.sfgl is null then '0' else wzgl.sfgl  end sfgl,zkzz,bdcgkzz
+			from  igams_sjwzxx sjwzxx 
+			left join igams_wzgl wzgl on coalesce(sjwzxx.wzid,sjwzxx.sid)=wzgl.wzid
+			<where>
+					sjwzxx.jglx in('possible','pathogen')
+					and sjwzxx.sjid=#{sjid}
+				<if test="jglx != null and jglx !=''">
+					and sjwzxx.jglx=#{jglx}
+				</if>
+				<if test="jclx != null and jclx !=''">
+					and sjwzxx.jclx=#{jclx}
+				</if>
+				<if test="jczlx != null and jczlx!=''">
+					and sjwzxx.jczlx = #{jczlx}
+				</if>
+				order by sfgl DESC,sjwzxx.xdfd DESC 
+			</where>
+	</select>
+	
+	<!-- 查询检测项目代码和标本类型代码 2023-11-14 注释原因：未使用-->
+<!--	<select id="getCsdmBySjid" parameterType="String" resultType="map">-->
+<!--		select jc_xm.csdm as jcxmdm,jc_xm.cskz1 as jcxmcs1,jc_yb.csdm as yblxdm ,jc_xm.cskz4 jcxmcs4-->
+<!--		from igams_sjxx sjxx -->
+<!--			left join matridx_jcsj jc_yb on jc_yb.csid = sjxx.yblx-->
+<!--			left join igams_sjjcxm jcxm on jcxm.sjid =sjxx.sjid and jcxm.scbj='0'-->
+<!--			left join matridx_jcsj jc_xm on jc_xm.csid =jcxm.jcxmid-->
+<!--		<where>-->
+<!--			sjxx.sjid=#{sjid}-->
+<!--		</where>-->
+<!--	</select>-->
+
+	<select id="getJcjgInfoByCodes" parameterType="sjxxDto" resultType="map">
+		SELECT sj.ybbh,sj.wbbm,jc_jcxm.csmc jcxm,jc_jcxm.cskz1 jcxmcskz1,jc_jcxm.cskz4 jcxmcskz4,jc_yblx.csdm yblxdm,wz.wzid,wz.wzywm,
+		wz.wzzwm,wz.wzfl,wz.jglx,wz.dqs,wz.jyzfgd,wz.xdfd,wz.xh,wz.sid,wz.sm,wz.szwm,wz.sdds,wz.sfd,wz.wxid,wz.jzryzs,wz.jzryzsbfb,wz.jzryzswz,
+		wz.zcd,wz.fgcd,wz.hslx,wz.xgfx,wz.rpm,wx.wzbt,wx.wzzz,wx.qkxx,wz.project_type,zkzz,bdcgkzz
+		FROM igams_sjxx sj
+		LEFT JOIN igams_sjwzxx wz on wz.sjid = sj.sjid
+		LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = wz.jclx
+		LEFT JOIN igams_ckwxgl wx on wx.wxid = wz.wzid
+		LEFT JOIN matridx_jcsj jc_yblx on jc_yblx.csid = sj.yblx
+		<where>
+			sj.ybbh in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+			and sj.scbj = '0' and sj.bgrq is not null
+		</where>
+		ORDER BY wz.jclx,wz.jglx,wz.wzfl,wz.xh
+	</select>
+	<select id="getJcjgInfoBySjidAndYwlx" parameterType="sjxxDto" resultType="map">
+		SELECT wzgl.fldj,wz.wzid,wz.wzywm,wz.wzzwm,wz.wzfl,wz.jglx,wz.dqs,wz.jyzfgd,wz.xdfd,wz.xh,wz.sid,wz.sm,wz.szwm,wz.sdds,wz.sfd,wz.wxid,
+		wz.jzryzs,wz.jzryzsbfb,wz.jzryzswz,wz.zcd,wz.fgcd,wz.hslx,wz.xgfx,wz.rpm,wx.wzbt,wx.wzzz,wx.qkxx,wz.project_type,zkzz,bdcgkzz
+		FROM igams_sjxx sj
+		LEFT JOIN igams_sjwzxx wz on wz.sjid = sj.sjid
+		LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = wz.jclx
+		LEFT JOIN igams_ckwxgl wx on wx.wxid = wz.wzid
+		LEFT JOIN matridx_jcsj jc_yblx on jc_yblx.csid = sj.yblx
+		LEFT JOIN igams_wzgl wzgl ON coalesce(wz.wzid,wz.sid) = wzgl.wzid
+		<where>
+			sj.sjid = #{sjid} AND (( 'REPORT_'|| jc_jcxm.cskz3||'_'||jc_jcxm.cskz1) =#{ywlx} or (jc_jcxm.cskz3||'_'||jc_jcxm.cskz1) =#{ywlx})
+			and sj.scbj = '0' and sj.bgrq is not null
+		</where>
+		ORDER BY wz.jclx,wz.jglx,wz.wzfl,wz.xh
+	</select>
+	<select id="getJcjgLxByCode" parameterType="string" resultType="map">
+		SELECT jc_jcxm.csmc jcxm,sm.ryzs,sm.ryzsbfb,sm.ryzswz,sm.jzryzswz,sm.spikerpm,sm.zxls,sm.gc,sm.szxlbfb,sm.wswjcxls,sm.yxxls,sm.fzhxjg,fj.wjlj hostpercentile
+		FROM igams_sjxx sj
+		LEFT JOIN igams_sjwzxx wz on wz.sjid = sj.sjid
+		LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = wz.jclx
+		LEFT JOIN igams_sjbgsm sm ON sm.jclx = wz.jclx and sm.sjid = sj.sjid and sm.jczlx = wz.jczlx
+		LEFT JOIN matridx_fjcfb fj on fj.ywid = sj.yblx
+		<where>
+			<if test="ybbh != null and ybbh !=''">
+				sj.ybbh = #{ybbh}
+			</if>
+			and sj.scbj = '0' and sj.bgrq is not null
+		</where>
+		GROUP BY jc_jcxm.csmc,sm.ryzs, sm.ryzsbfb, sm.ryzswz, sm.jzryzswz, sm.spikerpm, sm.zxls, sm.gc, sm.szxlbfb, sm.wswjcxls, sm.yxxls, sm.fzhxjg, fj.wjlj
+	</select>
+
+	<select id="searchResult" parameterType="sjxxDto" resultType="Map">
+		SELECT
+		sjxx.hzxm AS "患者姓名",
+		CASE sjxx.xb
+		WHEN '1' THEN '男'
+		WHEN '2' THEN '女'
+		ELSE '未知' END AS "性别",
+		sjxx.nl || COALESCE(sjxx.nldw, '') AS "年龄",
+		sjxx.yblxmc AS "样本类型",
+		TO_CHAR(sjxx.jsrq, 'yyyy-MM-dd') AS "接收日期",
+		TO_CHAR(sjxx.bgrq, 'yyyy-MM-dd') AS "报告日期",
+		sjxx.ybbh AS "样本编号",
+		jclx.csmc AS "检测项目",zkzz,bdcgkzz,
+		STRING_AGG(
+		COALESCE(sjwzxx.wzzwm, sjwzxx.json ->> 'annot'), ','
+		ORDER BY sjwzxx.xh
+		) FILTER (WHERE sjwzxx.jglx = 'possible') AS "关注物种",
+		STRING_AGG(
+		COALESCE(sjwzxx.wzzwm, sjwzxx.json ->> 'annot'), ','
+		ORDER BY sjwzxx.xh
+		) FILTER (WHERE sjwzxx.jglx = 'background') AS "疑似物种"
+		FROM igams_sjxx sjxx
+		LEFT JOIN igams_sjwzxx sjwzxx
+		ON sjxx.sjid = sjwzxx.sjid
+		AND sjwzxx.scbj != '1'
+		AND sjwzxx.jglx IN ('possible','background')
+		LEFT JOIN matridx_jcsj jclx ON jclx.csid = sjwzxx.jclx
+		WHERE sjxx.scbj = '0' and sjxx.sjid in (
+			SELECT sjid FROM igams_sjxx tsj
+			LEFT JOIN matridx_jcsj tjcdw ON tsj.jcdw = tjcdw.csid
+			where tsj.scbj = '0'
+				<if test="ybbh != null and ybbh !=''">
+					AND tsj.ybbh = #{ybbh}
+				</if>
+				<if test="hzxm != null and hzxm !=''">
+					AND tsj.hzxm = #{hzxm}
+				</if>
+				<if test="jcdw != null and jcdw !=''">
+					AND tjcdw.csmc = #{jcdw}
+				</if>
+				and tsj.bgrq is not null
+			ORDER BY tsj.bgrq DESC, tsj.sjid LIMIT 5
+		)
+		GROUP BY sjxx.hzxm, sjxx.xb, sjxx.nl, sjxx.nldw,
+		sjxx.yblxmc, sjxx.jsrq, sjxx.bgrq,
+		sjxx.ybbh, jclx.csmc, sjxx.sjid
+		ORDER BY sjxx.bgrq DESC, sjxx.sjid
+		limit  5
+	</select>
+
+	<select id="getDtoById" parameterType="SjwzxxDto" resultType="SjwzxxDto">
+		select * from igams_sjwzxx
+		<where>
+			sjwzid=#{sjwzid}
+		</where>
+	</select>
+</mapper>

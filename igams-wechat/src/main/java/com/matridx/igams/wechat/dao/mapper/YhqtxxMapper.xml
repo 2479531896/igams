@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IYhqtxxDao" >
+	<insert id="insert" parameterType="YhqtxxDto">
+		insert into matridx_yhqtxx(yhid
+		<if test="sjid !=null and sjid !=''">
+			,sjid
+		</if>
+		<if test="yhqf !=null and yhqf !=''">
+			,yhqf
+		</if>
+		<if test="yhzqf !=null and yhzqf !=''">
+			,yhzqf
+		</if>
+		<if test="sfqx !=null and sfqx !=''">
+			,sfqx
+		</if>
+		<if test="yzm !=null and yzm !=''">
+			,yzm,yzsj
+		</if>
+		<if test="sf !=null and sf !=''">
+			,sf
+		</if>
+		<if test="wbcxid !=null and wbcxid !=''">
+			,wbcxid
+		</if>
+			,lrry
+			,lrsj
+			,scbj
+		)values(
+			#{yhid}
+		<if test="sjid !=null and sjid !=''">
+			,#{sjid}
+		</if>
+		<if test="yhqf !=null and yhqf !=''">
+			,#{yhqf}
+		</if>
+		<if test="yhzqf !=null and yhzqf !=''">
+			,#{yhzqf}
+		</if>
+		<if test="sfqx !=null and sfqx !=''">
+			,#{sfqx}
+		</if>
+		<if test="yzm !=null and yzm !=''">
+			,#{yzm},LOCALTIMESTAMP
+		</if>
+		<if test="sf !=null and sf !=''">
+			,#{sf}
+		</if>
+		<if test="wbcxid !=null and wbcxid !=''">
+			,#{wbcxid}
+		</if>
+			,#{lrry}
+			,LOCALTIMESTAMP
+			,'0'
+		)
+	</insert>
+	
+	<update id="update" parameterType="YhqtxxDto">
+		update matridx_yhqtxx set
+		<if test="sjid!=null and sjid!=''">
+			sjid=#{sjid},
+		</if>
+		<if test="yhqf!=null and yhqf!=''">
+			yhqf=#{yhqf},
+		</if>
+		<if test="yhzqf!=null and yhzqf!=''">
+			yhzqf=#{yhzqf},
+		</if>
+		<if test="sfqx !=null and sfqx!=''">
+			sfqx=#{sfqx},
+		</if>
+		<if test="sf !=null and sf !=''">
+			sf=#{sf},
+		</if>
+		<if test="wbcxid !=null and wbcxid!=''">
+			wbcxid=#{wbcxid},
+		</if>
+		<if test="yzm !=null and yzm!=''">
+			yzm=#{yzm},yzsj=LOCALTIMESTAMP,
+		</if>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	<update id="updateZj" parameterType="YhqtxxDto">
+		update matridx_yhqtxx set zj = #{zj},
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	
+	<delete id="delete" parameterType="YhqtxxDto">
+		update matridx_yhqtxx set
+			scry=#{scry}
+			,scsj=LOCALTIMESTAMP
+			,scbj='1'
+	</delete>
+	
+	<delete id="deleteById" parameterType="String">
+		delete from  matridx_yhqtxx
+		<where>
+			yhid=#{yhid}
+		</where>
+	</delete>
+	
+	<select id="getDtoById" parameterType="String" resultType="YhqtxxDto">
+		SELECT yhqtxx.sjid, xtyh.zsxm,yhqtxx.yhqf,yhqtxx.yhzqf, jc_qf.csmc as yhqfmc, jc_zqf.csmc as yhzqfmc,yhqtxx.sfqx,yhqtxx.sf
+			FROM matridx_yhqtxx yhqtxx
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhqtxx.sjid
+			LEFT JOIN matridx_jcsj jc_qf ON jc_qf.csid = yhqtxx.yhqf
+			LEFT JOIN matridx_jcsj jc_zqf ON jc_zqf.csid = yhqtxx.yhzqf
+			<where>
+				yhqtxx.scbj != '1'
+				AND yhqtxx.yhid = #{yhid}
+			</where>
+	</select>
+	
+	<select id="getDto" parameterType="YhqtxxDto" resultType="YhqtxxDto">
+		SELECT yhid,sjid,yhqf,yhzqf,sfqx,yzm,yzsj,wbcxid
+			FROM matridx_yhqtxx 
+			<where>
+				scbj != '1'
+				AND yhid = #{yhid}
+			</where>
+	</select>
+	
+	<select id="getDtoByYzm" parameterType="YhqtxxDto" resultType="YhqtxxDto">
+		SELECT yhid,sjid,yhqf,yhzqf,sfqx,yzm,yzsj
+			FROM matridx_yhqtxx 
+			<where>
+				scbj != '1'
+				AND yzm = #{yzm}
+				AND yhid = #{yhid}
+			</where>
+	</select>
+	<select id="getXtyh" resultType="YhqtxxDto">
+		SELECT xtyh.yhid,xtyh.zsxm,xtyh.yhm
+			from matridx_xtyh xtyh
+			<where>
+				scbj = '0' and sfsd = '0'
+			</where>
+            order by xtyh.yhm
+	</select>
+	
+	<!--  用户列表中伙伴设置查询出选中用户的所有上级的id -->
+	<select id="getSjidList" parameterType="String" resultType="String">
+		with RECURSIVE r(yhid,sjid, scbj, depth) as
+		(
+		    select yhid, sjid, scbj, 1 as depth
+			from matridx_yhqtxx
+			where scbj ='0' and yhid = #{yhid}
+			UNION ALL
+		    select t.yhid,t.sjid, t.scbj, r.depth+1 as depth
+			from matridx_yhqtxx t,r
+		    where t.yhid = r.sjid and t.scbj='0' and r.scbj ='0' and t.sjid is not null
+		)
+		select sjid
+		from r where scbj ='0' order by depth
+	</select>
+
+	<select id="getXjyhList" parameterType="String" resultType="String">
+		WITH RECURSIVE r(yhid, sjid, scbj, depth) AS (
+		SELECT yhid, sjid, scbj, 1 AS depth
+		FROM matridx_yhqtxx
+		WHERE scbj = '0' AND yhid = #{yhid}
+		UNION ALL
+
+		SELECT t.yhid, t.sjid, t.scbj, r.depth + 1 AS depth
+		FROM matridx_yhqtxx t
+		INNER JOIN r ON t.sjid = r.yhid
+		WHERE t.scbj = '0'  AND t.sjid IS NOT NULL
+		)
+
+		SELECT yhid
+		FROM r
+		WHERE scbj = '0'
+		ORDER BY depth;
+	</select>
+</mapper>

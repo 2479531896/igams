@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWzglDao" >
+	<select id="getDtoByIds" parameterType="WzglDto" resultType="WzglDto">
+		select wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,fid,fldj,sfgl
+		from igams_wzgl
+		<where>
+			scbj!='1'
+			<if test="ids != null and ids.size()>0">
+				and wzid in
+				<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="getCount" parameterType="WzglDto" resultType="Integer">
+    select count(0)  from igams_wzgl where wzid=#{wzid} and scbj!='1' and sflj='1'
+    </select>
+	
+	<insert id="insert" parameterType="WzglDto">
+		insert into igams_wzgl(wzid,
+		<if test="wzywm != null and wzywm != ''">
+			,wzywm
+		</if>
+		<if test="wzzwm != null and wzzwm != ''">
+			,wzzwm
+		</if>
+		<if test="wzfl != null and wzfl != ''">
+			,wzfl
+		</if>
+		<if test="wzlx != null and wzlx != ''">
+			,wzlx
+		</if>
+		<if test="wzzs != null and wzzs != ''">
+			,wzzs
+		</if>
+		<if test="fid != null and fid != ''">
+			,fid
+		</if>
+		<if test="fldj != null and fldj != ''">
+			,fldj
+		</if>
+		<if test="sfgl != null and sfgl != ''">
+			,sfgl
+		</if>
+		,lrry,lrsj,scbj)
+		values(wzid,
+		<if test="wzywm != null and wzywm != ''">
+			,#{wzywm}
+		</if>
+		<if test="wzzwm != null and wzzwm != ''">
+			,#{wzzwm}
+		</if>
+		<if test="wzfl != null and wzfl != ''">
+			,#{wzfl}
+		</if>
+		<if test="wzlx != null and wzlx != ''">
+			,#{wzlx}
+		</if>
+		<if test="wzzs != null and wzzs != ''">
+			,#{wzzs}
+		</if>
+		<if test="fid != null and fid != ''">
+			,#{fid}
+		</if>
+		<if test="fldj != null and fldj != ''">
+			,#{fldj}
+		</if>
+		<if test="sfgl != null and sfgl != ''">
+			,#{sfgl}
+		</if>
+		#{lrry},cast(#{lrsj} as TIMESTAMP),'0')
+	</insert>
+	
+	<update id="update" parameterType="WzglDto">
+		update igams_wzgl 
+		<set>
+			xgry=#{xgry},xgsj=cast(#{xgsj} as TIMESTAMP)
+		<if test="wzywm != null and wzywm != ''">
+			,wzywm=#{wzywm}
+		</if>
+		<if test="wzzwm != null and wzzwm != ''">
+			,wzzwm=#{wzzwm}
+		</if>
+		<if test="wzfl != null and wzfl != ''">
+			,wzfl=#{wzfl}
+		</if>
+		<if test="wzlx != null and wzlx != ''">
+			,wzlx=#{wzlx}
+		</if>
+		<if test="wzzs != null and wzzs != ''">
+			,wzzs=#{wzzs}
+		</if>
+		<if test="fid != null and fid != ''">
+			,fid=#{fid}
+		</if>
+		<if test="fldj != null and fldj != ''">
+			,fldj=#{fldj}
+		</if>
+		<if test="sfgl != null and sfgl != ''">
+			,sfgl=#{sfgl}
+		</if>
+		<if test="crbjb != null and crbjb != ''">
+			,crbjb=#{crbjb}
+		</if>
+		<if test="sflj != null and sflj != ''">
+			,sflj=#{sflj}
+		</if>
+		</set>
+		<where>
+			wzid=#{wzid}
+		</where>
+	</update>
+	
+	<select id="getDtoById" parameterType="String" resultType="WzglDto">
+		select wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrsj,lrry,xgsj,xgry,crbjb,sflj
+		from igams_wzgl
+		<where>
+			wzid=#{wzid} and scbj !='1'
+		</where>
+	</select>
+	
+	<insert id="insertByListDto" parameterType="List">
+		insert into igams_wzgl(wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,fid,fldj,sfgl,lrsj,lrry,scbj)
+		values
+		<foreach collection="list" item="item" index="index" separator="," open="" close="">
+			(#{item.wzid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.wzlx},#{item.wzzs},#{item.fid},#{item.fldj},#{item.sfgl},cast(#{item.lrsj} as TIMESTAMP),#{item.lrry},'0')
+		</foreach>
+	</insert>
+
+	<select id="getPagedDtoList" parameterType="WzglDto" resultType="WzglDto">
+		select wzid,crbjb,wzlx,fldj,
+		case sflj when '1' then
+		'是' when '0' then '否' end sflj
+		,wzywm,wzzwm,wzfl
+		from igams_wzgl
+		<where>
+			scbj='0'
+			<if test="entire != null and entire != ''">
+				and (wzywm ILIKE '%'||#{entire}||'%'
+				or wzzwm ILIKE '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="wzywm != null and wzywm != ''">
+				and (wzywm like '%'||#{wzywm}||'%')
+			</if>
+			<if test="wzzwm != null and wzzwm != ''">
+				and (wzzwm like '%'||#{wzzwm}||'%')
+			</if>
+			<if test="wzid != null and wzid != ''">
+				and (wzid like '%'||#{wzid}||'%')
+			</if>
+			<if test="wzfl != null and wzfl != ''">
+				and (wzfl like '%'||#{wzfl}||'%')
+			</if>
+			<if test="crbjb != null and crbjb != ''">
+				and (crbjb=#{crbjb})
+			</if>
+			<if test="sflj != null and sflj != ''">
+				and (sflj=#{sflj})
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoByWzid" parameterType="WzglDto" resultType="WzglDto">
+		select wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,crbjb,fid,fldj,
+		case sflj when '1' then
+		'是' when '0' then '否' end sflj,
+		 case sfgl when '1' then
+		'高亮' when '0' then '不高亮' end sfgl from igams_wzgl
+		where wzid=#{wzid} and scbj='0'
+	</select>
+
+
+	<select id="getPagedWzljList" parameterType="WzglDto"  resultType="WzglDto">
+		select sjbgljxx.ljid,sjbgljxx.sjid,sjbgljxx.wzid,sjbgljxx.jglx,
+		case sjbgljxx.sflj when '1' then
+		'是' when '0' then '否' end sflj
+		,wzgl.wzywm,wzgl.wzzwm,sjxx.hzxm,yyxx.dwmc as sjdw,
+		to_char(sjbgljxx.bgrq,'yyyy-mm-dd') bgrq,sjxx.nbbm,sjxx.db,sjxx.ybbh
+		from igams_sjbgljxx sjbgljxx
+		left join igams_sjxx sjxx on sjxx.sjid=sjbgljxx.sjid
+		left join igams_wzgl wzgl on wzgl.wzid=sjbgljxx.wzid
+		left join igams_yyxx yyxx on yyxx.dwid= sjxx.sjdw
+		<where>
+			wzgl.scbj='0'
+			<if test="wzywm != null and wzywm != ''">
+				and (wzgl.wzywm like '%'||#{wzywm}||'%')
+			</if>
+			<if test="wzzwm != null and wzzwm != ''">
+				and (wzgl.wzzwm like '%'||#{wzzwm}||'%')
+			</if>
+			<if test="wzid != null and wzid != ''">
+				and (sjbgljxx.wzid like '%'||#{wzid}||'%')
+			</if>
+			<if test="sjdw != null and sjdw != ''">
+				and (yyxx.dwmc like '%'||#{sjdw}||'%')
+			</if>
+			<if test="jglx != null and jglx != ''">
+				and (sjbgljxx.jglx like '%'||#{jglx}||'%')
+			</if>
+			<if test="hzxm != null and hzxm != ''">
+				and (sjxx.hzxm like '%'||#{hzxm}||'%')
+			</if>
+			<if test="sflj != null and sflj != ''">
+				and (sjbgljxx.sflj=#{sflj})
+			</if>
+			<if test="bgrqstart != null and bgrqstart != ''">
+				and to_char(sjbgljxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+			</if>
+			<if test="bgrqend !=null and bgrqend !=''">
+				and to_char(sjbgljxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoByLjid" parameterType="WzglDto" resultType="WzglDto">
+		select sjxx.sjid,sjxx.ks,wzgl.wzzwm,wzgl.wzywm,sjbgljxx.wzid,wzgl.wzfl,sjxx.ybbh,sjxx.hzxm,yyxx.dwmc as sjdw,case sjxx.xb when '1' then
+		'男' when '2' then '女' else '未知' end xb ,sjbgljxx.fid,
+		to_char(sjbgljxx.bgrq,'yyyy-mm-dd') bgrq,case sjbgljxx.sflj when '1' then
+		'是' when '0' then '否' end sflj
+		from igams_sjbgljxx sjbgljxx
+		left join igams_sjxx sjxx on sjxx.sjid=sjbgljxx.sjid
+		left join igams_wzgl wzgl on wzgl.wzid=sjbgljxx.wzid
+		left join igams_yyxx yyxx on yyxx.dwid= sjxx.sjdw
+		where sjbgljxx.ljid=#{ljid}
+	</select>
+
+	<select id="getDtoByFid" parameterType="WzglDto" resultType="WzglDto">
+		select wzzwm,wzywm
+		from igams_wzgl
+		where wzid=#{fid}
+	</select>
+	
+	<select id="getInspectionSpeciesModelList" parameterType="List"
+		resultType="WeChatInspectionSpeciesModel">
+		SELECT
+		ts.*,
+		z.crbjb,
+		z.sflj
+		FROM
+		
+		<foreach collection="list" item="item" index="index" open="(" close=")ts" separator="UNION all">
+		SELECT
+		#{item.taxid} as taxid,
+		#{item.name} as name,
+		#{item.cn_name} as cn_name,
+		#{item.reads_count} as reads_count,
+		#{item.sp_type} as sp_type,
+		#{item.coverage} as coverage,
+		#{item.abundance} as abundance,
+		#{item.gram_stain} as gram_stain,
+		#{item.virus_type} as virus_type,
+		#{item.genus_taxid} as genus_taxid,
+		#{item.genus_name} as genus_name,
+		#{item.genus_cn_name} as genus_cn_name,
+		#{item.genus_reads_accum} as genus_reads_accum,
+		#{item.genus_abundance} as genus_abundance,
+		#{item.last_update} as last_update,
+		#{item.species_category} as species_category,
+		#{item.comment} as comment,
+		#{item.highlight} as highlight,
+		#{item.rank_code} as rank_code,
+		#{item.q_index} as q_index,
+		#{item.q_percentile} as q_percentile,
+		#{item.q_position} as q_position,
+		#{item.cover_length} as cover_length,
+		#{item.jglx} as jglx,
+		#{item.ref_length} as ref_length,
+		#{item.library_type} as library_type,
+		#{item.special_genus} as special_genus,
+		#{item.rpm} as rpm,
+        #{item.clade} as clade,
+		#{item.jglxmc} as jglxmc,
+		#{item.ygz} as ygz,
+		#{item.project_type} as project_type,
+		#{item.label} as label,
+		#{item.detectType} as detectType
+		</foreach>
+
+		
+		LEFT JOIN igams_wzgl z ON z.wzid = ts.taxid
+		AND z.scbj != '1'
+	</select>
+	
+	
+	<insert id="insertByList" parameterType="List">
+		insert into igams_wzgl(wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,fid,fldj,sfgl,lrry,lrsj,scbj)
+		select tmp.wzid,tmp.wzywm,tmp.wzzwm,tmp.wzfl,tmp.wzlx,tmp.wzzs,tmp.fid,tmp.fldj,tmp.sfgl,tmp.lrry,tmp.lrsj,tmp.scbj from 
+		<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select 
+			#{item.wzid} wzid,#{item.wzywm} wzywm,#{item.wzzwm} wzzwm,#{item.wzfl} wzfl,#{item.wzlx} wzlx,#{item.wzzs} wzzs,#{item.fid} fid,
+			#{item.fldj} fldj,#{item.sfgl} sfgl,#{item.lrry} lrry,cast(#{item.lrsj} as TIMESTAMP) lrsj,'0' scbj
+		</foreach>
+		left join igams_wzgl wz on wz.wzid=tmp.wzid
+		where wz.wzid is null
+	</insert>
+	
+	<update id="updateByList" parameterType="List">
+		with recursive t (wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,fid,fldj,sfgl,xgry,xgsj) as (
+		select tmp.wzid,tmp.wzywm,tmp.wzzwm,tmp.wzfl,tmp.wzlx,tmp.wzzs,tmp.fid,tmp.fldj,tmp.sfgl,tmp.lrry,tmp.lrsj from 
+			<foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+				select 
+				#{item.wzid} wzid,#{item.wzywm} wzywm,#{item.wzzwm} wzzwm,#{item.wzfl} wzfl,#{item.wzlx} wzlx,#{item.wzzs} wzzs,#{item.fid} fid,
+				#{item.fldj} fldj,#{item.sfgl} sfgl,#{item.lrry} lrry,cast(#{item.lrsj} as TIMESTAMP) lrsj
+			</foreach>	
+			left join igams_wzgl wz on wz.wzid=tmp.wzid
+			where wz.wzid is not null and tmp.lrsj is not null and  ((wz.xgsj is null and tmp.lrsj &gt; wz.lrsj) 
+				or (wz.xgsj is not null and  tmp.lrsj &gt; wz.xgsj) )
+		)
+		update igams_wzgl wzgl set wzywm=(select wzywm from t where wzid=wzgl.wzid),
+			wzzwm=(select wzzwm from t where wzid=wzgl.wzid),wzfl=(select wzfl from t where wzid=wzgl.wzid),
+			wzlx=(select wzlx from t where wzid=wzgl.wzid),wzzs=(select wzzs from t where wzid=wzgl.wzid),
+			fid=(select fid from t where wzid=wzgl.wzid),fldj=(select fldj from t where wzid=wzgl.wzid),
+			sfgl=(select sfgl from t where wzid=wzgl.wzid),xgry=(select xgry from t where wzid=wzgl.wzid),
+			xgsj=(select xgsj from t where wzid=wzgl.wzid)
+	 	where wzgl.wzid in (
+	 			select wzid from t
+	 		)
+	</update>
+	<select id="getDto" parameterType="WzglDto" resultType="WzglDto">
+		select
+		wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,fid,fldj,sfgl,crbjb,
+		sflj,fl,sfgz,xjlb,bdlb,wzdl,jycd,glsrs,zbx
+		from igams_wzgl wzgl
+		<where>
+			<trim prefixOverrides="and" >
+				<if test="wzid != null and wzid != ''">
+					and wzid= #{wzid}
+				</if>
+				<if test="wzzwm != null and wzzwm != ''">
+					and wzzwm= #{wzzwm}
+				</if>
+			</trim>
+		</where>
+	</select>
+
+
+	<select id="getDtoList" parameterType="WzglDto" resultType="WzglDto">
+		select
+		wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,fid,fldj,sfgl,crbjb,
+		sflj,fl,sfgz,xjlb,bdlb,wzdl,jycd,glsrs,zbx
+		from igams_wzgl wzgl
+		<where>
+			<trim prefixOverrides="and" >
+				<if test="ids !=null and ids.size >0" >
+					and wzgl.wzid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+				<if test="fl !=null and fl != ''" >
+					and wzgl.fl = #{fl}
+				</if>
+			</trim>
+		</where>
+	</select>
+
+	<select id="getWzxxByMc" resultType="WzglDto" parameterType="WzglDto">
+		select wzid, wzywm, wzzwm, wzfl, wzlx, wzzs, lrry, lrsj, xgry, xgsj, scry, scsj, scbj,
+		fid, fldj, sfgl, crbjb, sflj, fl, sfgz, xjlb, bdlb, wzdl, jycd, glsrs, zbx
+		from igams_wzgl
+		<where>
+			scbj='0'
+			<if test="wzmc != null and wzmc != ''">
+				and ( wzid =#{wzmc} or wzywm =#{wzmc} or wzzwm =#{wzmc} )
+			</if>
+		</where>
+	</select>
+
+	<select id="getWzList" parameterType="WzglDto" resultType="WzglDto">
+		(select
+		wzgl.wzid,wzgl.wzywm,wzgl.wzzwm,wzgl.wzfl,wzgl.wzlx,wzgl.wzzs,wzgl.lrry,wzgl.lrsj,wzgl.xgry,wzgl.xgsj,wzgl.scry,wzgl.scsj,wzgl.scbj,wzgl.fid,wzgl.fldj,wzgl.sfgl,wzgl.crbjb,
+		wzgl.sflj,wzgl.fl,wzgl.sfgz,wzgl.xjlb,wzgl.bdlb,wzgl.wzdl,wzgl.jycd,wzgl.glsrs,wzgl.zbx,mngsmxjg.gzd
+		from igams_mngsmxjg_${lrsj} mngsmxjg
+		left join igams_wzgl wzgl on wzgl.wzid=mngsmxjg.taxid and wzgl.scbj = '0'
+		<where>
+			mngsmxjg.bbh=#{bbh} and  mngsmxjg.wkbh=#{wkbh} and mngsmxjg.gzd ='4'
+		</where>)
+		union all
+		(select
+		wzgl.wzid,wzgl.wzywm,wzgl.wzzwm,wzgl.wzfl,wzgl.wzlx,wzgl.wzzs,wzgl.lrry,wzgl.lrsj,wzgl.xgry,wzgl.xgsj,wzgl.scry,wzgl.scsj,wzgl.scbj,wzgl.fid,wzgl.fldj,wzgl.sfgl,wzgl.crbjb,
+		wzgl.sflj,wzgl.fl,wzgl.sfgz,wzgl.xjlb,wzgl.bdlb,wzgl.wzdl,wzgl.jycd,wzgl.glsrs,wzgl.zbx,mngsmxjg.gzd
+		from igams_mngsmxjg_${lrsj} mngsmxjg
+		left join igams_wzgl wzgl on wzgl.wzid=mngsmxjg.taxid and wzgl.scbj = '0'
+		<where>
+			mngsmxjg.bbh=#{bbh} and  mngsmxjg.wkbh=#{wkbh} and mngsmxjg.gzd !='4' and mngsmxjg.gzd !='5'
+		</where>)
+	</select>
+
+	<select id="getPathogenList" parameterType="WzglDto" resultType="WzglDto">
+		select wzgl.wzid as taxid,
+		wzgl.fldj as rank_code,
+		wzgl.wzywm as name,
+		wzgl.wzzwm as cn_name,
+		case when wzgl.wzlx  is  null then '' else wzgl.wzlx end species_category,
+		wzgl.fid as genus_taxid,
+		fwzgl.wzywm as genus_name,
+		fwzgl.wzzwm as genus_cn_name,
+		wzgl.wzfl as sp_type,
+		case when wzgl.sfgl='0' then '不高亮'  when wzgl.sfgl='1' then '高亮' end highlight,
+		wzgl.wzzs as comment,
+		wzgl.lrsj as last_update,
+		wzgl.bdlb
+		from igams_wzgl wzgl
+		left join igams_wzgl fwzgl on fwzgl.wzid=wzgl.fid
+		<where>
+			wzgl.scbj!='1'
+			<if test="ids != null and ids.size()>0">
+				and wzgl.wzid in
+				<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+</mapper>

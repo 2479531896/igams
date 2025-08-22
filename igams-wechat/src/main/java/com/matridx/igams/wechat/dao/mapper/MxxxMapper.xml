@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matridx.igams.wechat.dao.post.IMxxxDao">
+    <select id="getDdhSerial" parameterType="String" resultType="String">
+        SELECT
+        lpad(cast((CAST(coalesce(MAX(substring(orderNo,LENGTH(orderNo)-strpos(reverse(orderNo),'-')+2,LENGTH(orderNo))),'0')
+        AS numeric) + 1) as VARCHAR), 5, '0') serial
+        FROM igams_mxxx
+        <where>
+            scbj = '0' AND orderNo like #{prefix}||'%'
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="MxxxDto" resultType="MxxxDto">
+        select mxxx.mxid, mxxx.projectCode, mxxx.orgName, mxxx.orgId, mxxx.comboCode, mxxx.mxOrderNo, mxxx.phoneNo, mxxx.amount, mxxx.quantity, mxxx.totalAmount, mxxx.equityName,to_char( mxxx.payTime,'YYYY-MM-dd') payTime, mxxx.orderNo,
+        mxxx.idName, mxxx.idNum, mxxx.idType,to_char( mxxx.orderTime,'YYYY-MM-dd') orderTime, mxxx.status, mxxx.hasReport, mxxx.reportUrl,to_char( mxxx.statusTime,'YYYY-MM-dd') statusTime,sjxx.sjid
+        from igams_mxxx mxxx
+        left join igams_sjxx sjxx on sjxx.mxid=mxxx.mxid
+        <where>
+            mxxx.scbj='0'
+            <if test="orgName != null and orgName != ''">
+                and (mxxx.orgName like '%'||#{orgName}||'%')
+            </if>
+            <if test="orgId != null and orgId != ''">
+                and (mxxx.orgId like '%'||#{orgId}||'%')
+            </if>
+            <if test="mxOrderNo != null and mxOrderNo != ''">
+                and (mxxx.mxOrderNo like '%'||#{mxOrderNo}||'%')
+            </if>
+            <if test="orderNo != null and orderNo != ''">
+                and (mxxx.orderNo like '%'||#{orderNo}||'%')
+            </if>
+            <if test="idName != null and idName != ''">
+                and (mxxx.idName like '%'||#{idName}||'%')
+            </if>
+            <if test = "statuses != null and statuses.length > 0 "  >
+                and mxxx.status in
+                <foreach collection="statuses" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "types != null and types.length > 0 "  >
+                and mxxx.idType in
+                <foreach collection="types" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yysjstart != null and yysjstart != ''">
+                and to_char(mxxx.orderTime,'YYYY-MM-dd') &gt;= #{yysjstart}
+            </if>
+            <if test="yysjend != null and yysjend != ''">
+                and to_char(mxxx.orderTime,'YYYY-MM-dd') &lt;= #{yysjend}
+            </if>
+            <if test="cbgsjstart != null and cbgsjstart != ''">
+                and to_char(mxxx.statusTime,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="cbgsjend !=null and cbgsjend !=''">
+                and to_char(mxxx.statusTime,'yyyy-mm-dd') &lt;= #{cbgsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="MxxxDto">
+        select mxid,projectCode,orgName,orgId,comboCode,mxOrderNo,phoneNo,amount,quantity,totalAmount,equityName,to_char(payTime,'YYYY-MM-dd') payTime,orderNo,
+        idName,idNum,idType,to_char(orderTime,'YYYY-MM-dd') orderTime,status,hasReport,reportUrl,to_char(statusTime,'YYYY-MM-dd') statusTime
+        from igams_mxxx
+        <where>
+            scbj='0'
+            AND mxid=#{mxid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="MxxxModel">
+        INSERT INTO igams_mxxx (status,scbj
+        <if test="mxid != null and mxid != ''">
+            ,mxid
+        </if>
+        <if test="orderNo != null and orderNo != ''">
+            ,orderNo
+        </if>
+        <if test="projectCode != null and projectCode != ''">
+            ,projectCode
+        </if>
+        <if test="orgName != null and orgName != ''">
+            ,orgName
+        </if>
+        <if test="orgId != null and orgId != ''">
+            ,orgId
+        </if>
+        <if test="comboCode != null and comboCode != ''">
+            ,comboCode
+        </if>
+        <if test="mxOrderNo != null and mxOrderNo != ''">
+            ,mxOrderNo
+        </if>
+        <if test="phoneNo != null and phoneNo != ''">
+            ,phoneNo
+        </if>
+        <if test="amount != null and amount != ''">
+            ,amount
+        </if>
+        <if test="quantity != null and quantity != ''">
+            ,quantity
+        </if>
+        <if test="totalAmount != null and totalAmount != ''">
+            ,totalAmount
+        </if>
+        <if test="equityName != null and equityName != ''">
+            ,equityName
+        </if>
+        <if test="payTime != null and payTime != ''">
+            ,payTime
+        </if>
+        )
+        VALUES
+        ('3','0'
+        <if test="mxid != null and mxid != ''">
+            ,#{mxid}
+        </if>
+        <if test="orderNo != null and orderNo != ''">
+            ,#{orderNo}
+        </if>
+        <if test="projectCode != null and projectCode != ''">
+            ,#{projectCode}
+        </if>
+        <if test="orgName != null and orgName != ''">
+            ,#{orgName}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            ,#{orgId}
+        </if>
+        <if test="comboCode != null and comboCode != ''">
+            ,#{comboCode}
+        </if>
+        <if test="mxOrderNo != null and mxOrderNo != ''">
+            ,#{mxOrderNo}
+        </if>
+        <if test="phoneNo != null and phoneNo != ''">
+            ,#{phoneNo}
+        </if>
+        <if test="amount != null and amount != ''">
+            ,cast(#{amount} as numeric)
+        </if>
+        <if test="quantity != null and quantity != ''">
+            ,cast(#{quantity} as numeric)
+        </if>
+        <if test="totalAmount != null and totalAmount != ''">
+            ,cast(#{totalAmount} as numeric)
+        </if>
+        <if test="equityName != null and equityName != ''">
+            ,#{equityName}
+        </if>
+        <if test="payTime != null and payTime != ''">
+            ,cast(#{payTime} as timestamp)
+        </if>
+        )
+    </insert>
+
+    <update id="update" parameterType="MxxxModel">
+        update igams_mxxx
+        <set>
+            xgsj=LOCALTIMESTAMP
+            <if test="phoneNo != null and phoneNo != ''">
+                ,phoneNo=#{phoneNo}
+            </if>
+            <if test="status != null and status != ''">
+                ,status=#{status}
+            </if>
+            <if test="orderTime != null and orderTime != ''">
+                ,orderTime=cast(#{orderTime} as timestamp)
+            </if>
+            <if test="idName != null and idName != ''">
+                ,idName=#{idName}
+            </if>
+            <if test="idNum != null and idNum != ''">
+                ,idNum=#{idNum}
+            </if>
+            <if test="idType != null and idType != ''">
+                ,idType=#{idType}
+            </if>
+            <if test="hasReport != null and hasReport != ''">
+                ,hasReport=#{hasReport}
+            </if>
+            <if test="reportUrl != null and reportUrl != ''">
+                ,reportUrl=#{reportUrl}
+            </if>
+            <if test="statusTime != null and statusTime != ''">
+                ,statusTime=cast(#{statusTime} as timestamp)
+            </if>
+        </set>
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and orderNo=#{orderNo}
+            </if>
+            <if test="mxOrderNo != null and mxOrderNo != ''">
+                and mxOrderNo=#{mxOrderNo}
+            </if>
+            <if test="mxid != null and mxid != ''">
+                and mxid=#{mxid}
+            </if>
+        </where>
+    </update>
+
+    <select id="getDtoByOrderNo" parameterType="MxxxDto" resultType="MxxxDto">
+        select mxxx.mxid ,mxxx.projectCode ,mxxx.orgName ,mxxx.orgId ,mxxx.comboCode ,mxxx.mxOrderNo ,mxxx.phoneNo ,
+        mxxx.amount ,mxxx.quantity ,mxxx.totalAmount ,mxxx.equityName ,mxxx.payTime ,mxxx.orderNo ,mxxx.idName ,mxxx.idNum ,mxxx.idType ,
+        mxxx.orderTime ,mxxx.status ,mxxx.hasReport ,mxxx.reportUrl ,mxxx.statusTime ,mxxx.xgry ,mxxx.scbj ,mxxx.xgsj ,mxxx.scry ,mxxx.scsj
+        from igams_mxxx mxxx
+        left join matridx_jcsj jcsj on jcsj.cskz2=mxxx.idType and jcsj.jclb = 'IDCARD_CATEGORY'
+        <where>
+        <trim prefixOverrides="and">
+            <if test="orderNo != null and orderNo != ''">
+                and orderNo=#{orderNo}
+            </if>
+            <if test="mxOrderNo != null and mxOrderNo != ''">
+                and mxOrderNo=#{mxOrderNo}
+            </if>
+        </trim>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjdwxxDao" >
+		<!-- 递归查询生成属性菜单 -->
+		<select id="getPagedDtoListSjdwxx" resultType="SjdwxxDto">
+			SELECT dwid, xh, fdwid, dwdm, dwmc, dh, kzcs, kzcs2, kzcs3
+			FROM igams_sjdwxx
+			<where>
+			    scbj != '1'
+			<if test="dwmc !=null and dwmc !=''">
+				and dwmc ILIKE '%'||#{dwmc}||'%'
+			</if>
+			</where>
+	 	</select>
+		<!-- 查询所有科室 -->
+		<select id="getAllSjdwxx" resultType="SjdwxxDto">
+			SELECT dwid, xh, fdwid, dwdm, dwmc, dh,lrry,lrsj,xgry,xgsj,scry,scsj,scbj, kzcs, kzcs2, kzcs3
+			FROM igams_sjdwxx
+	 	</select>
+	 
+	   		<!--  单个查询 -->
+	  	<select id="getDtoById" parameterType="String" resultType="SjdwxxDto">
+	   			select i.dwid,i.xh,i.fdwid,i.dwdm,i.dwmc,i.dh,i.lrry,i.lrsj,i.xgry,i.xgsj,i.scry,i.scsj,i.scbj,i.kzcs,i.kzcs2,i.kzcs3,fdw.dwmc fdwmc
+       		  		 from igams_sjdwxx i
+       		  		 left join igams_sjdwxx fdw on  fdw.dwid=i.fdwid
+        <where>
+             	i.scbj !='1'  and i.dwid=#{dwid}
+        </where>
+	   	</select>
+	       
+				<!-- 修改单位 -->
+		<update id="update" parameterType="SjdwxxModel">
+			 update igams_sjdwxx set
+	 			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="xh !=null and xh !=''">
+			,xh=cast(#{xh} as numeric)
+		</if>
+		<if test="dwdm !=null and dwdm !=''">
+			,dwdm=#{dwdm}
+		</if>
+	 	<if test="dwmc !=null and dwmc !=''">
+	 		,dwmc=#{dwmc}
+		</if>
+		<if test="dh !=null and dh !=''">
+			,dh=#{dh}
+		</if>
+		<if test="kzcs !=null and kzcs !=''">
+			,kzcs=#{kzcs}
+		</if>
+		<if test="kzcs==null or kzcs==''">
+			,kzcs=null
+		</if>
+		<if test="kzcs3 !=null and kzcs3 !=''">
+			,kzcs3=#{kzcs3}
+		</if>
+		<if test="kzcs3==null or kzcs3==''">
+			,kzcs3=null
+		</if>
+		<where>
+			dwid=#{dwid}
+		</where>
+		</update>
+	      
+	     		 <!-- 添加单位 -->
+		<insert id="insert" parameterType="SjdwxxModel">
+	    	  insert into igams_sjdwxx(dwid
+	    <if test="xh !=null and xh !=''">
+	    	  ,xh
+	    </if> 
+	    <if test="fdwid !=null and fdwid !=''">
+	   		,fdwid
+		</if>
+	   	<if test="dwdm !=null and dwdm !=''">
+	  		,dwdm
+		</if>
+ 		<if test="dwmc !=null and dwmc !=''">
+			,dwmc
+	    </if>
+	    <if test="dh !=null and dh !=''">
+	    	,dh
+	 	</if>
+		<if test="kzcs !=null and kzcs !=''">
+			,kzcs
+		</if>
+		<if test="kzcs3 !=null and kzcs3 !=''">
+			,kzcs3
+		</if>
+	    	,lrry,lrsj,scbj) values (#{dwid}
+	 	<if test="xh !=null and xh !=''">
+	 		,cast(#{xh} as numeric)
+		</if> 
+	    <if test="fdwid !=null and fdwid !=''">
+	 		 ,#{fdwid}
+		</if>
+		<if test="dwdm !=null and dwdm !=''">
+			 ,#{dwdm}
+		</if>
+		<if test="dwmc !=null and dwmc !=''">
+			,#{dwmc}
+		</if>
+		<if test="dh !=null and dh !=''">
+			,#{dh}
+		</if>
+		<if test="kzcs !=null and kzcs !=''">
+			,#{kzcs}
+		</if>
+		<if test="kzcs3 !=null and kzcs3 !=''">
+			,#{kzcs3}
+		</if>
+			,#{lrry},LOCALTIMESTAMP,0)
+		</insert>
+
+		<!--   删除单位 -->
+ 		<update id="delHisByDwid" parameterType="SjdwxxDto">
+	     	update igams_sjdwxx set scry = #{scry}, scsj = LOCALTIMESTAMP,scbj='1'
+			<where>
+				<if test="dwid !=null and dwid != ''">
+					or dwid = #{dwid}
+				</if>
+				<if test="ids !=null and ids.size > 0">
+					or dwid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	    </update> 
+	
+		<select id="getListByDwid" parameterType="java.util.List" resultType="SjdwxxDto">
+			select dwid,xh,fdwid,dwdm,dwmc from igams_sjdwxx 
+			<where> 
+				1 = 2
+				or dwid in
+				<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</where>
+		</select>
+</mapper>

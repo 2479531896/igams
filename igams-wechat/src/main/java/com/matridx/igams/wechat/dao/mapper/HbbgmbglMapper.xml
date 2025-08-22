@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IHbbgmbglDao" >
+
+	<insert id="insertList" parameterType="List">
+		insert into igams_hbbgmbgl(xh,hbid,jcxmid,jczxmid,bgmbid,bgmbid2)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				cast(#{item.xh} as numeric),#{item.hbid},#{item.jcxmid},#{item.jczxmid},#{item.bgmbid},#{item.bgmbid2}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<select id="getDtoList" resultType="HbbgmbglDto" parameterType="HbbgmbglDto">
+		select mbgl.xh,mbgl.jcxmid,mbgl.hbid,mbgl.jczxmid,mbgl.bgmbid,jcxm.csmc jcxmmc, jczxm.csmc jczxmmc,bgmb.csmc bgmbmc,mbgl.bgmbid2,bgmb.csmc bgmbmc2
+		from igams_hbbgmbgl mbgl
+		left join matridx_jcsj jcxm on jcxm.csid=mbgl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid=mbgl.jczxmid
+		left join matridx_jcsj bgmb on bgmb.csid=mbgl.bgmbid
+		left join matridx_jcsj bgmb2 on bgmb2.csid=mbgl.bgmbid2
+		where mbgl.hbid=#{hbid}
+		order by mbgl.xh asc
+	</select>
+
+	<!--根据送检ID删除信息-->
+	<delete id="deleteById" parameterType="String">
+		delete from igams_hbbgmbgl
+		<where>
+			hbid = #{hbid}
+		</where>
+	</delete>
+</mapper>

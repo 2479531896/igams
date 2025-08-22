@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IFxsjglDao" >
+
+    <sql id="SEARCH_FIELD">
+		fxsjgl.fxsjid,fxsjgl.ywid,fxsjgl.fxlb,to_char(fxsjgl.tzrq,'yyyy-MM-dd') tzrq,to_char(fxsjgl.qrsj,'YYYY-MM-DD hh24:mi:ss') qrsj,
+        fxsjgl.zt,fxsjgl.bz,fxsjgl.ddslid,fxsjgl.lrry,fxsjgl.lrsj,fxsjgl.xgry,fxsjgl.xgsj,fxsjgl.scry,fxsjgl.scsj,fxsjgl.scbj,fxsjgl.bbcl,
+        fxlb.csmc fxlbmc, bbcl.csmc bbclmc,sj.ybbh,sj.nbbm,sj.hzxm,sj.jcdw,sj.db,yblx.csmc yblxmc,fjxtyh.ddid ddid,fjxtyh.yhm yhm
+        ,fjyhxx.wbcxid  wbcxid,sj.sjdwmc sjdwmc
+	</sql>
+
+
+    <sql id="OUT_SEARCH_JOINS">
+		left join matridx_jcsj fxlb on fxlb.csid = fxsjgl.fxlb
+        LEFT JOIN matridx_jcsj bbcl ON bbcl.csid = fxsjgl.bbcl
+		left join igams_fjsq fjsq on fxsjgl.ywid = fjsq.fjid
+		left join igams_sjxx sj on fjsq.sjid = sj.sjid or fxsjgl.ywid = sj.sjid
+        LEFT JOIN matridx_jcsj yblx ON yblx.csid = sj.yblx
+
+        left outer join igams_sjhbxx sjhb on sjhb.hbmc = sj.db and sjhb.scbj != '1'
+        left outer join igams_sjhbxx fjhb on fjhb.hbmc = sj.db and fjhb.scbj != '1'
+        left outer join matridx_xtyh sjxtyh on sjxtyh.yhid = sjhb.yhid
+        left outer join matridx_xtyh fjxtyh on fjxtyh.yhid = fjhb.yhid
+        left outer join matridx_yhqtxx sjyhxx on sjyhxx.yhid = sjxtyh.yhid and sjyhxx.scbj='0'
+        left outer join matridx_yhqtxx fjyhxx on fjyhxx.yhid = fjxtyh.yhid and fjyhxx.scbj='0'
+	</sql>
+
+    <sql id="SEARCH_WHERE">
+        <where>
+            fxsjgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (fxlb.csmc ILIKE '%'||#{entire}||'%'
+                or sj.ybbh ILIKE '%'||#{entire}||'%'
+                or sj.nbbm ILIKE '%'||#{entire}||'%'
+                or sj.hzxm ILIKE '%'||#{entire}||'%'
+                or yblx.csmc ILIKE '%'||#{entire}||'%'
+                or sj.sjdwmc ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="fxlbmc != null and fxlbmc != ''">
+                and fxlb.csmc ILIKE '%'||#{fxlbmc}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sj.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and  sj.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="yblxmc != null and yblxmc != ''">
+                and yblx.csmc ILIKE '%'||#{yblxmc}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sj.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="tzrqstart != null and tzrqstart != ''">
+                and to_char(fxsjgl.tzrq,'yyyy-mm-dd') &gt;= #{tzrqstart}
+            </if>
+            <if test="tzrqend != null and tzrqend != ''">
+                and to_char(fxsjgl.tzrq,'yyyy-mm-dd') &lt;= #{tzrqend}
+            </if>
+            <if test="qrsjstart != null and qrsjstart != ''">
+                and to_char(fxsjgl.qrsj,'yyyy-mm-dd') &gt;= #{qrsjstart}
+            </if>
+            <if test="qrsjend != null and qrsjend != ''">
+                and to_char(fxsjgl.qrsj,'yyyy-mm-dd') &lt;= #{qrsjend}
+            </if>
+            <if test="fxlbids !=null and fxlbids.length > 0">
+                and fxsjgl.fxlb in
+                <foreach collection="fxlbids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="bbclids !=null and bbclids.length > 0">
+                and fxsjgl.bbcl in
+                <foreach collection="bbclids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zt != null and zt != ''">
+                and fxsjgl.zt  = #{zt}
+            </if>
+        </where>
+    </sql>
+
+    <!--查询指定行数据-->
+    <select id="getPagedDtoList" resultType="FxsjglDto" parameterType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        from igams_fxsjgl fxsjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="getDtoList" resultType="FxsjglDto" parameterType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        from igams_fxsjgl fxsjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <where>
+            fxsjgl.scbj = '0'
+            <if test="ywid != null and ywid != ''">
+                and fxsjgl.ywid  = #{ywid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and fxsjgl.fxsjid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+
+    </select>
+
+    <!--查询单个-->
+    <select id="getDtoById" resultType="FxsjglDto" parameterType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        from igams_fxsjgl fxsjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where fxsjgl.fxsjid = #{fxsjid} and fxsjgl.scbj = '0'
+    </select>
+
+    <!--查询单个-->
+    <select id="getDto" resultType="FxsjglDto" parameterType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        from igams_fxsjgl fxsjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where  fxsjgl.scbj = '0'
+        <if test="fxsjid !=null and fxsjid != ''">
+            and fxsjgl.fxsjid = #{fxsjid}
+        </if>
+        <if test="ddslid !=null and ddslid != ''">
+            and fxsjgl.ddslid = #{ddslid}
+        </if>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" parameterType="FxsjglDto">
+        insert into igams_fxsjgl( fxsjid ,ywid ,fxlb ,bz ,ddslid ,lrry ,lrsj ,scbj ,zt ,bbcl
+
+        <if test="tzrq != null and tzrq != ''">
+            , tzrq
+        </if>
+        <if test="qrsj != null and qrsj != ''">
+            , qrsj
+        </if>
+        )
+        values (#{fxsjid} ,#{ywid} ,#{fxlb} ,#{bz} ,#{ddslid} ,#{lrry} , LOCALTIMESTAMP ,'0' ,'00' ,#{bbcl}
+        <if test="tzrq != null and tzrq != ''">
+            , cast(#{tzrq} as timestamp )
+        </if>
+        <if test="qrsj != null and qrsj != ''">
+            , cast(#{qrsj} as timestamp )
+        </if>
+        )
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update igams_fxsjgl
+        <set>
+            <if test="fxlb != null and fxlb != ''">
+                fxlb = #{fxlb},
+            </if>
+            <if test="zt != null and zt != ''">
+                zt = #{zt},
+            </if>
+            <if test="bz != null and bz != ''">
+                bz = #{bz},
+            </if>
+            <if test="ddslid != null and ddslid != ''">
+                ddslid = #{ddslid},
+            </if>
+            <if test="bbcl != null and bbcl != ''">
+                bbcl = #{bbcl},
+            </if>
+            <if test="tzrq != null and tzrq != ''">
+                tzrq = cast(#{tzrq} as timestamp ),
+            </if>
+            <if test="qrsj != null and qrsj != '' and  qrsj != 'NOW'.toString">
+                qrsj = cast(#{qrsj} as timestamp ),
+            </if>
+            <if test="qrsj != null and qrsj != '' and  qrsj == 'NOW'.toString">
+                qrsj = LOCALTIMESTAMP,
+            </if>
+            <if test="fxlb != null and fxlb == ''">
+                fxlb = null,
+            </if>
+            <if test="zt != null and zt == ''">
+                zt = null,
+            </if>
+            <if test="bz != null and bz == ''">
+                bz = null,
+            </if>
+            <if test="ddslid != null and ddslid == ''">
+                ddslid = null,
+            </if>
+            <if test="tzrq != null and tzrq == ''">
+                tzrq = null,
+            </if>
+            <if test="qrsj != null and qrsj == ''">
+                qrsj = null,
+            </if>
+            xgry = #{xgry}, xgsj = LOCALTIMESTAMP
+        </set>
+        where
+        <if test="fxsjid !=null and fxsjid != ''">
+            fxsjid = #{fxsjid}
+        </if>
+    </update>
+
+
+    <!--通过主键删除-->
+    <delete id="delete" parameterType="FxsjglDto">
+        update  igams_fxsjgl set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'  where
+        <if test="fxsjid !=null and fxsjid != ''">
+            fxsjid = #{fxsjid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            fxsjid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="getPagedAuditList" parameterType="FxsjglDto" resultType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        from igams_fxsjgl fxsjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <select id="getAuditListRecheck" parameterType="List" resultType="FxsjglDto">
+        select
+        <include refid="SEARCH_FIELD"></include>
+        ,shxx_sqsj, shxx_gwmc, sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.fxsjid} fxsjid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp
+        left join igams_fxsjgl fxsjgl on fxsjgl.fxsjid = tmp.fxsjid
+        <include refid="OUT_SEARCH_JOINS"></include>
+        order by tmp.rownum
+    </select>
+
+    <select id="getRoleList" parameterType="Map" resultType="Map">
+        select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+        js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj
+        from matridx_xtjs js
+        <where>
+            js.scbj='0'
+            and (js.jsmc ILIKE '%'||#{jsmc}||'%')
+        </where>
+    </select>
+</mapper>

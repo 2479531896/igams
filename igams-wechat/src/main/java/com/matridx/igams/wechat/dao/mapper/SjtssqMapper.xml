@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjtssqDao" >
+	<sql id="SEARCH_TERMS">
+		tssq.scbj='0'
+		<if test="entire != null and entire != ''">
+			and (
+			sj.ybbh like '%'||#{entire}||'%'
+			or sj.nbbm like '%'||#{entire}||'%'
+			or sj.hzxm like '%'||#{entire}||'%'
+			or sj.db like '%'||#{entire}||'%'
+			or jc_jcdw.csmc like '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="jcdwmc != null and jcdwmc != ''">
+			and (jc_jcdw.csmc like '%'||#{jcdwmc}||'%')
+		</if>
+		<if test="ybbh != null and ybbh != ''">
+			and (sj.ybbh like '%'||#{ybbh}||'%')
+		</if>
+		<if test="nbbm != null and nbbm != ''">
+			and (sj.nbbm like '%'||#{nbbm}||'%')
+		</if>
+		<if test="hzxm != null and hzxm != ''">
+			and (sj.hzxm like '%'||#{hzxm}||'%')
+		</if>
+		<if test="db != null and db != ''">
+			and (sj.db like '%'||#{db}||'%')
+		</if>
+		<if test="clbj != null and clbj != ''">
+			and (tssq.clbj =#{clbj})
+		</if>
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and sj.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yblxs != null and yblxs.length > 0 "  >
+			and sj.yblx in
+			<foreach collection="yblxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "jcxms != null and jcxms.length > 0 "  >
+			and jcxm.jcxmid in
+			<foreach collection="jcxms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "sqxms != null and sqxms.length > 0 "  >
+			and tssq.sqxm in
+			<foreach collection="sqxms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "sqyys != null and sqyys.length > 0 "  >
+			and tssq.sqyy in
+			<foreach collection="sqyys" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(tssq.lrsj,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(tssq.lrsj,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test="bgrqstart != null and bgrqstart != ''">
+			and to_char(sj.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+		</if>
+		<if test="bgrqend !=null and bgrqend !=''">
+			and to_char(sj.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+		</if>
+		<if test="lrry != null and lrry != ''">
+			and (tssq.lrry like '%'||#{lrry}||'%')
+		</if>
+		<if test="jcdwxz !=null and jcdwxz.size()>0">
+			and sj.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="getPagedDtoList" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,jcsj.csdm sqxmdm,to_char( tssq.lrsj, 'YYYY-MM-DD HH24:MI:SS' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,
+		case when tssq.jczxmid ='' then jc_xm.csmc else jc_xm.csmc||'-'||coalesce(jc_zxm.csmc,'') end jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,sqyy.csmc sqyymc,tssq.qtsqyy,
+		jc_jcdw.csmc jcdwmc
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jc_zxm on jc_zxm.csid = tssq.jczxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getCount" parameterType="SjtssqDto" resultType="int">
+		select count(*) from  igams_sjtssq
+		<where>
+			scbj !='1'
+			<if test="sjid != null and sjid !=''">
+				and sjid =#{sjid}
+			</if>
+			<if test="zts !=null and zts.size()>0">
+				and zt in
+				<foreach collection="zts" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="SjtssqDto">
+		insert into igams_sjtssq(tssqid,sjid
+		<if test="sqxm !=null and sqxm != ''">
+			,sqxm
+		</if>
+		<if test="sqzxm !=null and sqzxm != ''">
+			,sqzxm
+		</if>
+		<if test="clbj !=null and clbj != ''">
+			,clbj
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="sqyy !=null and sqyy != ''">
+			,sqyy
+		</if>
+		<if test="qtsqyy !=null and qtsqyy != ''">
+			,qtsqyy
+		</if>
+		<if test="jcxmid !=null and jcxmid != ''">
+			,jcxmid
+		</if>
+		<if test="jczxmid !=null and jczxmid != ''">
+			,jczxmid
+		</if>
+			,lrry
+			,lrsj
+			,scbj
+		)values(#{tssqid},#{sjid}
+		<if test="sqxm !=null and sqxm != ''">
+			,#{sqxm}
+		</if>
+		<if test="sqzxm !=null and sqzxm != ''">
+			,#{sqzxm}
+		</if>
+		<if test="clbj !=null and clbj != ''">
+			,#{clbj}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="sqyy !=null and sqyy != ''">
+			,#{sqyy}
+		</if>
+		<if test="qtsqyy !=null and qtsqyy != ''">
+			,#{qtsqyy}
+		</if>
+		<if test="jcxmid !=null and jcxmid != ''">
+			,#{jcxmid}
+		</if>
+		<if test="jczxmid !=null and jczxmid != ''">
+			,#{jczxmid}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+
+	<select id="getPagedAuditApplication" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,
+		jc_jcdw.csmc jcdwmc
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		<where>
+			tssq.scbj='0'
+			<if test="entire != null and entire != ''">
+				and (
+				sj.ybbh like '%'||#{entire}||'%'
+				or sj.nbbm like '%'||#{entire}||'%'
+				or sj.hzxm like '%'||#{entire}||'%'
+				or sj.db like '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="ybbh != null and ybbh != ''">
+				and (sj.ybbh like '%'||#{ybbh}||'%')
+			</if>
+			<if test="nbbm != null and nbbm != ''">
+				and (sj.nbbm like '%'||#{nbbm}||'%')
+			</if>
+			<if test="hzxm != null and hzxm != ''">
+				and (sj.hzxm like '%'||#{hzxm}||'%')
+			</if>
+			<if test="db != null and db != ''">
+				and (sj.db like '%'||#{db}||'%')
+			</if>
+		</where>
+	</select>
+	<!-- 审核列表-->
+	<select id="getAuditListApplication" parameterType="List" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,
+		shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj,sqyy.csmc sqyymc,tssq.qtsqyy,jc_jcdw.csmc jcdwmc
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		join
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.tssqid} tssqid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach>
+		tmp on tmp.tssqid = tssq.tssqid
+		order by tmp.rownum
+	</select>
+
+
+	<select id="getDto" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,jcsj.csdm sqxmdm,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,tssq.sqzxm,zxm.csdm sqzxmdm,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,sj.nl,
+		sqyy.csmc sqyymc,tssq.qtsqyy,tssq.sqyy,jc_jcdw.csmc jcdwmc,tssq.lrry,yh.ddid,yh.zsxm,tssq.ddslid,sj.jsrq,tssq.jcxmid,tssq.jczxmid,jc_xm.csdm jcxmdm,jc_zxm.csmc jczxmmc,jc_zxm.csdm jczxmdm
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jc_zxm on jc_zxm.csid = tssq.jczxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		left join matridx_xtyh yh on yh.yhid=tssq.lrry
+		<where>
+			tssq.scbj='0'
+			<if test="sjid !=null and sjid != ''">
+				and tssq.sjid=#{sjid}
+			</if>
+			<if test="sqzxm !=null and sqzxm != ''">
+				and tssq.sqzxm=#{sqzxm}
+			</if>
+			<if test="tssqid !=null and tssqid != ''">
+				and tssq.tssqid=#{tssqid}
+			</if>
+			<if test="jcxmid !=null and jcxmid != ''">
+				and tssq.jcxmid=#{jcxmid}
+			</if>
+			<if test="jczxmid !=null and jczxmid != ''">
+				and tssq.jczxmid=#{jczxmid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,jcsj.csdm sqxmdm,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,tssq.sqzxm,zxm.csdm sqzxmdm,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,sj.nl,
+		sqyy.csmc sqyymc,tssq.qtsqyy,tssq.sqyy,jc_jcdw.csmc jcdwmc,tssq.lrry,yh.ddid,yh.zsxm,tssq.ddslid,sj.jsrq,tssq.jcxmid,tssq.jczxmid,jc_xm.csdm jcxmdm
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		left join matridx_xtyh yh on yh.yhid=tssq.lrry
+		<where>
+			tssq.scbj='0'
+			<if test="sjid !=null and sjid != ''">
+				and tssq.sjid=#{sjid}
+			</if>
+			<if test="zt !=null and zt != ''">
+				and tssq.zt=#{zt}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and tssq.tssqid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getSqxms" parameterType="SjtssqDto" resultType="String">
+		select
+		string_agg ( jcsj.csdm, ',' ) sqxmdm
+		from igams_sjtssq tssq
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		where tssq.scbj='0' and tssq.sjid=#{sjid}
+		<if test="tssqid !=null and tssqid != ''">
+			and tssq.tssqid!=#{tssqid}
+		</if>
+	</select>
+
+	<select id="verification" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,sj.nl
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		<where>
+			tssq.scbj='0'
+			and tssq.sjid=#{sjid}
+			and tssq.sqzxm=#{sqzxm}
+		  	and tssq.tssqid!=#{tssqid}
+		</where>
+	</select>
+
+	<update id="update" parameterType="SjtssqDto">
+		update igams_sjtssq
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="sqxm !=null and sqxm != ''">
+				,sqxm=#{sqxm}
+			</if>
+			<if test="sqzxm !=null and sqzxm != ''">
+				,sqzxm=#{sqzxm}
+			</if>
+			<if test="clbj !=null and clbj != ''">
+				,clbj=#{clbj}
+			</if>
+			<if test="scbj !=null and scbj != ''">
+				,scbj=#{scbj}
+			</if>
+			<if test="bz !=null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="zt !=null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="sqyy !=null and sqyy != ''">
+				,sqyy=#{sqyy}
+			</if>
+			<if test="qtsqyy !=null">
+				,qtsqyy=#{qtsqyy}
+			</if>
+			<if test="tgsj !=null and tgsj != ''">
+				,tgsj= cast(#{tgsj} as timestamp)
+			</if>
+			<if test="bhly !=null and bhly != ''">
+				,bhly=#{bhly}
+			</if>
+		</set>
+		<where>
+			tssqid=#{tssqid}
+		</where>
+	</update>
+
+	<delete id="delete" parameterType="SjtssqDto" >
+		update igams_sjtssq set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="tssqid !=null and tssqid != ''">
+				tssqid=#{tssqid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				 tssqid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<delete id="updateClbj" parameterType="SjtssqDto" >
+		update igams_sjtssq set xgry = #{xgry},xgsj = LOCALTIMESTAMP,clbj='1'
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				tssqid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<update id="updateDdslid" parameterType="SjtssqDto">
+		update igams_sjtssq set ddslid=#{ddslid}
+		where tssqid=#{tssqid}
+	</update>
+
+	<select id="getDtoByDdslid" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.tssqid,tssq.sjid,tssq.bz,tssq.zt,tssq.sqxm,jcsj.csmc sqxmmc,jcsj.csdm sqxmdm,to_char( tssq.lrsj, 'YYYY-MM-DD' ) lrsj,tssq.clbj,zxm.csmc sqzxmmc,tssq.sqzxm,zxm.csdm sqzxmdm,
+		sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sj.xb,case when jc_yb.cskz1 = '1' then sj.yblxmc else jc_yb.csmc end yblxmc,jc_xm.csmc jcxmmc, to_char( sj.bgrq, 'YYYY-MM-DD' ) bgrq
+		,sj.db,yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as hospitalname,yyxx.cskz1 as yyxxCskz1,
+		yyxx.dwjc||case when yyxx.cskz1 ='1' then '--'||sj.sjdwmc else '' end as dwjc,case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end xbmc,sj.nl,
+		sqyy.csmc sqyymc,tssq.qtsqyy,tssq.sqyy
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		<where>
+			tssq.scbj='0'
+			and ddslid=#{ddslid}
+		</where>
+	</select>
+
+	<!-- 获取审批人信息 -->
+	<select id="getSprxxByDdid" parameterType="User" resultType="SjtssqDto">
+		select xtyh.yhid as sprid,xtyh.zsxm as sprxm,xtyh.ddid as sprddid,xtyh.yhm as spryhm
+		from matridx_xtyh xtyh
+		left join matridx_yhqtxx qtxx on qtxx.yhid=xtyh.yhid
+		<where>
+			xtyh.scbj!='1' and xtyh.ddid=#{ddid} and qtxx.wbcxid=#{wbcxid}
+		</where>
+	</select>
+
+	<!-- 获取审批人角色 -->
+	<select id="getSprjsBySprid" parameterType="String" resultType="SjtssqDto">
+		select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+		from matridx_yhjs yhjs
+		left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		<where>
+			yhjs.yhid=#{sprid}
+		</where>
+	</select>
+
+	<!-- 将钉钉实例ID设置为空 -->
+	<update id="updateDdslidToNull" parameterType="SjtssqDto">
+		update igams_sjtssq set ddslid = null
+		<where>
+			scbj !='1' and tssqid =#{tssqid}
+		</where>
+	</update>
+
+	<select id="getCountForSearchExp"  parameterType="SjtssqDto" resultType="java.lang.Integer">
+		select count(tssq.sjid)
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tssq.sjid ${sqlParam}
+		from igams_sjtssq tssq
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		left join matridx_xtyh xtyh on xtyh.yhid = tssq.lrry and xtyh.scbj='0'
+		LEFT JOIN matridx_xtjs xtjs on xtyh.dqjs = xtjs.jsid
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="SjtssqDto" resultType="SjtssqDto">
+		select tmp.tssqid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids" separator=" union all ">
+			select #{item,jdbcType=VARCHAR} tssqid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_sjtssq tssq on tmp.tssqid = tssq.tssqid
+		left join igams_sjxx sj on sj.sjid=tssq.sjid
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+		left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+		left join matridx_jcsj jc_yb on sj.yblx = jc_yb.csid
+		left join matridx_jcsj jc_xm on jc_xm.csid = tssq.jcxmid
+		left join matridx_jcsj jcsj on jcsj.csid=tssq.sqxm
+		left join matridx_jcsj zxm on zxm.csid=tssq.sqzxm
+		left join matridx_jcsj sqyy on sqyy.csid=tssq.sqyy
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = tssq.lrry and xtyh.scbj='0'
+		LEFT JOIN matridx_xtjs xtjs on xtyh.dqjs = xtjs.jsid
+		order by tmp.ordernum
+	</select>
+</mapper>

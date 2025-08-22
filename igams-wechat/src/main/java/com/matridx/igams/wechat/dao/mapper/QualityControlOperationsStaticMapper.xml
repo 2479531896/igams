@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IQualityControlOperationsStaticDao">
+    <!--送检标本类型占比，返回样本类型名称，数量和百分比-->
+	<select id="getSampleTypeMakeUp" parameterType="Map" resultType="Map">
+        SELECT
+        tpp.yblxmc,
+        tpp.num,
+        round( CAST ( ( 100.0 * tpp.num / SUM ( tpp.num ) OVER ( ) ) AS NUMERIC ), 2 ) || '%' bfb
+        FROM
+        (
+        SELECT SUM
+        ( tmp.num ) num,
+        tmp.yblxmc
+        FROM
+        (
+        SELECT COUNT
+        ( sjxx.sjid ) num,
+        CASE
+        WHEN ROW_NUMBER ( ) OVER ( ORDER BY COUNT ( sjxx.sjid ) DESC )&lt;= 6 THEN
+        jcsj.csmc ELSE'其他'
+        END yblxmc
+        FROM
+        igams_sjxx sjxx
+        LEFT JOIN matridx_jcsj jcsj ON jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+        LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+        LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON jc_jcxm.cskz1 = 'C'
+        OR xmjclx = jc_jcxm.cskz1
+        WHERE
+        sjxx.scbj = '0'
+        AND sjxx.sfjs = '1'
+        AND jcsj.csmc IS NOT NULL
+        AND to_char( sjxx.jsrq, 'yyyy-MM' ) = to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+        GROUP BY
+        jcsj.csmc
+        ) tmp
+        GROUP BY
+        tmp.yblxmc
+        ) tpp
+        GROUP BY
+        tpp.yblxmc,
+        tpp.num
+		ORDER BY
+			tpp.num DESC
+	</select>
+    <!--检测项目类型占比，返回检测项目名称，数量和百分比-->
+	<select id="getInspectionTypeMakeUp" parameterType="Map" resultType="Map">
+        SELECT
+        tpp.jcxmmc,
+        tpp.num,
+        round( CAST ( ( 100.0 * tpp.num / SUM ( tpp.num ) OVER ( ) ) AS NUMERIC ), 2 ) || '%' bfb
+        FROM
+        (
+        SELECT SUM
+        ( tmp.num ) num,
+        tmp.jcxmmc
+        FROM
+        (
+        SELECT COUNT
+        ( sjxx.sjid ) num,
+        CASE
+        WHEN ROW_NUMBER ( ) OVER ( ORDER BY COUNT ( sjxx.sjid ) DESC )&lt;= 6 THEN
+        jc_jcxm.csmc ELSE'其他'
+        END jcxmmc
+        FROM
+        igams_sjxx sjxx
+        LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+        LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+        LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON jc_jcxm.cskz1 = 'C'
+        OR xmjclx = jc_jcxm.cskz1
+        WHERE
+        sjxx.scbj = '0'
+        AND sjxx.sfjs = '1'
+        AND jc_jcxm.csmc IS NOT NULL
+        AND to_char( sjxx.jsrq, 'yyyy-MM' ) = to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+        GROUP BY
+        jc_jcxm.csmc
+        ) tmp
+        GROUP BY
+        tmp.jcxmmc
+        ) tpp
+        GROUP BY
+        tpp.jcxmmc,
+        tpp.num
+		ORDER BY
+			tpp.num DESC
+	</select>
+    <!--科室分布，科室名称，数量和百分比-->
+	<select id="getDepartmentTypeMakeUp" parameterType="Map" resultType="Map">
+        SELECT
+        tpp.dwmc,
+        tpp.num,
+        round( CAST ( ( 100.0 * tpp.num / SUM ( tpp.num ) OVER ( ) ) AS NUMERIC ), 2 ) || '%' bfb
+        FROM
+        (
+        SELECT SUM
+        ( tmp.num ) num,
+        tmp.dwmc
+        FROM
+        (
+        SELECT COUNT
+        ( sjxx.sjid ) num,
+        CASE
+        WHEN ROW_NUMBER ( ) OVER ( ORDER BY COUNT ( sjxx.sjid ) DESC )&lt;= 6 THEN
+        sjdwxx.dwmc ELSE'其他'
+        END dwmc
+        FROM
+        igams_sjxx sjxx
+        LEFT JOIN igams_sjdwxx sjdwxx ON sjxx.ks = sjdwxx.dwid
+        LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+        LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+        LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON jc_jcxm.cskz1 = 'C'
+        OR xmjclx = jc_jcxm.cskz1
+        WHERE
+        sjxx.scbj = '0'
+        AND sjxx.sfjs = '1'
+        AND sjdwxx.dwmc IS NOT NULL
+        AND to_char( sjxx.jsrq, 'yyyy-MM' ) = to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+        GROUP BY
+        sjdwxx.dwmc
+        ) tmp
+        GROUP BY
+        tmp.dwmc
+        ) tpp
+        GROUP BY
+        tpp.dwmc,
+        tpp.num
+		ORDER BY
+			tpp.num DESC
+	</select>
+    <!--送检医院分布，医院名称，数量和百分比-->
+    <select id="getHospitalTypeMakeUp" parameterType="Map" resultType="Map">
+		SELECT
+		tpp.dwmc,
+		tpp.num,
+		round( CAST ( ( 100.0 * tpp.num / SUM ( tpp.num ) OVER ( ) ) AS NUMERIC ), 2 ) || '%' bfb
+		FROM
+		(
+		SELECT SUM
+		( tmp.num ) num,
+		tmp.dwmc
+		FROM
+		(
+		SELECT COUNT
+		( sjxx.sjid ) num,
+		CASE
+		WHEN ROW_NUMBER ( ) OVER ( ORDER BY COUNT ( sjxx.sjid ) DESC ) &lt;= 6 THEN
+		yyxx.dwmc ELSE'其他'
+		END dwmc
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sjxx.sjdw
+		LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON jc_jcxm.cskz1 = 'C'
+		OR xmjclx = jc_jcxm.cskz1
+		WHERE
+		sjxx.scbj = '0'
+		AND sjxx.sfjs = '1'
+		AND yyxx.dwmc IS NOT NULL
+		AND to_char( sjxx.jsrq, 'yyyy-MM' ) = to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+		GROUP BY
+		yyxx.dwmc
+		) tmp
+		GROUP BY
+		tmp.dwmc
+		) tpp
+		GROUP BY
+		tpp.dwmc,
+		tpp.num
+		ORDER BY
+			tpp.num DESC
+	</select>
+    <!--VIP标本占比，是否是VIP，数量和百分比-->
+	<select id="getVIPTypeMakeUp" parameterType="Map" resultType="Map">
+		SELECT
+			tmp.sfvip,
+			tmp.num,
+			round( CAST ( ( 100.0 * tmp.num / SUM ( tmp.num ) OVER ( ) ) AS NUMERIC ), 2 ) || '%' bfb
+		FROM
+			(
+			SELECT CASE WHEN sjxx.sfvip = '1' THEN '是VIP' ELSE'非VIP' END sfvip,COUNT ( sjxx.sjid ) num
+			FROM
+			igams_sjxx sjxx
+			LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+		    LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+			LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON jc_jcxm.cskz1 = 'C'
+			OR xmjclx = jc_jcxm.cskz1
+			WHERE
+			sjxx.scbj = '0'
+		    AND sjxx.sfjs = '1'
+			AND to_char( sjxx.jsrq, 'yyyy-MM' ) = to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+		    GROUP BY
+			sjxx.sfvip
+			) tmp
+		GROUP BY
+			tmp.sfvip,
+			tmp.num
+		ORDER BY
+			tmp.num DESC
+	</select>
+
+	<select id="getTimeoutNumber" resultType="Map">
+		select COALESCE(tab.yscsgs,'0') as yscsgs,COALESCE(tmp.bgcsgs,'0') as bgcsgs
+		from
+		(select count(sjid) as yscsgs,'' as flag
+		from igams_sjxx
+		where scbj='0' and cast(date_part('epoch', cast (jsrq as timestamp)-cast(cyrq||' 10:00:00' as timestamp))/60/60 as numeric)&gt;48) as tab
+		left join(select count(sjid) as bgcsgs,'' as flag
+		from igams_sjxx
+		where scbj='0' and ((cast(date_part('epoch', cast (bgrq as timestamp)-cast(syrq as timestamp))/60/60 as numeric)&gt;24) or (cast(date_part('epoch', cast (bgrq as timestamp)-cast(to_char(syrq+'1 D','yyyy-mm-dd 12:00:00') as timestamp))/60/60 as numeric)&gt;0 and cast(date_part('epoch', cast (bgrq as timestamp)-cast(syrq as timestamp))/60/60 as numeric)&lt;=24))) as tmp on tmp.flag=tab.flag
+
+	</select>
+
+	<select id="getTimeoutNumberGroupByJcdw" resultType="Map">
+		select COALESCE(tab.yscsgs,'0') as yscsgs,COALESCE(tmp.bgcsgs,'0') as bgcsgs,jcdw.csmc as jcdwmc
+		from
+		(select count(sjid) as yscsgs,jcdw
+		from igams_sjxx
+		where scbj='0' and cast(date_part('epoch', cast (jsrq as timestamp)-cast(cyrq||' 10:00:00' as timestamp))/60/60 as numeric)&gt;48 GROUP BY jcdw) as tab
+		left join(select count(sjid) as bgcsgs,jcdw
+		from igams_sjxx
+		where scbj='0' and ((cast(date_part('epoch', cast (bgrq as timestamp)-cast(syrq as timestamp))/60/60 as numeric)&gt;24) or (cast(date_part('epoch', cast (bgrq as timestamp)-cast(to_char(syrq+'1 D','yyyy-mm-dd 12:00:00') as timestamp))/60/60 as numeric)&gt;0 and cast(date_part('epoch', cast (bgrq as timestamp)-cast(syrq as timestamp))/60/60 as numeric)&lt;=24)) GROUP BY jcdw) as tmp on tmp.jcdw=tab.jcdw
+		left join matridx_jcsj jcdw on jcdw.csid = tab.jcdw
+
+	</select>
+	<select id="getSpeTimeSamples" resultType="Map">
+
+	select tmp.ybsl,tmp.fjsl,tmp.jcsl from
+	(
+	select count(sjxx.sjid) ybsl,'-1' as fjsl,'-1' as jcsl
+			from igams_sjxx sjxx
+				WHERE
+			to_char(sjxx.jsrq,'yyyy-mm-dd') =to_char(LOCALTIMESTAMP,'yyyy-mm-dd')
+			union all
+			select
+			'-1' as ybsl,
+			count(fj.csid) fjsl,
+			count (jc.csid) jcsl
+			from igams_sjxx sjxx
+			left join igams_fjsq fjsq on fjsq.sjid=sjxx.sjid
+			left join matridx_jcsj fj on fj.csid=fjsq.lx and fj.csdm ='RECHECK'
+			left join matridx_jcsj jc on jc.csid=fjsq.lx and jc.csdm='ADDDETECT'
+			where to_char(sjxx.jsrq,'yyyy-mm-dd') =to_char(LOCALTIMESTAMP,'yyyy-mm-dd')
+			)tmp
+		</select>
+
+	<!-- 各个实验室饱和度，返回多行，行信息包括实验室名称，实验室ID，饱和度 -->
+	<select id="getSaturationJcdw" resultType="Map" parameterType="Map">
+		select
+			jcdwmc, jcdw ,
+			round(sum(sjl)/400.0, 2) tjsl
+		from
+		(
+			select
+				case
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2),  1) ='B' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 70
+						else 35
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 40
+						else 20
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='N' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 60
+						else 30
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 30
+						else 15
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when xmjclx = 'C' then case
+					when sfvip ='1' then 65
+					else 30
+				end
+				else 15
+			end sjl, sjxx.db, jc_jcdw.csmc jcdwmc, sjxx.jcdw --, to_char( case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'YYYY-MM-DD' ) rq
+			from igams_sjxx sjxx
+			left outer join igams_sjjcxm xm on sjxx.sjid = xm.sjid and xm.scbj='0'
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = xm.jcxmid
+			left outer join matridx_jcsj jc_jcdw on sjxx.jcdw = jc_jcdw.csid
+			left outer join ( select 'D' xmjclx union all select 'R' xmjclx ) tt on jc_xm.cskz1 ='C' or xmjclx = jc_xm.cskz1
+			where
+				sjxx.scbj='0'
+				and sjxx.sfjs ='1'
+				AND (   	to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM') &gt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+				and to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM') &lt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )      )
+
+			UNION ALL
+
+			select
+				case
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='B' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 70
+						else 35
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 40
+						else 20
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='N' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 60
+						else 30
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 30
+						else 15
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when xmjclx = 'C' then case
+					when sfvip ='1' then 65
+					else 30
+				end
+				else 15
+			end sjl, sjxx.db, jc_jcdw.csmc , sjxx.jcdw--, to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'YYYY-MM-DD') rq
+			from igams_fjsq fj
+			left outer join igams_sjxx sjxx on fj.sjid = sjxx.sjid
+			left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sjxx.jcdw
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = fj.jcxm
+			left outer join ( select 'D' xmjclx  union all  select 'R' xmjclx ) tt on jc_xm.cskz1 ='C' or xmjclx = jc_xm.cskz1
+			where (    to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq  end, 'yyyy-MM') &gt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+				and to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM') &lt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )        )
+				and fj.scbj ='0'
+				and fj.zt ='80'
+		)tt
+		group by jcdwmc, jcdw
+		ORDER BY tjsl DESC
+	</select>
+
+	<!-- 所有实验室的饱和度，返回一个值，即实验室汇总的饱和值 -->
+	<select id="getSaturationAllJcdw" resultType="Map" parameterType="Map">
+		select
+		round(sum(sjl)/400.0, 2) tjsl
+		from
+		(
+			select
+				case
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2),  1) ='B' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 70
+						else 35
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 40
+						else 20
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='N' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 60
+						else 30
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 30
+						else 15
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when xmjclx = 'C' then case
+					when sfvip ='1' then 65
+					else 30
+				end
+				else 15
+			end sjl, sjxx.db, jc_jcdw.csmc jcdwmc, sjxx.jcdw --, to_char( case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'YYYY-MM-DD' ) rq
+			from igams_sjxx sjxx
+			left outer join igams_sjjcxm xm on sjxx.sjid = xm.sjid and xm.scbj='0'
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = xm.jcxmid
+			left outer join matridx_jcsj jc_jcdw on sjxx.jcdw = jc_jcdw.csid
+			left outer join ( select 'D' xmjclx union all select 'R' xmjclx ) tt on jc_xm.cskz1 ='C' or xmjclx = jc_xm.cskz1
+			where
+				sjxx.scbj='0'
+				and sjxx.sfjs ='1'
+				AND (   	to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM') &gt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+				and to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM') &lt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )      )
+
+			UNION ALL
+
+			select
+				case
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='B' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 70
+						else 35
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 40
+						else 20
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when right(substring(sjxx.nbbm, POSITION('-' in sjxx.nbbm)+2), 1) ='N' then case
+					when xmjclx = 'C' then case
+						when sfvip ='1' then 60
+						else 30
+					end
+					when xmjclx ='D' then case
+						when sfvip ='1' then 30
+						else 15
+					end
+					else case
+						when sfvip ='1' then 30
+						else 15
+					end
+				end
+				when xmjclx = 'C' then case
+					when sfvip ='1' then 65
+					else 30
+				end
+				else 15
+			end sjl, sjxx.db, jc_jcdw.csmc jcdwmc, sjxx.jcdw--, to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'YYYY-MM-DD') rq
+			from igams_fjsq fj
+			left outer join igams_sjxx sjxx on fj.sjid = sjxx.sjid
+			left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sjxx.jcdw
+			left outer join matridx_jcsj jc_xm on jc_xm.csid = fj.jcxm
+			left outer join ( select 'D' xmjclx  union all  select 'R' xmjclx ) tt on jc_xm.cskz1 ='C' or xmjclx = jc_xm.cskz1
+			where (    to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq  end, 'yyyy-MM')&gt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )
+				and to_char(case when tt.xmjclx = 'D' then sjxx.dsyrq when tt.xmjclx = 'R' then sjxx.syrq end, 'yyyy-MM')&lt;= to_char( LOCALTIMESTAMP, 'yyyy-MM' )        )
+				and fj.scbj ='0'
+				and fj.zt ='80'
+		)tt
+	</select>
+	<!-- 获取每日样本数 -->
+	<select id="getDailyybslist" resultType="Map">
+		select tmp.lx,sum(sl) from (select count(sjpdid) sl,'pd' as lx
+	from igams_sjpdgl
+	where scbj = '0'
+		AND to_char( pdsj, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		union all
+		select count(sjid) sl,'js' as lx
+		from igams_sjxx
+		where scbj = '0'
+			AND to_char( jsrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+			union all
+			select count(sjid) sysl,'sy' as lx
+			from igams_sjxx
+			where scbj='0'	and to_char( syrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		OR to_char( dsyrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		OR to_char( qtsyrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+
+		union all
+		select count(sjid) bgsl,'bg' as lx
+		from igams_sjxx
+		where scbj='0' 	and to_char( bgrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		union all
+		select count(sjxx.sjid) tqsl,'tq' as lx
+		from igams_sjxx sjxx
+		left join igams_tqmx tqmx on tqmx.sjid=sjxx.sjid and tqmx.scbj='0'
+		where sjxx.scbj='0' and to_char( tqmx.tqrq, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		AND tqmx.tqid is not null
+		group by tqmx.sjid
+		union all
+		select count(sjxx.sjid) jksl,'jk' as lx
+		from igams_sjxx sjxx
+		LEFT JOIN igams_wkmx wkmx ON wkmx.sjid = sjxx.sjid and wkmx.scbj='0'
+		where sjxx.scbj='0' and to_char( wkmx.lrsj, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		group by wkmx.sjid
+		union all
+		select count(sjxx.sjid) sjsl,'sj' as lx
+		from igams_sjxx sjxx
+		LEFT JOIN igams_wkmx wkmx ON wkmx.sjid = sjxx.sjid and wkmx.scbj='0'
+		LEFT JOIN igams_wksjgl wksjgl ON wksjgl.wkid = wkmx.wkid and wksjgl.scbj='0'
+			where sjxx.scbj='0' and to_char( wksjgl.lrsj, 'yyyy-mm-dd' ) = to_char( LOCALTIMESTAMP, 'yyyy-mm-dd' )
+		AND wksjgl.wksjid IS NOT NULL
+		group by wkmx.sjid,wksjgl.wkid)tmp
+		group by tmp.lx
+	</select>
+</mapper>

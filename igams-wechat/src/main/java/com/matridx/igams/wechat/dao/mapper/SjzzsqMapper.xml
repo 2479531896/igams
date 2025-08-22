@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjzzsqDao" >
+    <update id="updateZtByIds" parameterType="SjzzsqDto">
+        update igams_sjzzsq set zt='00'
+        <where>
+            scbj='0' and zzsqid in
+            <foreach collection="ids"  open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <!--    过快递单号mailno获取商家下单号号sjmailno-->
+    <select id="getSjmailnoByMailno" parameterType="SjzzsqDto" resultType="String">
+        select sjmailno from igams_sjkdxx where mailno=#{mailno} group by sjmailno
+    </select>
+    <!-- 获取纸质报告申请列表 -->
+    <select id="getPagedDtoListPaperReportsApply" parameterType="SjzzsqDto" resultType="SjzzsqDto" >
+        select sjzzsq.zzsqid,case when sjkdxx.mailno is null then 1 else 0 end sfjc,sjkdxx.mailno, sjkdxx.ywid, sjkdxx.kdzt,sjzzsq.sjid,sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,sjxx.jcxmmc jcxm,to_char(sjxx.bgrq,'yyyy-mm-dd') bgrq,sjxx.db sjhb,xtyh.zsxm sqr,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz
+        ,coalesce(sjzzsq.sfsd,'0') sfsd,yh.zsxm sdrymc,sjzzsq.sdrq,sjkdxx.sfqx,sjzzsq.sdry,sjzzsq.bh,jc_jcdw.csmc jcdwmc
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid and sjzzsq.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_xtyh yh on yh.yhid = sjzzsq.sdry
+        left outer join matridx_jcsj jc_jcdw on jc_jcdw.csid=sjxx.jcdw
+        <where>
+            sjzzsq.scbj='0'
+            <if test="userids != null and userids.size()>0">
+                and (sjzzsq.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sjxx.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="entire != null and entire != ''">
+                and (sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.db ILIKE '%'||#{entire}||'%'
+                or sjzzsq.sjr ILIKE '%'||#{entire}||'%'
+                or sjzzsq.dh ILIKE '%'||#{entire}||'%'
+                or sjkdxx.mailno ILIKE '%'||#{entire}||'%'
+                or yh.zsxm ILIKE '%'||#{entire}||'%'
+                or sjzzsq.bh ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="sdrymc != null and sdrymc != ''">
+                and yh.zsxm ILIKE '%'||#{sdrymc}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="sjhb != null and sjhb != ''">
+                and sjxx.db ILIKE '%'||#{sjhb}||'%'
+            </if>
+            <if test="sjr != null and sjr != ''">
+                and sjzzsq.sjr ILIKE '%'||#{sjr}||'%'
+            </if>
+            <if test="bh != null and bh != ''">
+                and sjzzsq.bh ILIKE '%'||#{bh}||'%'
+            </if>
+            <if test="dh != null and dh != ''">
+                and sjzzsq.dh ILIKE '%'||#{dh}||'%'
+            </if>
+            <if test="mailno != null and mailno != ''">
+                and sjkdxx.mailno ILIKE '%'||#{mailno}||'%'
+            </if>
+            <if test = "kdlxs != null and kdlxs.length > 0 "  >
+                and sjkdxx.kdlx in
+                <foreach collection="kdlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='1'.toString"  >
+                and sjzzsq.sfsd='1'
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='0'.toString"  >
+                and (sjzzsq.sfsd='0' or sjzzsq.sfsd  is null)
+            </if>
+            <if test="sdrqstart != null and sdrqstart != ''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &gt;= #{sdrqstart}
+            </if>
+            <if test="sdrqend !=null and sdrqend !=''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &lt;= #{sdrqend}
+            </if>
+            <if test="sqsjstart != null and sqsjstart != ''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &gt;= #{sqsjstart}
+            </if>
+            <if test="sqsjend !=null and sqsjend !=''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &lt;= #{sqsjend}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and zzsqid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="SjzzsqDto" resultType="SjzzsqDto" >
+        select sjzzsq.zzsqid,case when sjkdxx.mailno is null then 1 else 0 end sfjc,sjkdxx.mailno, sjkdxx.ywid,sjkdxx.sjkdid, sjkdxx.kdzt,sjkdxx.kdlx,sjzzsq.sjid,sjzzsq.sjr,sjkdxx.sjmailno,sjkdxx.jdlx,
+        sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,case when sjzzsq.fpsj ='1' then '是' when sjzzsq.fpsj='0' then '否' end fpsjmc,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,sjxx.jcxmmc jcxm,sjxx.bgrq,sjxx.db sjhb,
+        xtyh.zsxm sqr,sjzzsq.lrsj sqsj,sjzzsq.bz,sjxx.hzxm,sjxx.nl,case when sjxx.xb ='1' then '男' when sjxx.xb='2' then '女'   when sjxx.xb='3' then'未知' end xbmc,
+        yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sjxx.sjdwmc else '' end as sjdwmc,sjxx.jcxmmc,case when jc_yblx.cskz1 = '1' then sjxx.yblxmc else jc_yblx.csmc end yblxmc
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid and sjzzsq.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join igams_yyxx yyxx on yyxx.dwid = sjxx.sjdw
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        <where>
+            sjzzsq.scbj='0'
+            <if test="zzsqid != null and zzsqid != ''">
+                and sjzzsq.zzsqid=#{zzsqid}
+            </if>
+            <if test="sjid != null and sjid != ''">
+                and sjzzsq.sjid=#{sjid}
+            </if>
+            <if test="zt != null and zt != ''">
+                and sjzzsq.zt=#{zt}
+            </if>
+        </where>
+    </select>
+
+    <!-- 新增保存纸质报告信息 -->
+    <insert id="addSavePaperReportsApply" parameterType="SjzzsqDto">
+        insert into  igams_sjzzsq (
+        zzsqid,sjid,sjr,dh,fs,fpsj,dz,zt
+        <if test="bz != null and bz != ''">,bz</if>
+        ,lrry,lrsj,scbj,sfsd)
+        values (#{zzsqid},#{sjid},#{sjr},#{dh},cast(#{fs} as numeric),#{fpsj},#{dz},#{zt}
+        <if test="bz != null and bz != ''">,#{bz}</if>
+        ,#{lrry},LOCALTIMESTAMP,'0','0'
+        )
+    </insert>
+
+    <update id="update" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="sjid != null and sjid != ''">
+                ,sjid=#{sjid}
+            </if>
+            <if test="sjr != null and sjr != ''">
+                ,sjr=#{sjr}
+            </if>
+            <if test="dh != null and dh != ''">
+                ,dh=#{dh}
+            </if>
+            <if test="dz != null and dz != ''">
+                ,dz=#{dz}
+            </if>
+            <if test="fs != null and fs != ''">
+                ,fs=cast(#{fs} as numeric)
+            </if>
+            <if test="fpsj != null and fpsj != ''">
+                ,fpsj=#{fpsj}
+            </if>
+            <if test="zt != null and zt != ''">
+                ,zt=#{zt}
+            </if>
+            <if test="bz != null and bz != ''">
+                ,bz=#{bz}
+            </if>
+        </set>
+        <where>
+            zzsqid=#{zzsqid}
+        </where>
+    </update>
+
+
+    <select id="getPagedAuditPaperReports" parameterType="SjzzsqDto" resultType="SjzzsqDto">
+        select case when sjkdxx.mailno is null then 1 else 0 end sfjc,sjkdxx.sjkdid, sjkdxx.mailno, sjkdxx.ywid, sjkdxx.kdzt,sjzzsq.sjid,sjzzsq.zzsqid,
+        sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,sjxx.jcxmmc jcxm,sjxx.bgrq,
+        sjxx.db sjhb,sjzzsq.lrry sqr,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz,sjzzsq.bh
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        <where>
+            sjzzsq.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.db ILIKE '%'||#{entire}||'%'
+                or sjzzsq.sjr ILIKE '%'||#{entire}||'%'
+                or sjzzsq.dh ILIKE '%'||#{entire}||'%'
+                or sjkdxx.mailno ILIKE '%'||#{entire}||'%'
+                or sjzzsq.dz ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="sjhb != null and sjhb != ''">
+                and sjxx.db ILIKE '%'||#{sjhb}||'%'
+            </if>
+            <if test="sjr != null and sjr != ''">
+                and sjzzsq.sjr ILIKE '%'||#{sjr}||'%'
+            </if>
+            <if test="dz != null and dz != ''">
+                and sjzzsq.dz ILIKE '%'||#{dz}||'%'
+            </if>
+            <if test="dh != null and dh != ''">
+                and sjzzsq.dh ILIKE '%'||#{dh}||'%'
+            </if>
+            <if test="mailno != null and mailno != ''">
+                and sjkdxx.mailno ILIKE '%'||#{mailno}||'%'
+            </if>
+            <if test="bgzt== '0'.toString">
+                and sjxx.bgrq is null
+            </if>
+            <if test="bgzt== '1'.toString">
+                and sjxx.bgrq is not null
+            </if>
+        </where>
+    </select>
+    <!-- 审核列表-->
+    <select id="getAuditListPaperReports" parameterType="List" resultType="SjzzsqDto">
+        select case when sjkdxx.mailno is null then 1 else 0 end sfjc,sjkdxx.sjkdid, sjkdxx.mailno, sjkdxx.ywid, sjkdxx.kdzt,sjzzsq.sjid,sjzzsq.zzsqid,
+        sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,sjxx.jcxmmc jcxm,sjxx.bgrq,
+        sjxx.db sjhb,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj,xtyh.zsxm lrrymc,sjzzsq.bh
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        join
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.zzsqid} zzsqid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach>
+        tmp on tmp.zzsqid = sjzzsq.zzsqid
+        order by tmp.rownum
+    </select>
+
+    <select id="getAuditDto" parameterType="SjzzsqDto" resultType="ShxxDto">
+         select  shxx.shxxid ,shxx.gcid ,shxx.xh ,shxx.ywid ,shxx.shid ,shxx.lcxh ,shxx.sqsj ,shxx.sqr ,shxx.shsj ,shxx.sftg ,shxx.shyj ,
+                 shxx.ssyj ,shxx.gwid ,shxx.jsid ,shxx.stshry ,shxx.wtshry ,shxx.lrry ,shxx.lrsj ,shxx.xgry ,shxx.xgsj
+         from igams_sjzzsq sjzzsq
+         join matridx_shxx shxx  on shxx.ywid = sjzzsq.zzsqid
+         left outer join matridx_shgc shgc  on shgc.ywid = sjzzsq.zzsqid
+         join matridx_spgwcy gwcy  on gwcy.yhid = shxx.lrry  and gwcy.gwid = shxx.gwid
+         join matridx_xtsh xtsh  on xtsh.shid = shxx.shid
+         where sjzzsq.zzsqid=#{zzsqid}
+         order by shxx.xh desc limit 1
+    </select>
+
+    <select id="getDtoListByBh" parameterType="SjzzsqDto" resultType="SjzzsqDto">
+        select zzsqid ,sjid ,sjr ,dh ,dz ,fs ,fpsj ,sfsd ,sdry ,zt ,lrry ,lrsj ,xgry ,xgsj ,scsj ,scbj ,bz
+        from igams_sjzzsq
+        where bh=#{bh}
+    </select>
+
+    <select id="getSjidsByIds" resultType="String" parameterType="SjzzsqDto">
+        select string_agg(distinct sjzzsq.sjid,',') sjids
+         from igams_sjzzsq sjzzsq
+         where sjzzsq.scbj='0'
+         and sjzzsq.zzsqid in
+        <foreach collection="ids" separator="," open="(" close=") "
+                 item="item" index="index">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getSjidsByZt" resultType="String" parameterType="SjzzsqDto">
+        select string_agg(distinct sjzzsq.sjid,',') sjids
+        from igams_sjzzsq sjzzsq
+        where sjzzsq.scbj='0'
+        and sjzzsq.zt=#{zt}
+     </select>
+
+    <update id="delete" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="lock" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            sfsd='1',sdry=#{sdry},sdrq=LOCALTIMESTAMP
+        </set>
+        <where>
+            zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="cancelLock" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            sfsd='0',sdry=null,sdrq=null
+        </set>
+        <where>
+            zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_sjzzsq(zzsqid,sjid,sjr,dh,fs,fpsj,dz,zt
+        ,bz
+        ,lrry,lrsj,scbj,sfsd)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.zzsqid},#{item.sjid},#{item.sjr},#{item.dh},cast(#{item.fs} as numeric),#{item.fpsj},#{item.dz},#{item.zt}
+                ,#{item.bz}
+                ,#{item.lrry},LOCALTIMESTAMP,'0','0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="getStringByYwids" parameterType="ShgcDto" resultType="String">
+        select  string_agg(distinct sjzzsq.dz,',')
+        from igams_sjzzsq sjzzsq
+        <where>
+            sjzzsq.scbj='0' and sjzzsq.zzsqid in
+            <foreach collection="list" separator="," index="index" item="item" open="(" close=")">
+                #{item.ywid}
+            </foreach>
+        </where>
+    </select>
+
+
+  <!-- 选中导出  -->
+    <select id="getListForSelectExp" parameterType="SjzzsqDto" resultType="SjzzsqDto">
+        SELECT  sjzzsq.zzsqid ${sqlParam}
+        FROM (
+        <foreach collection="ids" separator=" union all "  index="index" item="item">
+            select #{item, jdbcType=VARCHAR} zzsqid, #{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_sjzzsq sjzzsq  on sjzzsq.zzsqid = tmp.zzsqid
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid and sjzzsq.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_jcsj jc_jczxm on jc_jczxm.csid = sjjcxm.jczxmid
+
+        ORDER BY tmp.ordernum
+    </select>
+
+    <!-- 获取搜索导出的条数 -->
+    <select id="getCountForSearchExp"  parameterType="SjzzsqDto" resultType="java.lang.Integer">
+        select  count (sjzzsq.zzsqid)
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid and sjzzsq.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_xtyh yh on yh.yhid = sjzzsq.sdry
+        left join matridx_jcsj jc_jczxm on jc_jczxm.csid = sjjcxm.jczxmid
+        <where>
+            sjzzsq.scbj='0'
+            <if test="userids != null and userids.size()>0">
+                and (sjzzsq.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sjxx.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="entire != null and entire != ''">
+                and (sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.db ILIKE '%'||#{entire}||'%'
+                or sjzzsq.sjr ILIKE '%'||#{entire}||'%'
+                or sjzzsq.dh ILIKE '%'||#{entire}||'%'
+                or sjkdxx.mailno ILIKE '%'||#{entire}||'%'
+                or yh.zsxm ILIKE '%'||#{entire}||'%'
+                or sjzzsq.bh ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="sdrymc != null and sdrymc != ''">
+                and yh.zsxm ILIKE '%'||#{sdrymc}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="sjhb != null and sjhb != ''">
+                and sjxx.db ILIKE '%'||#{sjhb}||'%'
+            </if>
+            <if test="sjr != null and sjr != ''">
+                and sjzzsq.sjr ILIKE '%'||#{sjr}||'%'
+            </if>
+            <if test="bh != null and bh != ''">
+                and sjzzsq.bh ILIKE '%'||#{bh}||'%'
+            </if>
+            <if test="dh != null and dh != ''">
+                and sjzzsq.dh ILIKE '%'||#{dh}||'%'
+            </if>
+            <if test="mailno != null and mailno != ''">
+                and sjkdxx.mailno ILIKE '%'||#{mailno}||'%'
+            </if>
+            <if test = "kdlxs != null and kdlxs.length > 0 "  >
+                and sjkdxx.kdlx in
+                <foreach collection="kdlxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='1'.toString"  >
+                and sjzzsq.sfsd='1'
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='0'.toString"  >
+                and (sjzzsq.sfsd='0' or sjzzsq.sfsd  is null)
+            </if>
+            <if test="sdrqstart != null and sdrqstart != ''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &gt;= #{sdrqstart}
+            </if>
+            <if test="sdrqend !=null and sdrqend !=''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &lt;= #{sdrqend}
+            </if>
+            <if test="sqsjstart != null and sqsjstart != ''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &gt;= #{sqsjstart}
+            </if>
+            <if test="sqsjend !=null and sqsjend !=''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &lt;= #{sqsjend}
+            </if>
+        </where>
+    </select>
+
+    <!-- 搜索导出 -->
+    <select id="getListForSearchExp" parameterType="SjzzsqDto" resultType="sjzzsqDto">
+        SELECT  sjzzsq.zzsqid  ${sqlParam}
+        from igams_sjzzsq sjzzsq
+        left join igams_sjkdxx sjkdxx on sjzzsq.zzsqid = sjkdxx.ywid and sjzzsq.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_xtyh yh on yh.yhid = sjzzsq.sdry
+        left join matridx_jcsj jc_jczxm on jc_jczxm.csid = sjjcxm.jczxmid
+        <where>
+            sjzzsq.scbj='0'
+            <if test="userids != null and userids.size()>0">
+                and (sjzzsq.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sjxx.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="entire != null and entire != ''">
+                and (sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.db ILIKE '%'||#{entire}||'%'
+                or sjzzsq.sjr ILIKE '%'||#{entire}||'%'
+                or sjzzsq.dh ILIKE '%'||#{entire}||'%'
+                or sjkdxx.mailno ILIKE '%'||#{entire}||'%'
+                or yh.zsxm ILIKE '%'||#{entire}||'%'
+                or sjzzsq.bh ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="sdrymc != null and sdrymc != ''">
+                and yh.zsxm ILIKE '%'||#{sdrymc}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="sjhb != null and sjhb != ''">
+                and sjxx.db ILIKE '%'||#{sjhb}||'%'
+            </if>
+            <if test="sjr != null and sjr != ''">
+                and sjzzsq.sjr ILIKE '%'||#{sjr}||'%'
+            </if>
+            <if test="bh != null and bh != ''">
+                and sjzzsq.bh ILIKE '%'||#{bh}||'%'
+            </if>
+            <if test="dh != null and dh != ''">
+                and sjzzsq.dh ILIKE '%'||#{dh}||'%'
+            </if>
+            <if test="mailno != null and mailno != ''">
+                and sjkdxx.mailno ILIKE '%'||#{mailno}||'%'
+            </if>
+            <if test = "kdlxs != null and kdlxs.length > 0 "  >
+                and sjkdxx.kdlx in
+                <foreach collection="kdlxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='1'.toString"  >
+                and sjzzsq.sfsd='1'
+            </if>
+            <if test = "sfsd != null and sfsd != '' and sfsd=='0'.toString"  >
+                and (sjzzsq.sfsd='0' or sjzzsq.sfsd  is null)
+            </if>
+            <if test="sdrqstart != null and sdrqstart != ''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &gt;= #{sdrqstart}
+            </if>
+            <if test="sdrqend !=null and sdrqend !=''">
+                and to_char(sjzzsq.sdrq,'yyyy-mm-dd') &lt;= #{sdrqend}
+            </if>
+            <if test="sqsjstart != null and sqsjstart != ''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &gt;= #{sqsjstart}
+            </if>
+            <if test="sqsjend !=null and sqsjend !=''">
+                and to_char(sjzzsq.lrsj,'yyyy-mm-dd') &lt;= #{sqsjend}
+            </if>
+        </where>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    
+    <select id="getDhByYwids" parameterType="ShgcDto" resultType="String">
+        select  string_agg(distinct sjzzsq.dh,',')
+        from igams_sjzzsq sjzzsq
+        <where>
+            sjzzsq.scbj='0' and sjzzsq.zzsqid in
+            <foreach collection="list" separator="," index="index" item="item" open="(" close=")">
+                #{item.ywid}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getBhsByIds" parameterType="SjzzsqDto" resultType="String">
+        select  string_agg(distinct sjzzsq.bh,',')
+        from igams_sjzzsq sjzzsq
+        <where>
+            sjzzsq.scbj='0'
+            and zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getBhSerial" parameterType="String" resultType="String">
+        SELECT   lpad(cast((CAST(coalesce(MAX(substring(bh,0,5)),'0') AS numeric) + 1) as VARCHAR), 4, '0') serial
+        FROM igams_sjzzsq
+        <where>
+            scbj = '0' AND bh like '%'||#{prefix}||'%'
+        </where>
+    </select>
+
+    <update id="pack" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            bh=#{bh},dbry=#{dbry},dbsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="cancelPack" parameterType="SjzzsqDto">
+        update igams_sjzzsq
+        <set>
+            bh=null,dbry=null,dbsj=null
+        </set>
+        <where>
+            zzsqid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="getPageReportList" parameterType="SjzzsqDto" resultType="SjzzsqDto" >
+        select sjzzsq.zzsqid,sjzzsq.sjid,sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,to_char(sjxx.bgrq,'yyyy-mm-dd') bgrq,sjxx.db sjhb,xtyh.zsxm sqr,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz ,coalesce(sjzzsq.sfsd,'0') sfsd,yh.zsxm sdrymc,sjzzsq.sdrq,sjzzsq.sdry,sjzzsq.bh,jclx.csmc jcxmmc,fj.fjid
+        from igams_sjzzsq sjzzsq
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join igams_sjbgsm sjbgsm on sjbgsm.sjid = sjxx.sjid
+        left join matridx_jcsj jclx on jclx.csid=sjbgsm.jclx
+        left join matridx_fjcfb fj on fj.ywid=sjxx.sjid and fj.ywlx=jclx.cskz3||'_'||jclx.cskz1
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_xtyh yh on yh.yhid = sjzzsq.sdry
+        <where>
+            sjzzsq.scbj='0'
+            <if test="ids !=null and ids.size > 0">
+                and zzsqid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="SjzzsqDto" resultType="SjzzsqDto" >
+        select sjzzsq.zzsqid,sjzzsq.sjid,sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,jc_yblx.csmc yblx,to_char(sjxx.bgrq,'yyyy-mm-dd') bgrq,sjxx.db sjhb,xtyh.zsxm sqrxm,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz ,coalesce(sjzzsq.sfsd,'0') sfsd,yh.zsxm sdrymc,sjzzsq.sdrq,sjzzsq.sdry,sjzzsq.bh,jclx.csmc jcxmmc,fj.fjid,fj.wjm
+        from igams_sjzzsq sjzzsq
+        left join igams_sjxx sjxx on sjxx.sjid = sjzzsq.sjid
+        left join igams_sjbgsm sjbgsm on sjbgsm.sjid = sjxx.sjid
+        left join matridx_jcsj jclx on jclx.csid=sjbgsm.jclx
+        left join matridx_fjcfb fj on fj.ywid=sjxx.sjid and fj.ywlx=jclx.cskz3||'_'||jclx.cskz1
+        left join matridx_jcsj jc_yblx on jc_yblx.csid = sjxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid = sjzzsq.lrry
+        left join matridx_xtyh yh on yh.yhid = sjzzsq.sdry
+        <where>
+            sjzzsq.scbj='0'
+            <if test="ids !=null and ids.size > 0">
+                and zzsqid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSjzzsqBySjid" parameterType="SjzzsqDto" resultType="SjzzsqDto" >
+        select sjzzsq.zzsqid,sjzzsq.sjid,sjzzsq.sjr,sjzzsq.dh,sjzzsq.dz,sjzzsq.fs,sjzzsq.fpsj,sjzzsq.zt,to_char(sjzzsq.lrsj,'yyyy-mm-dd hh24:mi:ss') sqsj,sjzzsq.bz ,coalesce(sjzzsq.sfsd,'0') sfsd,sjzzsq.sdrq,sjzzsq.sdry,sjzzsq.bh
+        from igams_sjzzsq sjzzsq
+        <where>
+            sjzzsq.scbj='0' and sjid=#{sjid}
+        </where>
+    </select>
+</mapper>

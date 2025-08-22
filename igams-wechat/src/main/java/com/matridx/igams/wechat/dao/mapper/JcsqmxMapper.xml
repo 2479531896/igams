@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IJcsqmxDao" >
+
+    <select id="getDtoList" parameterType="JcsqmxDto" resultType="JcsqmxDto">
+        select jcsqmx.sqmxid,jcsqmx.sjid,sjxx.ybbh,sjxx.hzxm,yblx.csmc as yblxmc
+        from igams_jcsqmx jcsqmx
+        left join igams_sjxx sjxx on sjxx.sjid=jcsqmx.sjid and sjxx.scbj='0'
+        left join matridx_jcsj yblx on sjxx.yblx = yblx.csid and yblx.scbj='0'
+        <where>
+            jcsqmx.scbj='0' and jcsqmx.sqglid=#{sqglid}
+        </where>
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_jcsqmx(
+        sqmxid,
+        sqglid,
+        sjid,
+        lrry,
+        lrsj,
+        scbj
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.sqmxid},
+                #{item.sqglid},
+                #{item.sjid},
+                #{item.lrry},
+                LOCALTIMESTAMP,
+                 '0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="delete" parameterType="JcsqmxDto">
+        update igams_jcsqmx
+        <set>
+            scbj='1',
+            scsj=LOCALTIMESTAMP,
+            scry=#{scry}
+        </set>
+        <where>
+            <if test="sqglid != null and sqglid != ''">
+                sqglid=#{sqglid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                sqglid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <select id="verifySamples" parameterType="JcsqmxDto" resultType="JcsqmxDto">
+        select jcsqmx.sqmxid
+        from igams_jcsqmx jcsqmx
+        left join igams_jcsqgl jcsqgl on jcsqgl.sqglid=jcsqmx.sqglid and jcsqgl.scbj='0'
+        <where>
+            jcsqmx.scbj='0' and jcsqgl.zt='10' and jcsqmx.sjid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+            <if test="sqglid != null and sqglid != ''">
+                and jcsqmx.sqglid!=#{sqglid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getWkbhDtoList" parameterType="JcsqmxDto" resultType="JcsqmxDto">
+        select jcsqmx.sqmxid,jcsqmx.sjid,sjxx.ybbh,sjxx.hzxm,yblx.csmc as yblxmc,wksjmx.wkbm wkbh
+        from igams_jcsqmx jcsqmx
+        left join igams_sjxx sjxx on sjxx.sjid=jcsqmx.sjid and sjxx.scbj='0'
+        left join matridx_jcsj yblx on sjxx.yblx = yblx.csid and yblx.scbj='0'
+        left join igams_wksjmx wksjmx on wksjmx.ybbh = sjxx.ybbh
+        left join igams_wksjgl wksjgl on wksjmx.wksjid = wksjgl.wksjid
+        <where>
+            jcsqmx.scbj='0' and jcsqmx.sqglid=#{sqglid}
+            and wksjgl.scbj ='0' and wksjgl.sjsj is not null
+        </where>
+    </select>
+</mapper>

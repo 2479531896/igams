@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjybztDao" >
+	<insert id="insertYbzt" parameterType="list">
+		insert into igams_sjybzt(sjid,xh,zt
+		)values
+		<if test="list !=null and list.size>0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjid},cast(#{item.xh} as numeric),#{item.zt})
+			</foreach>
+		</if>
+	</insert>
+	<delete id="deleteById" parameterType="String">
+		delete from igams_sjybzt 
+			where sjid=#{sjid}
+	</delete>
+	<select id="getZtBysjid" parameterType="String" resultType="String">
+		select zt 
+		from igams_sjybzt
+		where 
+			sjid=#{sjid}
+	</select>
+	
+	<select id="getDtoList" parameterType="SjybztDto" resultType="SjybztDto">
+		select ybzt.sjid,ybzt.xh,ybzt.zt,sj.csmc,sj.cskz1 as ybztCskz1, sj.cskz2 AS ybztCskz2
+		from igams_sjybzt ybzt
+		left outer join matridx_jcsj sj on ybzt.zt = sj.csid
+		<where>
+			sjid = #{sjid} 
+			<if test="ybztCskz1 != null and ybztCskz1 != ''">
+	         	and sj.cskz1=#{ybztCskz1}
+	        </if>
+			<if test="ybztCskz1s != null and ybztCskz1s.size() > 0 ">
+				and sj.cskz1 in
+				<foreach collection="ybztCskz1s" item="item" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getPercentOfPass" parameterType="SjybztDto" resultType="SjybztDto">
+		SELECT  tmpp.num num,
+			tmpp.bad sampleBad,
+			(tmpp.num-tmpp.bad) sampleGood,
+			case when tmpp.num=0 then '0%' else round( (tmpp.bad/tmpp.num::numeric)*100 , 2 )|| '%' end sampleNopass,
+			case when tmpp.num=0 then '0%' else round( ( (tmpp.num-tmpp.bad)/tmpp.num::numeric)*100 , 2 )|| '%' end samplePass
+		from (
+			SELECT
+			(
+				select count(sjid)
+				from igams_sjxx sjxx
+				where sjxx.scbj='0'
+				and to_char(sjxx.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+				and to_char(sjxx.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+			) as num,
+			(
+				select count(tmp.sjid)
+				from
+				(
+				select ybzt.sjid sjid
+				from igams_sjybzt ybzt
+				join igams_sjxx sjxx on ybzt.sjid = sjxx.sjid
+				where sjxx.scbj='0'
+				and to_char(sjxx.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+				and to_char(sjxx.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+				group by ybzt.sjid
+				)tmp
+			)as bad
+		)tmpp
+	</select>
+
+	<select id="getPercentOfUnPass" parameterType="SjybztDto" resultType="SjybztDto">
+		SELECT
+			tmp.csmc AS csmc,
+			tmp.num AS num,
+			CASE WHEN SUM (tmp.num) OVER ()=0 THEN '0.00%' ELSE
+			round(          CAST (           (  100.0*tmp.num/SUM(tmp.num) OVER () ) AS NUMERIC        ), 2			) || '%' END AS percentage
+		from (
+			select ybzt.zt as type, jc.csmc as csmc, count(ybzt.zt) as num
+			from igams_sjybzt ybzt
+			left join matridx_jcsj jc on jc.csid = ybzt.zt
+			join igams_sjxx sjxx on ybzt.sjid = sjxx.sjid
+			where sjxx.scbj='0'
+			and to_char(sjxx.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+			and to_char(sjxx.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+			group by ybzt.zt,jc.csmc
+		)tmp
+	</select>
+</mapper>

@@ -1,0 +1,2302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IYxsjxxDao">
+    <!-- 用include方法 把需要查询都字段取出来 -->
+    <select id="getCountOptimize" parameterType="Map" resultType="int">
+        WITH page_data AS (
+        SELECT sjid, fjid
+        FROM (
+        <if test="fjlxs == null or fjlxs.length==0 or fjlxs == ''">
+            (SELECT sj.sjid,null as fjid
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                ,CASE WHEN yszk.sfjs='1' THEN yszkmx.jsje ELSE 0 END jsje
+            </if>
+            <if test="(ybbhFlag !=null and ybbhFlag !='')">
+                ,sj.ybbh
+            </if>
+            <if test="(nbbmFlag !=null and nbbmFlag !='')">
+                ,sj.nbbm
+            </if>
+            <if test="(hzxmFlag !=null and hzxmFlag !='')">
+                ,sj.hzxm
+            </if>
+            <if test="(yymcFlag !=null and yymcFlag !='')">
+                ,yyxx.dwmc yymc
+            </if>
+            <if test="(sjdwmcFlag !=null and sjdwmcFlag !='')">
+                ,sj.sjdwmc
+            </if>
+            <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+                ,CASE WHEN jc_yblx.cskz1='1' THEN COALESCE (sj.yblxmc,jc_yblx.csmc) ELSE jc_yblx.csmc END AS yblxmc
+            </if>
+            <if test="(jsrqFlag !=null and jsrqFlag !='')">
+                ,sj.jsrq
+            </if>
+            <if test="(bgrqFlag !=null and bgrqFlag !='')">
+                ,sj.bgrq
+            </if>
+            <if test="(sfsfFlag !=null and sfsfFlag !='')">
+                ,COALESCE (jcxm.sfsf,sj.sfsf) sfsf
+            </if>
+            <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+                ,yptgs.csmc ptgsmc
+            </if>
+            <if test="(dbFlag !=null and dbFlag !='')">
+                ,sj.db
+            </if>
+            <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+                ,ptgs.csmc xsbmmc
+            </if>
+            <if test="(fkrqFlag !=null and fkrqFlag !='')">
+                ,sj.fkrq
+            </if>
+            <if test="(sfcssFlag !=null and sfcssFlag !='')">
+                ,CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR COALESCE (jcxm.sfsf,sj.sfsf)='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1'
+                WHEN jcxmlx.cskz1='R' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '2' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='2' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='3' THEN '1' END
+                WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END sfcss
+            </if>
+            <if test="(lrsjFlag !=null and lrsjFlag !='')">
+                ,sj.lrsj
+            </if>
+            <if test="(fkjeFlag !=null and fkjeFlag !='')">
+                ,jcxm.yfje AS fkje
+            </if>
+            <if test="(clbjFlag !=null and clbjFlag !='')">
+                ,sj.clbj
+            </if>
+            <if test="(dzjeFlag !=null and dzjeFlag !='')">
+                ,jcxm.dzje
+            </if>
+            <if test="(sfdzFlag !=null and sfdzFlag !='')">
+                ,jcxm.sfdz
+            </if>
+            <if test="(dcbjFlag !=null and dcbjFlag !='')">
+                ,jcxm.dcbj
+            </if>
+            <if test="(dcbjlxFlag !=null and dcbjlxFlag !='')">
+                ,CASE WHEN jcxm.dcbj IS NOT NULL AND jcxm.dcbj !='' AND (jcxm.yszkid IS NULL OR jcxm.yszkid='') THEN '已导出未上传' ELSE '其它' END dcbjlx
+            </if>
+            <if test="(ztqfFlag !=null and ztqfFlag !='')">
+                ,swkhgl.ztqf
+            </if>
+            <if test="(sfjsFlag !=null and sfjsFlag !='')">
+                ,sj.sfjs
+            </if>
+            <if test="(yblxFlag !=null and yblxFlag !='')">
+                ,sj.yblx
+            </if>
+            <if test="(yhmcFlag !=null and yhmcFlag !='')">
+                ,yh.zsxm as yhmc
+            </if>
+            FROM igams_sjxx sj
+            <if test="(dcbjflg == '1'.toString()) or (dcbjflg == '0'.toString()) or (dcbj !=null and dcbj !='') or (sfdz !=null and sfdz !='') or
+            (jsjeFlag !=null and jsjeFlag !='') or ((sfsfFlag !=null and sfsfFlag !='')) or (sfcssFlag !=null and sfcssFlag !='') or
+            (fkjeFlag !=null and fkjeFlag !='') or (dzjeFlag !=null and dzjeFlag !='') or (sfdzFlag !=null and sfdzFlag !='') or
+            (dcbjFlag !=null and dcbjFlag !='') or (dcbjlxFlag !=null and dcbjlxFlag !='') or (jcxms !=null and jcxms.length > 0)">
+                LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid AND jcxm.scbj = '0'
+            </if>
+            <if test="(all_param !=null and all_param !='') or (hospitalname !=null and hospitalname !='') or (yytjmc !=null and yytjmc !='') or (yyzddjs != null and yyzddjs.length>0) or (yymcFlag !=null and yymcFlag !='')">
+                LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw
+            </if>
+            <if test="(kylxs != null and kylxs.length > 0) ">
+                LEFT JOIN matridx_jcsj jc_ky ON jc_ky.csid = sj.kyxm
+            </if>
+            <if test="(tjmc !=null and tjmc !='') or (dzzq !=null and dzzq !='') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (dbm =='0'.toString()) or (dbm =='1'.toString()) or (ptgss != null and ptgss.length > 0) or (xsbms != null and xsbms.length > 0) or (yhmc != null and yhmc != '') or (ptgsmcFlag !=null and ptgsmcFlag !='') or (ztqfFlag !=null and ztqfFlag !='') or (yhmcFlag !=null and yhmcFlag !='') or (xsbmmcFlag !=null and xsbmmcFlag !='')">
+                LEFT JOIN igams_sjhbxx hbxx ON sj.db = hbxx.hbmc AND (hbxx.scbj = '0' OR hbxx.scbj = '2')
+            </if>
+            <if test="(dzzq !=null and dzzq !='') or (ztqfFlag !=null and ztqfFlag !='')">
+                LEFT JOIN igams_hbhzkh hbhzkh ON hbhzkh.hbid = hbxx.hbid AND hbhzkh.zykh = '1'
+            </if>
+            <if test="(dzzq !=null and dzzq !='') or (ztqfFlag !=null and ztqfFlag !='')">
+                LEFT JOIN igams_swkhgl swkhgl ON hbhzkh.khid = swkhgl.khid AND swkhgl.scbj = '0'
+            </if>
+            <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+                LEFT JOIN matridx_xtyh yh_dq ON yh_dq.yhid = hbxx.dqxx
+            </if>
+            <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+                LEFT JOIN matridx_xtyh yh ON yh.yhid = yh_dq.yhid
+            </if>
+            <if test="(all_param !=null and all_param !='') or (qtks !=null and qtks !='')">
+                LEFT JOIN igams_sjdwxx ks ON sj.ks = ks.dwid
+            </if>
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                LEFT JOIN igams_yszkmx yszkmx ON yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = sj.sjid AND jcxm.jcxmid = yszkmx.jcxmid AND (jcxm.jczxmid = yszkmx.jczxmid OR ((jcxm.jczxmid IS NULL OR jcxm.jczxmid = '') AND (yszkmx.jczxmid IS NULL OR yszkmx.jczxmid = '')))
+            </if>
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                LEFT JOIN igams_swyszk yszk ON yszk.scbj = '0' AND yszkmx.yszkid = yszk.yszkid AND yszk.yszkid = jcxm.yszkid
+            </if>
+            <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+                LEFT JOIN matridx_jcsj jc_yblx ON sj.yblx = jc_yblx.csid
+            </if>
+            <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+                LEFT JOIN matridx_jcsj yptgs ON yptgs.csid = hbxx.yptgs
+            </if>
+            <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+                LEFT JOIN matridx_jcsj ptgs ON ptgs.csid = hbxx.ptgs
+            </if>
+            <if test="(sfcssFlag !=null and sfcssFlag !='')">
+                LEFT JOIN matridx_jcsj jcxmlx ON jcxmlx.csid = jcxm.jcxmid
+            </if>
+            <where>
+                sj.scbj='0'
+                <include refid="SelectWhere"></include>
+                <if test="jcxms !=null and jcxms.length > 0">
+                    and jcxm.jcxmid in
+                    <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                        #{item}
+                    </foreach>
+
+                </if>
+                <if test="dcbjflg == '1'.toString()">
+                    and jcxm.dcbj is not null and jcxm.dcbj != '' and (jcxm.yszkid is null or jcxm.yszkid = '')
+                </if>
+                <if test="dcbjflg == '0'.toString()">
+                    and (jcxm.dcbj is null or jcxm.dcbj = '' or (jcxm.yszkid is not null and jcxm.yszkid != ''))
+                </if>
+                <if test="dcbj !=null and dcbj !=''">
+                    and jcxm.dcbj ILIKE '%'||#{dcbj}||'%'
+                </if>
+                <if test="sfdz !=null and sfdz !=''">
+                    and jcxm.sfdz = #{sfdz}
+                </if>
+                <if test="sfsfs != null and sfsfs.length > 0 ">
+                    and sj.sfsf in
+                    <foreach collection="sfsfs" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="jcdwxz !=null and jcdwxz.size()>0">
+                    and sj.jcdw in
+                    <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="userids != null and userids.size()>0">
+                    and (sj.lrry in
+                    <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    <if test="sjhbs != null and sjhbs.size()>0">
+                        or sj.db in
+                        <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    )
+                </if>
+                <if test="syrqflg == '1'.toString() ">
+                    and (
+                    ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                    or ( 1=1
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                    )
+                    )
+                </if>
+                <if test="syrqflg == null or syrqflg ==''">
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                </if>
+                <if test="yhmc != null and yhmc != ''">
+                    and yh.zsxm=#{yhmc}
+                </if>
+            </where>
+            )
+            UNION ALL
+        </if>
+        (SELECT fjsq.sjid,fjsq.fjid
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            ,CASE WHEN yszk.sfjs='1' THEN yszkmx.jsje ELSE 0 END jsje
+        </if>
+        <if test="(ybbhFlag !=null and ybbhFlag !='')">
+            ,sj.ybbh
+        </if>
+        <if test="(nbbmFlag !=null and nbbmFlag !='')">
+            ,sj.nbbm
+        </if>
+        <if test="(hzxmFlag !=null and hzxmFlag !='')">
+            ,sj.hzxm
+        </if>
+        <if test="(yymcFlag !=null and yymcFlag !='')">
+            ,yyxx.dwmc yymc
+        </if>
+        <if test="(sjdwmcFlag !=null and sjdwmcFlag !='')">
+            ,sj.sjdwmc
+        </if>
+        <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+            ,CASE WHEN jc_yblx.cskz1='1' THEN COALESCE (sj.yblxmc,jc_yblx.csmc) ELSE jc_yblx.csmc END AS yblxmc
+        </if>
+        <if test="(jsrqFlag !=null and jsrqFlag !='')">
+            ,sj.jsrq
+        </if>
+        <if test="(bgrqFlag !=null and bgrqFlag !='')">
+            ,sj.bgrq
+        </if>
+        <if test="(sfsfFlag !=null and sfsfFlag !='')">
+            ,fjsq.sfff AS sfsf
+        </if>
+        <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+            ,yptgs.csmc ptgsmc
+        </if>
+        <if test="(dbFlag !=null and dbFlag !='')">
+            ,sj.db
+        </if>
+        <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+            ,ptgs.csmc xsbmmc
+        </if>
+        <if test="(fkrqFlag !=null and fkrqFlag !='')">
+            ,fjsq.fkrq
+        </if>
+        <if test="(sfcssFlag !=null and sfcssFlag !='')">
+            ,CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR fjsq.sfff='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND fjsq.sfff='1' THEN '1'
+            WHEN jcxmlx.cskz1='R' AND fjsq.sfff='1' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='1' THEN '2' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='2' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='3' THEN '1' END
+            WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END sfcss
+        </if>
+        <if test="(lrsjFlag !=null and lrsjFlag !='')">
+            ,fjsq.lrsj
+        </if>
+        <if test="(fkjeFlag !=null and fkjeFlag !='')">
+            ,fjsq.yfje AS fkje
+        </if>
+        <if test="(clbjFlag !=null and clbjFlag !='')">
+            ,NULL as clbj
+        </if>
+        <if test="(dzjeFlag !=null and dzjeFlag !='')">
+            ,fjsq.dzje
+        </if>
+        <if test="(sfdzFlag !=null and sfdzFlag !='')">
+            ,fjsq.sfdz
+        </if>
+        <if test="(dcbjFlag !=null and dcbjFlag !='')">
+            ,fjsq.dcbj
+        </if>
+        <if test="(dcbjlxFlag !=null and dcbjlxFlag !='')">
+            ,CASE WHEN fjsq.dcbj IS NOT NULL AND fjsq.dcbj !='' AND (fjsq.yszkid IS NULL OR fjsq.yszkid='') THEN '已导出未上传' ELSE '其它' END dcbjlx
+        </if>
+        <if test="(ztqfFlag !=null and ztqfFlag !='')">
+            ,swkhgl.ztqf
+        </if>
+        <if test="(sfjsFlag !=null and sfjsFlag !='')">
+            ,sj.sfjs
+        </if>
+        <if test="(yblxFlag !=null and yblxFlag !='')">
+            ,sj.yblx
+        </if>
+        <if test="(yhmcFlag !=null and yhmcFlag !='')">
+            ,yh.zsxm as yhmc
+        </if>
+        FROM igams_fjsq fjsq
+        LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+        LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+        <if test="(all_param !=null and all_param !='') or (hospitalname != null and hospitalname != '') or (yytjmc != null and yytjmc != '') or (yyzddjs != null and yyzddjs.length>0) or (yymcFlag !=null and yymcFlag !='')">
+            LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw
+        </if>
+        <if test="kylxs != null and kylxs.length > 0 ">
+            LEFT JOIN matridx_jcsj jc_ky ON jc_ky.csid = sj.kyxm
+        </if>
+        <if test="(tjmc != null and tjmc != '') or (dzzq != null and dzzq != '') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (dbm =='0'.toString()) or (dbm =='1'.toString()) or (ptgss != null and ptgss.length > 0) or (xsbms != null and xsbms.length > 0) or (yhmc != null and yhmc != '') or (ptgsmcFlag !=null and ptgsmcFlag !='') or (ztqfFlag !=null and ztqfFlag !='') or (yhmcFlag !=null and yhmcFlag !='') or (xsbmmcFlag !=null and xsbmmcFlag !='')">
+            LEFT JOIN igams_sjhbxx hbxx ON sj.db = hbxx.hbmc AND (hbxx.scbj = '0' OR hbxx.scbj = '2')
+        </if>
+        <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+            LEFT JOIN matridx_xtyh yh_dq ON yh_dq.yhid = hbxx.dqxx
+        </if>
+        <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+            LEFT JOIN matridx_xtyh yh ON yh.yhid = yh_dq.yhid
+        </if>
+        <if test="(all_param !=null and all_param !='') or (qtks != null and qtks != '')">
+            LEFT JOIN igams_sjdwxx ks ON sj.ks = ks.dwid
+        </if>
+        <if test="(dzzq != null and dzzq != '') or (ztqfFlag !=null and ztqfFlag !='')">
+            LEFT JOIN igams_hbhzkh hbhzkh ON hbhzkh.hbid = hbxx.hbid AND hbhzkh.zykh = '1'
+        </if>
+        <if test="(dzzq != null and dzzq != '') or (ztqfFlag !=null and ztqfFlag !='')">
+            LEFT JOIN igams_swkhgl swkhgl ON hbhzkh.khid = swkhgl.khid AND swkhgl.scbj = '0'
+        </if>
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            LEFT JOIN igams_yszkmx yszkmx ON yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = fjsq.fjid AND fjsq.jcxm = yszkmx.jcxmid
+        </if>
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            LEFT JOIN igams_swyszk yszk ON yszk.scbj = '0' AND yszkmx.yszkid = yszk.yszkid AND yszk.yszkid = fjsq.yszkid
+        </if>
+        <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+            LEFT JOIN matridx_jcsj jc_yblx ON sj.yblx = jc_yblx.csid
+        </if>
+        <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+            LEFT JOIN matridx_jcsj yptgs ON yptgs.csid = hbxx.yptgs
+        </if>
+        <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+            LEFT JOIN matridx_jcsj ptgs ON ptgs.csid = hbxx.ptgs
+        </if>
+        <if test="(sfcssFlag !=null and sfcssFlag !='')">
+            LEFT JOIN matridx_jcsj jcxmlx ON jcxmlx.csid = fjsq.jcxm
+        </if>
+        <where>
+            fjsq.zt = '80' and jc_fjlx.cskz1 = '1' and sj.scbj='0' and fjsq.bgbj = '1'
+            <include refid="SelectWhere"></include>
+            <if test="jcxms !=null and jcxms.length > 0">
+                and fjsq.jcxm in
+                <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dcbjflg == '1'.toString()">
+                and fjsq.dcbj is not null and fjsq.dcbj != '' and (fjsq.yszkid is null or fjsq.yszkid = '')
+            </if>
+            <if test="dcbjflg == '0'.toString()">
+                and (fjsq.dcbj is null or fjsq.dcbj = '' or (fjsq.yszkid is not null and fjsq.yszkid != ''))
+            </if>
+            <if test="dcbj !=null and dcbj !=''">
+                and fjsq.dcbj ILIKE '%'||#{dcbj}||'%'
+            </if>
+            <if test="sfdz !=null and sfdz !=''">
+                and fjsq.sfdz = #{sfdz}
+            </if>
+            <if test="sfsfs != null and sfsfs.length > 0 ">
+                and fjsq.sfff in
+                <foreach collection="sfsfs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and fjsq.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userids != null and userids.size()>0">
+                and (sj.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sj.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="syrqflg == '1'.toString() ">
+                and (
+                ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                or ( 1=1
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+                )
+                )
+            </if>
+            <if test="syrqflg == null or syrqflg ==''">
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+            </if>
+            <if test="fjlxs != null and fjlxs.length>0">
+                and (fjsq.lx in
+                <foreach collection="fjlxs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="yhmc != null and yhmc != ''">
+                and yh.zsxm=#{yhmc}
+            </if>
+        </where>
+        )
+        ) combined
+        group by sjid,fjid
+        <if test="sortGroupName != null and sortGroupName != ''">
+            ,${sortGroupName}
+        </if>
+        <if test="sortGroupLastName != null and sortGroupLastName != ''">
+            ,${sortGroupLastName}
+        </if>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        )
+        SELECT count(p.sjid)
+        FROM page_data p
+    </select>
+
+    <!--优化送检列表查询(内部拆分)-->
+    <select id="getDtoListOptimize" parameterType="Map" resultType="Map">
+        WITH page_data AS (
+        SELECT sjid, fjid
+        FROM (
+        <if test="fjlxs == null or fjlxs.length==0 or fjlxs == ''">
+            (SELECT sj.sjid,null as fjid
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                ,CASE WHEN yszk.sfjs='1' THEN yszkmx.jsje ELSE 0 END jsje
+            </if>
+            <if test="(ybbhFlag !=null and ybbhFlag !='')">
+                ,sj.ybbh
+            </if>
+            <if test="(nbbmFlag !=null and nbbmFlag !='')">
+                ,sj.nbbm
+            </if>
+            <if test="(hzxmFlag !=null and hzxmFlag !='')">
+                ,sj.hzxm
+            </if>
+            <if test="(yymcFlag !=null and yymcFlag !='')">
+                ,yyxx.dwmc yymc
+            </if>
+            <if test="(sjdwmcFlag !=null and sjdwmcFlag !='')">
+                ,sj.sjdwmc
+            </if>
+            <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+                ,CASE WHEN jc_yblx.cskz1='1' THEN COALESCE (sj.yblxmc,jc_yblx.csmc) ELSE jc_yblx.csmc END AS yblxmc
+            </if>
+            <if test="(jsrqFlag !=null and jsrqFlag !='')">
+                ,sj.jsrq
+            </if>
+            <if test="(bgrqFlag !=null and bgrqFlag !='')">
+                ,sj.bgrq
+            </if>
+            <if test="(sfsfFlag !=null and sfsfFlag !='')">
+                ,COALESCE (jcxm.sfsf,sj.sfsf) sfsf
+            </if>
+            <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+                ,yptgs.csmc ptgsmc
+            </if>
+            <if test="(dbFlag !=null and dbFlag !='')">
+                ,sj.db
+            </if>
+            <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+                ,ptgs.csmc xsbmmc
+            </if>
+            <if test="(fkrqFlag !=null and fkrqFlag !='')">
+                ,sj.fkrq
+            </if>
+            <if test="(sfcssFlag !=null and sfcssFlag !='')">
+                ,CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR COALESCE (jcxm.sfsf,sj.sfsf)='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1'
+                WHEN jcxmlx.cskz1='R' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '2' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='2' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='3' THEN '1' END
+                WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END sfcss
+            </if>
+            <if test="(lrsjFlag !=null and lrsjFlag !='')">
+                ,sj.lrsj
+            </if>
+            <if test="(fkjeFlag !=null and fkjeFlag !='')">
+                ,jcxm.yfje AS fkje
+            </if>
+            <if test="(clbjFlag !=null and clbjFlag !='')">
+                ,sj.clbj
+            </if>
+            <if test="(dzjeFlag !=null and dzjeFlag !='')">
+                ,jcxm.dzje
+            </if>
+            <if test="(sfdzFlag !=null and sfdzFlag !='')">
+                ,jcxm.sfdz
+            </if>
+            <if test="(dcbjFlag !=null and dcbjFlag !='')">
+                ,jcxm.dcbj
+            </if>
+            <if test="(dcbjlxFlag !=null and dcbjlxFlag !='')">
+                ,CASE WHEN jcxm.dcbj IS NOT NULL AND jcxm.dcbj !='' AND (jcxm.yszkid IS NULL OR jcxm.yszkid='') THEN '已导出未上传' ELSE '其它' END dcbjlx
+            </if>
+            <if test="(ztqfFlag !=null and ztqfFlag !='')">
+                ,swkhgl.ztqf
+            </if>
+            <if test="(sfjsFlag !=null and sfjsFlag !='')">
+                ,sj.sfjs
+            </if>
+            <if test="(yblxFlag !=null and yblxFlag !='')">
+                ,sj.yblx
+            </if>
+            <if test="(yhmcFlag !=null and yhmcFlag !='')">
+                ,yh.zsxm as yhmc
+            </if>
+            FROM igams_sjxx sj
+            <if test="(dcbjflg == '1'.toString()) or (dcbjflg == '0'.toString()) or (dcbj !=null and dcbj !='') or (sfdz !=null and sfdz !='') or
+            (jsjeFlag !=null and jsjeFlag !='') or ((sfsfFlag !=null and sfsfFlag !='')) or (sfcssFlag !=null and sfcssFlag !='') or
+            (fkjeFlag !=null and fkjeFlag !='') or (dzjeFlag !=null and dzjeFlag !='') or (sfdzFlag !=null and sfdzFlag !='') or
+            (dcbjFlag !=null and dcbjFlag !='') or (dcbjlxFlag !=null and dcbjlxFlag !='') or (jcxms !=null and jcxms.length > 0)">
+                LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid AND jcxm.scbj = '0'
+            </if>
+            <if test="(all_param !=null and all_param !='') or (hospitalname !=null and hospitalname !='') or (yytjmc !=null and yytjmc !='') or (yyzddjs != null and yyzddjs.length>0) or (yymcFlag !=null and yymcFlag !='')">
+                LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw
+            </if>
+            <if test="(kylxs != null and kylxs.length > 0) ">
+                LEFT JOIN matridx_jcsj jc_ky ON jc_ky.csid = sj.kyxm
+            </if>
+            <if test="(tjmc !=null and tjmc !='') or (dzzq !=null and dzzq !='') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (dbm =='0'.toString()) or (dbm =='1'.toString()) or (ptgss != null and ptgss.length > 0) or (xsbms != null and xsbms.length > 0) or (yhmc != null and yhmc != '') or (ptgsmcFlag !=null and ptgsmcFlag !='') or (ztqfFlag !=null and ztqfFlag !='') or (yhmcFlag !=null and yhmcFlag !='') or (xsbmmcFlag !=null and xsbmmcFlag !='')">
+                LEFT JOIN igams_sjhbxx hbxx ON sj.db = hbxx.hbmc AND (hbxx.scbj = '0' OR hbxx.scbj = '2')
+            </if>
+            <if test="(dzzq !=null and dzzq !='') or (ztqfFlag !=null and ztqfFlag !='')">
+                LEFT JOIN igams_hbhzkh hbhzkh ON hbhzkh.hbid = hbxx.hbid AND hbhzkh.zykh = '1'
+            </if>
+            <if test="(dzzq !=null and dzzq !='') or (ztqfFlag !=null and ztqfFlag !='')">
+                LEFT JOIN igams_swkhgl swkhgl ON hbhzkh.khid = swkhgl.khid AND swkhgl.scbj = '0'
+            </if>
+            <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+                LEFT JOIN matridx_xtyh yh_dq ON yh_dq.yhid = hbxx.dqxx
+            </if>
+            <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+                LEFT JOIN matridx_xtyh yh ON yh.yhid = hbxx.yhid
+            </if>
+            <if test="(all_param !=null and all_param !='') or (qtks !=null and qtks !='')">
+                LEFT JOIN igams_sjdwxx ks ON sj.ks = ks.dwid
+            </if>
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                LEFT JOIN igams_yszkmx yszkmx ON yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = sj.sjid AND jcxm.jcxmid = yszkmx.jcxmid AND (jcxm.jczxmid = yszkmx.jczxmid OR ((jcxm.jczxmid IS NULL OR jcxm.jczxmid = '') AND (yszkmx.jczxmid IS NULL OR yszkmx.jczxmid = '')))
+            </if>
+            <if test="(jsjeFlag !=null and jsjeFlag !='')">
+                LEFT JOIN igams_swyszk yszk ON yszk.scbj = '0' AND yszkmx.yszkid = yszk.yszkid AND yszk.yszkid = jcxm.yszkid
+            </if>
+            <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+                LEFT JOIN matridx_jcsj jc_yblx ON sj.yblx = jc_yblx.csid
+            </if>
+            <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+                LEFT JOIN matridx_jcsj yptgs ON yptgs.csid = hbxx.yptgs
+            </if>
+            <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+                LEFT JOIN matridx_jcsj ptgs ON ptgs.csid = hbxx.ptgs
+            </if>
+            <if test="(sfcssFlag !=null and sfcssFlag !='')">
+                LEFT JOIN matridx_jcsj jcxmlx ON jcxmlx.csid = jcxm.jcxmid
+            </if>
+            <where>
+                sj.scbj='0'
+                <include refid="SelectWhere"></include>
+                <if test="jcxms !=null and jcxms.length > 0">
+                    and jcxm.jcxmid in
+                    <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                        #{item}
+                    </foreach>
+
+                </if>
+                <if test="dcbjflg == '1'.toString()">
+                    and jcxm.dcbj is not null and jcxm.dcbj != '' and (jcxm.yszkid is null or jcxm.yszkid = '')
+                </if>
+                <if test="dcbjflg == '0'.toString()">
+                    and (jcxm.dcbj is null or jcxm.dcbj = '' or (jcxm.yszkid is not null and jcxm.yszkid != ''))
+                </if>
+                <if test="dcbj !=null and dcbj !=''">
+                    and jcxm.dcbj ILIKE '%'||#{dcbj}||'%'
+                </if>
+                <if test="sfdz !=null and sfdz !=''">
+                    and jcxm.sfdz = #{sfdz}
+                </if>
+                <if test="sfsfs != null and sfsfs.length > 0 ">
+                    and sj.sfsf in
+                    <foreach collection="sfsfs" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="jcdwxz !=null and jcdwxz.size()>0">
+                    and sj.jcdw in
+                    <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="userids != null and userids.size()>0">
+                    and (sj.lrry in
+                    <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    <if test="sjhbs != null and sjhbs.size()>0">
+                        or sj.db in
+                        <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    )
+                </if>
+                <if test="syrqflg == '1'.toString() ">
+                    and (
+                    ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                    or ( 1=1
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                    )
+                    )
+                </if>
+                <if test="syrqflg == null or syrqflg ==''">
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                </if>
+                <if test="yhmc != null and yhmc != ''">
+                    and yh.zsxm=#{yhmc}
+                </if>
+            </where>
+            )
+            UNION ALL
+        </if>
+        (SELECT fjsq.sjid,fjsq.fjid
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            ,CASE WHEN yszk.sfjs='1' THEN yszkmx.jsje ELSE 0 END jsje
+        </if>
+        <if test="(ybbhFlag !=null and ybbhFlag !='')">
+            ,sj.ybbh
+        </if>
+        <if test="(nbbmFlag !=null and nbbmFlag !='')">
+            ,sj.nbbm
+        </if>
+        <if test="(hzxmFlag !=null and hzxmFlag !='')">
+            ,sj.hzxm
+        </if>
+        <if test="(yymcFlag !=null and yymcFlag !='')">
+            ,yyxx.dwmc yymc
+        </if>
+        <if test="(sjdwmcFlag !=null and sjdwmcFlag !='')">
+            ,sj.sjdwmc
+        </if>
+        <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+            ,CASE WHEN jc_yblx.cskz1='1' THEN COALESCE (sj.yblxmc,jc_yblx.csmc) ELSE jc_yblx.csmc END AS yblxmc
+        </if>
+        <if test="(jsrqFlag !=null and jsrqFlag !='')">
+            ,sj.jsrq
+        </if>
+        <if test="(bgrqFlag !=null and bgrqFlag !='')">
+            ,sj.bgrq
+        </if>
+        <if test="(sfsfFlag !=null and sfsfFlag !='')">
+            ,fjsq.sfff AS sfsf
+        </if>
+        <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+            ,yptgs.csmc ptgsmc
+        </if>
+        <if test="(dbFlag !=null and dbFlag !='')">
+            ,sj.db
+        </if>
+        <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+            ,ptgs.csmc xsbmmc
+        </if>
+        <if test="(fkrqFlag !=null and fkrqFlag !='')">
+            ,fjsq.fkrq
+        </if>
+        <if test="(sfcssFlag !=null and sfcssFlag !='')">
+            ,CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR fjsq.sfff='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND fjsq.sfff='1' THEN '1'
+            WHEN jcxmlx.cskz1='R' AND fjsq.sfff='1' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='1' THEN '2' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='2' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='3' THEN '1' END
+            WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END sfcss
+        </if>
+        <if test="(lrsjFlag !=null and lrsjFlag !='')">
+            ,fjsq.lrsj
+        </if>
+        <if test="(fkjeFlag !=null and fkjeFlag !='')">
+            ,fjsq.yfje AS fkje
+        </if>
+        <if test="(clbjFlag !=null and clbjFlag !='')">
+            ,NULL as clbj
+        </if>
+        <if test="(dzjeFlag !=null and dzjeFlag !='')">
+            ,fjsq.dzje
+        </if>
+        <if test="(sfdzFlag !=null and sfdzFlag !='')">
+            ,fjsq.sfdz
+        </if>
+        <if test="(dcbjFlag !=null and dcbjFlag !='')">
+            ,fjsq.dcbj
+        </if>
+        <if test="(dcbjlxFlag !=null and dcbjlxFlag !='')">
+            ,CASE WHEN fjsq.dcbj IS NOT NULL AND fjsq.dcbj !='' AND (fjsq.yszkid IS NULL OR fjsq.yszkid='') THEN '已导出未上传' ELSE '其它' END dcbjlx
+        </if>
+        <if test="(ztqfFlag !=null and ztqfFlag !='')">
+            ,swkhgl.ztqf
+        </if>
+        <if test="(sfjsFlag !=null and sfjsFlag !='')">
+            ,sj.sfjs
+        </if>
+        <if test="(yblxFlag !=null and yblxFlag !='')">
+            ,sj.yblx
+        </if>
+        <if test="(yhmcFlag !=null and yhmcFlag !='')">
+            ,yh.zsxm as yhmc
+        </if>
+        FROM igams_fjsq fjsq
+        LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+        LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+        <if test="(all_param !=null and all_param !='') or (hospitalname != null and hospitalname != '') or (yytjmc != null and yytjmc != '') or (yyzddjs != null and yyzddjs.length>0) or (yymcFlag !=null and yymcFlag !='')">
+            LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw
+        </if>
+        <if test="kylxs != null and kylxs.length > 0 ">
+            LEFT JOIN matridx_jcsj jc_ky ON jc_ky.csid = sj.kyxm
+        </if>
+        <if test="(tjmc != null and tjmc != '') or (dzzq != null and dzzq != '') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (dbm =='0'.toString()) or (dbm =='1'.toString()) or (ptgss != null and ptgss.length > 0) or (xsbms != null and xsbms.length > 0) or (yhmc != null and yhmc != '') or (ptgsmcFlag !=null and ptgsmcFlag !='') or (ztqfFlag !=null and ztqfFlag !='') or (yhmcFlag !=null and yhmcFlag !='') or (xsbmmcFlag !=null and xsbmmcFlag !='')">
+            LEFT JOIN igams_sjhbxx hbxx ON sj.db = hbxx.hbmc AND (hbxx.scbj = '0' OR hbxx.scbj = '2')
+        </if>
+        <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+            LEFT JOIN matridx_xtyh yh_dq ON yh_dq.yhid = hbxx.dqxx
+        </if>
+        <if test="(yhmc != null and yhmc != '') or (yhmcFlag !=null and yhmcFlag !='')">
+            LEFT JOIN matridx_xtyh yh ON yh.yhid = hbxx.yhid
+        </if>
+        <if test="(all_param !=null and all_param !='') or (qtks != null and qtks != '')">
+            LEFT JOIN igams_sjdwxx ks ON sj.ks = ks.dwid
+        </if>
+        <if test="(dzzq != null and dzzq != '') or (ztqfFlag !=null and ztqfFlag !='')">
+            LEFT JOIN igams_hbhzkh hbhzkh ON hbhzkh.hbid = hbxx.hbid AND hbhzkh.zykh = '1'
+        </if>
+        <if test="(dzzq != null and dzzq != '') or (ztqfFlag !=null and ztqfFlag !='')">
+            LEFT JOIN igams_swkhgl swkhgl ON hbhzkh.khid = swkhgl.khid AND swkhgl.scbj = '0'
+        </if>
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            LEFT JOIN igams_yszkmx yszkmx ON yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = fjsq.fjid AND fjsq.jcxm = yszkmx.jcxmid
+        </if>
+        <if test="(jsjeFlag !=null and jsjeFlag !='')">
+            LEFT JOIN igams_swyszk yszk ON yszk.scbj = '0' AND yszkmx.yszkid = yszk.yszkid AND yszk.yszkid = fjsq.yszkid
+        </if>
+        <if test="(yblxmcFlag !=null and yblxmcFlag !='')">
+            LEFT JOIN matridx_jcsj jc_yblx ON sj.yblx = jc_yblx.csid
+        </if>
+        <if test="(ptgsmcFlag !=null and ptgsmcFlag !='')">
+            LEFT JOIN matridx_jcsj yptgs ON yptgs.csid = hbxx.yptgs
+        </if>
+        <if test="(xsbmmcFlag !=null and xsbmmcFlag !='')">
+            LEFT JOIN matridx_jcsj ptgs ON ptgs.csid = hbxx.ptgs
+        </if>
+        <if test="(sfcssFlag !=null and sfcssFlag !='')">
+            LEFT JOIN matridx_jcsj jcxmlx ON jcxmlx.csid = fjsq.jcxm
+        </if>
+        <where>
+            fjsq.zt = '80' and jc_fjlx.cskz1 = '1' and sj.scbj='0' and fjsq.bgbj = '1'
+            <include refid="SelectWhere"></include>
+            <if test="jcxms !=null and jcxms.length > 0">
+                and fjsq.jcxm in
+                <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dcbjflg == '1'.toString()">
+                and fjsq.dcbj is not null and fjsq.dcbj != '' and (fjsq.yszkid is null or fjsq.yszkid = '')
+            </if>
+            <if test="dcbjflg == '0'.toString()">
+                and (fjsq.dcbj is null or fjsq.dcbj = '' or (fjsq.yszkid is not null and fjsq.yszkid != ''))
+            </if>
+            <if test="dcbj !=null and dcbj !=''">
+                and fjsq.dcbj ILIKE '%'||#{dcbj}||'%'
+            </if>
+            <if test="sfdz !=null and sfdz !=''">
+                and fjsq.sfdz = #{sfdz}
+            </if>
+            <if test="sfsfs != null and sfsfs.length > 0 ">
+                and fjsq.sfff in
+                <foreach collection="sfsfs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and fjsq.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userids != null and userids.size()>0">
+                and (sj.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sj.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="syrqflg == '1'.toString() ">
+                and (
+                ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                or ( 1=1
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+                )
+                )
+            </if>
+            <if test="syrqflg == null or syrqflg ==''">
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+            </if>
+            <if test="fjlxs != null and fjlxs.length>0">
+                and (fjsq.lx in
+                <foreach collection="fjlxs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="yhmc != null and yhmc != ''">
+                and yh.zsxm=#{yhmc}
+            </if>
+        </where>
+        )
+        ) combined
+        group by sjid,fjid
+        <if test="sortGroupName != null and sortGroupName != ''">
+            ,${sortGroupName}
+        </if>
+        <if test="sortGroupLastName != null and sortGroupLastName != ''">
+            ,${sortGroupLastName}
+        </if>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        <if test="pageSize != null and pageSize != ''">
+            LIMIT #{pageSize} OFFSET #{pageStart}
+        </if>
+        )
+
+        SELECT ks.dwmc,case when jczxmlx.csid is null then jcxmlx.csmc else jcxmlx.csmc||'-'||jczxmlx.csmc end jcxmmc,jcxmlx.cskz1 AS jcxmkzcs,swkhgl.ztqf,yh.zsxm AS yhmc,
+        CASE WHEN yszk.sfjs='1' THEN yszkmx.jsje ELSE 0 END jsje,yyxx.dwmc yymc,COALESCE (yyxx.tjmc,yyxx.dwmc) yytjmc,yyxx.cskz2 yyzddj,yyxx.cskz1 AS yyxxCskz1,jc_ky.csmc kyxmmc,jc_ky.cskz1 kylx,
+        COALESCE (hbxx.swmc,hbxx.hbmc) swmc,hbxx.hbid,hbxx.hzgsmc AS gsmc,hbxx.yhid,hbxx.tjmc,sfbz.sfbz,jc_sf.csmc sf,COALESCE (yh_dq.gwmc,yh_dq.zsxm) dqxx,
+        CASE WHEN POSITION('（' IN COALESCE (yh_dq.gwmc,yh_dq.zsxm))> 0 AND POSITION('）' IN COALESCE (yh_dq.gwmc,yh_dq.zsxm))> 0 THEN SUBSTRING(COALESCE (yh_dq.gwmc,yh_dq.zsxm),POSITION('（' IN COALESCE (yh_dq.gwmc,yh_dq.zsxm))+1,
+        POSITION('）' IN COALESCE (yh_dq.gwmc,yh_dq.zsxm))-POSITION('（' IN COALESCE (yh_dq.gwmc,yh_dq.zsxm))-1) ELSE COALESCE (yh_dq.gwmc,yh_dq.zsxm) END dqjc,
+        jc_hbfl.csmc AS flmc,yptgs.csmc ptgsmc,ptgs.csmc xsbmmc,
+        case when fjsq.fjid is not null then '-' else (CASE WHEN sj.clbj IS NULL THEN '-' WHEN sj.clbj='0' THEN '待处理' ELSE '无需处理' END) end clbj,
+        sj.sjid,case when fjsq.fjid is not null then fjsq.lrry else sj.lrry end lrry,case when fjsq.fjid is not null then to_char(fjsq.lrsj,'yyyy-mm-dd hh24:mi:ss') else to_char(sj.lrsj,'yyyy-mm-dd hh24:mi:ss') end lrsj,
+        case when fjsq.fjid is not null then  fjsq.bz else sj.bz end bz,case when fjsq.fjid is not null then  fjsq.fkbj else sj.fkbj end fkbj,case when fjsq.fjid is not null then  fjsq.sfje else sj.sfje end sfje,
+        case when fjsq.fjid is not null then  NULL else sj.tkje end tkje,
+        case when fjsq.fjid is not null then  to_char(fjsq.fkrq,'yyyy-mm-dd hh24:mi:ss') else to_char(sj.fkrq,'yyyy-mm-dd hh24:mi:ss') end fkrq,to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') jsrq,to_char(sj.jsrq,'yyyy-MM-dd') fjsrq,
+        sj.sfjs,to_char(sj.bgrq,'yyyy-mm-dd hh24:mi:ss') bgrq,sj.nbbm,sj.ybbh,sj.hzxm,sj.yblx,
+        case when fjsq.fjid is not null then  fjsq.yfje else sj.fkje end yfje,
+        case when fjsq.fjid is not null then  fjsq.djcbj else sj.djcbj end djcbj,
+        case when fjsq.fjid is not null then  fjsq.qtjcbj else sj.qtjcbj end qtjcbj,
+        case when fjsq.fjid is not null then  to_char(fjsq.dsyrq,'yyyy-mm-dd hh24:mi:ss') else to_char(sj.dsyrq,'yyyy-mm-dd hh24:mi:ss') end dsyrq,
+        case when fjsq.fjid is not null then  to_char(fjsq.qtsyrq,'yyyy-mm-dd hh24:mi:ss') else to_char(sj.qtsyrq,'yyyy-mm-dd hh24:mi:ss') end qtsyrq,
+        case when fjsq.fjid is not null then  to_char(fjsq.rsyrq,'yyyy-mm-dd hh24:mi') else to_char(sj.syrq,'yyyy-mm-dd hh24:mi') end rsyrq,
+        case when fjsq.fjid is not null then  NULL else sj.jcbj end jcbj,
+        case when fjsq.fjid is not null then  fjsq.sfff else COALESCE (jcxm.sfsf,sj.sfsf) end sfsf,
+        case when fjsq.fjid is not null then  fjsq.jcdw else sj.jcdw end jcdw,
+        sj.sjdwmc,sj.db,sj.kpsq,sj.cskz1,sj.cskz2,sj.sqlx,sj.kdlx,sj.sjqf,sj.cskz3,sj.sjys,sj.jyjg,sj.sfzq,sj.yxbfk,sj.sfvip,sj.qyrq,sj.ydrq,sj.yjydrq,sj.cyrq,
+        sj.zyh,sj.cwh,sj.sjbg,sj.jsry,sj.sfsc,sj.cskz4,sj.cskz5,sj.syrq,COALESCE (sj.qtks,ks.dwmc) qtks,sj.kdh,sj.kdfy,
+        case when fjsq.fjid is not null then  fjsq.fjid else NULL end fjid,
+        case when fjsq.fjid is not null then  fjsq.yy else NULL end yy,
+        case when fjsq.fjid is not null then  fjsq.yfje else jcxm.yfje end fkje,
+        case when fjsq.fjid is not null then  fjsq.sfje else jcxm.sfje end jcxmsfje,
+        case when fjsq.fjid is not null then  fjsq.jcxm else jcxm.jcxmid end jcxmid,
+        case when fjsq.fjid is not null then  COALESCE (fjsq.jczxm,NULL) else jcxm.jczxmid end jczxmid,
+        case when fjsq.fjid is not null then  fjsq.dzje else jcxm.dzje end dzje,
+        case when fjsq.fjid is not null then  fjsq.sfdz else jcxm.sfdz end sfdz,
+        case when fjsq.fjid is not null then  fjsq.dcbj else jcxm.dcbj end dcbj,
+        case when fjsq.fjid is not null then  fjsq.yszkid else jcxm.yszkid end yszkid,
+        case when fjsq.fjid is not null then  jc_fjlx.csmc else NULL end fjlxmc,
+        case when fjsq.fjid is not null then  NULL else jcxm.xmglid end xmglid,
+        case when fjsq.fjid is not null then  CASE WHEN fjsq.dcbj IS NOT NULL AND fjsq.dcbj !='' AND (fjsq.yszkid IS NULL OR fjsq.yszkid='') THEN '已导出未上传' ELSE '其它' END
+        else CASE WHEN jcxm.dcbj IS NOT NULL AND jcxm.dcbj !='' AND (jcxm.yszkid IS NULL OR jcxm.yszkid='') THEN '已导出未上传' ELSE '其它' END end dcbjlx,
+        case when fjsq.fjid is not null then  (CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR fjsq.sfff='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND fjsq.sfff='1' THEN '1'
+        WHEN jcxmlx.cskz1='R' AND fjsq.sfff='1' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='1' THEN '2' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='2' THEN '1' WHEN jcxmlx.cskz1='C' AND fjsq.sfff='3' THEN '1' END
+        WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END) else (CASE WHEN (sj.sfjs='0' OR sj.sfjs IS NULL OR sj.sfsc='0' OR sj.sfsc IS NULL OR COALESCE (jcxm.sfsf,sj.sfsf)='0') THEN '0' WHEN jcxmlx.cskz3='IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN CASE WHEN jcxmlx.cskz1='D' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1'
+        WHEN jcxmlx.cskz1='R' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='1' THEN '2' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='2' THEN '1' WHEN jcxmlx.cskz1='C' AND COALESCE (jcxm.sfsf,sj.sfsf)='3' THEN '1' END
+        WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1='C' THEN '2' WHEN jcxmlx.cskz3='IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2' ELSE '1' END) end sfcss,
+        CASE WHEN jc_yblx.cskz1='1' THEN COALESCE (sj.yblxmc,jc_yblx.csmc) ELSE jc_yblx.csmc END AS yblxmc
+        FROM page_data p
+        left join igams_sjxx sj on sj.sjid=p.sjid
+        LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid AND jcxm.scbj = '0'
+        left join igams_fjsq fjsq on fjsq.fjid=p.fjid
+        LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+        LEFT JOIN igams_yszkmx yszkmx ON (fjsq.fjid is null AND yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = sj.sjid AND jcxm.jcxmid = yszkmx.jcxmid
+        AND (jcxm.jczxmid = yszkmx.jczxmid OR ((jcxm.jczxmid IS NULL OR jcxm.jczxmid = '') AND (yszkmx.jczxmid IS NULL OR yszkmx.jczxmid = ''))))
+        OR (fjsq.fjid is not null AND yszkmx.scbj = '0' AND yszkmx.sfzykh = '1' AND yszkmx.ywid = sj.sjid AND fjsq.jcxm = yszkmx.jcxmid )
+        LEFT JOIN igams_swyszk yszk ON yszk.scbj = '0' AND yszkmx.yszkid = yszk.yszkid AND ((fjsq.fjid is null AND yszk.yszkid = jcxm.yszkid) OR (fjsq.fjid is not null AND yszk.yszkid = fjsq.yszkid))
+        LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw
+        LEFT JOIN matridx_jcsj jc_ky ON jc_ky.csid = sj.kyxm
+        LEFT JOIN igams_sjhbxx hbxx ON sj.db = hbxx.hbmc AND (hbxx.scbj = '0' OR hbxx.scbj = '2')
+        LEFT JOIN matridx_xtyh yh_dq ON yh_dq.yhid = hbxx.dqxx
+        LEFT JOIN matridx_jcsj jc_sf ON jc_sf.csid = hbxx.sf
+        LEFT JOIN igams_hbsfbz sfbz ON hbxx.hbid = sfbz.hbid AND (
+        ( fjsq.fjid is null AND jcxm.jcxmid = sfbz.xm AND CASE WHEN jcxm.jczxmid IS NOT NULL AND jcxm.jczxmid != '' AND sfbz.zxm IS NOT NULL AND sfbz.zxm != '' THEN jcxm.jczxmid = sfbz.zxm ELSE 1 = 1 END)
+        OR
+        ( fjsq.fjid is not null AND fjsq.jcxm = sfbz.xm AND CASE WHEN fjsq.jczxm IS NOT NULL AND fjsq.jczxm != '' AND sfbz.zxm IS NOT NULL AND sfbz.zxm != '' THEN fjsq.jczxm = sfbz.zxm ELSE 1 = 1 END)
+        )
+        LEFT JOIN matridx_jcsj ptgs ON ptgs.csid = hbxx.ptgs
+        LEFT JOIN matridx_jcsj yptgs ON yptgs.csid = hbxx.yptgs
+        LEFT JOIN matridx_jcsj jc_hbfl ON jc_hbfl.csid = hbxx.fl
+        LEFT JOIN matridx_jcsj jc_yblx ON sj.yblx = jc_yblx.csid
+        LEFT JOIN matridx_xtyh yh ON yh.yhid = hbxx.yhid
+        LEFT JOIN igams_sjdwxx ks ON sj.ks = ks.dwid
+        LEFT JOIN matridx_jcsj jcxmlx ON ((fjsq.fjid is null AND jcxmlx.csid = jcxm.jcxmid) OR (fjsq.fjid is not null AND jcxmlx.csid = fjsq.jcxm))
+        LEFT JOIN matridx_jcsj jczxmlx ON ((fjsq.fjid is null AND jczxmlx.csid = jcxm.jczxmid) OR (fjsq.fjid is not null AND jczxmlx.csid = fjsq.jczxm))
+        LEFT JOIN igams_hbhzkh hbhzkh ON hbhzkh.hbid = hbxx.hbid AND hbhzkh.zykh = '1'
+        LEFT JOIN igams_swkhgl swkhgl ON hbhzkh.khid = swkhgl.khid AND swkhgl.scbj = '0'
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+    </select>
+
+    <select id="getDtoAccountList" parameterType="Map" resultType="Map">
+        select
+        sj.sjid,sj.fjid,sj.bz,to_char(sj.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,sj.lrry,sj.djcbj,sj.qtjcbj,sj.jcbj,sj.sfsf,sj.fkbj,to_char(sj.fkrq,'yyyy-mm-dd hh24:mi:ss') fkrq,sj.sfje,sj.fkje,sj.yblx,sj.jcxmsfje,sj.yfje,
+        sj.fjlxmc,sj.yy,sj.tkje,sj.fkje yfkje,
+        sj.hzxm,sj.ybbh,sj.nbbm,sj.sjys,sj.jyjg,sj.sfzq,sj.yxbfk,sj.sfvip,sj.syrq,sj.qyrq,sj.ydrq,sj.yjydrq,sj.cyrq,sj.zyh,sj.cwh,
+        to_char(sj.bgrq,'yyyy-mm-dd hh24:mi:ss') bgrq,sj.sjbg,
+        sj.sfjs,sj.jsry,to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') jsrq,to_char(sj.jsrq,'yyyy-MM-dd') fjsrq,sj.sfsc,
+        to_char(sj.rsyrq,'yyyy-mm-dd hh24:mi') rsyrq,to_char(sj.dsyrq,'yyyy-mm-dd hh24:mi:ss') dsyrq,to_char(sj.qtsyrq,'yyyy-mm-dd hh24:mi:ss') qtsyrq,
+        jc_kpsq.csmc as kpsqmc,jc_cskz1.csmc sfkp,
+        sj.cskz2,jc_cskz2.csmc sfdz,jc_gzlx.csmc cskz3,sj.cskz4,sj.cskz5,
+        case when jc_yblx.cskz1 = '1' then COALESCE(sj.yblxmc,jc_yblx.csmc) else jc_yblx.csmc end AS yblxmc,
+        ks.dwmc,coalesce(sj.qtks,ks.dwmc) qtks,
+        sj.sjdwmc,sj.yymc,sj.yytjmc,sj.yyzddj,sj.yyxxCskz1,
+        sj.db,sj.flmc,sj.dqxx,sj.sf,sj.swmc,
+        CASE WHEN POSITION ( '（' IN sj.dqxx ) > 0 AND POSITION ( '）' IN sj.dqxx ) > 0 THEN SUBSTRING ( sj.dqxx, POSITION ( '（' IN sj.dqxx ) + 1, POSITION ( '）' IN sj.dqxx ) - POSITION ( '（' IN sj.dqxx ) - 1 ) ELSE sj.dqxx END dqjc,
+        jcxmlx.csmc as jcxmmc,jcxmlx.cskz1 as jcxmkzcs,jczxmlx.csmc as jczxmmc,
+        jc_jcdw.csmc jcdwmc,
+        sqlx.csmc sqlxmc,
+        jc_kdlx.csmc kdlxmc,sj.kdh,sj.kdfy,
+        jc_sjqf.csmc as sjqfmc,sj.kyxmmc,sj.kylx,
+        CASE WHEN ( sj.sfjs = '0' OR sj.sfjs IS NULL OR sj.sfsc = '0' OR sj.sfsc IS NULL OR sj.sfsf = '0') THEN '0'
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN
+        CASE WHEN jcxmlx.cskz1 = 'D' AND sj.sfsf = '1' THEN '1'
+        WHEN jcxmlx.cskz1 = 'R' AND sj.sfsf = '1' THEN '1'
+        WHEN jcxmlx.cskz1 = 'C' AND sj.sfsf = '1' THEN '2'
+        WHEN jcxmlx.cskz1 = 'C' AND sj.sfsf = '2' THEN '1'
+        WHEN jcxmlx.cskz1 = 'C' AND sj.sfsf = '3' THEN '1'
+        END
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1 = 'C' THEN '2'
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2'
+        ELSE '1'
+        END sfcss,
+        sj.hbid,
+        sj.jcxmid,
+        sj.jczxmid,
+        case when sj.clbj is null then '-'  when sj.clbj = '0' then '待处理' else '无需处理' end clbj,
+        sj.ptgsmc,
+        sj.khid,
+        sj.gsmc,
+        sj.dzzd,
+        sj.xmglid
+        , sj.xmglid, sj.dzje,sj.sfdz,sj.dcbj,sj.jcxmdm,sj.wbbm
+        from (
+        <if test="fjlxs == null or fjlxs.length==0 or fjlxs == ''">
+            (select sj.wbbm,sj.clbj,sj.sjid,null as fjid,sj.sfsf,null as fjlxmc,sj.lrry,sj.lrsj,'-' as bgbj,sj.bz,null as yy,
+            sj.fkbj,sj.sfje,case when hbhzkh.zykh='1' then jcxm.yfje else swhtmx.jg end fkje,sj.tkje,sj.fkrq,sj.jsrq,sj.sfjs,sj.bgrq,sj.nbbm,sj.ybbh,sj.hzxm,sj.yblx,jcxm.sfje as
+            jcxmsfje,jcxm.yfje,
+            sj.djcbj,sj.qtjcbj,sj.dsyrq,sj.qtsyrq,sj.jcbj as rjcbj,sj.syrq as rsyrq,sj.jcbj,
+            jcxm.jcxmid,jcxm.jczxmid,sj.jcdw,
+            sj.sjdwmc,yyxx.dwmc yymc,coalesce(yyxx.tjmc,yyxx.dwmc) yytjmc,yyxx.cskz2 yyzddj,yyxx.cskz1 as yyxxCskz1,
+            sj.db,jc_hbfl.csmc as flmc,coalesce (yh_dq.gwmc,yh_dq.zsxm) dqxx,jc_sf.csmc sf,coalesce(hbxx.swmc,hbxx.hbmc)
+            swmc,
+            jc_ky.csmc kyxmmc,jc_ky.cskz1 kylx,hbxx.hbid,ptgs.csmc ptgsmc,hbhzkh.khid,swkhgl.gsmc,swkhgl.dzzd,jcxm.xmglid
+            ,sj.kpsq, sj.cskz1, sj.cskz2, sj.ks, sj.sjdw, sj.sqlx, sj.kdlx, sj.kyxm, sj.sjqf, sj.cskz3,sj.sjys, sj.jyjg, sj.sfzq, sj.yxbfk, sj.sfvip, sj.qyrq, sj.ydrq, sj.yjydrq, sj.cyrq, sj.zyh, sj.cwh, sj.sjbg, sj.jsry, sj.sfsc, sj.cskz4, sj.cskz5,sj.syrq,sj.yblxmc,sj.qtks,sj.kdh,sj.kdfy
+            ,jcxm.dzje,jcxm.sfdz,jcxm.dcbj,jc_jcxm.csdm jcxmdm,
+            row_number ( ) OVER ( PARTITION BY jcxm.xmglid,hbhzkh.khid  ORDER BY hbxx.hbmc,swkhgl.gsmc ) xh
+            from igams_sjxx sj
+            left join igams_sjjcxm jcxm on jcxm.sjid= sj.sjid and jcxm.scbj = '0'
+            left join matridx_jcsj jc_jcxm on jc_jcxm.csid=jcxm.jcxmid
+            left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+            left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+            left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+            left join igams_hbhzkh hbhzkh on hbhzkh.hbid=hbxx.hbid
+            left join igams_swkhgl swkhgl on hbhzkh.khid=swkhgl.khid and swkhgl.scbj='0'
+            left join igams_swhtgl swhtgl on swhtgl.qddx=swkhgl.khid and swhtgl.scbj='0' and swhtgl.htzt in ('10','30')
+            left join igams_swhtmx swhtmx on swhtmx.htid=swhtgl.htid and swhtmx.scbj='0' and swhtmx.sfyx='1' and (swhtmx.jcxmid=jcxm.jcxmid and (swhtmx.jczxmid=jcxm.jczxmid or ((swhtmx.jczxmid is null or swhtmx.jczxmid = '' )and (jcxm.jczxmid is null or jcxm.jczxmid = ''))))
+            left join matridx_jcsj jc_sf on jc_sf.csid = hbxx.sf
+            left join matridx_xtyh yh_dq on yh_dq.yhid = hbxx.dqxx
+            left join matridx_jcsj jc_hbfl on jc_hbfl.csid = hbxx.fl
+            left join matridx_jcsj ptgs on ptgs.csid=hbxx.ptgs
+            left join igams_swyszk yszk on yszk.yszkid =jcxm.yszkid and (yszk.zdzq is null or to_char(yszk.zdzq,'yyyy-mm')=#{jsyf})
+            <where>
+                sj.scbj='0'
+                <include refid="SelectWhere"></include>
+                <if test="jcxms !=null and jcxms.length > 0">
+                    and jcxm.jcxmid in
+                    <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                        #{item}
+                    </foreach>
+
+                </if>
+                <if test="dcbj !=null and dcbj !=''">
+                    and jcxm.dcbj ILIKE '%'||#{dcbj}||'%'
+                </if>
+                <if test="sfdz !=null and sfdz !=''">
+                    and jcxm.sfdz = #{sfdz}
+                </if>
+                <if test="sfsfs != null and sfsfs.length > 0 ">
+                    and sj.sfsf in
+                    <foreach collection="sfsfs" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="jcdwxz !=null and jcdwxz.size()>0">
+                    and sj.jcdw in
+                    <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="userids != null and userids.size()>0">
+                    and (sj.lrry in
+                    <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    <if test="sjhbs != null and sjhbs.size()>0">
+                        or sj.db in
+                        <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    )
+                </if>
+                <if test="syrqflg == '1'.toString() ">
+                    and (
+                    ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                    or ( 1=1
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                    )
+                    )
+                </if>
+                <if test="syrqflg == null or syrqflg ==''">
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+
+                </if>
+                <if test="hbmcs != null and hbmcs.size > 0 ">
+                    <foreach collection="hbmcs" open="AND (" close=")" separator="or"
+                             item="item" index="index">
+                        hbxx.hbmc ILIKE '%'||#{item}||'%'
+                    </foreach>
+                </if>
+                <if test="khmcs != null and khmcs.size > 0 ">
+                    <foreach collection="khmcs" open="AND (" close=")" separator="or"
+                             item="item" index="index">
+                        swkhgl.gsmc ILIKE '%'||#{item}||'%'
+                    </foreach>
+                </if>
+            </where>
+            )
+            union all
+        </if>
+        (SELECT sj.wbbm,null clbj,fjsq.sjid,fjsq.fjid,fjsq.sfff as sfsf,jc_fjlx.csmc fjlxmc,fjsq.lrry,fjsq.lrsj,case when bgbj = '0' then
+        '不发送' when bgbj = '1' then '发送' ELSE '-' end bgbj,fjsq.bz,fjsq.yy,
+        fjsq.fkbj,fjsq.sfje,case when hbhzkh.zykh='1' then fjsq.yfje else swhtmx.jg end fkje,null as tkje,fjsq.fkrq,sj.jsrq,sj.sfjs,sj.bgrq,sj.nbbm,sj.ybbh,sj.hzxm,sj.yblx,fjsq.sfje as jcxmsfje,fjsq.yfje,
+        fjsq.djcbj,fjsq.qtjcbj,fjsq.dsyrq,fjsq.qtsyrq,fjsq.rjcbj,fjsq.rsyrq,null as jcbj,
+        fjsq.jcxm as jcxmid,null as jczxmid,fjsq.jcdw,
+        sj.sjdwmc,yyxx.dwmc yymc,coalesce(yyxx.tjmc,yyxx.dwmc) yytjmc,yyxx.cskz2 yyzddj,yyxx.cskz1 as yyxxCskz1,
+        sj.db,jc_hbfl.csmc as flmc,coalesce (yh_dq.gwmc,yh_dq.zsxm) dqxx,jc_sf.csmc sf,coalesce(hbxx.swmc,hbxx.hbmc)
+        swmc,
+        jc_ky.csmc kyxmmc,jc_ky.cskz1 kylx,hbxx.hbid,ptgs.csmc ptgsmc,hbhzkh.khid,swkhgl.gsmc,swkhgl.dzzd,null as xmglid
+        ,sj.kpsq, sj.cskz1, sj.cskz2, sj.ks, sj.sjdw, sj.sqlx, sj.kdlx, sj.kyxm, sj.sjqf, sj.cskz3,sj.sjys, sj.jyjg, sj.sfzq, sj.yxbfk, sj.sfvip, sj.qyrq, sj.ydrq, sj.yjydrq, sj.cyrq, sj.zyh, sj.cwh, sj.sjbg, sj.jsry, sj.sfsc, sj.cskz4, sj.cskz5,sj.syrq,sj.yblxmc,sj.qtks,sj.kdh,sj.kdfy
+        ,fjsq.dzje,fjsq.sfdz,fjsq.dcbj,jc_jcxm.csdm jcxmdm,
+        row_number ( ) OVER ( PARTITION BY fjsq.fjid,hbhzkh.khid  ORDER BY hbxx.hbmc,swkhgl.gsmc ) xh
+        from igams_fjsq fjsq
+        left join igams_sjxx sj on sj.sjid = fjsq.sjid
+        left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+
+        left join igams_hbhzkh hbhzkh on hbhzkh.hbid=hbxx.hbid
+        left join igams_swkhgl swkhgl on hbhzkh.khid=swkhgl.khid and swkhgl.scbj='0'
+        left join igams_swhtgl swhtgl on swhtgl.qddx=swkhgl.khid and swhtgl.scbj='0' and swhtgl.htzt in ('10','30')
+        left join igams_swhtmx swhtmx on swhtmx.htid=swhtgl.htid and swhtmx.scbj='0' and swhtmx.sfyx='1' and (swhtmx.jcxmid=fjsq.jcxm and (swhtmx.jczxmid=fjsq.jczxm or ((swhtmx.jczxmid is null or swhtmx.jczxmid = '' )and (fjsq.jczxm is null or fjsq.jczxm = ''))))
+        left join matridx_jcsj jc_sf on jc_sf.csid = hbxx.sf
+        left join matridx_xtyh yh_dq on yh_dq.yhid = hbxx.dqxx
+        left join matridx_jcsj jc_hbfl on jc_hbfl.csid = hbxx.fl
+        left join matridx_jcsj jc_fjlx on jc_fjlx.csid = fjsq.lx
+        left join matridx_jcsj ptgs on ptgs.csid=hbxx.ptgs
+        left join matridx_jcsj jc_jcxm on jc_jcxm.csid=fjsq.jcxm
+        left join igams_swyszk yszk on yszk.yszkid =fjsq.yszkid and (yszk.zdzq is null or to_char(yszk.zdzq,'yyyy-mm')=#{jsyf})
+        <where>
+            fjsq.zt = '80' and jc_fjlx.cskz1 = '1' and sj.scbj='0' and fjsq.bgbj = '1'
+            <include refid="SelectWhere"></include>
+            <if test="jcxms !=null and jcxms.length > 0">
+                and fjsq.jcxm in
+                <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dcbj !=null and dcbj !=''">
+                and fjsq.dcbj ILIKE '%'||#{dcbj}||'%'
+            </if>
+            <if test="sfdz !=null and sfdz !=''">
+                and fjsq.sfdz = #{sfdz}
+            </if>
+            <if test="sfsfs != null and sfsfs.length > 0 ">
+                and fjsq.sfff in
+                <foreach collection="sfsfs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and fjsq.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userids != null and userids.size()>0">
+                and (sj.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sj.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="syrqflg == '1'.toString() ">
+                and (
+                ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                or ( 1=1
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+                )
+                )
+            </if>
+            <if test="syrqflg == null or syrqflg ==''">
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+            </if>
+            <if test="fjlxs != null and fjlxs.length>0">
+                and (fjsq.lx in
+                <foreach collection="fjlxs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            <if test="hbmcs != null and hbmcs.size > 0 ">
+                <foreach collection="hbmcs" open="AND (" close=")" separator="or"
+                         item="item" index="index">
+                    hbxx.hbmc ILIKE '%'||#{item}||'%'
+                </foreach>
+            </if>
+            <if test="khmcs != null and khmcs.size > 0 ">
+                <foreach collection="khmcs" open="AND (" close=")" separator="or"
+                         item="item" index="index">
+                    swkhgl.gsmc ILIKE '%'||#{item}||'%'
+                </foreach>
+            </if>
+        </where>
+        )
+        ) sj
+        left join matridx_jcsj jc_kpsq on jc_kpsq.csid = sj.kpsq
+        left join matridx_jcsj jc_cskz1 on jc_cskz1.csid=sj.cskz1
+        left join matridx_jcsj jc_cskz2 on jc_cskz2.csid=sj.cskz2
+        left join matridx_jcsj jc_yblx on sj.yblx = jc_yblx.csid
+        left join igams_sjdwxx ks on sj.ks=ks.dwid
+        left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        left join matridx_jcsj jcxmlx on jcxmlx.csid = sj.jcxmid
+        left join matridx_jcsj jczxmlx on jczxmlx.csid = sj.jczxmid
+        left join matridx_jcsj jc_jcdw on jc_jcdw.csid=sj.jcdw
+        left join matridx_jcsj sqlx on sj.sqlx = sqlx.csid
+        left join matridx_jcsj jc_kdlx on jc_kdlx.csid =sj.kdlx
+        left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        left join matridx_jcsj jc_sjqf on jc_sjqf.csid =sj.sjqf
+        left join matridx_jcsj jc_gzlx on jc_gzlx.csid =sj.cskz3
+        where sj.xh='1'
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        <if test="pageSize != null and pageSize != ''">
+            LIMIT #{pageSize} OFFSET #{pageStart}
+        </if>
+    </select>
+
+    <sql id="SelectWhere">
+        <if test="all_param !=null and all_param !=''">
+            and (
+            sj.hzxm like '%'||#{all_param}||'%'
+            or sj.db like '%'||#{all_param}||'%'
+            or yyxx.dwmc like '%'||#{all_param}||'%'
+            or yyxx.dwjc like '%'||#{all_param}||'%'
+            or yyxx.dwqtmc like '%'||#{all_param}||'%'
+            or sj.cskz5 like '%'||#{all_param}||'%'
+            or sj.ybbh like '%'||#{all_param}||'%'
+            or sj.nbbm like '%'||#{all_param}||'%'
+            or sj.sjys like '%'||#{all_param}||'%'
+            or COALESCE(yyxx.tjmc,yyxx.dwmc) like '%'||#{all_param}||'%'
+            or COALESCE(sj.qtks,ks.dwmc) like '%'||#{all_param}||'%'
+            )
+        </if>
+        <if test="tjmc != null and tjmc != ''">
+            and hbxx.tjmc=#{tjmc}
+        </if>
+        <if test="clbj != null and clbj != ''">
+            and sj.clbj=#{clbj}
+        </if>
+        <if test="hbmc != null and hbmc != ''">
+            and sj.db ILIKE '%'||#{hbmc}||'%'
+        </if>
+        <if test="dzzq != null and dzzq != ''">
+            and swkhgl.dzzq = #{dzzq}
+        </if>
+        <if test="hzxm != null and hzxm != ''">
+            and sj.hzxm ILIKE '%'||#{hzxm}||'%'
+        </if>
+        <if test="db!=null and db !=''">
+            and sj.db ILIKE '%'||#{db}||'%'
+        </if>
+        <if test="hospitalname != null and hospitalname != ''">
+            and (yyxx.dwmc ILIKE '%'||#{hospitalname}||'%' or yyxx.dwjc ILIKE '%'||#{hospitalname}||'%' or yyxx.dwqtmc
+            ILIKE '%'||#{hospitalname}||'%')
+        </if>
+        <if test="cskz5 != null and cskz5 != ''">
+            and sj.cskz5 ILIKE '%'||#{cskz5}||'%'
+        </if>
+        <if test="ybbh != null and ybbh != ''">
+            and sj.ybbh ILIKE '%'||#{ybbh}||'%'
+        </if>
+        <if test="nbbm != null and nbbm != ''">
+            and sj.nbbm ILIKE '%'||#{nbbm}||'%'
+        </if>
+        <if test="sjys != null and sjys != ''">
+            and sj.sjys ILIKE '%'||#{sjys}||'%'
+        </if>
+        <if test="yytjmc != null and yytjmc != ''">
+            and COALESCE(yyxx.tjmc,yyxx.dwmc) ILIKE '%'||#{yytjmc}||'%'
+        </if>
+        <if test="qtks != null and qtks != ''">
+            and COALESCE(sj.qtks,ks.dwmc) ILIKE '%'||#{qtks}||'%'
+        </if>
+        <if test="jsrqstart != null and jsrqstart != ''">
+            and to_char(sj.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+        </if>
+        <if test="jsrqend != null and jsrqend != ''">
+            and to_char(sj.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+        </if>
+        <if test="dwids != null and dwids.length > 0 ">
+            and sj.ks in
+            <foreach collection="dwids" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="yblxs != null and yblxs.length > 0 ">
+            and sj.yblx in
+            <foreach collection="yblxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="kylxs != null and kylxs.length > 0 ">
+            and jc_ky.cskz1 in
+            <foreach collection="kylxs" separator="," open="(" close=") " item="item" index="index">
+                <if test="item == '其它' ">
+                    null,''
+                </if>
+                <if test="item != '其它' ">
+                    #{item}
+                </if>
+            </foreach>
+        </if>
+        <if test="kyxms != null and kyxms.length > 0 ">
+            and sj.kyxm in
+            <foreach collection="kyxms" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjhbfls != null and sjhbfls.length > 0">
+            and hbxx.fl in
+            <foreach collection="sjhbfls" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjhbzfls != null and sjhbzfls.length > 0">
+            and hbxx.zfl in
+            <foreach collection="sjhbzfls" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jyjgs != null and jyjgs.length > 0 ">
+            and sj.jyjg in
+            <foreach collection="jyjgs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="fkbj != null and fkbj != ''">
+            and sj.fkbj=#{fkbj}
+        </if>
+        <if test="sfjs!=null and sfjs!=''">
+            and sj.sfjs=#{sfjs}
+        </if>
+        <if test="sjkzcs1 != null and sjkzcs1.length > 0 ">
+            and sj.cskz1 in
+            <foreach collection="sjkzcs1" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sfsc!=null and sfsc.length > 0 ">
+            and sj.sfsc in
+            <foreach collection="sfsc" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sfzmjc!=null and sfzmjc.length > 0 ">
+            and sj.sfzmjc in
+            <foreach collection="sfzmjc" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjkzcs2 != null and sjkzcs2.length > 0 ">
+            and sj.cskz2 in
+            <foreach collection="sjkzcs2" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjkzcs4 != null and sjkzcs4.length > 0 ">
+            and sj.cskz4 in
+            <foreach collection="sjkzcs4" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jcdws != null and jcdws.length > 0 ">
+            and sj.jcdw in
+            <foreach collection="jcdws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjqfs != null and sjqfs.length>0">
+            and sj.sjqf in
+            <foreach collection="sjqfs" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="yyzddjs != null and yyzddjs.length>0">
+            and yyxx.cskz2 in
+            <foreach collection="yyzddjs" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="bgrqstart != null and bgrqstart != ''">
+            and to_char(sj.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+        </if>
+        <if test="bgrqend != null and bgrqend != ''">
+            and to_char(sj.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+        </if>
+        <if test="fkrqstart != null and fkrqstart != ''">
+            and to_char(sj.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+        </if>
+        <if test="fkrqend != null and fkrqend != ''">
+            and to_char(sj.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+        </if>
+        <if test="dbm =='0'.toString()">
+            and hbxx.hbmc is not null
+        </if>
+        <if test="dbm =='1'.toString()">
+            and hbxx.hbmc is null
+        </if>
+        <if test = "ptgss != null and ptgss.length > 0"  >
+            and hbxx.yptgs in
+            <foreach collection="ptgss" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "xsbms != null and xsbms.length > 0"  >
+            and hbxx.ptgs in
+            <foreach collection="xsbms" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="OUT_SELECT_JOINS">
+        <if test="jc_ky_flg != null">
+            left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        </if>
+        <if test="jc_jcdw_flg != null">
+            left join matridx_jcsj jc_jcdw on jc_jcdw.csid = sj.jcdw or jc_jcdw.csid = t_fj.jcdw
+        </if>
+        <if test="hbxx_flg != null">
+            left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+            left join matridx_xtyh hbyh on hbyh.yhid=hbxx.yhid
+        </if>
+        <if test="xsbm_flg != null">
+            left join matridx_jcsj ptgs on ptgs.csid=hbxx.ptgs
+        </if>
+        <if test="ptgs_flg != null">
+            left join matridx_jcsj yptgs on yptgs.csid=hbxx.yptgs
+        </if>
+        <if test="jc_hbfl_flg != null">
+            left join matridx_jcsj jc_hbfl on jc_hbfl.csid = hbxx.fl
+        </if>
+        <if test="yh_dq_flg != null">
+            left join matridx_xtyh yh_dq on yh_dq.yhid = hbxx.dqxx
+        </if>
+        <if test="jc_sf_flg != null">
+            left join matridx_jcsj jc_sf on jc_sf.csid = hbxx.sf
+        </if>
+        <if test="yyxx_flg != null">
+            left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        </if>
+        <if test="jc_cskz1_flg != null">
+            left join matridx_jcsj jc_cskz1 on jc_cskz1.csid=sj.cskz1
+        </if>
+        <if test="jc_cskz2_flg != null">
+            left join matridx_jcsj jc_cskz2 on jc_cskz2.csid=sj.cskz2
+        </if>
+        <if test="jc_cskz4_flg != null">
+            left join matridx_jcsj jc_cskz4 on jc_cskz4.csid=sj.cskz4
+        </if>
+        <if test="jc_yblx_flg != null">
+            left join matridx_jcsj jc_yblx on sj.yblx = jc_yblx.csid
+        </if>
+        <if test="ks_flg != null">
+            left join igams_sjdwxx ks on sj.ks=ks.dwid
+        </if>
+        <if test="jcxm_flg != null">
+            left join matridx_jcsj jc_jcxm on jc_jcxm.csid = jcxm.jcxmid or jc_jcxm.csid = t_fj.jcxm
+            left join matridx_jcsj jc_jczxm on jc_jczxm.csid = jcxm.jczxmid
+        </if>
+        <if test="jc_sqlx_flg != null">
+            left join matridx_jcsj jc_sqlx on sj.sqlx = jc_sqlx.csid
+        </if>
+        <if test="jc_kdlx_flg != null">
+            left join matridx_jcsj jc_kdlx on jc_kdlx.csid =sj.kdlx
+        </if>
+        <if test="jc_sjqf_flg != null">
+            left join matridx_jcsj jc_sjqf on jc_sjqf.csid =sj.sjqf
+        </if>
+        <if test="jc_fjsqlx_flg != null">
+            left join matridx_jcsj jc_fjsqlx on jc_fjsqlx.csid =t_fj.lx
+        </if>
+        <if test="jc_gzlx_flg != null">
+            left join matridx_jcsj jc_gzlx on jc_gzlx.csid =hbxx.gzlx
+        </if>
+        <if test="sfbz_flg != null">
+            left join igams_hbsfbz sfbz on hbxx.hbid = sfbz.hbid and (jcxm.jcxmid = sfbz.xm or t_fj.jcxm = sfbz.xm) and (case when jcxm.jczxmid is not null and jcxm.jczxmid != '' and sfbz.zxm is not null and sfbz.zxm != '' then  jcxm.jczxmid = sfbz.zxm else 1=1 end or case when t_fj.jczxmid is not null and t_fj.jczxmid != '' and sfbz.zxm is not null and sfbz.zxm != '' then  t_fj.jczxmid = sfbz.zxm else 1=1 end)
+        </if>
+        <if test="zlcl_flg != null">
+            LEFT JOIN (
+            SELECT ROW_NUMBER ( ) OVER ( PARTITION BY db,xxdy.yxx ORDER BY sj.jsrq ) xh, sj.jsrq sclrsj, db ,xxdy.yxx
+            FROM igams_sjxx sj
+            LEFT JOIN igams_sjjcxm jcxm on jcxm.sjid = sj.sjid AND jcxm.scbj = '0'
+            LEFT JOIN igams_xxdy xxdy on xxdy.dyxx = jcxm.jcxmid and xxdy.dylx = (SELECT jc_dylx.csid FROM matridx_jcsj jc_dylx where jc_dylx.jclb = 'XXDY_TYPE' and jc_dylx.csdm = 'XMFL' and jc_dylx.scbj = '0')
+            WHERE	sj.scbj = '0' AND sj.jsrq IS NOT NULL AND sj.bgrq IS NOT NULL
+            ) zlcl ON zlcl.xh = 1 AND zlcl.db = sj.db and zlcl.yxx = (SELECT yxx FROM igams_xxdy xxdy LEFT JOIN matridx_jcsj jc_dylx on xxdy.dylx = jc_dylx.csid WHERE jc_dylx.jclb = 'XXDY_TYPE' and jc_dylx.csdm = 'XMFL' and jc_dylx.scbj = '0' and xxdy.dyxx = jcxm.jcxmid)
+        </if>
+        <if test="jsje_flg != null">
+            left join igams_yszkmx yszkmx on yszkmx.scbj='0' and yszkmx.sfzykh='1' and case when t_fj.fjid != null then yszkmx.ywid = t_fj.fjid and t_fj.jcxm = yszkmx.jcxmid else yszkmx.ywid = sj.sjid and jcxm.jcxmid = yszkmx.jcxmid and (jcxm.jczxmid = yszkmx.jczxmid or ((jcxm.jczxmid is null or jcxm.jczxmid = '' )and (yszkmx.jczxmid is null or yszkmx.jczxmid = ''))) END
+            left join igams_swyszk yszk on yszk.scbj='0' and case when t_fj.fjid != null then yszkmx.yszkid = yszk.yszkid and yszk.yszkid = t_fj.yszkid ELSE yszkmx.yszkid = yszk.yszkid and yszk.yszkid = jcxm.yszkid END
+        </if>
+    </sql>
+
+    <sql id="OUT_SEARCH_JOINS">
+        <if test="jc_ky_flg != null">
+            left join matridx_jcsj jc_ky on jc_ky.csid = sj.kyxm
+        </if>
+        <if test="jc_jcdw_flg != null">
+            left join matridx_jcsj jc_jcdw on jc_jcdw.csid = sj.jcdw
+        </if>
+        <if test="hbxx_flg != null">
+            left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+        </if>
+        <if test="hbyh_flg != null">
+            left join matridx_xtyh hbyh on hbyh.yhid=hbxx.yhid
+        </if>
+        <if test="ptgs_flg != null">
+            left join matridx_jcsj yptgs on yptgs.csid=hbxx.yptgs
+        </if>
+        <if test="xsbm_flg != null">
+            left join matridx_jcsj ptgs on ptgs.csid=hbxx.ptgs
+        </if>
+        <if test="jc_hbfl_flg != null">
+            left join matridx_jcsj jc_hbfl on jc_hbfl.csid = hbxx.fl
+        </if>
+        <if test="yh_dq_flg != null">
+            left join matridx_xtyh yh_dq on yh_dq.yhid = hbxx.dqxx
+        </if>
+        <if test="jc_sf_flg != null">
+            left join matridx_jcsj jc_sf on jc_sf.csid = hbxx.sf
+        </if>
+        <if test="yyxx_flg != null">
+            left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        </if>
+        <if test="jc_cskz1_flg != null">
+            left join matridx_jcsj jc_cskz1 on jc_cskz1.csid=sj.cskz1
+        </if>
+        <if test="jc_cskz2_flg != null">
+            left join matridx_jcsj jc_cskz2 on jc_cskz2.csid=sj.cskz2
+        </if>
+        <if test="jc_cskz4_flg != null">
+            left join matridx_jcsj jc_cskz4 on jc_cskz4.csid=sj.cskz4
+        </if>
+        <if test="jc_yblx_flg != null">
+            left join matridx_jcsj jc_yblx on sj.yblx = jc_yblx.csid
+        </if>
+        <if test="ks_flg != null">
+            left join igams_sjdwxx ks on sj.ks=ks.dwid
+        </if>
+        <if test="jcxm_flg != null">
+            left join matridx_jcsj jc_jcxm on jc_jcxm.csid = jcxm.jcxmid or jc_jcxm.csid = sj.jcxm
+            left join matridx_jcsj jc_jczxm on jc_jczxm.csid = jcxm.jczxmid
+        </if>
+        <if test="jc_sqlx_flg != null">
+            left join matridx_jcsj jc_sqlx on sj.sqlx = jc_sqlx.csid
+        </if>
+        <if test="jc_kdlx_flg != null">
+            left join matridx_jcsj jc_kdlx on jc_kdlx.csid =sj.kdlx
+        </if>
+        <if test="jc_sjqf_flg != null">
+            left join matridx_jcsj jc_sjqf on jc_sjqf.csid =sj.sjqf
+        </if>
+        <if test="jc_fjsqlx_flg != null">
+            left join matridx_jcsj jc_fjsqlx on jc_fjsqlx.csid =sj.lx
+        </if>
+        <if test="jc_gzlx_flg != null">
+            left join matridx_jcsj jc_gzlx on jc_gzlx.csid =hbxx.gzlx
+        </if>
+        <if test="sfbz_flg != null">
+            left join igams_hbsfbz sfbz on hbxx.hbid = sfbz.hbid and (jcxm.jcxmid = sfbz.xm or sj.jcxm = sfbz.xm) and (case when jcxm.jczxmid is not null and jcxm.jczxmid != '' and sfbz.zxm is not null and sfbz.zxm != '' then  jcxm.jczxmid = sfbz.zxm else 1=1 end or case when sj.jczxmid is not null and sj.jczxmid != '' and sfbz.zxm is not null and sfbz.zxm != '' then  sj.jczxmid = sfbz.zxm else 1=1 end)
+        </if>
+        <if test="zlcl_flg != null">
+            LEFT JOIN (
+            SELECT ROW_NUMBER ( ) OVER ( PARTITION BY db,xxdy.yxx ORDER BY sj.jsrq ) xh, sj.jsrq sclrsj, db ,xxdy.yxx
+            FROM igams_sjxx sj
+            LEFT JOIN igams_sjjcxm jcxm on jcxm.sjid = sj.sjid AND jcxm.scbj = '0'
+            LEFT JOIN igams_xxdy xxdy on xxdy.dyxx = jcxm.jcxmid and xxdy.dylx = (SELECT jc_dylx.csid FROM matridx_jcsj jc_dylx where jc_dylx.jclb = 'XXDY_TYPE' and jc_dylx.csdm = 'XMFL' and jc_dylx.scbj = '0')
+            WHERE	sj.scbj = '0' AND sj.jsrq IS NOT NULL AND sj.bgrq IS NOT NULL
+            ) zlcl ON zlcl.xh = 1 AND zlcl.db = sj.db and zlcl.yxx = (SELECT yxx FROM igams_xxdy xxdy LEFT JOIN matridx_jcsj jc_dylx on xxdy.dylx = jc_dylx.csid WHERE jc_dylx.jclb = 'XXDY_TYPE' and jc_dylx.csdm = 'XMFL' and jc_dylx.scbj = '0' and xxdy.dyxx = jcxm.jcxmid)
+        </if>
+        <if test="jsje_flg != null">
+            left join igams_yszkmx yszkmx on yszkmx.scbj='0'  and yszkmx.sfzykh='1' and case when sj.fjid is not null then yszkmx.ywid = sj.fjid and sj.jcxm = yszkmx.jcxmid else yszkmx.ywid = sj.sjid and jcxm.jcxmid = yszkmx.jcxmid and (jcxm.jczxmid = yszkmx.jczxmid or ((jcxm.jczxmid is null or jcxm.jczxmid = '' )and (yszkmx.jczxmid is null or yszkmx.jczxmid = ''))) END
+            left join igams_swyszk yszk on yszk.scbj='0' and case when sj.fjid is not null then yszkmx.yszkid = yszk.yszkid and yszk.yszkid = sj.yszkid ELSE yszkmx.yszkid = yszk.yszkid and yszk.yszkid = jcxm.yszkid END
+        </if>
+    </sql>
+    <!--选中导出-->
+    <select id="getListForSelectExp" parameterType="Map" resultType="Map">
+        select tmp.sjid,t_fj.fjid ${sqlParam} from (
+        <foreach item="item" index="index" collection="selectjson" separator=" union all ">
+            select #{item.id,jdbcType=VARCHAR} sjid, #{item.id,jdbcType=VARCHAR} fjid,#{item.xmglid,jdbcType=VARCHAR} xmglid, #{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_fjsq t_fj on t_fj.fjid = tmp.fjid
+        left join igams_sjxx sj on sj.sjid = tmp.sjid or sj.sjid = t_fj.sjid
+        left join igams_sjjcxm jcxm on jcxm.xmglid= tmp.xmglid and jcxm.scbj='0'
+        <include refid="OUT_SELECT_JOINS"></include>
+    </select>
+
+    <!--搜索导出条数-->
+    <select id="getCountForSearchExp"  parameterType="Map" resultType="java.lang.Integer">
+        select count(tmp.sjfjid) from (
+        <if test="fjlxs == null or fjlxs.length==0 or fjlxs == ''">
+            select sj.sjid as sjfjid
+            from igams_sjxx sj
+            left join igams_sjjcxm jcxm on jcxm.sjid= sj.sjid and jcxm.scbj='0'
+            left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+            left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+            left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+            <where>
+                sj.scbj='0'
+                <include refid="SelectWhere"></include>
+                <if test="jcxms !=null and jcxms.length > 0">
+                    and jcxm.jcxmid in
+                    <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                        #{item}
+                    </foreach>
+
+                </if>
+		
+                <if test="dcbjflg == '1'.toString()">
+                    and jcxm.dcbj is not null and jcxm.dcbj != '' and (jcxm.yszkid is null or jcxm.yszkid = '')
+                </if>
+                <if test="dcbjflg == '0'.toString()">
+                    and (jcxm.dcbj is null or jcxm.dcbj = '' or (jcxm.yszkid is not null and jcxm.yszkid != ''))
+                </if>
+                <if test="dcbj !=null and dcbj !=''">
+                    and jcxm.dcbj ILIKE '%'||#{dcbj}||'%'
+                </if>
+                <if test="sfdz !=null and sfdz !=''">
+                    and jcxm.sfdz = #{sfdz}
+                </if>
+                <if test="sfsfs != null and sfsfs.length > 0 ">
+                    and sj.sfsf in
+                    <foreach collection="sfsfs" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="jcdwxz !=null and jcdwxz.size()>0">
+                    and sj.jcdw in
+                    <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="userids != null and userids.size()>0">
+                    and (sj.lrry in
+                    <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    <if test="sjhbs != null and sjhbs.size()>0">
+                        or sj.db in
+                        <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    )
+                </if>
+                <if test="syrqflg == '1'.toString() ">
+                    and (
+                    ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                    or ( 1=1
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                    )
+                    )
+                </if>
+                <if test="syrqflg == null or syrqflg ==''">
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                </if>
+            </where>
+            union all
+        </if>
+        SELECT fjsq.fjid as sjfjid
+        from igams_fjsq fjsq
+        left join igams_sjxx sj on sj.sjid = fjsq.sjid
+        left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+        left join matridx_jcsj jc_fjlx on jc_fjlx.csid = fjsq.lx
+        <where>
+            fjsq.zt = '80' and jc_fjlx.cskz1 = '1' and sj.scbj='0' and fjsq.bgbj = '1'
+            <include refid="SelectWhere"></include>
+            <if test="jcxms !=null and jcxms.length > 0">
+                and fjsq.jcxm in
+                <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+	    <if test="dcbjflg == '1'.toString()">
+                and fjsq.dcbj is not null and fjsq.dcbj != '' and (fjsq.yszkid is null or fjsq.yszkid = '')
+            </if>
+            <if test="dcbjflg == '0'.toString()">
+                and (fjsq.dcbj is null or fjsq.dcbj = '' or (fjsq.yszkid is not null and fjsq.yszkid != ''))
+            </if>
+            <if test="dcbj !=null and dcbj !=''">
+                and fjsq.dcbj ILIKE '%'||#{dcbj}||'%'
+            </if>
+            <if test="sfdz !=null and sfdz !=''">
+                and fjsq.sfdz = #{sfdz}
+            </if>
+            <if test="sfsfs != null and sfsfs.length > 0 ">
+                and fjsq.sfff in
+                <foreach collection="sfsfs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and fjsq.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userids != null and userids.size()>0">
+                and (sj.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sj.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="syrqflg == '1'.toString() ">
+                and (
+                ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                or ( 1=1
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+                )
+                )
+            </if>
+            <if test="syrqflg == null or syrqflg ==''">
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+            </if>
+            <if test="fjlxs != null and fjlxs.length>0">
+                and (fjsq.lx in
+                <foreach collection="fjlxs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>) tmp
+    </select>
+
+    <!--搜索导出-->
+    <select id="getListForSearchExp" parameterType="Map" resultType="Map">
+        select sj.sjid,sj.fjid  ${sqlParam} from (
+        <if test="fjlxs == null or fjlxs.length==0 or fjlxs == ''">
+            select sj.sjid, null as fjid, sj.bz as sjbzxx, null as jcbzxx, jcxm.jcxmid as jcxm,coalesce(jcxm.jczxmid,null) as jczxmid, null as lx, null as yy, sj.jcdw as jcdw,
+                sj.hzxm, sj.ybbh, sj.nbbm, sj.sjys, sj.sfjs, sj.sfsc, sj.ysjg, sj.sjdwmc, sj.sjdw, sj.ks, sj.qtks, sj.kyxm, sj.db, sj.cskz1, sj.cskz2, sj.cskz4, sj.cskz5, sj.yblx, coalesce(jcxm.sfsf,sj.sfsf) as sfsf, sj.zyh, sj.jcjg, sj.jyjg, sj.kdlx, sj.kdh, sj.kdfy, sj.sjqf, sj.sqlx,
+                coalesce(sj.sfje,0) as sfje, coalesce(sj.tkje,0) as tkje,
+                to_char(sj.fkrq,'yyyy-mm-dd hh24:mi:ss') as fkrq, to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') as jsrq, to_char(sj.bgrq,'yyyy-mm-dd hh24:mi:ss') as bgrq, to_char(sj.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj, to_char(sj.cyrq,'yyyy-mm-dd hh24:mi:ss') as cyrq,
+                jcxm.xmglid as xmglid, jcxm.sfje as jcxmsfje, jcxm.yfje as yfje, jcxm.dzje, jcxm.sfdz, jcxm.dcbj, jcxm.yszkid
+            from igams_sjxx sj
+            left join igams_sjjcxm jcxm on jcxm.sjid= sj.sjid and jcxm.scbj='0'
+            <if test="(dbm != null and dbm != '') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (ptgss != null and ptgss.length > 0)or (xsbms != null and xsbms.length > 0) or (tjmc != null and tjmc != '')">
+                left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+            </if>
+            <if test="(all_param !=null and all_param !='') or (hospitalname != null and hospitalname != '') or (yytjmc != null and yytjmc != '') or (yyzddjs != null and yyzddjs.length > 0)">
+                left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+            </if>
+            <if test="kylxs != null and kylxs.length > 0">
+                left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+            </if>
+            <if test="(all_param !=null and all_param !='') or (qtks != null and qtks != '')">
+                left join igams_sjdwxx ks on ks.dwid = sj.ks
+            </if>
+            <where>
+                sj.scbj='0'
+                <include refid="SelectWhere"></include>
+                <if test="jcxms !=null and jcxms.length > 0">
+                    and jcxm.jcxmid in
+                    <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="dcbjflg == '1'.toString()">
+                    and jcxm.dcbj is not null and jcxm.dcbj != '' and (jcxm.yszkid is null or jcxm.yszkid = '')
+                </if>
+                <if test="dcbjflg == '0'.toString()">
+                    and (jcxm.dcbj is null or jcxm.dcbj = '' or (jcxm.yszkid is not null and jcxm.yszkid != ''))
+                </if>
+                <if test="dcbj !=null and dcbj !=''">
+                    and jcxm.dcbj ILIKE '%'||#{dcbj}||'%'
+                </if>
+                <if test="sfdz !=null and sfdz !=''">
+                    and jcxm.sfdz = #{sfdz}
+                </if>
+                <if test="sfsfs != null and sfsfs.length > 0 ">
+                    and sj.sfsf in
+                    <foreach collection="sfsfs" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="jcdwxz !=null and jcdwxz.size()>0">
+                    and sj.jcdw in
+                    <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="userids != null and userids.size()>0">
+                    and (sj.lrry in
+                    <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    <if test="sjhbs != null and sjhbs.size()>0">
+                        or sj.db in
+                        <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    )
+                </if>
+                <if test="syrqflg == '1'.toString() ">
+                    and (
+                    ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                    or ( 1=1
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                    )
+                    )
+                </if>
+                <if test="syrqflg == null or syrqflg ==''">
+                    <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                        )
+                    </if>
+                    <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                        and (
+                        to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        or to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                        )
+                    </if>
+                    <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                        and (
+                        (to_char(sj.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.syrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        or (to_char(sj.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(sj.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                        )
+                    </if>
+                </if>
+            </where>
+            union all
+        </if>
+        select sj.sjid, fjsq.fjid as fjid, sj.bz as sjbzxx, fjsq.bz jcbzxx, fjsq.jcxm as jcxm, fjsq.jczxm as jczxmid,fjsq.lx as lx, fjsq.yy as yy, fjsq.jcdw as jcdw,
+            sj.hzxm, sj.ybbh, sj.nbbm, sj.sjys, sj.sfjs, fjsq.bgbj as sfsc, sj.ysjg, sj.sjdw, sj.sjdwmc, sj.ks, sj.qtks, sj.kyxm, sj.db, sj.cskz1, sj.cskz2, sj.cskz4, sj.cskz5, sj.yblx, fjsq.sfff as sfsf, sj.zyh, sj.jcjg, sj.jyjg, sj.kdlx, sj.kdh, sj.kdfy, sj.sjqf, sj.sqlx,
+            null as sfje, null as tkje, to_char(sj.fkrq,'yyyy-mm-dd hh24:mi:ss') as fkrq, to_char(sj.jsrq,'yyyy-mm-dd hh24:mi:ss') as jsrq, to_char(sj.bgrq,'yyyy-mm-dd hh24:mi:ss') as bgrq, to_char(sj.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj, to_char(sj.cyrq,'yyyy-mm-dd hh24:mi:ss') as cyrq,
+            null as xmglid, fjsq.sfje as jcxmsfje, fjsq.yfje as yfje, fjsq.dzje, fjsq.sfdz, fjsq.dcbj, fjsq.yszkid
+        from igams_fjsq fjsq
+        left join igams_sjxx sj on sj.sjid = fjsq.sjid
+        <if test="(dbm != null and dbm != '') or (sjhbfls != null and sjhbfls.length > 0) or (sjhbzfls != null and sjhbzfls.length > 0) or (ptgss != null and ptgss.length > 0) or (xsbms != null and xsbms.length > 0) or (tjmc != null and tjmc != '')">
+            left join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and (hbxx.scbj = '0' or hbxx.scbj = '2')
+        </if>
+        <if test="(all_param !=null and all_param !='') or (hospitalname != null and hospitalname != '') or (yytjmc != null and yytjmc != '') or (yyzddjs != null and yyzddjs.length > 0)">
+            left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        </if>
+        <if test="kylxs != null and kylxs.length > 0">
+            left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        </if>
+        <if test="(all_param !=null and all_param !='') or (qtks != null and qtks != '')">
+            left join igams_sjdwxx ks on ks.dwid = sj.ks
+        </if>
+        left join matridx_jcsj jc_fjlx on jc_fjlx.csid = fjsq.lx
+        <where>
+            fjsq.zt = '80' and jc_fjlx.cskz1 = '1' and sj.scbj='0' and fjsq.bgbj = '1'
+            <include refid="SelectWhere"></include>
+            <if test="jcxms !=null and jcxms.length > 0">
+                and fjsq.jcxm in
+                <foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+	        <if test="dcbjflg == '1'.toString()">
+                and fjsq.dcbj is not null and fjsq.dcbj != '' and (fjsq.yszkid is null or fjsq.yszkid = '')
+            </if>
+            <if test="dcbjflg == '0'.toString()">
+                and (fjsq.dcbj is null or fjsq.dcbj = '' or (fjsq.yszkid is not null and fjsq.yszkid != ''))
+            </if>
+            <if test="dcbj !=null and dcbj !=''">
+                and fjsq.dcbj ILIKE '%'||#{dcbj}||'%'
+            </if>
+            <if test="sfdz !=null and sfdz !=''">
+                and fjsq.sfdz = #{sfdz}
+            </if>
+            <if test="sfsfs != null and sfsfs.length > 0 ">
+                and fjsq.sfff in
+                <foreach collection="sfsfs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and fjsq.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userids != null and userids.size()>0">
+                and (sj.lrry in
+                <foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                <if test="sjhbs != null and sjhbs.size()>0">
+                    or sj.db in
+                    <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                )
+            </if>
+            <if test="syrqflg == '1'.toString() ">
+                and (
+                ( sj.syrq is null and sj.dsyrq is null and sj.qtsyrq is null)
+                or ( 1=1
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+                )
+                )
+            </if>
+            <if test="syrqflg == null or syrqflg ==''">
+                <if test="(syrqstart != null and syrqstart != '') and (syrqend == null or syrqend == '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+                    )
+                </if>
+                <if test="(syrqstart == null or syrqstart == '') and (syrqend != null and syrqend != '')">
+                    and (
+                    to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    or to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend}
+                    )
+                </if>
+                <if test="syrqstart != null and syrqstart != '' and syrqend != null and syrqend != ''">
+                    and (
+                    (to_char(fjsq.rsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.rsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.dsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.dsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    or (to_char(fjsq.qtsyrq,'yyyy-mm-dd') &gt;= #{syrqstart}  and to_char(fjsq.qtsyrq,'yyyy-mm-dd') &lt;= #{syrqend})
+                    )
+                </if>
+            </if>
+            <if test="fjlxs != null and fjlxs.length>0">
+                and (fjsq.lx in
+                <foreach collection="fjlxs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        ORDER BY lrsj asc, sjid asc, fjid asc
+        LIMIT #{pageSize} OFFSET #{pageStart}
+        ) sj
+        left join igams_sjjcxm jcxm on jcxm.xmglid= sj.xmglid and jcxm.scbj='0'
+        <include refid="OUT_SEARCH_JOINS"></include>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+    </select>
+</mapper>

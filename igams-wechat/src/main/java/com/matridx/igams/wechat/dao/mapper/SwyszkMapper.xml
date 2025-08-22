@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISwyszkDao">
+
+    <select id="getPagedDtoList" resultType="SwyszkDto" parameterType="SwyszkDto">
+        select * from (
+        select swyszk.yszkid, swyszk.yszkid _key,
+        to_char(swyszk.zdzq,'yyyy-mm') as zdzq,
+        to_char(swyszk.yqtzsj,'yyyy-mm-dd hh24:MI:ss') as yqtzsj,
+        swyszk.qy,
+        swyszk.dzkh,
+        swyszk.djxs,
+        swyszk.hkzt,
+        swyszk.jsje,
+        swyszk.sfje,
+        swyszk.kprq,
+        swyszk.kphm,
+        swyszk.kpje,
+        swyszk.hkje,
+        swyszk.whkje,
+        swyszk.fkje,
+        swyszk.wfkje,
+        swyszk.kdfy,
+        swyszk.sfyq,
+        swyszk.lrry,
+        swyszk.lrsj,
+        swyszk.xgry,
+        swyszk.xgsj,
+        swyszk.scry,
+        swyszk.scsj,
+        swyszk.scbj,
+        swyszk.fl,
+        fl.csmc flmc,
+        swkhgl.gsmc as hkztmc,
+        swkhgl.gsmc as dzkhmc,
+        swkhgl.khh,
+        swkhgl.yhzh,
+        swyszk.hkzq,
+        swkhgl.hkzq as khhkzq,
+        swyszk.dkrq,
+        swyszk.sfjq,
+        swyszk.sfjs,
+        COALESCE(kpsl,0)||'/'|| COALESCE(ykpsl,0) as kpqk,
+        COALESCE(fksl,0)||'/'|| COALESCE(yfksl,0) as fkqk,
+        swkhgl.ywfl as khfl,
+        khywfl.csmc as khflmc,
+        swkhgl.fzryx,
+        case when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 1) as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) or swyszk.kprq is null or swyszk.whkje = '0' then '00'
+        when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 2)as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) then '10'
+        when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 3) as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) then '20'
+        when swyszk.whkje='0' then '00'
+        else '30' end zdzt,swkhgl.ztqf,djxs.zsxm as djxsmc
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj='0'
+        left join matridx_jcsj fl on swyszk.fl = fl.csid
+        left join matridx_jcsj khywfl on swkhgl.ywfl = khywfl.csid
+        left join matridx_xtyh djxs on djxs.yhid = swyszk.djxs and djxs.scbj='0'
+        WHERE
+        <include refid="SEARCH_WHERE"></include>
+        ) tmp
+        <where>
+            <if test = "htzts != null and htzts.size > 0 "  >
+                and tmp.zdzt in
+                <foreach collection="htzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <sql id="SEARCH_WHERE">
+        swyszk.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (
+            swyszk.qy ILIKE '%'||#{entire}||'%'
+            or swkhgl.gsmc ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="zdzqstart != null and zdzqstart != '' and zdzqstart != 'null'">
+            and to_char(swyszk.zdzq,'yyyy-mm') &gt;= #{zdzqstart}
+        </if>
+        <if test="zdzqend != null and zdzqend != '' and zdzqend != 'null'">
+            and to_char(swyszk.zdzq,'yyyy-mm') &lt;= #{zdzqend}
+        </if>
+        <if test="qy != null and qy != ''">
+            and swyszk.qy ILIKE '%'||#{qy}||'%'
+        </if>
+        <if test="dzkhmc != null and dzkhmc != ''">
+            and swkhgl.gsmc ILIKE '%'||#{dzkhmc}||'%'
+        </if>
+        <if test="ztqf != null and ztqf != ''">
+            and swkhgl.ztqf = #{ztqf}
+        </if>
+        <if test="djxsmc != null and djxsmc != ''">
+            and djxs.zsxm ILIKE '%'||#{djxsmc}||'%'
+        </if>
+        <if test="sfjq != null and sfjq != '' and sfjq == '1'.toString">
+            and swyszk.sfjq = #{sfjq}
+        </if>
+        <if test="sfjq != null and sfjq != '' and sfjq == '0'.toString">
+            and (swyszk.sfjq = #{sfjq} or swyszk.sfjq is null or swyszk.sfjq='')
+        </if>
+        <if test="sfyq != null and sfyq != ''">
+            and swyszk.sfyq = #{sfyq}
+        </if>
+        <if test="dkrqstart != null and dkrqstart != ''">
+            and to_char(swyszk.dkrq,'yyyy-mm-dd') &gt;= #{dkrqstart}
+        </if>
+        <if test="dkrqend != null and dkrqend != ''">
+            and to_char(swyszk.dkrq,'yyyy-mm-dd') &lt;= #{dkrqend}
+        </if>
+        <if test="sfjs != null and sfjs != ''">
+            and swyszk.sfjs = #{sfjs}
+        </if>
+        <if test="hbfls !=null and hbfls.size > 0">
+            and swyszk.fl in
+            <foreach collection="hbfls" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="kpqk == '0'.toString()">
+            and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric)=0)
+        </if>
+        <if test="kpqk == '1'.toString()">
+            and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric)!=cast(swyszk.ykpsl as numeric))
+        </if>
+        <if test="kpqk == '2'.toString()">
+            and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric) >0) and (cast(swyszk.ykpsl as numeric) >0) and (cast(swyszk.kpsl as numeric)=cast(swyszk.ykpsl as numeric))
+        </if>
+        <if test="kpqk == '3'.toString()">
+            and (cast(swyszk.whkje as numeric) =0 or swyszk.whkje is null) and (cast(swyszk.kpsl as numeric) =0) and (cast(swyszk.ykpsl as numeric) =0)
+        </if>
+        <if test="fkqk == '0'.toString()">
+            and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric)=0)
+        </if>
+        <if test="fkqk == '1'.toString()">
+            and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric)!=cast(swyszk.yfksl as numeric))
+        </if>
+        <if test="fkqk == '2'.toString()">
+            and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric) >0) and (cast(swyszk.yfksl as numeric) >0) and (cast(swyszk.fksl as numeric)=cast(swyszk.yfksl as numeric))
+        </if>
+        <if test="fkqk == '3'.toString()">
+            and (cast(swyszk.wfkje as numeric) =0 or swyszk.wfkje is null) and (cast(swyszk.fksl as numeric) =0) and (cast(swyszk.yfksl as numeric) =0)
+        </if>
+    </sql>
+
+    <!-- 选中导出  -->
+    <select id="getYskListForSelectExp" parameterType="SwyszkDto" resultType="SwyszkDto">
+        SELECT  swyszk.yszkid ${sqlParam}
+        FROM (
+        <foreach collection="ids" separator=" union all "  index="index" item="item">
+            select #{item, jdbcType=VARCHAR} yszkid, #{index} ordernum
+        </foreach>
+        ) tmp
+        LEFT OUTER JOIN igams_swyszk swyszk ON tmp.yszkid = swyszk.yszkid
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+        left join matridx_jcsj fl on swyszk.fl = fl.csid
+        left join matridx_xtyh djxs on djxs.yhid = swyszk.djxs and djxs.scbj='0'
+        ORDER BY tmp.ordernum
+    </select>
+
+    <!-- 获取搜索导出的条数 -->
+    <select id="getYskCountForSearchExp"  parameterType="SwyszkDto" resultType="java.lang.Integer">
+        select  count(*) from(
+            select * from(
+        SELECT  swyszk.yszkid ,swyszk.lrsj,
+        case when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 1) as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) or swyszk.kprq is null or swyszk.whkje = '0' then '00'
+        when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 2)  as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) then '10'
+        when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 3) as numeric)+(case when swkhgl.hkzq is null then 0
+        when swkhgl.hkzq ='' then 0
+        when swkhgl.hkzq ='null' then 0
+        else cast(swkhgl.hkzq as numeric)
+        end ) then '20'
+        when swyszk.whkje='0' then '00'
+        else '30' end zdzt
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+        left join matridx_xtyh djxs on djxs.yhid = swyszk.djxs and djxs.scbj='0'
+        WHERE
+        <include refid="SEARCH_WHERE"></include>)tmp
+            <where>
+                <if test = "htzts != null and htzts.size > 0 "  >
+                    and tmp.zdzt in
+                    <foreach collection="htzts" separator="," open="(" close=") "
+                             item="item" index="index">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+        )tmp
+
+
+
+    </select>
+
+    <!-- 搜索导出 -->
+    <select id="getYskListForSearchExp" parameterType="SwyszkDto" resultType="SwyszkDto">
+        select * from (
+            SELECT  swyszk.yszkid ,swyszk.lrsj,
+            case when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 1) as numeric)+(case when swkhgl.hkzq is null then 0
+            when swkhgl.hkzq ='' then 0
+            when swkhgl.hkzq ='null' then 0
+            else cast(swkhgl.hkzq as numeric)
+            end ) or swyszk.kprq is null or swyszk.whkje = '0' then '00'
+            when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 2) as numeric)+(case when swkhgl.hkzq is null then 0
+            when swkhgl.hkzq ='' then 0
+            when swkhgl.hkzq ='null' then 0
+            else cast(swkhgl.hkzq as numeric)
+            end ) then '10'
+            when date_part('day', cast(now() as TIMESTAMP)- cast(swyszk.kprq::date as TIMESTAMP))&lt;=cast(SPLIT_PART(#{szz}, ',', 3) as numeric)+(case when swkhgl.hkzq is null then 0
+            when swkhgl.hkzq ='' then 0
+            when swkhgl.hkzq ='null' then 0
+            else cast(swkhgl.hkzq as numeric)
+            end ) then '20'
+            when swyszk.whkje='0' then '00'
+            else '30' end zdzt ${sqlParam}
+            from igams_swyszk swyszk
+            left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+            left join matridx_jcsj fl on swyszk.fl = fl.csid
+            left join matridx_xtyh djxs on djxs.yhid = swyszk.djxs and djxs.scbj='0'
+            WHERE
+            <include refid="SEARCH_WHERE"></include>
+        )tmp
+        <where>
+            <if test = "htzts != null and htzts.size > 0 "  >
+                and tmp.zdzt in
+                <foreach collection="htzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <!--根据送检ID删除检测项目-->
+    <delete id="delete" parameterType="SwyszkDto">
+        update igams_swyszk set scry = #{scry},scsj = LOCALTIMESTAMP,scbj = '1' where
+        <if test="ids != null and ids.size()>0">
+            yszkid in
+            <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="yszkid != null and yszkid != ''">
+            yszkid = #{yszkid}
+        </if>
+    </delete>
+
+    <select id="getDtoList" resultType="SwyszkDto" parameterType="SwyszkDto">
+        select swyszk.yszkid,
+        to_char(swyszk.zdzq,'yyyy-mm') as zdzq,
+        swyszk.qy,
+        swyszk.dzkh,
+        swyszk.djxs,
+        swyszk.hkzt,
+        swyszk.jsje,
+        swyszk.sfje,
+        swyszk.kprq,
+        swyszk.kphm,
+        swyszk.kpje,
+        swyszk.hkje,
+        swyszk.whkje,
+        swyszk.fkje,
+        swyszk.wfkje,
+        swyszk.kdfy,
+        swyszk.sfyq,
+        swyszk.lrry,
+        swyszk.lrsj,
+        swyszk.xgry,
+        swyszk.xgsj,
+        swyszk.scry,
+        swyszk.scsj,
+        swyszk.scbj,
+        swyszk.fl,
+        fl.csmc flmc,
+        swkhgl.gsmc as hkztmc,
+        swkhgl.gsmc as dzkhmc,
+        swyszk.hkzq,
+        swyszk.sfjq,
+        swyszk.sfjs
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+        left join matridx_jcsj fl on swyszk.fl = fl.csid
+        where swyszk.scbj = '0'
+        <if test="ids != null and ids.size()>0">
+            and yszkid in
+            <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
+
+    <select id="getDto" resultType="SwyszkDto" parameterType="SwyszkDto">
+        select swyszk.yszkid,
+               to_char(swyszk.zdzq,'yyyy-mm') as zdzq,
+        swyszk.qy,
+        swyszk.dzkh,
+        swyszk.djxs,
+        swyszk.hkzt,
+        swyszk.jsje,
+        swyszk.sfje,
+        swyszk.kprq,
+        swyszk.kphm,
+        swyszk.kpje,
+        swyszk.hkje,
+        swyszk.whkje,
+        swyszk.fkje,
+        swyszk.wfkje,
+        swyszk.kdfy,
+        swyszk.sfyq,
+        swyszk.lrry,
+        swyszk.lrsj,
+        swyszk.xgry,
+        swyszk.xgsj,
+        swyszk.scry,
+        swyszk.scsj,
+        swyszk.scbj,
+        swyszk.fl,
+        fl.csmc flmc,
+        swkhgl.gsmc as hkztmc,
+        swkhgl.gsmc as dzkhmc,
+        swyszk.hkzq,
+        swkhgl.hkzq as khhkzq,
+        swyszk.dkrq,
+        swyszk.sfjq,
+        swyszk.sfjs,swkhgl.ztqf,djxs.zsxm as djxsmc
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+        left join matridx_jcsj fl on swyszk.fl = fl.csid
+        left join matridx_xtyh djxs on djxs.yhid = swyszk.djxs and djxs.scbj='0'
+        where swyszk.scbj = '0'
+          and swyszk.yszkid =#{yszkid}
+    </select>
+
+    <select id="getDtoById" resultType="SwyszkDto" parameterType="SwyszkDto">
+        select swyszk.yszkid,
+               to_char(swyszk.zdzq,'yyyy-mm') as zdzq,
+               swyszk.qy,
+               swyszk.dzkh,
+               swyszk.djxs,
+               swyszk.hkzt,
+               swyszk.jsje,
+               swyszk.sfje,
+               swyszk.kprq,
+               swyszk.kphm,
+               swyszk.kpje,
+               swyszk.hkje,
+               swyszk.whkje,
+               swyszk.fkje,
+               swyszk.wfkje,
+               swyszk.kdfy,
+               swyszk.sfyq,
+               swyszk.lrry,
+               swyszk.lrsj,
+               swyszk.xgry,
+               swyszk.xgsj,
+               swyszk.scry,
+               swyszk.scsj,
+               swyszk.scbj,
+               swyszk.fl,
+               fl.csmc flmc,
+               swkhgl.gsmc as hkztmc,
+               swkhgl.gsmc as dzkhmc,
+               swyszk.hkzq,
+               swyszk.sfjq,
+               swyszk.sfjs
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+        left join matridx_jcsj fl on swyszk.fl = fl.csid
+        where swyszk.scbj = '0'
+          and swyszk.yszkid =#{yszkid}
+    </select>
+
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_swyszk(
+        yszkid,zdzq,qy,fl,dzkh,khxz,djxs,hkzq,hkzt,kphm,jsje,sfje,kprq,dkrq,kpje,hkje,whkje,fkje,wfkje,kdfy,sfyq,sfjq,lrry,lrsj,scbj,sfjs,kpsl,ykpsl,fksl,yfksl
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.yszkid},cast(#{item.zdzq} as date),#{item.qy},#{item.fl},#{item.dzkh},#{item.khxz}
+            ,#{item.djxs},#{item.hkzq},#{item.hkzt},#{item.kphm}
+            <if test="item.jsje !=null and item.jsje != ''">
+                ,cast(#{item.jsje} as numeric)
+            </if>
+            <if test="item.jsje ==null or item.jsje == ''">
+                ,null
+            </if>
+            <if test="item.sfje !=null and item.sfje != ''">
+                ,cast(#{item.sfje} as numeric)
+            </if>
+            <if test="item.sfje ==null or item.sfje == ''">
+                ,null
+            </if>
+            <if test="item.kprq !=null and item.kprq != ''">
+                ,cast(#{item.kprq} as timestamp)
+            </if>
+            <if test="item.kprq ==null or item.kprq == ''">
+                ,null
+            </if>
+            <if test="item.dkrq !=null and item.dkrq != ''">
+                ,cast(#{item.dkrq} as timestamp)
+            </if>
+            <if test="item.dkrq ==null or item.dkrq == ''">
+                ,null
+            </if>
+            <if test="item.kpje !=null and item.kpje != ''">
+                ,cast(#{item.kpje} as numeric)
+            </if>
+            <if test="item.kpje ==null or item.kpje == ''">
+                ,null
+            </if>
+            <if test="item.hkje !=null and item.hkje != ''">
+                ,cast(#{item.hkje} as numeric)
+            </if>
+            <if test="item.hkje ==null or item.hkje == ''">
+                ,null
+            </if>
+            <if test="item.whkje !=null and item.whkje != ''">
+                ,cast(#{item.whkje} as numeric)
+            </if>
+            <if test="item.whkje ==null or item.whkje == ''">
+                ,null
+            </if>
+            <if test="item.fkje !=null and item.fkje != ''">
+                ,cast(#{item.fkje} as numeric)
+            </if>
+            <if test="item.fkje ==null or item.fkje == ''">
+                ,null
+            </if>
+            <if test="item.wfkje !=null and item.wfkje != ''">
+                ,cast(#{item.wfkje} as numeric)
+            </if>
+            <if test="item.wfkje ==null or item.wfkje == ''">
+                ,null
+            </if>
+            <if test="item.kdfy !=null and item.kdfy != ''">
+                ,cast(#{item.kdfy} as numeric)
+            </if>
+            <if test="item.kdfy ==null or item.kdfy == ''">
+                ,null
+            </if>
+            ,#{item.sfyq},#{item.sfjq},#{item.lrry},LOCALTIMESTAMP,'0','0',cast('0' as numeric),cast('0' as numeric),cast('0' as numeric),cast('0' as numeric)
+            )
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="SwyszkDto">
+        UPDATE igams_swyszk set
+        xgsj = LOCALTIMESTAMP ,xgry = #{xgry}
+        <if test="hkje != '' and hkje != null">
+            ,hkje = cast(#{hkje} as numeric)
+        </if>
+        <if test="whkje != '' and whkje != null">
+            ,whkje = cast(#{whkje} as numeric)
+        </if>
+        <if test="fkje != '' and fkje != null">
+            ,fkje = cast(#{fkje} as numeric)
+        </if>
+        <if test="wfkje != '' and wfkje != null">
+            ,wfkje = cast(#{wfkje} as numeric)
+        </if>
+        <if test="sfjq != '' and sfjq != null">
+            ,sfjq = #{sfjq}
+        </if>
+        <if test="kpje != '' and kpje != null">
+            ,kpje = cast(#{kpje} as numeric)
+        </if>
+        <if test="kprq != '' and kprq != null">
+            ,kprq = cast(#{kprq} as timestamp)
+        </if>
+        <if test="kphm != '' and kphm != null">
+            ,kphm = #{kphm}
+        </if>
+        <if test="dkrq != '' and dkrq != null">
+            ,dkrq = cast(#{dkrq} as date)
+        </if>
+        <if test="sfjs != '' and sfjs != null">
+            ,sfjs = #{sfjs}
+        </if>
+        <where>
+            yszkid=#{yszkid}
+        </where>
+    </update>
+
+    <update id="updateInvoiceList" parameterType="List">
+        <foreach collection="list" separator=";" item="item" index="index">
+            update  igams_swyszk
+            <set>
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.jxje !='' and item.jxje!=null">
+                    ,sfhswc=case when (cast(#{item.jxje} as numeric)+cast(coalesce(jxhsje,'0')as numeric))=jsje then '1' else '0' end
+                    ,jxhsje= cast(#{item.jxje} as numeric)+cast(coalesce(jxhsje,'0')as numeric)
+                </if>
+                <if test="item.kpje != '' and item.kpje != null">
+                    ,kpje = cast(#{item.kpje} as numeric)
+                </if>
+                <if test="item.kprq != '' and item.kprq != null">
+                    ,kprq = cast(#{item.kprq} as timestamp)
+                </if>
+                <if test="item.kprq == '' or item.kprq == null">
+                    ,kprq = null
+                </if>
+                <if test="item.kphm != '' and item.kphm != null">
+                    ,kphm = #{item.kphm}
+                </if>
+                <if test="item.kphm == '' or item.kphm == null">
+                    ,kphm = null
+                </if>
+                <if test="item.kpsl != '' and item.kpsl != null">
+                    ,kpsl = cast(#{item.kpsl} as numeric)
+                </if>
+                <if test="item.ykpsl != '' and item.ykpsl != null">
+                    ,ykpsl = cast(#{item.ykpsl} as numeric)
+                </if>
+            </set>
+            where yszkid = #{item.yszkid}
+        </foreach>
+    </update>
+
+    <update id="updatePayList" parameterType="List">
+        <foreach collection="list" separator=";" item="item" index="index">
+            update  igams_swyszk
+            <set>
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.fkje != '' and item.fkje != null">
+                    ,fkje = cast(#{item.fkje} as numeric)
+                </if>
+                <if test="item.wfkje != '' and item.wfkje != null">
+                    ,wfkje = cast(#{item.wfkje} as numeric)
+                </if>
+                <if test="item.sfjq != '' and item.sfjq != null">
+                    ,sfjq = #{item.sfjq}
+                </if>
+                <if test="item.fksl != '' and item.fksl != null">
+                    ,fksl = cast(#{item.fksl} as numeric)
+                </if>
+                <if test="item.yfksl != '' and item.yfksl != null">
+                    ,yfksl = cast(#{item.yfksl} as numeric)
+                </if>
+            </set>
+            where yszkid = #{item.yszkid}
+        </foreach>
+    </update>
+
+    <select id="getOutstandingData" resultType="SwyszkDto">
+        select
+            yszkid, to_char(kprq,'yyyy-MM-dd') kprq,hkzq
+        from igams_swyszk
+        WHERE scbj ='0' and sfjq='0'
+    </select>
+    <update id="updateSfjs" parameterType="SwyszkDto">
+        update igams_swyszk set xgry = #{xgry},xgsj = LOCALTIMESTAMP,sfjs = #{sfjs} where yszkid in
+        <foreach collection="yszkids" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="updateSfyq" parameterType="SwyszkDto">
+        update igams_swyszk set xgry = #{xgry},xgsj = LOCALTIMESTAMP,sfyq = #{sfyq} where yszkid in
+        <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateAmount" parameterType="SwyszkDto">
+        update igams_swyszk
+        <set>
+            xgsj = LOCALTIMESTAMP ,xgry = #{xgry}
+            <if test="fpslbj == '1'.toString()">
+                ,kpsl=COALESCE(kpsl,0) + cast('1' as numeric)
+            </if>
+            <if test="fpslbj == '0'.toString()">
+                ,kpsl=COALESCE(kpsl,0) - cast('1' as numeric)
+            </if>
+            <if test="yfpslbj == '1'.toString()">
+                ,ykpsl=COALESCE(ykpsl,0) + cast('1' as numeric)
+            </if>
+            <if test="yfpslbj == '0'.toString()">
+                ,ykpsl=COALESCE(ykpsl,0) - cast('1' as numeric)
+            </if>
+            <if test="fkslbj == '1'.toString()">
+                ,fksl=COALESCE(fksl,0) + cast('1' as numeric)
+            </if>
+            <if test="fkslbj == '0'.toString()">
+                ,fksl=COALESCE(fksl,0) - cast('1' as numeric)
+            </if>
+            <if test="yfkslbj == '1'.toString()">
+                ,yfksl=COALESCE(yfksl,0) + cast('1' as numeric)
+            </if>
+            <if test="yfkslbj == '0'.toString()">
+                ,yfksl=COALESCE(yfksl,0) - cast('1' as numeric)
+            </if>
+            <if test="djxs != '' and  djxs != null">
+                ,djxs= #{djxs}
+            </if>
+        </set>
+        <where>
+            yszkid=#{yszkid}
+        </where>
+    </update>
+
+    <delete id="updateYqtzsj" parameterType="SwyszkDto">
+        update igams_swyszk set xgry = #{xgry},xgsj = LOCALTIMESTAMP,yqtzsj = LOCALTIMESTAMP where yszkid in
+        <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+
+    <update id="updateJxhsmxsAddJxje" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_swyszk swyszk
+            set jxje =  cast(coalesce(jxje,0) as numeric) + tmp.jxhsje
+            from (
+                <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                    select  cast(coalesce(#{item.jxhsje},'0') as numeric) as jxhsje, #{item.yszkid} as yszkid
+                </foreach>
+            ) tmp
+            where  swyszk.yszkid = tmp.yszkid
+        </if>
+    </update>
+
+    <update id="updateJxhsmxsSfhs" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_swyszk swyszk
+            set sfhswc = case when tmp.jsje = tmp.jxje then '1' else '0' end
+            from (
+            select yszkid ,jsje, jxje from igams_swyszk where  yszkid in
+                <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+                    #{item.yszkid}
+                </foreach>
+            ) tmp
+            where  swyszk.yszkid = tmp.yszkid
+        </if>
+    </update>
+
+    <select id="getPullList" parameterType="SwyszkDto" resultType="SwyszkDto">
+        select
+            swyszk.yszkid,swyszk.zdzq,swyszk.qy,swyszk.dzkh,swyszk.djxs,swyszk.hkzq,swyszk.hkzt,swyszk.jsje,coalesce(swyszk.sfje,0) as sfje,swyszk.kprq,
+            swyszk.kphm,swyszk.kpje,swyszk.hkje as hkje,swyszk.whkje,swyszk.fkje,swyszk.wfkje,swyszk.sfyq,swyszk.lrry,swyszk.lrsj,
+            swyszk.xgry,swyszk.xgsj,swyszk.scry,swyszk.scsj,swyszk.scbj,swyszk.sfjq,swyszk.khxz,swyszk.kdfy,swyszk.fl,swyszk.dkrq,
+            swyszk.sfjs,swyszk.kpsl,swyszk.ykpsl,swyszk.fksl,swyszk.yfksl,swyszk.yqtzsj,swyszk.jxje,swyszk.sfhswc
+            ,swkhgl.gsmc as dzkhmc,jc_hb.csmc as hbflmc,xtyh.zsxm as djxsmc
+        from igams_swyszk swyszk
+        left join igams_swkhgl swkhgl on swkhgl.khid = swyszk.dzkh and swkhgl.scbj = '0'
+        left join matridx_xtyh xtyh on xtyh.yhid = swyszk.djxs and xtyh.scbj != '1'
+        left join matridx_jcsj jc_hb on jc_hb.csid = swyszk.fl and jc_hb.scbj != '1'
+        <where>
+            swyszk.scbj = '0' and (swyszk.sfhswc!='1' or swyszk.sfhswc is null)
+            <if test="zdzqstart != null and zdzqstart != ''">
+                and to_char(swyszk.zdzq,'yyyy-mm') &gt;= #{zdzqstart}
+            </if>
+            <if test="zdzqend != null and zdzqend != ''">
+                and to_char(swyszk.zdzq,'yyyy-mm') &lt;= #{zdzqend}
+            </if>
+            <if test="djxs != null and djxs != ''">
+                and djxs = #{djxs}
+            </if>
+        </where>
+        order by swyszk.zdzq desc
+    </select>
+
+    <select id="getAccountingList" parameterType="SwyszkDto" resultType="SwyszkDto">
+        select to_char(yszk.zdzq,'yyyy-mm') zdzq,to_char(yszk.dkrq,'yyyy-mm') dkrq,swkh.gsmc dzkhmc,yszk.yszkid,
+        case when jxhsmx.yszkid is not null then jxhsmx.jxhsje
+        when yszk.sfjq ='1' then yszk.jsje
+        else 0 end jxje,yszk.jsje,yszk.sfjq,jxhsmx.jxhsje,jxhsgl.jxhsglid,jxhsmx.jxhsmxid,jxhsgl.sd
+        from igams_swyszk yszk
+        left join igams_swkhgl swkh on swkh.khid =yszk.dzkh
+        left join igams_jxhsmx jxhsmx on jxhsmx.yszkid=yszk.yszkid
+        left join igams_jxhsgl jxhsgl on jxhsgl.jxhsglid=jxhsmx.jxhsglid
+        left join matridx_xtyh yh on yh.yhid=yszk.djxs
+        where yszk.scbj='0'
+        and  yszk.sfhswc !='1' and yszk.djxs=#{djxs}
+        and (to_char(yszk.zdzq,'yyyy-mm')&gt;=#{zdzqstart} and to_char(yszk.zdzq,'yyyy-mm')&lt;=#{zdzqend}
+        or to_char(jxhsgl.jxksrq,'yyyy-mm')&gt;=#{zdzqstart} and to_char(jxhsgl.jxjsrq,'yyyy-mm')&lt;=#{zdzqend})
+        <if test="sfjq!=null and sfjq!=''">
+            and yszk.sfjq=#{sfjq}
+        </if>
+    </select>
+
+    <select id="getCheckTarget" parameterType="Map" resultType="Map">
+        select sum(cast(jsje as numeric)) jsjesum,sum(cast(jxje as numeric)) jxjesum,sum(cast(jxhsje as numeric)) jxhsjesum,xszb.sz from(
+        select to_char(yszk.dkrq,'yyyy-mm') dkzq,swkh.gsmc khmc,yszk.yszkid,
+        case when jxhsmx.yszkid is not null then jxhsmx.jxhsje
+        when yszk.sfjq ='1' then yszk.jsje
+        else 0 end jxje,yszk.jsje,yszk.sfjq,jxhsmx.jxhsje,jxhsgl.sd
+        from igams_swyszk yszk
+        left join igams_swkhgl swkh on swkh.khid =yszk.dzkh
+        left join igams_jxhsmx jxhsmx on jxhsmx.yszkid=yszk.yszkid
+        left join igams_jxhsgl jxhsgl on jxhsgl.jxhsglid=jxhsmx.jxhsglid
+        where yszk.scbj='0'
+        and  yszk.sfhswc !='1' and yszk.djxs=#{djxs}
+        and (to_char(yszk.zdzq,'yyyy-mm')&gt;=#{zdzqstart} and to_char(yszk.zdzq,'yyyy-mm')&lt;=#{zdzqend}
+        or to_char(jxhsgl.jxksrq,'yyyy-mm')&gt;=#{zdzqstart} and to_char(jxhsgl.jxjsrq,'yyyy-mm')&lt;=#{zdzqend}))tmp
+        left join igams_xszb xszb on 1=1 and xszb.kszq=#{zdzqstart} and xszb.jszq=#{zdzqend}
+        and xszb.zbfl=#{zbfl}  and xszb.zblx=#{zblx} and xszb.yhid=#{djxs} and xszb.sfqr='1'
+        <if test="sfjq!=null and sfjq!=''">
+            and yszk.sfjq=#{sfjq}
+        </if>
+        group by xszb.sz
+    </select>
+
+    <select id="getSaleReceiptsStatistics" parameterType="Map" resultType="Map">
+        select sum(coalesce (yszk.jsje,0)) jsje,sum(cast(coalesce (yszk.sfje,0)as numeric)+cast(coalesce (yszk.hkje,0)as numeric)) dkje,khgl.gsmc dzkhmc
+        from igams_swyszk yszk
+        left join igams_swkhgl khgl on khgl.khid=yszk.dzkh
+        <where>
+            yszk.scbj='0' and to_char(yszk.zdzq,'yyyy-mm')&gt;=#{zdzqstart} and to_char(yszk.zdzq,'yyyy-mm')&lt;=#{zdzqend}
+            and yszk.djxs=#{djxs}
+        </where>
+        group by khgl.gsmc
+        order by sum(coalesce (yszk.jsje,0)) desc limit 7
+    </select>
+</mapper>
+

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWbtjglDao" >
+    <sql id="SELECT_INFO">
+		select wbtjgl.wbtjid,wbtjgl.wbtjmc,wbtjgl.hbid,wbtjgl.sjdw,wbtjgl.jcxm,wbtjgl.jcdw,wbtjgl.sjdwmc,wbtjgl.sfsf,wbtjgl.sjqf,
+		wbtjgl.css,to_char( wbtjgl.jsrq,'yyyy-MM-dd') jsrq,wbtjgl.lrry,wbtjgl.lrsj,wbtjgl.xgry,wbtjgl.xgsj,wbtjgl.scry,wbtjgl.scsj,wbtjgl.scbj,wbtjgl.jczxm
+	</sql>
+    <sql id="OUT_SEARCH_JOINS">
+		left join igams_yyxx yyxx on yyxx.dwid = wbtjgl.sjdw
+		left join igams_sjhbxx sjhbxx on sjhbxx.hbid = wbtjgl.hbid
+		left join matridx_jcsj jcxm on jcxm.csid = wbtjgl.jcxm
+        left join matridx_jcsj jczxm on jczxm.csid = wbtjgl.jczxm
+        left join matridx_jcsj jcdw on jcdw.csid = wbtjgl.jcdw
+        left join matridx_jcsj sjqf on sjqf.csid = wbtjgl.sjqf
+	</sql>
+
+    <sql id="SEARCH_WHERE">
+        <where>
+            wbtjgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (wbtjgl.wbtjmc ILIKE '%'||#{entire}||'%'
+                or wbtjgl.sjdwmc ILIKE '%'||#{entire}||'%'
+                or yyxx.dwmc ILIKE '%'||#{entire}||'%'
+                or sjhbxx.hbmc ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="sjdwmc != null and sjdwmc != ''">
+                and (wbtjgl.sjdwmc ILIKE '%'||#{sjdwmc}||'%'
+                or yyxx.dwmc ILIKE '%'||#{sjdwmc}||'%'
+                )
+            </if>
+            <if test="wbtjmc != null and wbtjmc != ''">
+                and wbtjgl.wbtjmc ILIKE '%'||#{wbtjmc}||'%'
+            </if>
+            <if test="hbmc != null and hbmc != ''">
+                and sjhbxx.hbmc ILIKE '%'||#{hbmc}||'%'
+            </if>
+            <if test="rqstart != null and rqstart != ''">
+                and to_char(wbtjgl.jsrq,'yyyy-mm-dd') &gt;= #{rqstart}
+            </if>
+            <if test="rqend != null and rqend != ''">
+                and to_char(wbtjgl.jsrq,'yyyy-mm-dd') &lt;= #{rqend}
+            </if>
+            <if test="sfsfs !=null and sfsfs.size > 0">
+                and wbtjgl.sfsf in
+                <foreach collection="sfsfs" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sjqfids !=null and sjqfids.size > 0">
+                and wbtjgl.sjqf in
+                <foreach collection="sjqfids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdwids !=null and jcdwids.size > 0">
+                and wbtjgl.jcdw in
+                <foreach collection="jcdwids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcxmids !=null and jcxmids.size > 0">
+                and wbtjgl.jcxm in
+                <foreach collection="jcxmids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jczxmids !=null and jczxmids.size > 0">
+                and wbtjgl.jczxm in
+                <foreach collection="jczxmids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </sql>
+
+    <!--查询指定行数据-->
+    <select id="getPagedDtoList" resultType="WbtjglDto" parameterType="WbtjglDto">
+        <include refid="SELECT_INFO"></include>
+        ,yyxx.dwmc,sjhbxx.hbmc,jcxm.csmc jcxmmc,jczxm.csmc jczxmmc,jcdw.csmc jcdwmc,sjqf.csmc sjqfmc
+        from igams_wbtjgl wbtjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <select id="getDtoList" parameterType="WbtjglDto" resultType="WbtjglDto">
+        <include refid="SELECT_INFO"></include>
+        ,yyxx.dwmc,sjhbxx.hbmc,jcxm.csmc jcxmmc,jczxm.csmc jczxmmc,jcdw.csmc jcdwmc,sjqf.csmc sjqfmc
+        from igams_wbtjgl wbtjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where wbtjgl.scbj='0'
+    </select>
+
+    <!--查询单个-->
+    <select id="getDto" resultType="WbtjglDto" parameterType="WbtjglDto">
+        <include refid="SELECT_INFO"></include>
+        ,yyxx.dwmc,sjhbxx.hbmc,jcxm.csmc jcxmmc,jczxm.csmc jczxmmc,jcdw.csmc jcdwmc,sjqf.csmc sjqfmc
+        from igams_wbtjgl wbtjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where wbtjgl.scbj='0'
+        <if test="wbtjid !=null and wbtjid != ''">
+            and wbtjgl.wbtjid = #{wbtjid}
+        </if>
+    </select>
+
+    <!--查询单个-->
+    <select id="getDtoById" resultType="WbtjglDto" parameterType="String">
+        <include refid="SELECT_INFO"></include>
+        ,yyxx.dwmc,sjhbxx.hbmc,jcxm.csmc jcxmmc,jczxm.csmc jczxmmc,jcdw.csmc jcdwmc,sjqf.csmc sjqfmc
+        from igams_wbtjgl wbtjgl
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where wbtjgl.scbj='0' and wbtjgl.wbtjid = #{wbtjid}
+    </select>
+
+    <insert id="insert" parameterType="WbtjglDto">
+        insert into igams_wbtjgl( wbtjid,wbtjmc,hbid,sjdw,jcxm,jcdw,sjdwmc,sfsf,css,jczxm,lrry,lrsj,scbj,sjqf
+        <if test="jsrq != null and jsrq != ''">
+            , jsrq
+        </if>
+        )
+        values (#{wbtjid},#{wbtjmc},#{hbid},#{sjdw},#{jcxm},#{jcdw},#{sjdwmc},#{sfsf},#{css},#{jczxm},#{lrry},LOCALTIMESTAMP,'0',#{sjqf}
+        <if test="jsrq != null and jsrq != ''">
+            , cast(#{jsrq} as timestamp)
+        </if>
+        )
+    </insert>
+
+    <!--通过主键删除-->
+    <delete id="delete" parameterType="WbtjglDto">
+        update  igams_wbtjgl set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'  where
+        <if test="wbtjid !=null and wbtjid != ''">
+            wbtjid = #{wbtjid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            wbtjid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update igams_wbtjgl
+        <set>
+            <if test = "wbtjmc != null and wbtjmc != ''">
+                wbtjmc = #{wbtjmc},
+            </if>
+            <if test = "hbid != null and hbid != ''">
+                hbid = #{hbid},
+            </if>
+            <if test = "sjdw != null and sjdw != ''">
+                sjdw = #{sjdw},
+            </if>
+            <if test = "jcxm != null and jcxm != ''">
+                jcxm = #{jcxm},
+            </if>
+            <if test = "jcdw != null and jcdw != ''">
+                jcdw = #{jcdw},
+            </if>
+            <if test = "sjdwmc != null and sjdwmc != ''">
+                sjdwmc = #{sjdwmc},
+            </if>
+            <if test = "sfsf != null and sfsf != ''">
+                sfsf = #{sfsf},
+            </if>
+            <if test = "css != null and css != ''">
+                css = #{css},
+            </if>
+            <if test = "sjqf != null and sjqf != ''">
+                sjqf = #{sjqf},
+            </if>
+            <if test = "sjqf != null and sjqf == ''">
+                sjqf = null,
+            </if>
+            <if test = "jsrq != null and jsrq != ''">
+                jsrq = cast(#{jsrq} as timestamp),
+            </if>
+            <if test = "jczxm != null and jczxm != ''">
+                jczxm = #{jczxm},
+            </if>
+            <if test = "wbtjmc != null and wbtjmc == ''">
+                wbtjmc = null,
+            </if>
+            <if test = "hbid != null and hbid == ''">
+                hbid = null,
+            </if>
+            <if test = "sjdw != null and sjdw == ''">
+                sjdw = null,
+            </if>
+            <if test = "jcxm != null and jcxm == ''">
+                jcxm = null,
+            </if>
+            <if test = "jcdw != null and jcdw == ''">
+                jcdw = null,
+            </if>
+            <if test = "sjdwmc != null and sjdwmc == ''">
+                sjdwmc = null,
+            </if>
+            <if test = "sfsf != null and sfsf == ''">
+                sfsf = null,
+            </if>
+            <if test = "css != null and css == ''">
+                css = null,
+            </if>
+            <if test = "jsrq != null and jsrq == ''">
+                jsrq = null,
+            </if>
+            <if test = "jczxm != null and jczxm == ''">
+                jczxm = null,
+            </if>
+            xgry = #{xgry}, xgsj = LOCALTIMESTAMP
+        </set>
+        where
+        <if test="wbtjid !=null and wbtjid != ''">
+            wbtjid = #{wbtjid}
+        </if>
+
+    </update>
+</mapper>

@@ -1,0 +1,3656 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjxxTwoDao">
+	<update id="updateList" parameterType="List">
+		<foreach collection="list" open="" close="" separator=";" item="item">
+			update igams_sjxx set xgsj = LOCALTIMESTAMP
+			<if test="item.jcbj !=null and item.jcbj !=''">
+				,jcbj=#{item.jcbj}, syrq = LOCALTIMESTAMP
+			</if>
+			<if test="item.djcbj !=null and item.djcbj !=''">
+				,djcbj=#{item.djcbj}, dsyrq = LOCALTIMESTAMP
+			</if>
+			where sjid=#{item.sjid}
+		</foreach>
+	</update>
+
+	<select id="getPagedAuditDevice" parameterType="SjxxDto" resultType="Map">
+		select * from (
+		<include refid="selectInfo"></include>
+		<include refid="tableInfo"></include>
+		LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid  AND tqgl.scbj = '0'
+		left outer join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid AND wkgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0' and  jcxm.cskz1 ='F'
+		<if test="zt != null and zt !=''">
+			and (sj.zt = #{zt} or fjsq.zt = #{zt})
+		</if>
+		<include refid="whereInfo"></include>
+		) tab where tab.cn = 1
+	</select>
+
+	<select id="getAuditListDevice" parameterType="List" resultType="SjxxDto">
+		select sjsygl.syglid,sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sjsygl.jsrq,sj.bgrq,sj.sfjs,sjsygl.jcdw,yblx,xmsygl.jcxmid,sjsygl.syrq ,
+		sjsygl.jcbj,sjsygl.nbzbm,jcsj_yblx.csmc yblxmc,jcxm.csmc jcxmmc,jcxm.cskz1 jcxmkzcs,jcsj_jcdw.csmc AS jcdwmc,
+		case when xmsygl.ywlx = 'DETECT_SJ' then sj.sjid else fjsq.fjid end sjid,
+		case when xmsygl.ywlx = 'DETECT_SJ' then '0' else '1' end flg_qf,
+		case when xmsygl.ywlx = 'DETECT_SJ' then sj.zt else fjsq.zt end zt,
+		case when xmsygl.ywlx = 'DETECT_SJ' then fjsq.bz else fjsq.bz end bz,
+		case when xmsygl.ywlx = 'DETECT_SJ' then '正常送检' else jcsj_qf.csmc end qf
+		,tmp.rownum,shxx_sqsj,sqr,shxx_shsj,shxx_sftg,shxx_lrryxm,shxx_gwmc,shxx_shxxid,shxx_shyj
+		from
+		<foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+			select #{item.xmsyglid} xmsyglid,#{item.syglid} syglid,#{item.sjid} sjid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg, #{item.shxx_shyj} shxx_shyj,
+			#{item.shxx_gwmc} shxx_gwmc, #{index} rownum
+		</foreach> tmp
+		left outer join igams_xmsygl xmsygl on xmsygl.xmsyglid = tmp.xmsyglid and xmsygl.scbj='0'
+		left join igams_sjsygl sjsygl on sjsygl.syglid = xmsygl.syglid
+		left join igams_sjxx sj on sj.sjid = sjsygl.sjid and sj.scbj='0'
+		LEFT JOIN igams_fjsq fjsq ON fjsq.fjid = xmsygl.ywid  and fjsq.scbj='0'
+		left outer join igams_xxdy xxdy on xxdy.dyid= xmsygl.dyid
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		order by shxx_shsj desc, rownum desc
+
+	</select>
+
+	<!--实验列表信息  -->
+	<select id="getExperimentList" parameterType="SjxxDto" resultType="SjxxDto">
+		select * from (
+		<include refid="selectInfo"></include>
+		<include refid="tableInfo"></include>
+		LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid  AND tqgl.scbj = '0'
+		left outer join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid AND wkgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0'
+		and to_char(sjsygl.lrsj,'YYYY-MM-DD') >= to_char(now() - interval '1 week' ,'YYYY-MM-DD')
+		<include refid="ZTCheck"></include>
+		<include refid="whereInfo"></include>
+		<choose>
+			<when test="sortName != null and sortName != '' and sortOrder != null and sortOrder != '' ">
+				ORDER BY ${sortName} ${sortOrder}, sjsygl.lrsj desc
+			</when>
+			<otherwise>
+				ORDER BY sjsygl.lrsj desc
+			</otherwise>
+		</choose>
+		) tab where tab.cn = 1
+	</select>
+	<sql id="selectInfo">
+		select xmsygl.xmsyglid,sjsygl.syglid,sj.ybbh,sj.nbbm,sj.hzxm,sj.nl,sjsygl.jsrq,sj.bgrq,sj.sfjs,sjsygl.jcdw,yblx,xmsygl.jcxmid,sjsygl.syrq ,
+		sjsygl.jcbj,sjsygl.nbzbm,jcsj_yblx.csmc yblxmc,case when jczxm.csmc is not null then jcxm.csmc ||'-'||jczxm.csmc else jcxm.csmc end jcxmmc,jcxm.cskz1 jcxmkzcs,jcsj_jcdw.csmc AS jcdwmc,
+		case when xmsygl.ywlx = 'DETECT_SJ' then sj.sjid else fjsq.fjid end sjid,
+		case when xmsygl.ywlx = 'DETECT_SJ' then '0' else '1' end flg_qf,
+		case when xmsygl.ywlx = 'DETECT_SJ' then sj.zt else fjsq.zt end zt,
+		case when xmsygl.ywlx = 'DETECT_SJ' then fjsq.bz else fjsq.bz end bz,
+		row_number() over(partition by sjsygl.syglid order by tqmx.lrsj desc ) cn,
+		case when xmsygl.ywlx = 'DETECT_SJ' then '正常送检' else jcsj_qf.csmc end qf
+	</sql>
+
+	<sql id="tableInfo">
+		from igams_sjsygl sjsygl
+		left join igams_sjxx sj on sj.sjid = sjsygl.sjid and sj.scbj='0'
+		left outer join igams_xmsygl xmsygl on sjsygl.syglid = xmsygl.syglid and xmsygl.scbj='0'
+		LEFT JOIN igams_fjsq fjsq ON fjsq.fjid = xmsygl.ywid and fjsq.scbj='0'
+		left outer join igams_xxdy xxdy on xxdy.dyid= xmsygl.dyid
+		LEFT JOIN igams_tqmx tqmx on split_part(tqmx.tqdm,'/',1) = xxdy.kzcs2 and  sjsygl.sjid = tqmx.sjid AND tqmx.scbj = '0' and TO_CHAR( tqmx.tqrq, 'yyyy-MM-dd' ) = TO_CHAR( sjsygl.syrq, 'yyyy-MM-dd' )
+		left outer join igams_wkmx wkmx on wkmx.syglid = sjsygl.syglid and wkmx.tqm = sjsygl.nbzbm AND wkmx.scbj = '0' and TO_CHAR( wkmx.wkrq, 'yyyy-MM-dd' ) = TO_CHAR( sjsygl.syrq, 'yyyy-MM-dd' )
+		left outer join igams_kzmx kzmx on kzmx.syglid = sjsygl.syglid and kzmx.tqm = sjsygl.nbzbm AND kzmx.scbj = '0' and TO_CHAR( kzmx.kzsj, 'yyyy-MM-dd' ) = TO_CHAR( kzmx.kzsj, 'yyyy-MM-dd' )
+		left outer join igams_wksjgl wksj on wksj.wkid = wkmx.wkid AND wksj.scbj = '0'
+	</sql>
+
+
+	<sql id="ZTCheck">
+		<if test="zt != null and zt !='' and zt =='0'.toString">
+			AND sjsygl.qysj is null and sjsygl.syrq is null
+		</if>
+		<if test="zt != null and zt !='' and zt =='1'.toString">
+			and sjsygl.qysj is not null and sjsygl.syrq is null and tqmx.tqid is null
+		</if>
+		<if test="zt != null and zt !='' and zt =='2'.toString">
+			and sjsygl.syrq is not null
+			and wkmx.syglid is null
+		</if>
+		<if test="zt != null and zt !='' and zt =='3'.toString">
+			and wkmx.syglid is not null
+			and wksj.wksjid is null
+		</if>
+		<if test="zt != null and zt !='' and zt =='5'.toString">
+			and ((xmsygl.ywlx = 'DETECT_SJ' and bgrq is null)
+			or ( xmsygl.ywlx != 'DETECT_SJ' and  bgbj = '1' and   ( sj.bgrq is null or sj.bgrq &lt;= sjsygl.syrq )))
+			and wksj.wksjid is not null
+
+		</if>
+		<if test="zt != null and zt !='' and zt =='6'.toString">
+			and bgrq is not null and  bgrq  &gt;= sjsygl.syrq
+			and to_char( sj.bgrq, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' )
+		</if>
+		<if test="zt != null and zt !='' and zt =='7'.toString">
+			and kzmx.kzid is null
+			and tqmx.tqid is not null
+		</if>
+		<if test="zt != null and zt !='' and zt =='8'.toString">
+			and ( (xmsygl.ywlx = 'DETECT_SJ' and sj.bgrq is null and sj.jcsj is not null)
+			or ( xmsygl.ywlx != 'DETECT_SJ' and fjsq.jcsj is not null  and  bgbj = '1' and   ( bgrq is null or bgrq &lt;=  sjsygl.syrq )))
+		</if>
+		<if test="zt != null and zt !='' and zt =='9'.toString">
+			and ((xmsygl.ywlx != 'DETECT_SJ' and fjsq.jcsj is null) or (xmsygl.ywlx = 'DETECT_SJ' and sj.jcsj is null))
+			and kzmx.kzid is not null
+		</if>
+	</sql>
+
+	<sql id="whereInfo">
+		<if test="userids != null and userids.size()>0">
+			and (sj.lrry in
+			<foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+			<if test="sjhbs != null and sjhbs.size()>0">
+				or sj.db in
+				<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+		</if>
+		<if test="jcxmids !=null and jcxmids.size > 0">
+			and xmsygl.jcxmid in
+			<foreach separator="," collection="jcxmids" open="(" close=")" index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcdwxz!=null and jcdwxz.size()>0">
+			and sjsygl.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="ybbh != null and ybbh !=''">
+			and ybbh ILIKE '%'||#{ybbh}||'%'
+		</if>
+		<if test="hzxm != null and hzxm != ''">
+			and hzxm ILIKE '%'||#{hzxm}||'%'
+		</if>
+		<if test=" nbbm != null and nbbm != ''">
+			and nbbm ILIKE '%'||#{nbbm}||'%'
+		</if>
+		<if test = "ybbhs != null and ybbhs.size > 0 "  >
+			and sjsygl.nbzbm in
+			<foreach collection="ybbhs" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and sjsygl.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcxms !=null and jcxms.length > 0">
+			and xmsygl.jcxmid in
+			<foreach separator="," collection="jcxms" open="(" close=")" index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="getPagedSalesResFirstList" resultType="SjxxDto" parameterType="SjxxDto">
+		select sjsygl.syglid,sjxx.ybbh,sjxx.nbbm,sjxx.hzxm,to_char(sjsygl.jsrq,'yyyy-MM-dd HH24:mi:ss') jsrq, to_char(sjsygl.syrq,'yyyy-MM-dd HH24:mi:ss') syrq ,
+		       to_char(sjsygl.qysj,'yyyy-MM-dd HH24:mi:ss') qyrq, to_char(sjsygl.kzsj,'yyyy-MM-dd HH24:mi:ss') qtsyrq,
+		       to_char(bgsm.bgrq,'yyyy-MM-dd HH24:mi:ss') bgrq, to_char(sjsygl.jcsj,'yyyy-MM-dd HH24:mi:ss') jcsj, jcsj_yblx.csmc yblxmc,jcxm.csmc jcxmmc,jcxm.cskz1 jcxmkzcs,jcsj_jcdw.csmc AS jcdwmc,
+				case when xmsygl.ywlx = 'DETECT_SJ' then sjxx.sjid else fjsq.fjid end sjid,
+				case when xmsygl.ywlx = 'DETECT_SJ' then '0' else '1' end flg_qf,
+				case when xmsygl.ywlx = 'DETECT_SJ' then sjxx.zt else fjsq.zt end zt,
+				case when xmsygl.ywlx = 'DETECT_SJ' then fjsq.bz else fjsq.bz end bz,
+				case when xmsygl.ywlx = 'DETECT_SJ' then '正常送检' else jcsj_qf.csmc end qf
+		from igams_sjsygl sjsygl
+		 left join igams_sjxx sjxx on sjxx.sjid = sjsygl.sjid and sjxx.scbj='0'
+		 left outer join igams_xmsygl xmsygl on sjsygl.syglid = xmsygl.syglid and xmsygl.scbj='0'
+		 LEFT JOIN igams_fjsq fjsq ON fjsq.fjid = xmsygl.ywid  and fjsq.scbj='0'
+		 left outer join igams_xxdy xxdy on xxdy.dyid= xmsygl.dyid
+		 LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sjxx.yblx
+		 LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		 left outer join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		 LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		 left join igams_sjbgsm bgsm on bgsm.sjid = sjxx.sjid and xmsygl.jcxmid = bgsm.jclx and xmsygl.jczxmid = bgsm.jczlx
+		<where>
+			sjxx.scbj ='0' and sjsygl.scbj ='0'
+			<if test="jcxm !=null and jcxm !='' ">
+				and xmsygl.jcxmid = #{jcxm}
+			</if>
+			<if test="jcdwxz!=null and jcdwxz.size()>0">
+				and sjsygl.jcdw in
+				<foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sjhbs != null and sjhbs.size()>0">
+				and sjxx.db in
+				<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ybbh != null and ybbh !=''">
+				and ybbh ILIKE '%'||#{ybbh}||'%'
+			</if>
+			<if test="hzxm != null and hzxm != ''">
+				and hzxm ILIKE '%'||#{hzxm}||'%'
+			</if>
+			<if test=" nbbm != null and nbbm != ''">
+				and nbbm ILIKE '%'||#{nbbm}||'%'
+			</if>
+			<if test="entire != null and entire != ''">
+				and (
+				 sjxx.ybbh ILIKE '%'||#{entire}||'%'
+				or  sjxx.hzxm ILIKE '%'||#{entire}||'%'
+				or sjxx.nbbm ILIKE '%'||#{entire}||'%')
+			</if>
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				and sjsygl.jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "yblxs != null and yblxs.length > 0 "  >
+				and sjxx.yblx in
+				<foreach collection="yblxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<!--	获取实验员列表头部数据-->
+	<select id="queryExperimentNums" resultType="Map" parameterType="SjxxDto">
+		select
+		count(case when TO_CHAR( jsrq, 'yyyy-MM-dd' )  = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end ) as yjs,
+		count(case when TO_CHAR( jsrq, 'yyyy-MM-dd' ) &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' ) AND qysj is null and syrq is null then sjid end ) as yjswqy,
+		count(case when TO_CHAR( qysj, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end) as yqy,
+		count(case when TO_CHAR( qysj, 'yyyy-MM-dd' ) &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' ) AND syrq is null then sjid end ) as yqywtq,
+		count(case when syrq is not null and TO_CHAR( tqrq, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end ) as ytq,
+		count(case when kzmxsjid is not null and TO_CHAR( kzmxkzsj, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end ) as ykz,
+		count(case when syrq is not null AND wkmxsyglid is null then sjid end ) as ytqwjk,
+		count(case when wkmxsyglid is not null and wksjid is null then sjid end ) as yjkwsj,
+		count(case when wkmxsyglid is not null and TO_CHAR( wkrq, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' )  then sjid end ) as yjk,
+		'0' as yjkwp,'0' as yp,'0' as ypwsj,
+		count(case when wksjid is not null and to_char(lrsj, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end ) as ysj,
+		count(case when wksjid is not null and( (lx = 'DETECT_SJ' and bgrq is null)
+		or ( lx != 'DETECT_SJ' and  bgbj = '1' and   ( bgrq is null or bgrq &lt;= syrq ))) then sjid end ) as ysjwbg,
+		count(case when bgrq is not null and  bgrq  &gt;= syrq and  to_char( bgrq, 'yyyy-MM-dd' )  = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) then sjid end ) as ybg,
+		count(case when kzsj is null
+		and TO_CHAR( tqrq, 'yyyy-MM-dd' ) &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' )   then sjid end ) as ytqwkz,
+		count(case when( ( lx != 'DETECT_SJ' and fjsqjcsj is null) or ( lx = 'DETECT_SJ' and sjjcsj is null) )
+		and TO_CHAR( kzmxkzsj, 'yyyy-MM-dd' ) &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' )   then sjid end ) as ykzwjc,
+		count(case when  (lx != 'DETECT_SJ' and TO_CHAR( fjsqjcsj, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) )
+		or (lx = 'DETECT_SJ' and TO_CHAR( sjjcsj, 'yyyy-MM-dd' ) = TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' ) ) then sjid end ) as yjc,
+		count(case when ( (lx = 'DETECT_SJ' and bgrq is null  and TO_CHAR( sjjcsj, 'yyyy-MM-dd' )  &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' ))
+		or ( lx != 'DETECT_SJ' and TO_CHAR( fjsqjcsj, 'yyyy-MM-dd' )  &gt;= TO_CHAR( (now() - interval '1 week'), 'yyyy-MM-dd' ) and  bgbj = '1' and   ( bgrq is null or bgrq &lt;=  syrq )))  then sjid end ) as yjcwbg
+		from (select sjsygl.jsrq,sjsygl.qysj,sjsygl.sjid,sjsygl.syrq,xmsygl.ywlx lx,xmsygl.ywlx,sjsygl.kzsj,tqmx.tqrq,kzmx.kzsj kzmxkzsj,kzmx.sjid kzmxsjid,wkmx.syglid wkmxsyglid ,wkmx.wkrq ,wksj.lrsj ,wksj.wksjid,fjsq.jcsj fjsqjcsj,sj.jcsj sjjcsj,sj.bgrq,bgbj,row_number() over(partition by sjsygl.syglid order by tqmx.lrsj desc ) cn
+		<include refid="tableInfo"></include>
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0'
+		and to_char(sjsygl.lrsj,'YYYY-MM-DD') >= to_char(now() - interval '1 week' ,'YYYY-MM-DD')
+		<if test="userids != null and userids.size()>0">
+			and (sj.lrry in
+			<foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+			<if test="sjhbs != null and sjhbs.size()>0">
+				or sj.db in
+				<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+		</if>
+		<if test="jcxmids !=null and jcxmids.size > 0">
+			and xmsygl.jcxmid in
+			<foreach separator="," collection="jcxmids" open="(" close=")" index="index" item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "ybbhs != null and ybbhs.size > 0 "  >
+			and sjsygl.nbzbm in
+			<foreach collection="ybbhs" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcdwxz!=null and jcdwxz.size()>0">
+			and sjsygl.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and sjsygl.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="syrqstart != null and syrqstart != ''">
+			and to_char(sjsygl.syrq,'yyyy-mm-dd') &gt;= #{syrqstart}
+		</if>
+		<if test="syrqend != null and syrqend != ''">
+			and to_char(sjsygl.syrq,'yyyy-mm-dd') &lt;= #{syrqend}
+		</if>
+		) tab where tab.cn = 1
+	</select>
+
+	<select id="getPagedResFirstList" resultType="ResFirstDto" parameterType="ResFirstDto">
+		select sjxx.sjid,sjxx.hzxm,sjxx.xb,sjxx.nl,sjxx.dh,sjxx.sjdw,sjxx.ks,sjxx.sjys,sjxx.ysdh,sjxx.db,sjxx.yblx,sjxx.nldw,sjxx.ybtj,sjxx.ybbh,sjxx.cyrq,
+		sjxx.jsrq,to_char(sjxx.jsrq,'yyyy-MM-dd') fjsrq,sjxx.bgrq,sjxx.sjbg,sjxx.lrry,sjxx.lrsj,sjxx.xgry,sjxx.xgsj,sjxx.scry,sjxx.scsj,sjxx.scbj,
+		sjxx.sfsc,sjxx.sfjs,sjxx.sftj,sjxx.sfsf,sjxx.sfzq,hb.gzlx,sjxx.kdlx,sjxx.kdh,sjxx.qyrq,sjxx.ydrq,sjxx.yjydrq,sjxx.fkrq,sjxx.qtsyrq,sjxx.zt,sjxx.bgrq,sjxx.bz,
+		case when sjxx.xb ='1' then '男' when sjxx.xb='2' then '女' when sjxx.xb='3' then'未知' end xbmc,
+		dw.dwmc ksmc,dw.dwdm ksdm,sjxx.bz,sjxx.fkbj,sjxx.fkje,sjxx.sfje,sjxx.nbbm, '0' AS flg_qf, '正常送检' AS qf,
+		case when jc.cskz1 = '1' then sjxx.yblxmc else jc.csmc end AS yblxmc,case when sjxx.fkbj='1' then '是' when sjxx.fkbj !='1' then '否' end fkmc,
+		case when sjxx.sfjs='1' then '是' when sjxx.sfjs='0' then '否' when sjxx.sfjs='2' then '其他(外送)' end sfjsmc,
+		case when sjxx.sfsf='1' then '是' when sjxx.sfsf ='0' then '否' when sjxx.sfsf='2' then '免  D' when sjxx.sfsf='3' then '免  R' end sfsfmc,
+		case when sjxx.sfzq='1' then '是' when sjxx.sfzq='0' then '否' end sfzqmc,
+		sjxx.qtks,case when sjxx.sftj='1' then '是' when sjxx.sftj='0' then '否' end sftjmc,
+		case when yyxx.cskz1='1' then sjxx.sjdwmc else yyxx.dwjc end yymc,
+		yyxx.dwmc||case when yyxx.cskz1 ='1' then '--'||sjxx.sjdwmc else '' end as hospitalname,
+		sjxx.jcdw,sjxx.sfzmjc, jc.cskz2 as jc_cskz2,jc.csdm yblxdm,yyxx.dwjc as dwjc,yyxx.dwmc as hospitalname,
+		yyxx.cskz1 as yyxxCskz1,sjxx.sjdwmc,jcxm.jczxmid,jc_xm.cskz1 jcxmkzcs,jc_xm.csmc jcxmmc
+		,sjxx.kdlx,sjxx.jcdw,sjxx.sjqf
+		from igams_sjxx sjxx
+		left outer join igams_sjdwxx dw on sjxx.ks = dw.dwid
+		left outer join matridx_jcsj jc on sjxx.yblx = jc.csid
+		left outer join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+		left outer join igams_sjjcxm jcxm on jcxm.sjid = sjxx.sjid and jcxm.scbj='0'
+		left outer join matridx_jcsj jc_xm on jcxm.jcxmid = jc_xm.csid
+		left outer join igams_yyxx yyxx on yyxx.dwid =sjxx.sjdw
+		<where>
+			sjxx.scbj='0'
+			<if test = "jcjgmc != null and jcjgmc.length > 0 "  >
+				and exists
+				(
+				select jcjg.ywid from igams_sjjcjg jcjg
+				left join matridx_jcsj jl_jcsj on jcjg.jl=jl_jcsj.csid
+				left join matridx_jcsj jcjg_jcsj ON jcjg_jcsj.csid = jcjg.jcjg
+				where
+				<foreach collection="jcjgmc" separator="or" open="(" close=") " item="item" index="index">
+					jcjg_jcsj.csmc ILIKE'%' || #{item} || '%'
+				</foreach>
+				and jcjg.ywid=sjxx.sjid and jl_jcsj.csmc = '阳性'
+				)
+			</if>
+			<if test="jcdwxz!=null and jcdwxz.size()>0">
+				and sjxx.jcdw in
+				<foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sjhbs != null and sjhbs.size()>0">
+				and sjxx.db in
+				<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jcxmdm != null and jcxmdm != ''">
+				and jc_xm.csdm = #{jcxmdm}
+			</if>
+			<if test="hzxm != null and hzxm != ''">
+				and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+			</if>
+			<if test="db!=null and db !=''">
+				and sjxx.db ILIKE '%'||#{db}||'%'
+			</if>
+			<if test="hospitalname != null and hospitalname != ''">
+				and (yyxx.dwmc ILIKE '%'||#{hospitalname}||'%' or yyxx.dwjc ILIKE '%'||#{hospitalname}||'%' or yyxx.dwqtmc ILIKE '%'||#{hospitalname}||'%')
+			</if>
+			<if test="ybbh != null and ybbh != ''">
+				and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+			</if>
+			<if test="nbbm != null and nbbm != ''">
+				and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+			</if>
+			<if test="kdh != null and kdh != ''">
+				and sjxx.kdh ILIKE '%'||#{kdh}||'%'
+			</if>
+			<if test="sjys !=null and sjys !=''">
+				and sjxx.sjys like '%'||#{sjys}||'%'
+			</if>
+			<if test = "sjhbfls != null and sjhbfls.length > 0"  >
+				and hb.fl in
+				<foreach collection="sjhbfls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "dwids != null and dwids.length > 0 "  >
+				and sjxx.ks in
+				<foreach collection="dwids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "yblxs != null and yblxs.length > 0 "  >
+				and sjxx.yblx in
+				<foreach collection="yblxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfjs!=null and sfjs!=''">
+				and sjxx.sfjs=#{sfjs}
+			</if>
+			<if test="sftj!=null and sftj!=''">
+				and sjxx.sftj=#{sftj}
+			</if>
+			<if test = "kdlxs != null and kdlxs.length > 0 "  >
+				and sjxx.kdlx in
+				<foreach collection="kdlxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				and sjxx.jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bgrqstart != null and bgrqstart != ''">
+				and to_char(sjxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+			</if>
+			<if test="bgrqend != null and bgrqend != ''">
+				and to_char(sjxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+			</if>
+		</where>
+	</select>
+
+	<!--实验列表导出-->
+	<select id="getListForSearchExpSy" parameterType="SjxxDto" resultType="SjxxDto">
+		select * from (
+		select cn,sjid ${sqlParam}
+		from (
+		<include refid="selectInfo"></include>
+		<include refid="tableInfo"></include>
+		LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid AND tqgl.scbj = '0'
+		left outer join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid AND wkgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0'
+		and to_char(sjsygl.lrsj,'YYYY-MM-DD') >= to_char(now() - interval '1 week' ,'YYYY-MM-DD')
+		<include refid="ZTCheck"></include>
+		<include refid="whereInfo"></include>
+		) tmp
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		) tab where tab.cn = 1
+	</select>
+
+
+	<select id="getCountForSearchExpSy"  parameterType="SjxxDto" resultType="java.lang.Integer">
+		select count(syglid)
+		from (
+		select * from (
+		select sjsygl.syglid
+		,row_number() over(partition by sjsygl.syglid order by tqmx.lrsj desc ) cn
+		<include refid="tableInfo"></include>
+		LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid AND tqgl.scbj = '0'
+		left outer join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid AND wkgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left outer join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0'
+		and to_char(sjsygl.lrsj,'YYYY-MM-DD') >= to_char(now() - interval '1 week' ,'YYYY-MM-DD')
+		<include refid="ZTCheck"></include>
+		<include refid="whereInfo"></include>
+		) tab where tab.cn = 1
+		) tmp
+	</select>
+
+
+	<!-- 选中导出 -->
+	<select id="getListForSelectExpSy" parameterType="SjxxDto" resultType="SjxxDto">
+		select sj.sjid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids" separator=" union all ">
+			select #{item,jdbcType=VARCHAR} syglid,#{index} ordernum
+		</foreach>
+		) tmp
+		left join (
+		<include refid="selectInfo"></include>
+		<include refid="tableInfo"></include>
+		LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid  AND tqgl.scbj = '0'
+		left outer join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid AND wkgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = sj.yblx
+		LEFT JOIN matridx_jcsj jcsj_jcdw ON sjsygl.jcdw = jcsj_jcdw.csid
+		left join matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		left join matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN matridx_jcsj jcsj_qf ON jcsj_qf.csid = fjsq.lx
+		where sjsygl.sfjs ='1' and sj.scbj ='0' and sjsygl.scbj ='0'
+		and to_char(sjsygl.lrsj,'YYYY-MM-DD') >= to_char(now() - interval '1 week' ,'YYYY-MM-DD')
+		) sj on sj.syglid=tmp.syglid and sj.cn = 1
+		order by tmp.ordernum
+	</select>
+	<select id="getAllCountryChanges" resultType="Map" parameterType="SjxxDto">
+		SELECT
+		tab.rq,
+		COALESCE ( SUM ( tab.zxnum ), '0' ) zxnum,
+		COALESCE ( SUM ( tab.dlsnum ), '0' ) dlsnum,
+		COALESCE ( SUM ( tab.dsfnum ), '0' ) dsfnum,
+		tab.hbflmc
+		from(
+		SELECT
+		tjrq.rq,
+		sum (tmp.zxnum) zxnum,
+		sum (tmp.dlsnum)  dlsnum,
+		sum (tmp.dsfnum) dsfnum,
+		tmp.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq
+		LEFT OUTER JOIN (
+		SELECT
+		CASE WHEN (xxdy_hb.yxx = '直销' AND ptgs.csdm ='LEAD')
+		and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end zxnum ,
+		CASE WHEN   (ptgs.csdm !='LEAD' or xxdy_hb.yxx = 'CSO')
+		and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end dlsnum,
+		CASE WHEN (xxdy_hb.yxx = '第三方' AND ptgs.csdm ='LEAD')
+		and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end dsfnum,
+		case when ptgs.csdm !='LEAD' then 'CSO' else xxdy_hb.yxx end hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_xxdy xxdy_hb
+		left join igams_sjhbxx hb ON xxdy_hb.dyxx = hb.fl AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join igams_sjxx sjxx on sjxx.db=hb.hbmc and sjxx.scbj='0'
+		AND sfjs = '1' AND sjxx.sfsf != '0'
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = xm.jcxmid AND xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid and jc_xm.scbj='0'
+		LEFT OUTER JOIN matridx_jcsj ptgs ON ptgs.csid = hb.ptgs and ptgs.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		and xxdy_hb.yxx in ('直销','CSO','第三方')
+		and xxdy_xm.dyid is not NULL
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_hb.yxx,
+		sjxx.sfsf,
+		tt.xmjclx,
+		hb.ptgs,ptgs.csdm
+		) tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq.rq = tmp.rq
+			GROUP BY tjrq.rq,tmp.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp.rq as TIMESTAMP) &lt;=cast(tjrq.rq as TIMESTAMP)  and (cast(tmp.rq as TIMESTAMP) &gt;  cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq.rq,tmp.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		union all
+		SELECT
+		tjrq_t.rq,
+		sum(tmp_t.zxnum) zxnum,
+		sum(tmp_t.dlsnum) dlsnum,
+		sum(tmp_t.dsfnum) dsfnum,
+		tmp_t.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		CASE WHEN (xxdy_hb.yxx = '直销' AND ptgs.csdm ='LEAD') THEN COUNT ( fjsq.fjid )
+		else 0 end zxnum ,
+		CASE WHEN   (ptgs.csdm !='LEAD' or xxdy_hb.yxx = 'CSO') then COUNT ( fjsq.fjid )
+		else 0 end dlsnum,
+		CASE WHEN (xxdy_hb.yxx = '第三方' AND ptgs.csdm ='LEAD') then COUNT ( fjsq.fjid )
+		else 0 end dsfnum,
+		case when ptgs.csdm !='LEAD' then 'CSO' else xxdy_hb.yxx end hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT OUTER JOIN matridx_jcsj ptgs ON ptgs.csid = hb.ptgs and ptgs.scbj='0'
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hb.fl AND xxdy_hb.dylx =  #{ywlx_q}
+		and xxdy_hb.yxx in ('直销','CSO','第三方')
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND sfjs = '1'
+		and jc_fjlx.csdm = 'ADDDETECT'
+		AND fjsq.sfff = '1'
+		AND bgbj='1'
+		AND fjsq.lrsj IS NOT NULL
+		AND xxdy_xm.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_hb.yxx,
+		hb.ptgs,ptgs.csdm
+		) tmp_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq_t.rq = tmp_t.rq
+			GROUP BY tjrq_t.rq,tmp_t.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp_t.rq as TIMESTAMP) &lt;=cast(tjrq_t.rq as TIMESTAMP) and (cast(tmp_t.rq as TIMESTAMP) &gt;  cast(tjrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq_t.rq,tmp_t.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		union all
+		SELECT
+		wbrq_t.rq,
+		SUM(wb_t.zxnum) zxnum,
+		SUM(wb_t.dlsnum) dlsnum,
+		SUM(wb_t.dsfnum) dsfnum,
+		wb_t.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) wbrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		case when xxdy_hb.yxx= '直销' AND ptgs.csdm ='LEAD' THEN cast(wbtj.css as numeric) else 0 end zxnum,
+		case when (ptgs.csdm !='LEAD' or xxdy_hb.yxx = 'CSO') THEN cast(wbtj.css as numeric) else 0 end dlsnum,
+		case when xxdy_hb.yxx= '第三方' AND ptgs.csdm ='LEAD' THEN cast(wbtj.css as numeric) else 0 end dsfnum,
+		case when ptgs.csdm !='LEAD' then 'CSO' else xxdy_hb.yxx end hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(wbtj.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(wbtj.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(wbtj.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT OUTER JOIN matridx_jcsj ptgs ON ptgs.csid = sjhbxx.ptgs and ptgs.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = sjhbxx.fl
+		AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx IN ('直销','第三方','CSO' )
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjhbxx.hbid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) wb_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  wbrq_t.rq = wb_t.rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(wb_t.rq as TIMESTAMP) &lt;=cast(wbrq_t.rq as TIMESTAMP)  and (cast(wb_t.rq as TIMESTAMP) &gt;  cast(wbrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+		</if>
+		GROUP BY wb_t.hbflmc,wbrq_t.rq
+		)tab
+		group by tab.rq,hbflmc
+	</select>
+<!--	销售端平台趋势-->
+	<select id="getAllCountryChangesForSale" resultType="Map" parameterType="SjxxDto">
+		SELECT
+		tab.rq,
+		COALESCE ( SUM ( tab.zxnum ), '0' ) zxnum,
+		COALESCE ( SUM ( tab.dlsnum ), '0' ) dlsnum,
+		COALESCE ( SUM ( tab.dsfnum ), '0' ) dsfnum,
+		tab.hbflmc
+		from(
+		SELECT
+		tjrq.rq,
+		sum (tmp.zxnum) zxnum,
+		sum (tmp.dlsnum)  dlsnum,
+		sum (tmp.dsfnum) dsfnum,
+		tmp.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq
+		LEFT OUTER JOIN (
+		SELECT
+		case WHEN xxdy_hb.yxx = '直销'  and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end zxnum ,
+		case when xxdy_hb.yxx = 'CSO'  and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end dlsnum,
+		case when xxdy_hb.yxx = '第三方' and ( sjxx.sfsf = '1'
+		or ((sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R')or tt.xmjclx is null)
+		or ((sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D')or tt.xmjclx is null)) then COUNT ( sjxx.sjid )
+		else 0 end dsfnum,
+		xxdy_hb.yxx hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_xxdy xxdy_hb
+		left join igams_sjhbxx hb ON xxdy_hb.dyxx = hb.fl AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join igams_sjxx sjxx on sjxx.db=hb.hbmc and sjxx.scbj='0'
+		AND sfjs = '1' AND sjxx.sfsf != '0'
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = xm.jcxmid AND xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid and jc_xm.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		and xxdy_hb.yxx in ('直销','CSO','第三方')
+		and xxdy_xm.dyid is not NULL
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_hb.yxx,
+		sjxx.sfsf,
+		tt.xmjclx
+		) tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq.rq = tmp.rq
+			GROUP BY tjrq.rq,tmp.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp.rq as TIMESTAMP) &lt;=cast(tjrq.rq as TIMESTAMP)  and (cast(tmp.rq as TIMESTAMP) &gt;  cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq.rq,tmp.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		union all
+		SELECT
+		tjrq_t.rq,
+		sum(tmp_t.zxnum) zxnum,
+		sum(tmp_t.dlsnum) dlsnum,
+		sum(tmp_t.dsfnum) dsfnum,
+		tmp_t.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		case WHEN xxdy_hb.yxx = '直销'  THEN COUNT ( fjsq.fjid )
+		else 0 end zxnum ,
+		case when xxdy_hb.yxx = 'CSO'  then COUNT ( fjsq.fjid )
+		else 0 end dlsnum,
+		case when xxdy_hb.yxx = '第三方'  then COUNT ( fjsq.fjid )
+		else 0 end dsfnum,
+		xxdy_hb.yxx hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hb.fl AND xxdy_hb.dylx =  #{ywlx_q}
+		and xxdy_hb.yxx in ('直销','CSO','第三方')
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND sfjs = '1'
+		and jc_fjlx.csdm = 'ADDDETECT'
+		AND fjsq.sfff = '1'
+		AND bgbj='1'
+		AND fjsq.lrsj IS NOT NULL
+		AND xxdy_xm.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_hb.yxx
+		) tmp_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			on  tjrq_t.rq = tmp_t.rq
+			GROUP BY tjrq_t.rq,tmp_t.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp_t.rq as TIMESTAMP) &lt;=cast(tjrq_t.rq as TIMESTAMP) and (cast(tmp_t.rq as TIMESTAMP) &gt;  cast(tjrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq_t.rq,tmp_t.hbflmc,zxnum,dlsnum,dsfnum
+		</if>
+		union all
+		SELECT
+		wbrq_t.rq,
+		SUM(wb_t.zxnum) zxnum,
+		SUM(wb_t.dlsnum) dlsnum,
+		SUM(wb_t.dsfnum) dsfnum,
+		wb_t.hbflmc
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) wbrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		case when xxdy_hb.yxx= '直销' THEN cast(wbtj.css as numeric) else 0 end zxnum,
+		case when xxdy_hb.yxx= 'CSO' THEN cast(wbtj.css as numeric) else 0 end dlsnum,
+		case when xxdy_hb.yxx= '第三方' THEN cast(wbtj.css as numeric) else 0 end dsfnum,
+		xxdy_hb.yxx hbflmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(wbtj.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(wbtj.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(wbtj.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = sjhbxx.fl
+		AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx IN ('直销','第三方','CSO' )
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjhbxx.hbid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) wb_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  wbrq_t.rq = wb_t.rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(wb_t.rq as TIMESTAMP) &lt;=cast(wbrq_t.rq as TIMESTAMP)  and (cast(wb_t.rq as TIMESTAMP) &gt;  cast(wbrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+		</if>
+		GROUP BY wb_t.hbflmc,wbrq_t.rq
+		)tab
+		group by tab.rq,hbflmc
+	</select>
+<!--	产品趋势-->
+	<select id="getProductionChanges" resultType="Map" parameterType="SjxxDto">
+		select COALESCE(SUM
+		( sl ),0) sl,tab.rq,tab.jcxmmc
+		from
+		(SELECT
+		tjrq.rq,
+		tmp.jcxmmc,
+		sum (tmp.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq
+		LEFT OUTER JOIN (
+		SELECT
+		CASE
+		WHEN sjxx.sfsf = '1' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sjxx.sjid )
+		when  tt.xmjclx is null then COUNT ( sjxx.sjid ) ELSE 0
+		END AS sl,xxdy_xm.yxx jcxmmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_xxdy xxdy_hb
+		left join igams_sjhbxx hb ON xxdy_hb.dyxx = hb.fl AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		left join igams_sjxx sjxx on sjxx.db=hb.hbmc
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = xm.jcxmid AND xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid and jc_xm.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		AND COALESCE ( xxdy_xm.dyid, '0' ) != '0'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		AND sjxx.scbj = '0'
+		AND sfjs = '1'
+		AND sjxx.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_xm.yxx,
+		sjxx.sfsf,
+		tt.xmjclx
+		) tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  tjrq.rq = tmp.rq
+			GROUP BY tjrq.rq,tmp.jcxmmc,
+			tmp.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp.rq as TIMESTAMP) &lt;=cast(tjrq.rq as TIMESTAMP)  and (cast(tmp.rq as TIMESTAMP) &gt;  cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq.rq,tmp.jcxmmc,
+			tmp.sl
+		</if>
+		union all
+		SELECT
+		tjrq_t.rq,
+		tmp_t.jcxmmc,
+		sum(tmp_t.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		count(fjsq.fjid) sl,
+		xxdy_xm.yxx jcxmmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yxxs == null or yxxs.length == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hb.fl AND xxdy_hb.dylx =  #{ywlx_q}
+		AND xxdy_hb.scbj = '0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND sfjs = '1'
+		and jc_fjlx.csdm = 'ADDDETECT'
+		AND fjsq.lrsj IS NOT NULL
+		AND xxdy_xm.dyid IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND bgbj='1'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		rq,
+		xxdy_xm.yxx
+		) tmp_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  tjrq_t.rq = tmp_t.rq
+			GROUP BY tjrq_t.rq,tmp_t.jcxmmc,tmp_t.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp_t.rq as TIMESTAMP) &lt;=cast(tjrq_t.rq as TIMESTAMP)  and (cast(tmp_t.rq as TIMESTAMP) &gt;  cast(tjrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq_t.rq,tmp_t.jcxmmc,tmp_t.sl
+		</if>
+		union all
+		SELECT
+		wbrq_t.rq,
+		wb_t.jcxmmc,
+		sum(wb_t.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) wbrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		CAST ( wbtj.css AS NUMERIC ) sl,
+		xxdy_xm.yxx jcxmmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(wbtj.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(wbtj.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(wbtj.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		COALESCE ( xxdy_xm.dyid, '0' ) != '0'
+		AND COALESCE ( sjhbxx.hbid, '0' ) != '0'
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) wb_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  wbrq_t.rq = wb_t.rq
+			GROUP BY wbrq_t.rq,wb_t.jcxmmc,wb_t.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(wb_t.rq as TIMESTAMP) &lt;=cast(wbrq_t.rq as TIMESTAMP)  and (cast(wb_t.rq as TIMESTAMP) &gt;  cast(wbrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY wbrq_t.rq,wb_t.jcxmmc,wb_t.sl
+		</if>
+		)tab
+		group by rq,jcxmmc
+	</select>
+
+<!--	产品业务占比-->
+	<select id="getProductionProportion" resultType="Map" parameterType="xszbDto">
+		select COALESCE(SUM
+		( sl ),0) sl,tab.jcxmmc
+		from
+		(SELECT
+		tmp.jcxmmc,
+		sum (tmp.sl) sl
+		from
+		(
+		SELECT
+		CASE
+		WHEN sjxx.sfsf = '1' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sjxx.sjid )
+		when  tt.xmjclx is null then COUNT ( sjxx.sjid ) ELSE 0
+		END AS sl,xxdy_xm.yxx jcxmmc
+		FROM
+		igams_xxdy xxdy_hb
+		left join igams_sjhbxx hb ON xxdy_hb.dyxx = hb.fl AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		left join igams_sjxx sjxx on sjxx.db=hb.hbmc and sjxx.scbj='0'
+		AND sfjs = '1' AND sjxx.sfsf != '0'
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( sjxx.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( sjxx.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = xm.jcxmid AND xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid and jc_xm.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		and xxdy_xm.dyid is not NULL
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		xxdy_xm.yxx,
+		sjxx.sfsf,
+		tt.xmjclx
+		) tmp
+		group by tmp.jcxmmc
+		union all
+		SELECT
+		tmp_t.jcxmmc,
+		sum(tmp_t.sl) sl
+		FROM
+		(
+		SELECT
+		count(fjsq.fjid) sl,
+		xxdy_xm.yxx jcxmmc
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( sjxx.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( sjxx.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON hb.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hb.fl AND xxdy_hb.dylx =  #{ywlx_q}
+		AND xxdy_hb.scbj = '0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND sfjs = '1'
+		and jc_fjlx.csdm = 'ADDDETECT'
+		AND fjsq.lrsj IS NOT NULL
+		AND xxdy_xm.dyid IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND bgbj='1'
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND hb.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		xxdy_xm.yxx
+		) tmp_t
+		GROUP BY tmp_t.jcxmmc
+		UNION ALL
+		SELECT
+		xxdy_xm.yxx jcxmmc,
+		CAST ( wbtj.css AS NUMERIC ) sl
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join matridx_jcsj ptgs on ptgs.csid=sjhbxx.ptgs and ptgs.scbj='0'
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjhbxx.hbid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( wbtj.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( wbtj.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( wbtj.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( wbtj.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		)tab
+		group by jcxmmc
+	</select>
+<!--平台趋势-->
+	<select id="getPlatformChanges" resultType="Map" parameterType="SjxxDto">
+		select COALESCE(SUM
+		( sl ),0) sl,tab.rq,tab.ptmc
+		from
+		(SELECT
+		tjrq.rq,
+		tmp.ptmc,
+		sum (tmp.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq
+		LEFT OUTER JOIN (
+		SELECT
+		CASE
+		WHEN sjxx.sfsf = '1' THEN
+		COUNT ( xxdy_xm.dyid )
+		WHEN sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( xxdy_xm.dyid )
+		WHEN sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( xxdy_xm.dyid )
+		when  tt.xmjclx is null then COUNT ( xxdy_xm.dyid ) ELSE 0
+		END AS sl,ptgs.csmc ptmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_sjhbxx hb ON hb.hbmc = sjxx.db AND hb.scbj != '1'
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid AND xm.scbj != '1'
+		LEFT OUTER JOIN igams_xxdy xxdy_xm ON xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		AND xxdy_xm.dyxx = xm.jcxmid
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid AND jc_xm.scbj = '0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 ) AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		left join matridx_jcsj ptgs on ptgs.csid= hb.ptgs and ptgs.scbj='0'
+		WHERE sjxx.scbj = '0' AND sjxx.sfjs = '1' AND sjxx.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		GROUP BY
+		rq,
+		ptgs.csmc,
+		sjxx.sfsf,
+		tt.xmjclx
+		) tmp
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  tjrq.rq = tmp.rq
+			GROUP BY tjrq.rq,tmp.ptmc,tmp.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp.rq as TIMESTAMP) &lt;=cast(tjrq.rq as TIMESTAMP)  and (cast(tmp.rq as TIMESTAMP)&gt;  cast(tjrq.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq.rq,tmp.ptmc,tmp.sl
+		</if>
+		union all
+		SELECT
+		tjrq_t.rq,
+		tmp_t.ptmc,
+		sum(tmp_t.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) tjrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		count(xxdy_xm.dyid) sl,
+		ptgs.csmc ptmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(sjxx.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(sjxx.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(sjxx.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_fjsq fjsq
+		right JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sjxx.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sjxx.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sjxx.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		LEFT JOIN igams_xxdy xxdy_xm ON   xxdy_xm.dylx =  #{ywlx} and xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		and xxdy_xm.dyxx = fjsq.jcxm
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs and ptgs.scbj='0'
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sfjs = '1'
+		AND fjsq.sfff = '1'
+		AND fjsq.lrsj IS NOT NULL
+		AND bgbj='1'
+		GROUP BY
+		rq,
+		ptgs.csmc
+		) tmp_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  tjrq_t.rq = tmp_t.rq
+			GROUP BY tjrq_t.rq,tmp_t.ptmc,tmp_t.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(tmp_t.rq as TIMESTAMP) &lt;=cast(tjrq_t.rq as TIMESTAMP)  and (cast(tmp_t.rq as TIMESTAMP)&gt;  cast(tjrq_t.rq as TIMESTAMP)::timestamp - ('7 day')::interval)
+			GROUP BY tjrq_t.rq,tmp_t.ptmc,tmp_t.sl
+		</if>
+		union all
+		SELECT
+		wbrq_t.rq,
+		wb_t.ptmc,
+		sum(wb_t.sl) sl
+		FROM
+		(
+		<if test="rqs != null and rqs.size > 0 ">
+			<foreach collection="rqs" separator=" union all " open="" close="" item="item" index="index">
+				select #{item} rq
+			</foreach>
+		</if>
+		) wbrq_t
+		LEFT OUTER JOIN (
+		SELECT
+		CAST ( wbtj.css AS NUMERIC ) sl,
+		ptgs.csmc ptmc,
+		<if test="tj != null and tj != '' and (tj == 'day' or tj == 'week')">
+			to_char(wbtj.jsrq, 'yyyy-MM-dd') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'mon'">
+			to_char(wbtj.jsrq,'yyyy-MM') rq
+		</if>
+		<if test="tj != null and tj != '' and tj == 'year'">
+			to_char(wbtj.jsrq,'yyyy') rq
+		</if>
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dylx = #{ywlx}
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dyxx = wbtj.jcxm
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		left join matridx_jcsj ptgs on ptgs.csid= sjhbxx.ptgs and ptgs.scbj='0'
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjhbxx.hbid IS NOT NULL
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		) wb_t
+		<if test="tj != null and tj != '' and tj != 'week'">
+			ON  wbrq_t.rq = wb_t.rq
+			GROUP BY wbrq_t.rq,wb_t.ptmc,wb_t.sl
+		</if>
+		<if test="tj != null and tj != '' and tj == 'week'">
+			on cast(wb_t.rq as TIMESTAMP) &gt;=cast(wbrq_t.rq as TIMESTAMP)  and (cast(wb_t.rq as TIMESTAMP)&lt;  cast(wbrq_t.rq as TIMESTAMP)::timestamp + ('7 day')::interval)
+			GROUP BY wbrq_t.rq,wb_t.ptmc,wb_t.sl
+		</if>
+		)tab
+		group by rq,ptmc
+	</select>
+	<!--根据平台业务占比-->
+	<select id="getPlatformProportion" resultType="Map" parameterType="XszbDto">
+		select COALESCE(SUM
+		( sl ),0) sl,tab.ptmc
+		from
+		(SELECT
+		tmp.ptmc,
+		sum (tmp.sl) sl
+		FROM
+		(
+		SELECT
+		CASE
+		WHEN sjxx.sfsf = '1' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sjxx.sjid )
+		WHEN sjxx.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sjxx.sjid )
+		when  tt.xmjclx is null then COUNT ( sjxx.sjid ) ELSE 0
+		END AS sl,ptgs.csmc ptmc
+		FROM
+		igams_sjhbxx hb
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs and ptgs.scbj='0'
+		left join igams_sjxx sjxx on sjxx.db=hb.hbmc and sjxx.scbj='0'
+		AND sfjs = '1' AND sjxx.sfsf != '0'
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( sjxx.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( sjxx.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = xm.jcxmid AND xxdy_xm.dylx = #{ywlx} AND xxdy_xm.scbj = '0'
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = xm.jcxmid and jc_xm.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		  COALESCE(xxdy_xm.dyid ,'0')!='0'
+		GROUP BY
+		ptgs.csmc,
+		sjxx.sfsf,
+		tt.xmjclx
+		) tmp
+		group by tmp.ptmc
+		union all
+		SELECT
+		tmp_t.ptmc,
+		sum(tmp_t.sl) sl
+		FROM
+		(
+		SELECT
+		count(fjsq.fjid) sl,
+		ptgs.csmc ptmc
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sjxx ON fjsq.sjid = sjxx.sjid
+		AND sjxx.scbj = '0'
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( sjxx.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( sjxx.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( sjxx.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		LEFT OUTER JOIN igams_sjjcxm xm ON sjxx.sjid = xm.sjid and xm.scbj!='1'
+		LEFT OUTER JOIN matridx_jcsj jc_xm ON jc_xm.csid = fjsq.jcxm and jc_xm.scbj='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT OUTER JOIN igams_sjhbxx hb ON sjxx.db = hb.hbmc AND hb.scbj != '1'
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs and ptgs.scbj='0'
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx and jc_fjlx.scbj='0'
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_xm.cskz1 = 'C' OR xmjclx = jc_xm.cskz1 )
+		AND jc_xm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		fjsq.scbj = '0'
+		AND fjsq.zt = '80'
+		AND sfjs = '1'
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND fjsq.sfff = '1'
+		and COALESCE(fjsq.lrsj , TIMESTAMP '0001-01-01')!= '0001-01-01'
+		and COALESCE(xxdy_xm.dyid ,'0')!='0'
+		AND bgbj='1'
+		GROUP BY
+		ptgs.csmc
+		) tmp_t
+		GROUP BY
+		tmp_t.ptmc
+		UNION ALL
+		SELECT
+		ptgs.csmc ptmc,
+		CAST ( wbtj.css AS NUMERIC ) sl
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "xms != null and xms.size > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="xms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xms == null or xms.size == 0"  >
+			AND xxdy_xm.yxx in (select yxx from igams_xxdy where kzcs6='1')
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		left join matridx_jcsj ptgs on ptgs.csid=sjhbxx.ptgs and ptgs.scbj='0'
+		WHERE
+		COALESCE(xxdy_xm.dyid ,'0')!='0'
+		and COALESCE(sjhbxx.hbid ,'0')!='0'
+		<if test='zblxcsmc == "Y"'>
+			AND (to_char( wbtj.jsrq, 'YYYY' ) &gt;= #{kszq})  AND  (to_char( wbtj.jsrq, 'YYYY' ) &lt;= #{jszq})
+		</if>
+		<if test='zblxcsmc == "M"|| zblxcsmc == "Q"'>
+			AND (to_char( wbtj.jsrq, 'YYYY-MM' ) &gt;= #{kszq})  AND  (to_char( wbtj.jsrq, 'YYYY-MM' ) &lt;= #{jszq})
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		)tab
+		where COALESCE(tab.ptmc ,'0')!='0' and tab.ptmc!=''
+		GROUP BY
+		tab.ptmc
+	</select>
+	<!--根据伙伴分类和平台获取第三方实验室Top20伙伴-->
+	<select id="getTopDsf20" parameterType="SjxxDto" resultType="Map">
+		SELECT SUM
+		( tmp.sfnum ) sfnum,
+		tmp.hbmc
+		FROM
+		(
+		SELECT sjhbxx.hbmc,
+		CASE
+		WHEN sj.sfsf = '1' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sj.sjid )
+		WHEN tt.xmjclx IS NULL THEN
+		COUNT ( sj.sjid ) ELSE 0
+		END AS sfnum
+		FROM
+		igams_xxdy xxdy_hb
+		LEFT JOIN igams_sjhbxx sjhbxx on xxdy_hb.dyxx = sjhbxx.fl  AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left JOIN igams_sjxx sj on sjhbxx.hbmc = sj.db AND sfjs = '1' and sj.scbj = '0' AND sj.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		left JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		left JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.yxx = '第三方'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		GROUP BY sjhbxx.hbmc,sj.sfsf,tt.xmjclx
+		UNION ALL
+		SELECT sjhbxx.hbmc,
+		COUNT ( fjsq.fjid ) sfnum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN igams_xxdy xxdy_xm on xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.scbj = '0' AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0' AND xxdy_hb.yxx = '第三方' AND xxdy_hb.dylx =  #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj='1'
+		GROUP BY sjhbxx.hbmc
+		UNION ALL
+		SELECT
+		sjhbxx.hbmc,
+		CAST ( wbtj.css AS NUMERIC ) sfnum
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx = '第三方'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) tmp
+		WHERE tmp.hbmc IS NOT NULL
+		GROUP BY
+		tmp.hbmc
+		ORDER BY
+		SUM ( tmp.sfnum ) DESC
+	</select>
+	<!--根据伙伴分类和平台获取直销Top20伙伴-->
+	<select id="getTopZx20" parameterType="SjxxDto" resultType="Map">
+		SELECT SUM
+		( tmp.sfnum ) sfnum,
+		tmp.hbmc
+		FROM
+		(
+		SELECT sjhbxx.hbmc,
+		CASE
+		WHEN sj.sfsf = '1' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sj.sjid )
+		WHEN tt.xmjclx IS NULL THEN
+		COUNT ( sj.sjid ) ELSE 0
+		END AS sfnum
+		FROM
+		igams_xxdy xxdy_hb
+		LEFT JOIN igams_sjhbxx sjhbxx on xxdy_hb.dyxx = sjhbxx.fl  AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left JOIN igams_sjxx sj on sjhbxx.hbmc = sj.db AND sfjs = '1' and sj.scbj = '0' AND sj.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		left JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		left JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.yxx = '直销'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		GROUP BY sjhbxx.hbmc,sj.sfsf,tt.xmjclx
+		UNION ALL
+		SELECT sjhbxx.hbmc,
+		COUNT ( fjsq.fjid ) sfnum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN igams_xxdy xxdy_xm on xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.scbj = '0' AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0' AND xxdy_hb.yxx = '直销' AND xxdy_hb.dylx =  #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj='1'
+		GROUP BY sjhbxx.hbmc
+		UNION ALL
+		SELECT
+		sjhbxx.hbmc,
+		CAST ( wbtj.css AS NUMERIC ) sfnum
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx = '直销'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) tmp
+		WHERE tmp.hbmc IS NOT NULL
+		GROUP BY
+		tmp.hbmc
+		ORDER BY
+		SUM ( tmp.sfnum ) DESC
+	</select>
+	<!--根据伙伴分类和平台获取CSOTop20伙伴-->
+	<select id="getTopCSO20" parameterType="SjxxDto" resultType="Map">
+		SELECT SUM
+		( tmp.sfnum ) sfnum,
+		tmp.hbmc
+		FROM
+		(
+		SELECT
+		<if test="xg_flg == '1'.toString()">
+		case when pt.csdm != 'LEAD'
+		then pt.csmc else sjhbxx.hbmc  end hbmc,
+		</if>
+		<if test="xg_flg != '1'.toString()">
+			sjhbxx.hbmc,
+		</if>
+		CASE
+		WHEN sj.sfsf = '1' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( sj.sjid )
+		WHEN sj.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( sj.sjid )
+		WHEN tt.xmjclx IS NULL THEN
+		COUNT ( sj.sjid ) ELSE 0
+		END AS sfnum
+		FROM
+		igams_xxdy xxdy_hb
+		LEFT JOIN igams_sjhbxx sjhbxx on xxdy_hb.dyxx = sjhbxx.fl  AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join matridx_jcsj pt on pt.csid=sjhbxx.ptgs
+		left JOIN igams_sjxx sj on sjhbxx.hbmc = sj.db AND sfjs = '1' and sj.scbj = '0' AND sj.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		left JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		left JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		AND xxdy_xm.dyid IS NOT NULL
+		<if test="xg_flg == '1'.toString()">
+			AND (xxdy_hb.yxx = 'CSO' or pt.csdm != 'LEAD')
+		</if>
+		<if test="xg_flg == null or xg_flg == ''">
+			AND xxdy_hb.yxx = 'CSO'
+		</if>
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		GROUP BY sjhbxx.hbmc,sj.sfsf,tt.xmjclx
+		<if test="xg_flg == '1'.toString()">
+		         ,sjhbxx.ptgs,pt.csmc,pt.csdm
+		</if>
+		UNION ALL
+		SELECT
+		<if test="xg_flg == '1'.toString()">
+		case when pt.csdm != 'LEAD'
+		then pt.csmc else sjhbxx.hbmc  end hbmc,
+		</if>
+		<if test="xg_flg != '1'.toString()">
+		    sjhbxx.hbmc,
+		</if>
+		COUNT ( fjsq.fjid ) sfnum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN igams_xxdy xxdy_xm on xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.scbj = '0' AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join matridx_jcsj pt on pt.csid=sjhbxx.ptgs
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0' AND xxdy_hb.dylx =  #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		<if test="xg_flg == '1'.toString()">
+			AND (xxdy_hb.yxx = 'CSO' or pt.csdm != 'LEAD')
+		</if>
+		<if test="xg_flg == null or xg_flg == ''">
+			AND xxdy_hb.yxx = 'CSO'
+		</if>
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj='1'
+		GROUP BY sjhbxx.hbmc
+		<if test="xg_flg == '1'.toString()">
+		,pt.csmc,sjhbxx.ptgs,pt.csdm
+		</if>
+		UNION ALL
+		SELECT
+		<if test="xg_flg == '1'.toString()">
+			case when pt.csdm != 'LEAD'
+			then pt.csmc else sjhbxx.hbmc  end hbmc,
+		</if>
+		<if test="xg_flg != '1'.toString()">
+			sjhbxx.hbmc,
+		</if>
+		CAST ( wbtj.css AS NUMERIC ) sfnum
+		FROM
+		igams_wbtjgl wbtj
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join matridx_jcsj pt on pt.csid=sjhbxx.ptgs
+		LEFT JOIN igams_xxdy xxdy_hb on xxdy_hb.dyxx = sjhbxx.fl AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="xg_flg == '1'.toString()">
+			AND (xxdy_hb.yxx = 'CSO' or pt.csdm!='LEAD')
+		</if>
+		<if test="xg_flg == null or xg_flg == ''">
+			AND xxdy_hb.yxx = 'CSO'
+		</if>
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) tmp
+		WHERE tmp.hbmc IS NOT NULL
+		GROUP BY
+		tmp.hbmc
+		ORDER BY
+		SUM ( tmp.sfnum ) DESC
+	</select>
+	<!--根据伙伴分类和平台获取直销Top20伙伴-->
+	<select id="getTopRY20" parameterType="SjxxDto" resultType="Map">
+		SELECT SUM
+		( tmp.sfnum ) sfnum,
+		tmp.dwmc
+		FROM
+		(
+		SELECT
+		CASE
+		WHEN sj.sfsf = '1' THEN
+		COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '2'
+		AND tt.xmjclx = 'R' THEN
+		COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '3'
+		AND tt.xmjclx = 'D' THEN
+		COUNT ( xxdy_xm.dyid )
+		WHEN tt.xmjclx IS NULL THEN
+		COUNT ( xxdy_xm.dyid ) ELSE 0
+		END AS sfnum,
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc
+		FROM
+		igams_sjhbxx sjhbxx
+		left JOIN igams_sjxx sj on sjhbxx.hbmc = sj.db AND sfjs = '1' and sj.scbj = '0' AND sj.sfsf != '0'
+
+		left JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		left JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		left join matridx_jcsj sjqf on sj.sjqf = sjqf.csid
+		LEFT JOIN igams_yyxx yyxx ON  yyxx.dwid=sj.sjdw  AND yyxx.scbj ='0'
+		WHERE
+		sjhbxx.scbj='0'
+		and sjqf.csmc='入院'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		GROUP BY yyxx.dwmc,yyxx.tjmc,sj.sfsf,tt.xmjclx
+		UNION ALL
+		SELECT
+		COUNT ( fjsq.fjid ) sfnum,
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN igams_xxdy xxdy_xm on xxdy_xm.dyxx = fjsq.jcxm AND xxdy_xm.scbj = '0' AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		left join matridx_jcsj sjqf on sj.sjqf = sjqf.csid
+		LEFT JOIN igams_yyxx yyxx ON  yyxx.dwid=sj.sjdw  AND yyxx.scbj ='0'
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		and sjqf.csmc='入院'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj='1'
+		GROUP BY yyxx.dwmc,yyxx.tjmc
+		UNION ALL
+		SELECT
+		CAST ( wbtj.css AS NUMERIC ) sfnum,
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc
+		FROM
+		igams_wbtjgl wbtj
+		left join matridx_jcsj sjqf on wbtj.sjqf = sjqf.csid
+		LEFT JOIN igams_yyxx yyxx ON  yyxx.dwid=wbtj.sjdw  AND yyxx.scbj ='0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjqf.csmc = '入院'
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) tmp
+		WHERE tmp.dwmc IS NOT NULL
+		GROUP BY
+		tmp.dwmc
+		ORDER BY
+		SUM ( tmp.sfnum ) DESC
+	</select>
+	<!-- 收费测试数 科室分类(直销+代理)-->
+	<select id="getChargesDivideByKs" parameterType="SjxxDto" resultType="Map">
+		SELECT
+		tmp.ksmc,
+		SUM ( tmp.sfnum ) AS cnum,
+		concat (round( COUNT ( tmp.ksmc ) * 100 / SUM ( COUNT ( tmp.sfnum ) ) OVER ( ), 2 ),'%') AS percentage
+		FROM
+		(
+		SELECT
+		ksxx.dwmc ksmc,
+		sj.sjid,
+		CASE WHEN sj.sfsf = '1' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '2' AND tt.xmjclx = 'R' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '3' AND tt.xmjclx = 'D' THEN COUNT ( xxdy_xm.dyid )
+		WHEN tt.xmjclx IS NULL THEN COUNT ( xxdy_xm.dyid ) ELSE 0 END AS sfnum
+		FROM
+		igams_sjxx sj
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT OUTER JOIN igams_xxdy xxdy_hb ON  xxdy_hb.dylx = #{ywlx_q} AND xxdy_hb.scbj = '0' AND xxdy_hb.yxx in( '直销' ,'CSO')  AND xxdy_hb.dyxx = sjhbxx.fl
+		LEFT OUTER JOIN igams_sjjcxm jcxm ON sj.sjid = jcxm.sjid AND jcxm.scbj != '1'
+		LEFT JOIN igams_xxdy xxdy_xm ON  xxdy_xm.dylx = #{ywlx}
+		AND xxdy_xm.scbj = '0'
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		AND xxdy_xm.dyxx = jcxm.jcxmid
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjdwxx ksxx ON ksxx.dwid = sj.ks
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE sfjs = '1' AND sj.scbj = '0' AND sj.sfsf != '0'
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sj.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sj.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sj.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sj.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sj.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sj.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and sj.jsrq &gt;= to_date(#{lrsjStart} ,'yyyy-MM')
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and sj.jsrq &lt;= to_date(#{lrsjEnd} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		ksxx.dwmc,
+		sj.sfsf,
+		tt.xmjclx,sj.sjid UNION ALL
+		SELECT
+		ksxx.dwmc ksmc,
+		fjsq.fjid,
+		COUNT ( xxdy_xm.dyid ) sfnum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN igams_sjdwxx ksxx ON ksxx.dwid = sj.ks
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dylx = #{ywlx}
+		AND xxdy_xm.scbj = '0'
+		AND  xxdy_xm.dyxx = fjsq.jcxm
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb ON  xxdy_hb.dylx = #{ywlx_q}
+		AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx in ( '直销' ,'CSO')
+		AND xxdy_hb.dyxx = sjhbxx.fl
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and sj.jsrq &gt;= to_date(#{jsrqstart} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''  and (tj == 'day' or tj == 'week')">
+			and sj.jsrq &lt;= to_date(#{jsrqend} ,'yyyy-MM-dd')
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and sj.jsrq &gt;= to_date(#{jsrqMstart} ,'yyyy-MM')
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and sj.jsrq &lt;= to_date(#{jsrqMend} ,'yyyy-MM') + interval '1 month'
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and sj.jsrq &gt;= to_date(#{jsrqYstart} ,'yyyy')
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and sj.jsrq &lt;= to_date(#{jsrqYend} ,'yyyy') + interval '1 year'
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and sj.jsrq &gt;= to_date(#{lrsjStart} ,'yyyy-MM')
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and sj.jsrq &lt;= to_date(#{lrsjEnd} ,'yyyy-MM') + interval '1 month'
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj = '1'
+		GROUP BY
+		ksxx.dwmc,fjsq.fjid
+		) tmp
+		WHERE tmp.ksmc IS NOT NULL
+		GROUP BY
+		tmp.ksmc
+		ORDER BY
+		COUNT ( tmp.sjid ) DESC
+	</select>
+	<!-- 收费测试数 样本分类(直销+代理)-->
+	<select id="getChargesDivideByYblx" parameterType="SjxxDto" resultType="Map">
+		SELECT
+		tmp.yblxmc,
+		SUM ( tmp.sfnum ) AS cnum,
+		concat (round( COUNT ( tmp.yblxmc ) * 100 / SUM ( COUNT ( tmp.sfnum ) ) OVER ( ), 2 ),'%') AS percentage
+		FROM
+		(
+		SELECT
+		jc_yblx.csmc yblxmc,
+		sj.sjid,
+		CASE
+		WHEN sj.sfsf = '1' THEN COUNT ( sj.sjid )
+		WHEN sj.sfsf = '2' AND tt.xmjclx = 'R' THEN COUNT ( sj.sjid )
+		WHEN sj.sfsf = '3' AND tt.xmjclx = 'D' THEN COUNT ( sj.sjid )
+		WHEN tt.xmjclx IS NULL THEN COUNT ( sj.sjid ) ELSE 0 END AS sfnum
+		FROM
+		igams_xxdy xxdy_hb
+		LEFT JOIN igams_sjhbxx sjhbxx ON xxdy_hb.dyxx = sjhbxx.fl
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjxx sj ON sjhbxx.hbmc = sj.db
+		AND sfjs = '1'
+		AND sj.scbj = '0'
+		AND sj.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		LEFT JOIN matridx_jcsj jc_yblx ON jc_yblx.csid = sj.yblx
+		LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.yxx in( '直销' ,'CSO')
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		GROUP BY
+		jc_yblx.csmc,
+		sj.sfsf,
+		tt.xmjclx,sj.sjid UNION ALL
+		SELECT
+		jc_yblx.csmc yblxmc,
+		fjsq.fjid,
+		COUNT ( fjsq.fjid ) sfnum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN matridx_jcsj jc_yblx ON jc_yblx.csid = sj.yblx
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = sjhbxx.fl
+		AND xxdy_hb.scbj = '0'
+		AND xxdy_hb.yxx in ( '直销' ,'CSO')
+		AND xxdy_hb.dylx = #{ywlx_q}
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		AND xxdy_xm.dyid IS NOT NULL
+		AND xxdy_hb.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj = '1'
+		GROUP BY
+		jc_yblx.csmc,fjsq.fjid
+		) tmp
+		WHERE tmp.yblxmc IS NOT NULL
+		GROUP BY
+		tmp.yblxmc
+		ORDER BY
+		COUNT ( tmp.sjid ) DESC
+	</select>
+	<!--TOP核心医院排行-->
+	<select id="getHxyyTopList" parameterType="SjxxDto" resultType="Map">
+		SELECT
+		SUM(tjnum+kynum+rynum) zhnum,SUM ( tmp.tjnum ) tjnum,SUM ( tmp.kynum ) kynum,SUM ( tmp.rynum ) rynum,
+		tmp.dwmc
+		FROM
+		(
+		SELECT
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc,
+		CASE WHEN sj.sfsf = '1' AND sjqf.csmc= '特检' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '2' AND tt.xmjclx = 'R' AND sjqf.csmc= '特检' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '3' AND tt.xmjclx = 'D' AND sjqf.csmc= '特检' THEN COUNT ( xxdy_xm.dyid )
+		WHEN tt.xmjclx IS NULL AND sjqf.csmc= '特检' THEN COUNT ( xxdy_xm.dyid ) ELSE 0 END AS tjnum,
+		CASE WHEN sj.sfsf = '1' AND sjqf.csmc= '科研' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '2' AND tt.xmjclx = 'R' AND sjqf.csmc= '科研' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '3' AND tt.xmjclx = 'D' AND sjqf.csmc= '科研' THEN COUNT ( xxdy_xm.dyid )
+		WHEN tt.xmjclx IS NULL AND sjqf.csmc= '科研' THEN COUNT ( xxdy_xm.dyid ) ELSE 0 END AS kynum,
+		CASE WHEN sj.sfsf = '1' AND sjqf.csmc= '入院' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '2' AND tt.xmjclx = 'R' AND sjqf.csmc= '入院' THEN COUNT ( xxdy_xm.dyid )
+		WHEN sj.sfsf = '3' AND tt.xmjclx = 'D' AND sjqf.csmc= '入院' THEN COUNT ( xxdy_xm.dyid )
+		WHEN tt.xmjclx IS NULL AND sjqf.csmc= '入院' THEN COUNT ( xxdy_xm.dyid ) ELSE 0 END AS rynum
+		FROM
+		igams_xxdy xxdy_hb
+		LEFT JOIN igams_sjhbxx sjhbxx ON xxdy_hb.dyxx = sjhbxx.fl
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjxx sj ON sjhbxx.hbmc = sj.db
+		AND sfjs = '1'
+		AND sj.scbj = '0'
+		AND sj.sfsf != '0'
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw AND yyxx.scbj ='0'
+		AND yyxx.cskz2 IN ('A','B','C','A+')
+		LEFT JOIN igams_sjjcxm jcxm ON jcxm.sjid = sj.sjid
+		AND jcxm.scbj = '0'
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = jcxm.jcxmid
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		LEFT JOIN matridx_jcsj sjqf ON sjqf.csid = sj.sjqf
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = jcxm.jcxmid
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		WHERE
+		xxdy_hb.scbj = '0'
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		AND xxdy_hb.dylx = #{ywlx_q}
+		GROUP BY
+		sjqf.csmc,
+		sj.sfsf,
+		tt.xmjclx,yyxx.dwmc,yyxx.tjmc UNION ALL
+		SELECT
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc,
+		case when sjqf.csmc= '特检' THEN COUNT ( fjsq.fjid ) else 0 end tjnum,
+		case when sjqf.csmc= '科研' THEN COUNT ( fjsq.fjid ) else 0 end kynum,
+		case when sjqf.csmc= '入院' THEN COUNT ( fjsq.fjid ) else 0 end rynum
+		FROM
+		igams_fjsq fjsq
+		LEFT JOIN igams_sjxx sj ON sj.sjid = fjsq.sjid
+		LEFT JOIN matridx_jcsj sjqf ON sjqf.csid = sj.sjqf
+		LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sj.sjdw  AND yyxx.scbj ='0' AND yyxx.cskz2 IN ('A','B','C','A+')
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = fjsq.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx =  #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN matridx_jcsj jc_fjlx ON jc_fjlx.csid = fjsq.lx
+		LEFT JOIN matridx_jcsj jc_jcxm ON jc_jcxm.csid = fjsq.jcxm
+		LEFT OUTER JOIN ( SELECT 'D' xmjclx UNION ALL SELECT 'R' xmjclx ) tt ON ( jc_jcxm.cskz1 = 'C' OR xmjclx = jc_jcxm.cskz1 )
+		AND jc_jcxm.cskz3 IN ( 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' )
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbmc = sj.db
+		AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		fjsq.zt = '80'
+		AND xxdy_xm.dyid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(sj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(sj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(sj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(sj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(sj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND jc_fjlx.csdm = 'ADDDETECT'
+		AND sj.scbj = '0'
+		AND fjsq.scbj = '0'
+		AND fjsq.lrsj IS NOT NULL
+		AND fjsq.sfff = '1'
+		AND sfjs = '1'
+		AND bgbj = '1'
+		GROUP BY
+		sjqf.csmc,yyxx.dwmc,yyxx.tjmc
+		UNION ALL
+		SELECT
+		case when (yyxx.tjmc is not null and yyxx.tjmc != '') then yyxx.tjmc
+		else yyxx.dwmc end dwmc,
+		case when sjqf.csmc= '特检' THEN CAST ( wbtj.css AS NUMERIC ) else 0 end tjnum,
+		case when sjqf.csmc= '科研' THEN CAST ( wbtj.css AS NUMERIC ) else 0 end kynum,
+		case when sjqf.csmc= '入院' THEN CAST ( wbtj.css AS NUMERIC ) else 0 end rynum
+		FROM
+		igams_wbtjgl wbtj
+		left join matridx_jcsj sjqf on wbtj.sjqf = sjqf.csid
+		LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = wbtj.sjdw  AND yyxx.scbj ='0' AND yyxx.cskz2 IN ('A','B','C','A+')
+		LEFT JOIN igams_xxdy xxdy_xm ON xxdy_xm.dyxx = wbtj.jcxm
+		AND xxdy_xm.scbj = '0'
+		AND xxdy_xm.dylx = #{ywlx}
+		<if test = "yxxs != null and yxxs.length > 0"  >
+			AND xxdy_xm.yxx in
+			<foreach collection="yxxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		LEFT JOIN igams_sjhbxx sjhbxx ON sjhbxx.hbid = wbtj.hbid AND sjhbxx.scbj != '1'
+		<if test = "ptgss != null and ptgss.length > 0"  >
+			AND sjhbxx.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yhid != null and yhid != ''">
+			LEFT JOIN igams_hbqx hbqx ON sjhbxx.hbid = hbqx.hbid
+			AND hbqx.yhid= #{yhid}
+		</if>
+		WHERE
+		xxdy_xm.dyid IS NOT NULL
+		AND sjhbxx.hbid IS NOT NULL
+		<if test="yhid != null and yhid != ''">
+			AND hbqx.hbid IS NOT NULL
+		</if>
+		<if test="jsrqstart != null and jsrqstart != '' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !='' and (tj == 'day' or tj == 'week')">
+			and to_char(wbtj.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		<if test="jsrqMstart != null and jsrqMstart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+		</if>
+		<if test="jsrqMend !=null and jsrqMend !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+		</if>
+		<if test="jsrqYstart != null and jsrqYstart != ''">
+			and to_char(wbtj.jsrq,'yyyy') &gt;= #{jsrqYstart}
+		</if>
+		<if test="jsrqYend !=null and jsrqYend !=''">
+			and to_char(wbtj.jsrq,'yyyy') &lt;= #{jsrqYend}
+		</if>
+		<if test="lrsjStart != null and lrsjStart != ''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &gt;= #{lrsjStart}
+		</if>
+		<if test="lrsjEnd !=null and lrsjEnd !=''">
+			and to_char(wbtj.jsrq,'yyyy-MM') &lt;= #{lrsjEnd}
+		</if>
+		AND wbtj.sfsf = '1'
+		AND wbtj.scbj = '0'
+		) tmp
+		WHERE
+		tmp.dwmc IS NOT NULL AND (tmp.tjnum+tmp.kynum+tmp.rynum)>0
+		GROUP BY
+		tmp.dwmc
+		ORDER BY
+		SUM(tjnum+kynum+rynum) DESC
+	</select>
+	<select id="getSjxxByLikeNbbm" parameterType="String" resultType="String">
+		select nbbm
+        from igams_sjxx
+        where nbbm ILIKE '%'||#{nbbm}||'%'
+	</select>
+
+	<!--根据searchMap查询送检信息数据-->
+	<select id="getEntrustDtoList" resultType="Map" parameterType="Map">
+		<foreach collection="limit" separator=" union all " open="" close="" item="item" index="index">
+			SELECT sj.hzxm,sj.ybbh,sj.sjys,sj.zyh, sj.cwh,sj.cyrq, sj.ybtj, sj.lczz, sj.qqzd,sj.bz,
+			sj.nl || COALESCE(sj.nldw,'') as nl,
+			case when sj.xb ='1' then '男' when sj.xb='2' then '女'  when sj.xb='3' then'未知' end as xb,
+			sj.sjdwmc as sjdw,COALESCE(sj.qtks,ksxx.dwmc) as ksmc,
+			COALESCE(sj.yblxmc,jc_yblx.csmc) as yblxmc,jc_yblx.csdm as yblxdm,
+			jc_jcxm.csmc as jcxmmc,jc_jcxm.csdm as jcxmdm,jc_jczxm.csmc as jczxmmc,jc_jczxm.csdm as jczxmdm
+			FROM igams_sjxx sj
+			LEFT JOIN igams_sjhbxx hb on hb.hbmc = sj.db
+			LEFT JOIN igams_sjdwxx ksxx on ksxx.dwid = sj.ks and ksxx.scbj = '0'
+			LEFT JOIN matridx_jcsj jc_yblx on jc_yblx.csid = sj.yblx and jc_yblx.scbj = '0'
+			LEFT JOIN igams_sjjcxm jcxm on jcxm.sjid = sj.sjid and jcxm.scbj = '0'
+			LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = jcxm.jcxmid and jc_jcxm.scbj = '0'
+			LEFT JOIN matridx_jcsj jc_jczxm on jc_jczxm.csid = jcxm.jczxmid and jc_jczxm.scbj = '0'
+			<where> sj.scbj = '0' and sj.bgrq is null and hb.scbj = '0'
+				and hb.hbid = #{item.hbid}
+				<if test = "item.jcxmdms != null and item.jcxmdms.size > 0"  >
+					AND jc_jcxm.csdm in
+					<foreach collection="item.jcxmdms" separator="," open="(" close=") " item="jcxmItem" index="jcxmIndex">
+						#{jcxmItem}
+					</foreach>
+				</if>
+				<if test="barcode != null and barcode != ''">
+					and sj.ybbh = #{barcode}
+				</if>
+				<if test="startTime != null and startTime != ''">
+					and (to_char(sj.lrsj, 'yyyy-MM-dd HH24:mi:ss') &gt;= #{startTime} or to_char(sj.xgsj, 'yyyy-MM-dd HH24:mi:ss') &gt;= #{startTime})
+				</if>
+				<if test="startTime != null and startTime != ''">
+					and (to_char(sj.lrsj, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{endTime} or to_char(sj.xgsj, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{endTime})
+				</if>
+			</where>
+		</foreach>
+	</select>
+
+	<!--根据barcode和检测项目代码查询送检信息数据-->
+	<select id="getSampleInfoByBarcode" resultType="Map" parameterType="Map">
+		<foreach collection="limit" separator=" union all " open="" close="" item="item" index="index">
+			SELECT sj.sjid,sj.hzxm,sj.ybbh,sj.nbbm,sj.sjys,sj.zyh, sj.cwh,sj.cyrq, sj.ybtj, sj.lczz, sj.qqzd,sj.bz,
+			jc_jcxm.csdm jcxmcsdm,jc_jcxm.cskz1 jcxmcskz1,jc_jcxm.cskz3 jcxmcskz3
+			FROM igams_sjxx sj
+			LEFT JOIN igams_sjhbxx hb on hb.hbmc = sj.db
+			LEFT JOIN igams_sjjcxm jcxm on jcxm.sjid = sj.sjid and jcxm.scbj = '0'
+			LEFT JOIN matridx_jcsj jc_jcxm on jc_jcxm.csid = jcxm.jcxmid and jc_jcxm.scbj = '0'
+			LEFT JOIN matridx_jcsj jc_jczxm on jc_jczxm.csid = jcxm.jczxmid and jc_jczxm.scbj = '0'
+			<where>
+				sj.scbj = '0' and hb.scbj = '0'
+				and hb.hbid = #{item.hbid}
+				<if test = "item.jcxmdms != null and item.jcxmdms.size > 0"  >
+					AND jc_jcxm.csdm in
+					<foreach collection="item.jcxmdms" separator="," open="(" close=") " item="jcxmItem" index="jcxmIndex">
+						#{jcxmItem}
+					</foreach>
+				</if>
+				<if test = "item.jczxmdms != null and item.jczxmdms.size > 0"  >
+					AND jc_jczxm.csdm in
+					<foreach collection="item.jczxmdms" separator="," open="(" close=") " item="jczxmItem" index="jczxmIndex">
+						#{jczxmItem}
+					</foreach>
+				</if>
+				<if test="barcode != null and barcode != ''">
+					and sj.ybbh = #{barcode}
+				</if>
+				<if test="jcxmcsdm != null and jcxmcsdm != ''">
+					and jc_jcxm.csdm = #{jcxmcsdm}
+				</if>
+				<if test="jczxmcsdm != null and jczxmcsdm != ''">
+					and jc_jczxm.csdm = #{jczxmcsdm}
+				</if>
+			</where>
+		</foreach>
+	</select>
+
+
+	<update id="updateReportInfo" parameterType="Map">
+		update igams_sjxx set
+		xgsj=LOCALTIMESTAMP
+		<if test="jsrq != null and jsrq != ''">
+			, jsrq = cast(#{jsrq} as timestamp)
+		</if>
+		where sjid = #{sjid}
+	</update>
+
+	<select id="getDateSjxxList" parameterType="String" resultType="Map">
+		select * from igams_sjxx
+		<where> to_char(lrsj,'yyyy-mm') = #{dateStr}
+		  and case when xgsj is not null then to_char(xgsj,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when cyrq is not null then to_char(cyrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when jsrq is not null then to_char(jsrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when bgrq is not null then to_char(bgrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when fkrq is not null then to_char(fkrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when scsj is not null then to_char(scsj,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when syrq is not null then to_char(syrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when dsyrq is not null then to_char(dsyrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when qyrq is not null then to_char(qyrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when ydrq is not null then to_char(ydrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when yjydrq is not null then to_char(yjydrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when qtsyrq is not null then to_char(qtsyrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when sjrq is not null then to_char(sjrq,'yyyy-mm') = #{dateStr} else 1=1 end
+		  and case when jcsj is not null then to_char(jcsj,'yyyy-mm') = #{dateStr} else 1=1 end
+		</where>
+		LIMIT 20
+    </select>
+</mapper>

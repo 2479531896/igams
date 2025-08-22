@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IBfdxlxrglDao" >
+
+    <select id="getPagedDtoList" parameterType="BfdxlxrglDto" resultType="BfdxlxrglDto">
+        select bfdxlxr.lxrid,bfdxlxr.dwid,bfdxlxr.lxrxm,bfdxlxr.dh,bfdxlxr.bmks,bfdxlxr.zw,bfdxlxr.bz,bfdx.dwmc as khmc,bfdx.dwmc,bfdx.dwjc,bfdx.dxbm,jc_fl.csmc as dwflmc,jc_sf.csmc as sfmc,jc_ly.csmc as lymc
+        from igams_bfdxlxrgl bfdxlxr
+        left join igams_bfdxgl bfdx on bfdx.dwid=bfdxlxr.dwid and bfdx.scbj='0'
+        left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+        left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+        left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+        <where>
+            bfdxlxr.scbj !='1'
+            <if test="dwid !=null and dwid != ''">
+                and bfdxlxr.dwid = #{dwid}
+            </if>
+            <if test="entire != null and entire != ''">
+                and (
+                bfdxlxr.lxrxm ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="dwmc !=null and dwmc !=''">
+                and bfdx.dwmc like '%'||#{dwmc}||'%'
+            </if>
+            <if test="lxrxm !=null and lxrxm !=''">
+                and bfdxlxr.lxrxm like '%'||#{lxrxm}||'%'
+            </if>
+            <if test = "dwfls != null and dwfls.length > 0 "  >
+                and bfdx.dwfl in
+                <foreach collection="dwfls" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfs != null and sfs.length > 0 "  >
+                and bfdx.sf in
+                <foreach collection="sfs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="BfdxlxrglDto" resultType="BfdxlxrglDto">
+        select bfdxlxr.lxrid,bfdxlxr.dwid,bfdxlxr.lxrxm,bfdxlxr.dh,bfdxlxr.bmks,bfdxlxr.zw,bfdxlxr.bz,bfdx.dwmc as khmc,bfdx.dwmc,bfdx.dwjc,bfdx.dxbm,jc_fl.csmc as dwflmc,jc_sf.csmc as sfmc,jc_ly.csmc as lymc
+        ,bfdxlxr.qtlxfs
+        from igams_bfdxlxrgl bfdxlxr
+        left join igams_bfdxgl bfdx on bfdx.dwid=bfdxlxr.dwid and bfdx.scbj='0'
+        left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+        left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+        left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+        <where>
+            bfdxlxr.scbj !='1' and bfdxlxr.lxrid=#{lxrid}
+        </where>
+    </select>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_bfdxlxrgl(lxrid,dwid,lxrxm,dh,bmks,zw,bz,qtlxfs,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" item="item" separator="," index="index">
+            (#{item.lxrid},#{item.dwid},#{item.lxrxm},#{item.dh},#{item.bmks},#{item.zw},#{item.bz},#{item.qtlxfs},#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <select id="getDtoList" parameterType="BfdxlxrglDto" resultType="BfdxlxrglDto">
+        select bfdxlxr.lxrid,bfdxlxr.dwid,bfdxlxr.lxrxm,bfdxlxr.dh,bfdxlxr.bmks,bfdxlxr.zw,bfdxlxr.bz,bfdx.dwmc as khmc,bfdxlxr.qtlxfs
+        from igams_bfdxlxrgl bfdxlxr
+        left join igams_bfdxgl bfdx on bfdx.dwid=bfdxlxr.dwid and bfdx.scbj='0'
+        <where>
+            bfdxlxr.scbj !='1'
+            <if test="dwid !=null and dwid != ''">
+                and bfdxlxr.dwid = #{dwid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and bfdxlxr.dwid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+        order by bfdxlxr.bmks
+    </select>
+
+    <update id="updateList" parameterType="List">
+        update igams_bfdxlxrgl bfdxlxrgl
+        set lxrxm=tmp.lxrxm
+        ,dh=tmp.dh
+        ,bmks=tmp.bmks
+        ,zw=tmp.zw
+        ,bz=tmp.bz
+        ,qtlxfs=tmp.qtlxfs
+        ,xgry=tmp.xgry
+        ,xgsj=LOCALTIMESTAMP
+        ,scbj='0'
+        ,scry=null
+        ,scsj=null
+        from(
+        <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+            select #{item.lxrid} lxrid,#{item.lxrxm} lxrxm,#{item.dh} dh,#{item.bmks} bmks,#{item.zw} zw,#{item.bz} bz,#{item.qtlxfs} qtlxfs,#{item.xgry} xgry
+        </foreach>
+        )
+        tmp
+        where
+        bfdxlxrgl.lxrid=tmp.lxrid
+    </update>
+
+    <delete id="delete" parameterType="BfdxlxrglDto">
+        update igams_bfdxlxrgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="dwid != null and dwid != ''">
+                or dwid =#{dwid}
+            </if>
+            <if test="ids != null and ids.size()>0">
+                or dwid in
+                <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <update id="mergeList" parameterType="List">
+        update igams_bfdxlxrgl bfdxlxrgl
+        set scbj=tmp.scbj
+        ,dwid=tmp.dwid
+        from(
+        <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+            select #{item.lxrid} lxrid,#{item.scbj} scbj,#{item.dwid} dwid
+        </foreach>
+        )
+        tmp
+        where
+        bfdxlxrgl.lxrid=tmp.lxrid
+    </update>
+</mapper>

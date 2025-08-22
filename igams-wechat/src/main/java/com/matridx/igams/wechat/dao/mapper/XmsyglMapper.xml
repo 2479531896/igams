@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IXmsyglDao" >
+    <delete id="delInfo" parameterType="XmsyglDto">
+        update igams_xmsygl xmsygl set scbj='1'
+        <if test="scry != null and scry != '' ">
+            , scry = #{scry},scsj=LOCALTIMESTAMP
+        </if>
+        where scbj='0' and ywid = #{ywid}
+        and not exists (select 1 from igams_sjsygl sjsygl where xmsygl.syglid = sjsygl.syglid
+        and sjsygl.syrq is not null
+        )
+    </delete>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_xmsygl(xmsyglid,syglid,ywid,dyid,jcxmid,jczxmid,lrry,ywlx,lrsj,scbj,wkdm)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.xmsyglid},#{item.syglid},#{item.ywid},#{item.dyid},#{item.jcxmid},#{item.jczxmid},#{item.lrry},#{item.ywlx},coalesce(cast(#{item.lrsj} as TIMESTAMP),LOCALTIMESTAMP),coalesce(#{item.scbj},'0'),#{item.wkdm}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteInfo" parameterType="XmsyglDto">
+        delete from igams_xmsygl  where scbj='1' and ywid = #{ywid}
+    </delete>
+
+    <update id="modToNormal" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            update igams_xmsygl set scbj='0',scry = null,scsj = null
+	        <if test="item.xgry != null and item.xgry != '' ">
+	            , xgry = #{item.xgry},xgsj=LOCALTIMESTAMP
+	        </if>
+	        <if test="item.ywid != null and item.ywid != '' ">
+	            , ywid = #{item.ywid}
+	        </if>
+	        <if test="item.syglid != null and item.syglid != '' ">
+	            , syglid = #{item.syglid}
+	        </if>
+            <where>
+                xmsyglid=#{item.xmsyglid}
+            </where>
+        </foreach>
+    </update>
+
+
+    <select id="getModelList" parameterType="XmsyglDto" resultType="XmsyglDto">
+		select * from igams_xmsygl xmsygl
+		where xmsygl.ywid = #{ywid} and xmsygl.scbj = '0'
+	</select>
+
+    <select id="getDtoListByYwids" parameterType="XmsyglDto" resultType="XmsyglDto">
+        select * from igams_xmsygl xmsygl
+        where  xmsygl.scbj = '0' and xmsygl.ywid in
+            <foreach collection="ywids" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+    </select>
+
+    <update id="updateList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            update igams_xmsygl xmsygl
+            set xgsj=LOCALTIMESTAMP,xgry=tmp.xgry,syglid=tmp.syglid
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.xmsyglid} xmsyglid,#{item.syglid} syglid,#{item.xgry} xgry
+            </foreach>
+            )
+            tmp
+            where
+            xmsygl.xmsyglid=tmp.xmsyglid
+        </if>
+    </update>
+    
+    <update  id="deleteByYwids" parameterType="XmsyglDto">
+        update igams_xmsygl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            ywid in
+            <foreach collection="ywids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="getDtoListBySyglids" resultType="XmsyglDto" parameterType="XmsyglDto">
+        select xmsygl.xmsyglid,xmsygl.dyid,xmsygl.syglid,xmsygl.jcxmid,xmsygl.jczxmid,xmsygl.ywid,xmsygl.ywlx,xmsygl.wkdm,jcxm.csmc jcxmmc
+        from igams_xmsygl xmsygl
+        left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid
+        where xmsygl.scbj='0' and xmsygl.syglid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        order by xmsygl.syglid
+    </select>
+
+    <select id="getXmsyXXdyYwids" parameterType="XmsyglDto" resultType="XmsyglDto">
+        SELECT xxdy.kzcs1 xxdy_kzcs1,xxdy.kzcs7 xxdy_kzcs7,xmsy.ywid,xmsy.wkdm FROM igams_xmsygl xmsy
+        LEFT JOIN igams_xxdy xxdy on xxdy.dyid = xmsy.dyid and xxdy.scbj = '0'
+        where  xmsy.scbj = '0'
+        <if test="ywids !=null and ywids.size > 0">
+            and xmsy.ywid in
+            <foreach collection="ywids" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="ywid != null and ywid != '' ">
+            and xmsy.ywid = #{ywid}
+        </if>
+        ORDER BY xxdy.px
+    </select>
+</mapper>
+

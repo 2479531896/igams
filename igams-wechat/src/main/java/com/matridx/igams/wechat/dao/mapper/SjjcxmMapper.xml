@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjjcxmDao" >
+
+	<!-- 根据送检信息新增检测项目 -->
+	<insert  id="insertSjjcxmDtos" parameterType="list">
+		insert into igams_sjjcxm (xmglid,sjid, xh, jcxmid,jczxmid,yfje,sfsf,sfje,fkrq,sfdz,lrry ,lrsj ,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.xmglid},#{item.sjid},cast(#{item.xh} as numeric),#{item.jcxmid}
+				<if test="item.jczxmid != null and item.jczxmid != ''">
+					,#{item.jczxmid}
+				</if>
+				<if test="item.jczxmid == null or item.jczxmid == ''">
+					,''
+				</if>
+				<if test="item.yfje !=null and item.yfje != ''">
+					,cast(#{item.yfje} as numeric)
+				</if>
+				<if test="item.yfje ==null or item.yfje == ''">
+					,null
+				</if>
+				<if test="item.sfsf !=null and item.sfsf != ''">
+					,#{item.sfsf}
+				</if>
+				<if test="item.sfsf ==null or item.sfsf == ''">
+					,'1'
+				</if>
+				<if test="item.sfje !=null and item.sfje != ''">
+					,cast(#{item.sfje} as numeric)
+				</if>
+				<if test="item.sfje ==null or item.sfje == ''">
+					,null
+				</if>
+				<if test="item.fkrq !=null and item.fkrq != ''">
+					,cast(#{item.fkrq} as timestamp)
+				</if>
+				<if test="item.fkrq ==null or item.fkrq == ''">
+					,null
+				</if>
+				,'0',#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+
+	<!-- 根据送检信息更新检测项目 -->
+	<update  id="updateSjjcxmDtos" parameterType="list">
+		<foreach collection="list" item="item" separator=";">
+			update igams_sjjcxm set
+			<if test="item.yfje !=null and item.yfje != ''">
+				yfje=cast(#{item.yfje} as numeric),
+			</if>
+			<if test="item.bdsfje != null and item.bdsfje != ''">
+				sfje=COALESCE(sfje,0)+cast(#{item.bdsfje} as numeric),
+			</if>
+			<if test="item.bdsfje == null or item.bdsfje == ''">
+				<if test="item.sfje != null and item.sfje != ''">
+					sfje=cast(#{item.sfje} as numeric),
+				</if>
+			</if>
+			<if test="item.fkrq !=null and item.fkrq != ''">
+				fkrq=cast(#{item.fkrq} as TIMESTAMP),
+			</if>
+			<if test="item.sfsf !=null and item.sfsf != ''">
+				sfsf=#{item.sfsf},
+			</if>
+			<if test="item.yyfje !=null and item.yyfje != ''">
+				yyfje=cast(#{item.yyfje} as numeric),
+			</if>
+			xgsj=LOCALTIMESTAMP
+			<where>
+				scbj='0' and sjid = #{item.sjid} and jcxmid = #{item.jcxmid}
+				<if test="item.jczxmid != null and item.jczxmid != ''">
+					and jczxmid = #{item.jczxmid}
+				</if>
+			</where>
+		</foreach>
+	</update>
+
+	<!--根据送检ID查询检测项目清单-->
+	<select id="getDtoList" parameterType="SjjcxmDto" resultType="SjjcxmDto">
+		select xm.*,coalesce(jc_xm.csdm,'') jcxmdm,coalesce(jc_xm.csmc,'') jcxmmc,
+		case when jc_zxm.cskz1 is not null or jc_zxm.cskz1 !='' then jc_zxm.cskz1 else jc_xm.cskz1 end cskz1,
+		case when jc_zxm.cskz3 is not null or jc_zxm.cskz3 !='' then jc_zxm.cskz3 else jc_xm.cskz3 end cskz3,
+		coalesce(jc_zxm.csmc,'') jczxmmc,coalesce(jc_zxm.csdm,'') jczxmdm
+		from igams_sjjcxm xm
+		left outer join matridx_jcsj jc_xm on xm.jcxmid = jc_xm.csid
+		left outer join matridx_jcsj jc_zxm on xm.jczxmid = jc_zxm.csid
+		<where>
+			sjid = #{sjid} and xm.scbj = '0'
+		</where>
+			order by xh
+	</select>
+
+	<select id="getPagedDtoList" parameterType="SjjcxmDto" resultType="SjjcxmDto">
+		select xm.*,jc_xm.csdm,jc_xm.csmc jcxmmc,jc_xm.cskz1,jc_xm.cskz3,jc_zxm.csmc jczxmmc
+		from igams_sjjcxm xm
+		left outer join matridx_jcsj jc_xm on xm.jcxmid = jc_xm.csid
+		left outer join matridx_jcsj jc_zxm on xm.jczxmid = jc_zxm.csid
+		<where>
+			xm.scbj = '0'
+			<if test="sjid != null and sjid != ''">
+				and xm.sjid=#{sjid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDto" parameterType="SjjcxmDto" resultType="SjjcxmDto">
+		select xm.sjid,xm.xh,xm.jcxmid,xm.jczxmid,xm.yszkid,xm.dcbj,swyszk.sfjq
+		from igams_sjjcxm xm
+		left join igams_swyszk swyszk on swyszk.yszkid = xm.yszkid and swyszk.scbj = '0'
+		where sjid = #{sjid} and jcxmid = #{jcxmid} and  xm.scbj = '0'
+		<if test="jczxmid != null and jczxmid != ''">
+			and jczxmid=#{jczxmid}
+		</if>
+	</select>
+
+	<!--根据送检ID删除检测项目-->
+	<delete id="deleteSjjcxm" parameterType="SjxxDto">
+		update  igams_sjjcxm set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'  where sjid = #{sjid} and scbj = '0'
+	</delete>
+
+	<!--根据送检ID查询检测项目清单-->
+	<select id="getAllDtoList" parameterType="SjjcxmDto" resultType="SjjcxmDto">
+		select xm.xmglid,xm.sjid,xm.xh,xm.jcxmid,sj.csdm,sj.csmc ,sj.cskz1,xm.jczxmid,sj.cskz3,jczxm.csmc zmc,
+		case when sfsf = '1' then '是' else '否' end sfsf,case when sfdz = '1' then '是' else '否' end sfdz,
+		xm.scbj,xm.sfje,xm.tkje,xm.tkfs,xm.dzje,xm.yfje,tkfs.csmc tkfsmc,
+		to_char(xm.fkrq,'yyyy-mm-dd') fkrq,to_char(xm.tkrq,'yyyy-mm-dd')  tkrq
+		from igams_sjjcxm xm
+		left outer join matridx_jcsj sj on xm.jcxmid = sj.csid
+		left outer join matridx_jcsj tkfs on xm.tkfs = tkfs.csid
+		left outer join matridx_jcsj jczxm on xm.jczxmid = jczxm.csid
+		<where>
+			sjid = #{sjid}
+		</where>
+		order by jczxm,jczxmid,xh
+	</select>
+
+	<update id="updateSyncInfo" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item"
+					 index="index">
+				update  igams_sjjcxm
+				<set>
+					xgry=#{item.xgry},
+					xgsj=LOCALTIMESTAMP,
+					scry=null,
+					scsj=null,
+					scbj='0',
+					xh=cast(#{item.xh} as numeric),
+					jcxmid=#{item.jcxmid}
+					<if test="item.jczxmid != null and item.jczxmid != ''">
+						,jczxmid=#{item.jczxmid}
+					</if>
+					<if test="item.jczxmid == null or item.jczxmid == ''">
+						,jczxmid=''
+					</if>
+					<if test="item.yfje !=null and item.yfje != ''">
+						,yfje=cast(#{item.yfje} as numeric)
+					</if>
+					<if test="item.sfsf !=null and item.sfsf != ''">
+						,sfsf=#{item.sfsf}
+					</if>
+					<if test="item.sfje !=null and item.sfje != ''">
+						,sfje=cast(#{item.sfje} as numeric)
+					</if>
+					<if test="item.fkrq !=null and item.fkrq != ''">
+						,fkrq=cast(#{item.fkrq} as timestamp)
+					</if>
+				</set>
+				where xmglid = #{item.xmglid}
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getSjjcxm" parameterType="String" resultType="String">
+		select xm.jcxmid
+		 from igams_sjjcxm xm
+		<where>
+			sjid = #{sjid} and xm.scbj='0'
+		</where>
+	</select>
+
+	<!--查询检测项目信息-->
+	<select id="getSjjcxmDtos" parameterType="SjxxDto" resultType="SjjcxmDto">
+		select xmjc.csid  jcxmid
+		from(
+			select fjsq.jcxm as jcxmid
+			from igams_fjsq fjsq
+			left join matridx_jcsj jc on jc.csid = fjsq.lx
+			where fjsq.sjid = #{sjid} and fjsq.scbj='0' and fjsq.zt='80'
+			and jc.jclb='RECHECK' and jc.csdm='ADDDETECT'
+			union all
+			select xm.jcxmid as jcxmid
+			from igams_sjjcxm xm
+			where xm.sjid = #{sjid} and xm.scbj='0'
+		)tmp
+		left outer join matridx_jcsj jc on tmp.jcxmid = jc.csid
+		left outer join matridx_jcsj xmjc on  jc.cskz3 = xmjc.cskz3   and xmjc.jclb = 'DETECT_TYPE'
+		AND CASE WHEN jc.cskz1!='C' then jc.cskz1= xmjc.cskz1 ELSE 1 = 1 END
+		where xmjc.cskz1 = #{jcxm}
+	</select>
+	
+	<select id="getListBySjid" parameterType="java.util.List" resultType="SjjcxmDto">
+		select jcxm.xmglid,jcxm.sjid, jcxm.jcxmid, jcxmlx.cskz1, jcxmlx.csmc
+		from igams_sjjcxm jcxm
+		left join matridx_jcsj jcxmlx on jcxmlx.csid = jcxm.jcxmid
+		<where> 
+			jcxm.scbj='0' and jcxm.sjid in
+			<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+				#{item}
+			</foreach> 
+		</where>
+	</select>
+
+	<!-- 清空检测子项目 -->
+	<update id="emptySubDetect" parameterType="SjjcxmDto">
+		update igams_sjjcxm set
+		  jczxmid = ''
+		where
+			sjid = #{sjid} and scbj='0'
+	</update>
+
+	<update id="updateDcbj" parameterType="SjjcxmDto">
+		update igams_sjjcxm set
+			dcbj = #{dcbj}
+		where
+			xmglid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+
+	<update id="update" parameterType="SjjcxmDto">
+		update igams_sjjcxm set
+		  sfsf = #{sfsf}
+		where
+			sjid = #{sjid} and jcxmid = #{jcxmid} and scbj='0'
+	</update>
+
+	<update id="updateYszkInfoToNull" parameterType="SjjcxmDto">
+		update igams_sjjcxm set dzje = null,sfdz= null,yszkid = null,xgry = #{xgry} where
+		<if test="ids != null and ids.size()>0">
+			yszkid in
+			<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yszkid != null and yszkid != ''">
+			yszkid = #{yszkid}
+		</if> ;
+		update igams_fjsq set dzje = null,sfdz= null,yszkid = null,xgry = #{xgry} where
+		<if test="ids != null and ids.size()>0">
+			yszkid in
+			<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yszkid != null and yszkid != ''">
+			yszkid = #{yszkid}
+		</if>;
+		update igams_yszkmx set scbj = '1',scsj = LOCALTIMESTAMP,scry = #{xgry} where
+		<if test="ids != null and ids.size()>0">
+			yszkid in
+			<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yszkid != null and yszkid != ''">
+			yszkid = #{yszkid}
+		</if>;
+	</update>
+	
+	<update id="updateBgrq" parameterType="SjjcxmDto">
+		update igams_sjjcxm set
+			bgrq = cast(#{bgrq} as timestamp)
+		where
+			sjid = #{sjid} and jcxmid =#{jcxmid} and scbj='0'
+	</update>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_sjjcxm
+				<set>
+					<if test="item.dzje != null and item.dzje != ''">
+						,dzje=cast(#{item.dzje} as numeric),sfdz=#{item.sfdz}
+					</if>
+					<if test="item.yfje != null and item.yfje != ''">
+						,yfje=cast(#{item.yfje} as numeric)
+					</if>
+				</set>
+				where scbj='0' and sjid = #{item.sjid} and jcxmid = #{item.jcxmid}
+				<if test="item.jczxmid != null and item.jczxmid != ''">
+					and jczxmid=#{item.jczxmid}
+				</if>
+				<if test="item.jczxmid != null and item.jczxmid == ''">
+					and (jczxmid is null or jczxmid = '')
+				</if>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateListNew" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_sjjcxm
+				<set>
+					xmglid = #{item.xmglid},xgsj=LOCALTIMESTAMP,xgry=#{item.xgry}
+					<if test="item.sfje != null and item.sfje != ''">
+						,sfje=cast(#{item.sfje} as numeric)
+					</if>
+					<if test="item.tkje != null and item.tkje != ''">
+						,tkje=cast(#{item.tkje} as numeric)
+					</if>
+					<if test="item.fkrq != null and item.fkrq != ''">
+						,fkrq=cast(#{item.fkrq} as TIMESTAMP)
+					</if>
+					<if test="item.tkrq != null and item.tkrq != ''">
+						,tkrq=cast(#{item.tkrq} as TIMESTAMP)
+					</if>
+					<if test="item.dzje != null and item.dzje != ''">
+						,dzje=cast(#{item.dzje} as numeric)
+					</if>
+					<if test="item.yfje != null and item.yfje != ''">
+						,yfje=cast(#{item.yfje} as numeric)
+					</if>
+					<if test="item.sfdz != null and item.sfdz != ''">
+						,sfdz=#{item.sfdz}
+					</if>
+					<if test="item.sfsf != null and item.sfsf != ''">
+						,sfsf=#{item.sfsf}
+					</if>
+					<if test="item.sfje == null or item.sfje ==''">
+						,sfje=null
+					</if>
+					<if test="item.tkje == null or item.tkje == ''">
+						,tkje=null
+					</if>
+					<if test="item.fkrq == null or item.fkrq == ''">
+						,fkrq=null
+					</if>
+					<if test="item.tkrq == null or item.tkrq == ''">
+						,tkrq=null
+					</if>
+					<if test="item.dzje == null or item.dzje == ''">
+						,dzje=null
+					</if>
+					<if test="item.yfje == null or item.yfje == ''">
+						,yfje=null
+					</if>
+				</set>
+				where xmglid = #{item.xmglid}
+			</foreach>
+		</if>
+	</update>
+
+	<update  id="revertData" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item"
+					 index="index">
+				update  igams_sjjcxm
+				<set>
+					xgry=#{item.xgry},
+					xgsj=LOCALTIMESTAMP,
+					scry=null,
+					scsj=null,
+					scbj='0',
+					xh=cast(#{item.xh} as numeric),
+					jcxmid=#{item.jcxmid}
+					<if test="item.jczxmid != null and item.jczxmid != ''">
+						,jczxmid=#{item.jczxmid}
+					</if>
+					<if test="item.jczxmid == null or item.jczxmid == ''">
+						,jczxmid=''
+					</if>
+					<if test="item.yfje != null and item.yfje != ''">
+						,yfje=cast(#{item.yfje} as numeric )
+					</if>
+				</set>
+				where xmglid = #{item.xmglid}
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateListDzInfo" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			UPDATE igams_sjjcxm sjjcxm
+			SET
+				yszkid = tmp.yszkid,
+				sfdz = tmp.sfdz,
+				dcbj = tmp.dcbj,
+				dzje = cast( COALESCE(tmp.dzje,null) as numeric)
+			FROM
+			( VALUES
+
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.sjid}, #{item.jcxmid},#{item.jczxmid},#{item.yszkid}
+				,#{item.dzje},#{item.sfdz},#{item.dcbj}
+				)
+			</foreach>
+			) AS tmp ( sjid,jcxmid,jczxmid,yszkid,dzje,sfdz,dcbj )
+			WHERE
+			sjjcxm.sjid = tmp.sjid and sjjcxm.jcxmid = tmp.jcxmid and (sjjcxm.jczxmid = tmp.jczxmid or sjjcxm.jczxmid is null or sjjcxm.jczxmid = '') and sjjcxm.yszkid  is  null and sjjcxm.scbj = '0'
+		</if>
+	</update>
+
+	<update id="updateDcEmpty" parameterType="SjjcxmDto">
+		update igams_sjjcxm sjjcxm SET dcbj = null
+		where sjjcxm.scbj = '0' and dcbj = #{dcbj}
+		and exists (
+			select sjxx.sjid from igams_sjxx sjxx
+			where sjxx.scbj = '0' and sjxx.db = #{hbmc} and sjjcxm.sjid = sjxx.sjid
+		);
+		update igams_fjsq fjsq SET dcbj = null
+		where fjsq.scbj = '0' and dcbj = #{dcbj}
+		and exists (
+			select sjxx.sjid from igams_sjxx sjxx
+			where sjxx.scbj = '0' and sjxx.db = #{hbmc} and fjsq.sjid = sjxx.sjid
+		);
+	</update>
+</mapper>

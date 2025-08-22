@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IHtyhzcDao" >
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_htyhzc(htyhzcid, htid,xh, yhfl, yhzfl, yhqsfw, yhjsfw, yh,yhxs,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.htyhzcid}, #{item.htid},cast(#{item.xh} as numeric), #{item.yhfl}, #{item.yhzfl}
+            , #{item.yhqsfw}, #{item.yhjsfw}
+            ,cast(#{item.yh} as numeric),#{item.yhxs},#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <sql id="OUT_SEARCH_JOINS">
+        left join matridx_jcsj yhfl on yhfl.csid = htyhzc.yhfl
+        left join matridx_jcsj yhzfl on yhzfl.csid = htyhzc.yhzfl
+    </sql>
+
+    <select id="getDtoList" resultType="HtyhzcDto" parameterType="HtyhzcDto">
+        select
+        htyhzc.htyhzcid,htyhzc.htid,htyhzc.xh,htyhzc.yhfl,htyhzc.yhzfl,htyhzc.yhqsfw,htyhzc.yhjsfw,htyhzc.yh,htyhzc.yhxs
+        ,yhfl.csmc yhflmc,yhzfl.csmc yhzflmc,yhfl.cskz1 yhflcskz1
+        from igams_htyhzc htyhzc
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where htyhzc.scbj='0'
+        <if test="htid != null and htid != ''">
+            and htyhzc.htid=#{htid}
+        </if>
+        <if test = "ids != null and ids.size > 0 "  >
+            and htyhzc.htid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        order by htyhzc.xh
+    </select>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_htyhzc set htid=tmp.htid,hyfl=tmp.hyfl,hyzfl=tmp.hyzfl,yhqsfw=tmp.yhqsfw,yhjsfw=tmp.yhjsfw,yh=tmp.yh
+            from(
+            <foreach collection="list" item="item" separator="union all">
+                select #{item.htyhzcid} htyhzcid,#{item.htid} htid,#{item.hyfl} hyfl,#{item.hyzfl} hyzfl,#{item.yhqsfw} yhqsfw,#{item.yhjsfw} yhjsfw,#{item.yhzk} yh,#{item.yhxs} yhxs
+            </foreach>
+            )tmp where tmp.htyhzcid=htyhzcid
+        </if>
+    </update>
+
+    <!--通过主键删除-->
+    <update id="delete" parameterType="HtyhzcDto">
+        update  igams_htyhzc set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'
+        where
+        <if test="htid !=null and htid != ''">
+            htid = #{htid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            htyhzcid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getYhzcInfo" resultType="HtyhzcDto" parameterType="HtyhzcDto">
+        select htyhzc.htyhzcid,swhtgl.htid,swhtgl.qddx khid,htyhzc.yhfl,htyhzc.yhzfl,
+        htyhzc.lrsj,htyhzc.yhqsfw,htyhzc.yhjsfw,htyhzc.yh,htyhzc.htyhzcid,khyhzcbz.khyhzcbzid,htyhzc.yhxs
+        from igams_swhtgl swhtgl
+        left join igams_htyhzc htyhzc on htyhzc.htid = swhtgl.htid and htyhzc.scbj = '0'
+        left join igams_khyhzcbz khyhzcbz on khyhzcbz.htyhzcid = htyhzc.htyhzcid
+        where swhtgl.scbj = '0'  and ( swhtgl.htzt = '10' or swhtgl.htzt = '30' )
+        and htyhzc.htyhzcid is not null
+        <if test="zt != null and zt !=''">
+            and swhtgl.zt = #{zt}
+        </if>
+        and swhtgl.htksrq &lt;= CURRENT_DATE and swhtgl.htjsrq >=  CURRENT_DATE
+    </select>
+</mapper>

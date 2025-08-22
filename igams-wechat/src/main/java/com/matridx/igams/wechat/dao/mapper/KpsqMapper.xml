@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IKpsqDao" >
+
+    <sql id="SELECT_INFO">
+		select kpsq.fpsqid ,kpsq.fpxz ,kpsq.kpzt ,kpsq.fphm ,kpsq.sqbm ,kpsq.kpdx ,kpsq.khmc ,kpsq.kjrq ,kpsq.kplx ,kpsq.spr ,
+		kpsq.kjje ,kpsq.kpnr ,kpsq.yx ,kpsq.sh ,kpsq.khyhjzh ,kpsq.dzdh ,kpsq.bz ,kpsq.ddslid ,kpsq.ywlx ,
+		kpsq.ywid , to_char(kpsq.lrsj,'yyyy-mm-dd') as lrsj ,kpsq.xgsj ,kpsq.xgry ,kpsq.scsj ,kpsq.scry ,kpsq.scbj ,kpsq.zt ,kpsq.wbcxid
+
+	</sql>
+
+    <sql id="OUT_SEARCH_JOINS">
+		left join matridx_jcsj fpxz on fpxz.csid = kpsq.fpxz
+		left join matridx_jcsj kpzt on kpzt.csid = kpsq.kpzt
+        left join matridx_jcsj kpdx on kpdx.csid = kpsq.kpdx
+        left join matridx_jcsj kplx on kplx.csid = kpsq.kplx
+        left join matridx_jgxx jgxx on jgxx.jgid = kpsq.sqbm
+
+	</sql>
+
+    <sql id="SEARCH_WHERE">
+        <where>
+            kpsq.scbj = '0'
+            <if test="zt != null and zt != ''">
+                and kpsq.zt =#{zt}
+            </if>
+            <if test="ywlx != null and ywlx != ''">
+                and kpsq.ywlx =#{ywlx}
+            </if>
+            <if test="entire != null and entire != ''">
+                and (kpsq.fphm ILIKE '%'||#{entire}||'%'
+                or kpsq.khmc ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and kpsq.fphm ILIKE '%'||#{fphm}||'%'
+            </if>
+            <if test="khmc != null and khmc != ''">
+                and kpsq.khmc ILIKE '%'||#{khmc}||'%'
+            </if>
+            <if test="kjrqstart != null and kjrqstart != ''">
+                and to_char(kpsq.kjrq,'yyyy-mm-dd') &gt;= #{kjrqstart}
+            </if>
+            <if test="kjrqend != null and kjrqend != ''">
+                and to_char(kpsq.kjrq,'yyyy-mm-dd') &lt;= #{kjrqend}
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(kpsq.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(kpsq.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+            </if>
+            <if test="fpxzids !=null and fpxzids.size > 0">
+                and kpsq.fpxz in
+                <foreach collection="fpxzids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="kpztids !=null and kpztids.size > 0">
+                and kpsq.kpzt in
+                <foreach collection="kpztids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="kpdxids !=null and kpdxids.size > 0">
+                and kpsq.kpdx in
+                <foreach collection="kpdxids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="kplxids !=null and kplxids.size > 0">
+                and kpsq.kplx in
+                <foreach collection="kplxids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zts !=null and zts.length> 0">
+                and kpsq.zt in
+                <foreach collection="zts" open="(" close=")" separator="," index="index"  item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <select id="getDtoList" parameterType="KpsqDto" resultType="KpsqDto">
+        <include refid="SELECT_INFO"></include>
+        from igams_kpsq kpsq
+        <where>
+            kpsq.scbj='0'
+            <if test="ywid != null and ywid != ''">
+                and kpsq.ywid =#{ywid}
+            </if>
+            <if test="ywlx != null and ywlx != ''">
+                and kpsq.ywlx =#{ywlx}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and kpsq.fpsqid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="KpsqDto">
+        insert into igams_kpsq(fpsqid,fphm,sqbm,kpdx,khmc,kplx,kpnr,bz,ddslid,wbcxid,ywlx,ywid,fpxz ,yx ,sh ,khyhjzh ,dzdh ,kpzt ,spr
+        <if test="kjje != null and kjje != ''">
+            , kjje
+        </if>
+        <if test="kjrq != null and kjrq != ''">
+            , kjrq
+        </if>
+        ,zt, lrry, lrsj, scbj)
+        values ( #{fpsqid}, #{fphm}, #{sqbm}, #{kpdx}, #{khmc}, #{kplx}, #{kpnr}, #{bz}, #{ddslid}, #{wbcxid}, #{ywlx}, #{ywid}, #{fpxz} ,#{yx} ,#{sh} ,#{khyhjzh} ,#{dzdh} ,#{kpzt} ,#{spr}
+        <if test="kjje != null and kjje != ''">
+            , cast(#{kjje} as numeric)
+        </if>
+        <if test="kjrq != null and kjrq != ''">
+            , cast(#{kjrq} as timestamp )
+        </if>
+         ,#{zt}, #{lrry}, LOCALTIMESTAMP, '0')
+    </insert>
+
+    <!--查询指定行数据-->
+    <select id="getPagedDtoList" resultType="KpsqDto" parameterType="KpsqDto">
+        <include refid="SELECT_INFO"></include>
+        ,fpxz.csmc fpxzmc,kpdx.csmc kpdxmc,kplx.csmc kplxmc,jgxx.jgmc,kpzt.csmc kpztmc
+        from igams_kpsq kpsq
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+
+    <!--查询单个-->
+    <select id="getDto" resultType="KpsqDto" parameterType="KpsqDto">
+        <include refid="SELECT_INFO"></include>
+        ,fpxz.csmc fpxzmc,kpdx.csmc kpdxmc,kplx.csmc kplxmc,jgxx.jgmc,kpzt.csmc kpztmc
+        from igams_kpsq kpsq
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where  kpsq.scbj = '0'
+        <if test="fpsqid !=null and fpsqid != ''">
+            and kpsq.fpsqid = #{fpsqid}
+        </if>
+        <if test="ddslid !=null and ddslid != ''">
+            and kpsq.ddslid = #{ddslid}
+        </if>
+    </select>
+
+    <!--查询单个-->
+    <select id="getDtoById" resultType="KpsqDto" parameterType="String">
+        <include refid="SELECT_INFO"></include>
+        ,fpxz.csmc fpxzmc,kpdx.csmc kpdxmc,kplx.csmc kplxmc,jgxx.jgmc,kpzt.csmc kpztmc
+        from igams_kpsq kpsq
+        <include refid="OUT_SEARCH_JOINS"></include>
+        where  kpsq.scbj = '0' and kpsq.fpsqid = #{fpsqid}
+
+    </select>
+
+    <!--查询总金额，发票号码-->
+    <select id="getAllInfo" resultType="SwyszkDto" parameterType="String">
+        select SUM(kjje) kpje,string_agg(fphm,',') kphm,to_char(min(kpsq.lrsj),'yyyy-mm-dd') kprq from igams_kpsq kpsq
+        where  kpsq.scbj = '0' and kpsq.zt = '80' and kpsq.ywid = #{ywid} or kpsq.fpsqid = #{fpsqid}
+    </select>
+
+    <select id="getUpdateData" resultType="SwyszkDto" parameterType="List">
+        select tab.ywid as yszkid,tab.kpsl,tab.ykpsl,SUM(tab.kjje) kpje,string_agg(tab.kphm,',') kphm,to_char(min(tab.kprq),'yyyy-mm-dd') kprq  from(
+        select kpsq.zt,kpsq.ywid,case when kpsq.zt='80' then kjje else 0 end kjje,
+        case when kpsq.zt='80' then kphm else null end kphm,
+        case when kpsq.zt='80' then kprq else null end kprq ,coalesce (swyszk.kpsl,0) as  kpsl,coalesce (swyszk.ykpsl ,0) as ykpsl
+        from igams_kpsq kpsq
+        left join igams_swyszk swyszk on swyszk.yszkid=kpsq.ywid
+        where  kpsq.scbj = '0' and kpsq.zt in ('10','80') and swyszk.scbj='0'
+        and kpsq.ywid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        )tab group by tab.ywid,tab.kpsl,tab.ykpsl
+
+    </select>
+
+    <!--通过主键删除-->
+    <delete id="delete" parameterType="KpsqDto">
+        update  igams_kpsq set scry=#{scry},scsj = LOCALTIMESTAMP, scbj= '1'  where
+        <if test="fpsqid !=null and fpsqid != ''">
+            fpsqid = #{fpsqid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            fpsqid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="getPagedAuditList" parameterType="KpsqDto" resultType="KpsqDto">
+        <include refid="SELECT_INFO"></include>
+        ,fpxz.csmc fpxzmc,kpdx.csmc kpdxmc,kplx.csmc kplxmc,jgxx.jgmc,kpzt.csmc kpztmc
+        from igams_kpsq kpsq
+        <include refid="OUT_SEARCH_JOINS"></include>
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <select id="getAuditListRecheck" parameterType="List" resultType="KpsqDto">
+        <include refid="SELECT_INFO"></include>
+        ,fpxz.csmc fpxzmc,kpdx.csmc kpdxmc,kplx.csmc kplxmc,jgxx.jgmc,kpzt.csmc kpztmc
+        ,shxx_sqsj, shxx_gwmc, sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.fpsqid} fpsqid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp
+        left join igams_kpsq kpsq on kpsq.fpsqid = tmp.fpsqid
+        <include refid="OUT_SEARCH_JOINS"></include>
+        order by tmp.rownum
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update igams_kpsq
+        <set>
+            <if test = "fpxz != null and fpxz != ''">
+                fpxz = #{fpxz},
+            </if>
+            <if test = "kpzt != null and kpzt != ''">
+                kpzt = #{kpzt},
+            </if>
+            <if test = "fphm != null and fphm != ''">
+                fphm = #{fphm},
+            </if>
+            <if test = "sqbm != null and sqbm != ''">
+                sqbm = #{sqbm},
+            </if>
+            <if test = "kpdx != null and kpdx != ''">
+                kpdx = #{kpdx},
+            </if>
+            <if test = "khmc != null and khmc != ''">
+                khmc = #{khmc},
+            </if>
+            <if test = "kjrq != null and kjrq != ''">
+                kjrq = cast(#{kjrq} as timestamp ),
+            </if>
+            <if test = "kplx != null and kplx != ''">
+                kplx = #{kplx},
+            </if>
+            <if test = "kjje != null and kjje != ''">
+                kjje =  cast(#{kjje} as numeric),
+            </if>
+            <if test = "kpnr != null and kpnr != ''">
+                kpnr = #{kpnr},
+            </if>
+            <if test = "yx != null and yx != ''">
+                yx = #{yx},
+            </if>
+            <if test = "sh != null and sh != ''">
+                sh = #{sh},
+            </if>
+            <if test = "khyhjzh != null and khyhjzh != ''">
+                khyhjzh = #{khyhjzh},
+            </if>
+            <if test = "dzdh != null and dzdh != ''">
+                dzdh = #{dzdh},
+            </if>
+            <if test = "bz != null and bz != ''">
+                bz = #{bz},
+            </if>
+            <if test = "ddslid != null and ddslid != ''">
+                ddslid = #{ddslid},
+            </if>
+            <if test = "ywlx != null and ywlx != ''">
+                ywlx = #{ywlx},
+            </if>
+            <if test = "ywid != null and ywid != ''">
+                ywid = #{ywid},
+            </if>
+            <if test = "zt != null and zt != ''">
+                zt = #{zt},
+            </if>
+            <if test = "wbcxid != null and wbcxid != ''">
+                wbcxid = #{wbcxid},
+            </if>
+            <if test = "spr != null and spr != ''">
+                spr = #{spr},
+            </if>
+            <if test = "spr != null and spr == ''">
+                spr = null,
+            </if>
+            <if test = "fpxz != null and fpxz == ''">
+                fpxz =null,
+            </if>
+            <if test = "kpzt != null and kpzt == ''">
+                kpzt =null,
+            </if>
+            <if test = "fphm != null and fphm == ''">
+                fphm =null,
+            </if>
+            <if test = "sqbm != null and sqbm == ''">
+                sqbm = null,
+            </if>
+            <if test = "kpdx != null and kpdx == ''">
+                kpdx = null,
+            </if>
+            <if test = "khmc != null and khmc == ''">
+                khmc = null,
+            </if>
+            <if test = "kjrq != null and kjrq == ''">
+                kjrq = null,
+            </if>
+            <if test = "kplx != null and kplx == ''">
+                kplx = null,
+            </if>
+            <if test = "kjje != null and kjje == ''">
+                kjje = null,
+            </if>
+            <if test = "kpnr != null and kpnr == ''">
+                kpnr = null,
+            </if>
+            <if test = "yx != null and yx == ''">
+                yx = null,
+            </if>
+            <if test = "sh != null and sh == ''">
+                sh = null,
+            </if>
+            <if test = "khyhjzh != null and khyhjzh == ''">
+                khyhjzh = null,
+            </if>
+            <if test = "dzdh != null and dzdh == ''">
+                dzdh = null,
+            </if>
+            <if test = "bz != null and bz == ''">
+                bz = null,
+            </if>
+            <if test = "ddslid != null and ddslid == ''">
+                ddslid = null,
+            </if>
+            <if test = "ywlx != null and ywlx == ''">
+                ywlx = null,
+            </if>
+            <if test = "ywid != null and ywid == ''">
+                ywid = null,
+            </if>
+            <if test = "zt != null and zt == ''">
+                zt = null,
+            </if>
+            <if test = "wbcxid != null and wbcxid == ''">
+                wbcxid = null,
+            </if>
+            xgry = #{xgry}, xgsj = LOCALTIMESTAMP
+        </set>
+        where
+        <if test="fpsqid !=null and fpsqid != ''">
+            fpsqid = #{fpsqid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            fpsqid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+</mapper>

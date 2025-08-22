@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISysxxDao" >
+
+    <select id="getSysxxDtoByDfsysmc" resultType="SysxxDto" parameterType="map">
+        select sysxx.sysid,sysxx.dfsysmc,sysxx.wfsys,jcsj.csid,jcsj.csdm,jcsj.csmc wfsysmc
+        from matridx_jcsj jcsj
+        left join igams_sysxx sysxx on jcsj.csid = sysxx.wfsys and jcsj.scbj = '0'
+        where sysxx.dfsysmc = #{dfsysmc}  AND (sysxx.zq IS NULL OR sysxx.zq LIKE '%' || #{zq} || '%')
+    </select>
+
+
+    <select id="getDtoById" parameterType="String" resultType="SysxxDto">
+        select sysxx.sysid,sysxx.dfsysmc,sysxx.wfsys,sysxx.zq,jcsj.csid wfsysid,jcsj.csdm wfsysdm,jcsj.csmc wfsysmc
+        from igams_sysxx sysxx
+        left join matridx_jcsj jcsj on jcsj.csid = sysxx.wfsys and jcsj.scbj = '0'
+        where sysxx.sysid =#{sysid}
+    </select>
+
+    <select id="getPageSysxxDtoList" parameterType="SysxxDto" resultType="SysxxDto">
+        select sysxx.sysid,sysxx.dfsysmc,sysxx.wfsys,sysxx.zq,jcsj.csid wfsysid,jcsj.csdm wfsysdm,jcsj.csmc wfsysmc
+        from igams_sysxx sysxx
+        left join matridx_jcsj jcsj on jcsj.csid = sysxx.wfsys and jcsj.scbj = '0'
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+
+    <sql id="SEARCH_TERMS">
+        <if test="entire != null and entire != ''">
+            and (
+            sysxx.dfsysmc ilike '%'||#{entire}||'%'
+            or jcsj.csmc ilike '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="dfsysmc !=null and dfsysmc != ''">
+            and sysxx.dfsysmc ilike '%'||#{dfsysmc}||'%'
+        </if>
+        <if test="wfsysmc!=null and wfsysmc != ''">
+            and jcsj.csmc ilike '%'||#{wfsysmc}||'%'
+        </if>
+    </sql>
+
+
+
+    <!-- 更新 -->
+    <update id="updateDto" parameterType="SysxxDto">
+        update igams_sysxx
+        <set>
+            <if test="dfsysmc != null and dfsysmc != ''">
+                dfsysmc = #{dfsysmc},
+            </if>
+            <if test="wfsys != null and wfsys != ''">
+                wfsys = #{wfsys},
+            </if>
+            <if test="zq == null or zq == ''">
+                zq = null,
+            </if>
+            <if test="zq != null and zq != ''">
+                zq = #{zq},
+            </if>
+        </set>
+        <where>
+            sysid = #{sysid}
+        </where>
+    </update>
+
+
+    <!-- 新增 -->
+    <insert id="insertDto" parameterType="SysxxDto">
+        insert into igams_sysxx (sysid,dfsysmc,wfsys,zq)
+        values (#{sysid},#{dfsysmc},#{wfsys},#{zq})
+    </insert>
+
+    <!-- 根据文库id删除文库明细数据(修改用)-->
+    <delete id="delete" parameterType="SysxxDto">
+        delete from igams_sysxx
+        <where>
+            1=2
+            <if test="sysid !=null and sysid != ''">
+                or sysid = #{sysid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                or sysid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IXxxjDao" >
+
+    <select id="getPagedDtoList" parameterType="XxxjDto" resultType="XxxjDto">
+        select xxxj.xjid,xxxj.xjlx,xxxj.xjmc,xxxj.xjnr,xtyhlr.zsxm lrrymc,xjlxjcsj.csmc xjlxmc
+        from igams_xxxj xxxj
+        left join matridx_xtyh xtyhlr on xxxj.lrry=xtyhlr.yhid
+        left join matridx_jcsj xjlxjcsj on xxxj.xjlx=xjlxjcsj.csid
+        <where>
+            xxxj.scbj ='0'
+            <if test="lrrymc != null and lrrymc != ''">
+                and xtyhlr.zsxm like '%'||#{lrrymc}||'%'
+            </if>
+            <if test = "xjlxs != null and xjlxs.size > 0 "  >
+                and xxxj.xjlx in
+                <foreach collection="xjlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="xjmc != null and xjmc != ''">
+                and xxxj.xjmc like '%'||#{xjmc}||'%'
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(xxxj.lrsj,'YYYY-MM-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(xxxj.lrsj,'YYYY-MM-dd') &lt;= #{lrsjend}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertDto" parameterType="XxxjDto">
+        insert into igams_xxxj(xjid,xjlx,xjmc,lrry,lrsj
+            <if test="xjnr != null and xjnr !=''">
+                ,xjnr
+            </if>
+        )values(
+            #{xjid},#{xjlx},#{xjmc},#{lrry},LOCALTIMESTAMP
+            <if test="xjnr != null and xjnr !=''">
+                ,#{xjnr}
+            </if>
+        )
+    </insert>
+
+    <select id="getDtoById" parameterType="String" resultType="XxxjDto">
+        select xjid,xjlx,xjmc,xjnr from igams_xxxj
+        where xjid=#{xjid}
+    </select>
+
+    <select id="getDto" parameterType="XxxjDto" resultType="XxxjDto">
+        select xxxj.xjid,xxxj.xjlx,xxxj.xjmc,xxxj.xjnr,xtyhlr.zsxm lrrymc,xjlxjcsj.csmc xjlxmc
+        from igams_xxxj xxxj
+        left join matridx_xtyh xtyhlr on xxxj.lrry=xtyhlr.yhid
+        left join matridx_jcsj xjlxjcsj on xxxj.xjlx=xjlxjcsj.csid
+        where xjid=#{xjid}
+    </select>
+
+    <update id="deleteById" parameterType="XxxjDto">
+        update igams_xxxj set scbj='1' ,xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        where
+             xjid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                #{item}
+            </foreach>
+    </update>
+
+    <update id="updateDtoById" parameterType="XxxjDto">
+        update igams_xxxj
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="xjmc != null and xjmc != ''">
+                ,xjmc=#{xjmc}
+            </if>
+            <if test="xjnr != null and xjnr != ''">
+                ,xjnr=#{xjnr}
+            </if>
+            <if test="xjlx != null and xjlx != ''">
+                ,xjlx=#{xjlx}
+            </if>
+        </set>
+        where xjid=#{xjid}
+    </update>
+</mapper>

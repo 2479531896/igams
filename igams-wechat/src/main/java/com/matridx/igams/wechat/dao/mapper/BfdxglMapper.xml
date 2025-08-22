@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IBfdxglDao" >
+
+	<sql id="SEARCH_TERMS">
+		bfdx.scbj !='1'
+		<if test="entire != null and entire != ''">
+			and (
+			bfdx.dwmc ILIKE '%'||#{entire}||'%'
+			or bfdx.dwjc ILIKE '%'||#{entire}||'%'
+			or jc_sf.csmc ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="dxbm !=null and dxbm != ''">
+			and bfdx.dxbm like '%'||#{dxbm}||'%'
+		</if>
+		<if test="dwmc !=null and dwmc != ''">
+			and (bfdx.dwmc like '%'||#{dwmc}||'%' or bfdx.dwjc like '%'||#{dwmc}||'%')
+		</if>
+		<if test="sfrk !=null and sfrk != ''">
+			and bfdx.sfrk=#{sfrk}
+		</if>
+		<if test="sffp !=null and sffp != '' and sffp=='1'.toString()">
+			and bfdx.fprs > 0
+		</if>
+		<if test="sffp !=null and sffp != '' and sffp=='0'.toString()">
+			and bfdx.fprs = 0
+		</if>
+		<if test = "dwfls != null and dwfls.length > 0 "  >
+			and bfdx.dwfl in
+			<foreach collection="dwfls" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "dwlbs != null and dwlbs.length > 0 "  >
+			and bfdx.dwlb in
+			<foreach collection="dwlbs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "dwdjs != null and dwdjs.length > 0 "  >
+			and bfdx.dwdj in
+			<foreach collection="dwdjs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "sfs != null and sfs.length > 0 "  >
+			and bfdx.sf in
+			<foreach collection="sfs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "lys != null and lys.length > 0 "  >
+			and bfdx.ly in
+			<foreach collection="lys" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "ywymc !=null and ywymc != '' "  >
+			and yh_ywy.zsxm like '%'||#{ywymc}||'%'
+		</if>
+	</sql>
+
+	<select id="getPagedDtoList" parameterType="BfdxglDto" resultType="BfdxglDto">
+		select bfdx.dwid,bfdx.dwid as _key,bfdx.dwmc,bfdx.dwjc,bfdx.dwfl,bfdx.dwdj,bfdx.dwlb,bfdx.sf,bfdx.cxyqbj,bfdx.gsbj,bfdx.gsxsrs,bfdx.dxbm
+		,bfdx.dz,bfdx.lxdh,bfdx.sfrk,bfdx.fprs,bfdx.ywy,bfdx.bz,bfdx.hbztid,bfdx.bhbsj,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,jc_lb.csmc as dwlbmc
+		,jc_sf.csmc as sfmc,jc_ly.csmc as lymc,to_char(bfdx.lrsj,'yyyy-mm-dd') as lrsj,yh_ywy.zsxm ywymc,bfdx.khfj,bfdx.xmxz,bfdx.nsr,bfdx.cws,bfdx.kzzd
+		from igams_bfdxgl bfdx
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = bfdx.ywy
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+			<if test = "jgids != null and jgids.length > 0"  >
+				and yhssjg.jgid in
+				<foreach collection="jgids" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ywys != null and ywys.length > 0"  >
+				and bfdx.ywy in
+				<foreach collection="ywys" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="BfdxglDto">
+		insert into igams_bfdxgl(dwid
+		<if test="dwmc != null and dwmc != ''">
+			,dwmc
+		</if>
+		<if test="dwjc != null and dwjc != ''">
+			,dwjc
+		</if>
+		<if test="dwfl != null and dwfl != ''">
+			,dwfl
+		</if>
+		<if test="dwdj != null and dwdj != ''">
+			,dwdj
+		</if>
+		<if test="dwlb != null and dwlb != ''">
+			,dwlb
+		</if>
+		<if test="sf != null and sf != ''">
+			,sf
+		</if>
+		<if test="cxyqbj != null and cxyqbj != ''">
+			,cxyqbj
+		</if>
+		<if test="gsbj != null and gsbj != ''">
+			,gsbj
+		</if>
+		<if test="gsxsrs != null and gsxsrs != ''">
+			,gsxsrs
+		</if>
+		<if test="dxbm != null and dxbm != ''">
+			,dxbm
+		</if>
+		<if test="dz != null and dz != ''">
+			,dz
+		</if>
+		<if test="lxdh != null and lxdh != ''">
+			,lxdh
+		</if>
+		<if test="fprs != null and fprs != ''">
+			,fprs
+		</if>
+		<if test="ywy != null and ywy != ''">
+			,ywy
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="hbztid != null and hbztid != ''">
+			,hbztid
+		</if>
+		<if test="bhbsj != null and bhbsj != ''">
+			,bhbsj
+		</if>
+		<if test="ly != null and ly != ''">
+			,ly
+		</if>
+		<if test="khfj != null and khfj != ''">
+			,khfj
+		</if>
+		<if test="xmxz != null and xmxz != ''">
+			,xmxz
+		</if>
+		<if test="nsr != null and nsr != ''">
+			,nsr
+		</if>
+		<if test="cws != null and cws != ''">
+			,cws
+		</if>
+		<if test="kzzd != null and kzzd != ''">
+			,kzzd
+		</if>
+		,sfrk,lrry,lrsj,scbj)
+		values(#{dwid}
+		<if test="dwmc != null and dwmc != ''">
+			,#{dwmc}
+		</if>
+		<if test="dwjc != null and dwjc != ''">
+			,#{dwjc}
+		</if>
+		<if test="dwfl != null and dwfl != ''">
+			,#{dwfl}
+		</if>
+		<if test="dwdj != null and dwdj != ''">
+			,#{dwdj}
+		</if>
+		<if test="dwlb != null and dwlb != ''">
+			,#{dwlb}
+		</if>
+		<if test="sf != null and sf != ''">
+			,#{sf}
+		</if>
+		<if test="cxyqbj != null and cxyqbj != ''">
+			,#{cxyqbj}
+		</if>
+		<if test="gsbj != null and gsbj != ''">
+			,#{gsbj}
+		</if>
+		<if test="gsxsrs != null and gsxsrs != ''">
+			,#{gsxsrs}
+		</if>
+		<if test="dxbm != null and dxbm != ''">
+			,#{dxbm}
+		</if>
+		<if test="dz != null and dz != ''">
+			,#{dz}
+		</if>
+		<if test="lxdh != null and lxdh != ''">
+			,#{lxdh}
+		</if>
+		<if test="fprs != null and fprs != ''">
+			,cast(#{fprs} as numeric)
+		</if>
+		<if test="ywy != null and ywy != ''">
+			,#{ywy}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="hbztid != null and hbztid != ''">
+			,#{hbztid}
+		</if>
+		<if test="bhbsj != null and bhbsj != ''">
+			,cast(#{bhbsj} as timestamp)
+		</if>
+		<if test="ly != null and ly != ''">
+			,#{ly}
+		</if>
+		<if test="khfj != null and khfj != ''">
+			,#{khfj}
+		</if>
+		<if test="xmxz != null and xmxz != ''">
+			,#{xmxz}
+		</if>
+		<if test="nsr != null and nsr != ''">
+			,#{nsr}
+		</if>
+		<if test="cws != null and cws != ''">
+			,#{cws}
+		</if>
+		<if test="kzzd != null and kzzd != ''">
+			,#{kzzd}
+		</if>
+		,'0',#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<select id="getDtoById" parameterType="String" resultType="BfdxglDto">
+		select * from (select bfdx.dwid,bfdx.dwmc,bfdx.dwjc,bfdx.dwfl,bfdx.dwdj,bfdx.dwlb,bfdx.sf,bfdx.cxyqbj,bfdx.gsbj,bfdx.gsxsrs,bfdx.dxbm
+		,bfdx.dz,bfdx.lxdh,bfdx.sfrk,bfdx.fprs,bfdx.ywy,bfdx.bz,bfdx.hbztid,bfdx.bhbsj,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,jc_lb.csmc as dwlbmc
+		,jc_sf.csmc as sfmc,jc_ly.csmc as lymc,bfdx.ly,yh_lr.zsxm as lrrymc,yh_ywy.zsxm as ywymc,yh_ywy.yhm as ywyyhm,jc_fl.csdm as dwfldm,jc_fl.cskz1 as dwflcskz1
+		,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi:ss') bfsj,row_number() over(partition by bfdx.dwid  order by bfgl.bfsjqs desc) imp,to_char(bfdx.lrsj,'yyyy-mm-dd') as lrsj
+		,bfdx.khfj,bfdx.xmxz,bfdx.nsr,bfdx.cws,bfdx.kzzd
+		from igams_bfdxgl bfdx
+		left join igams_bfgl bfgl on bfgl.dwid=bfdx.dwid and bfgl.scbj='0'
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_lr on yh_lr.yhid=bfdx.lrry and yh_lr.scbj='0'
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		<where>
+			bfdx.scbj !='1' and bfdx.dwid=#{dwid}
+		</where>
+		)tab where tab.imp=1
+	</select>
+
+	<select id="getDto" parameterType="BfdxglDto" resultType="BfdxglDto">
+		select bfdx.dwid,bfdx.dwmc,bfdx.dwjc,bfdx.dwfl,bfdx.dwdj,bfdx.dwlb,bfdx.sf,bfdx.cxyqbj,bfdx.gsbj,bfdx.gsxsrs,bfdx.dxbm
+		,bfdx.dz,bfdx.lxdh,bfdx.sfrk,bfdx.fprs,bfdx.ywy,bfdx.bz,bfdx.hbztid,bfdx.bhbsj,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,jc_lb.csmc as dwlbmc
+		,jc_sf.csmc as sfmc,jc_ly.csmc as lymc,bfdx.ly,yh_lr.zsxm as lrrymc,yh_ywy.zsxm as ywymc,yh_ywy.yhm as ywyyhm,jc_fl.csdm as dwfldm,jc_fl.cskz1 as dwflcskz1
+		,to_char(bfdx.lrsj,'yyyy-mm-dd') as lrsj,jc_khfj.csmc khfjmc,bfdx.khfj,bfdx.xmxz,bfdx.nsr,bfdx.cws,bfdx.kzzd,yh_ywy.zsxm as ywymc
+		from igams_bfdxgl bfdx
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_jcsj jc_khfj on jc_khfj.csid=bfdx.khfj
+		left join matridx_xtyh yh_lr on yh_lr.yhid=bfdx.lrry and yh_lr.scbj='0'
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		<where>
+			bfdx.scbj !='1' and bfdx.dwid=#{dwid}
+		</where>
+	</select>
+	
+	<update id="update" parameterType="BfdxglDto">
+		update igams_bfdxgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="dwmc != null and dwmc != ''">
+				,dwmc=#{dwmc}
+			</if>
+			<if test="dwjc != null and dwjc != ''">
+				,dwjc=#{dwjc}
+			</if>
+			<if test="dwfl != null and dwfl != ''">
+				,dwfl=#{dwfl}
+			</if>
+			<if test="dwdj != null and dwdj != ''">
+				,dwdj=#{dwdj}
+			</if>
+			<if test="dwdj == null or dwdj == ''">
+				,dwdj=null
+			</if>
+			<if test="dwlb != null and dwlb != ''">
+				,dwlb=#{dwlb}
+			</if>
+			<if test="dwlb == null or dwlb == ''">
+				,dwlb=null
+			</if>
+			<if test="sf != null and sf != ''">
+				,sf=#{sf}
+			</if>
+			<if test="cxyqbj != null and cxyqbj != ''">
+				,cxyqbj=#{cxyqbj}
+			</if>
+			<if test="gsbj != null and gsbj != ''">
+				,gsbj=#{gsbj}
+			</if>
+			<if test="gsxsrs != null and gsxsrs != ''">
+				,gsxsrs=#{gsxsrs}
+			</if>
+			<if test="dxbm != null and dxbm != ''">
+				,dxbm=#{dxbm}
+			</if>
+			<if test="dz != null and dz != ''">
+				,dz=#{dz}
+			</if>
+			<if test="lxdh != null and lxdh != ''">
+				,lxdh=#{lxdh}
+			</if>
+			<if test="fprs != null and fprs != ''">
+				,fprs=cast(#{fprs} as numeric)
+			</if>
+			<if test="ywy != null and ywy != ''">
+				,ywy=#{ywy}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="hbztid != null and hbztid != ''">
+				,hbztid=#{hbztid}
+			</if>
+			<if test="bhbsj != null and bhbsj != ''">
+				,bhbsj=cast(#{bhbsj} as timestamp)
+			</if>
+			<if test="ly != null and ly != ''">
+				,ly=#{ly}
+			</if>
+			<if test="sfrk != null and sfrk != ''">
+				,sfrk=#{sfrk}
+			</if>
+			<if test="khfj != null and khfj != ''">
+				,khfj=#{khfj}
+			</if>
+			<if test="xmxz != null and xmxz != ''">
+				,xmxz=#{xmxz}
+			</if>
+			<if test="nsr != null and nsr != ''">
+				,nsr=#{nsr}
+			</if>
+			<if test="cws != null and cws != ''">
+				,cws=#{cws}
+			</if>
+			<if test="kzzd != null and kzzd != ''">
+				,kzzd=#{kzzd}
+			</if>
+			<where>
+				dwid=#{dwid}
+			</where>
+	</update>
+	
+	<delete id="delete" parameterType="BfdxglDto">
+		update igams_bfdxgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="dwid != null and dwid != ''">
+				or dwid =#{dwid}
+			</if>
+			<if test="ids != null and ids.size()>0">
+				or dwid in
+				<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+
+	<select id="getListForSelectExp" parameterType="BfdxglDto" resultType="BfdxglDto">
+		select bfdx.dwid ${sqlParam}
+		from (
+		<foreach collection="ids" separator=" union all "  index="index" item="item">
+			select #{item,jdbcType=VARCHAR} dwid,#{index} ordernum
+		</foreach>
+		) tmp
+		left join igams_bfdxgl bfdx on bfdx.dwid = tmp.dwid
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		order by tmp.ordernum
+	</select>
+
+	<select id="getCountForSearchExp"  parameterType="BfdxglDto" resultType="java.lang.Integer">
+		select  count (bfdx.dwid)
+		from igams_bfdxgl bfdx
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="BfdxglDto" resultType="BfdxglDto">
+		SELECT  bfdx.dwid  ${sqlParam}
+		from igams_bfdxgl bfdx
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		ORDER BY
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select>
+
+	<select id="getDtoList" parameterType="BfdxglDto" resultType="BfdxglDto">
+		select bfdx.dwid,bfdx.dwmc,bfdx.dwjc,bfdx.dwfl,bfdx.dwdj,bfdx.dwlb,bfdx.sf,bfdx.cxyqbj,bfdx.gsbj,bfdx.gsxsrs,bfdx.dxbm
+		,bfdx.dz,bfdx.lxdh,bfdx.sfrk,bfdx.fprs,bfdx.ywy,bfdx.bz,bfdx.hbztid,bfdx.bhbsj,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,jc_lb.csmc as dwlbmc
+		,jc_sf.csmc as sfmc,jc_ly.csmc as lymc,bfdx.ly,yh_lr.zsxm as lrrymc,yh_ywy.zsxm as ywymc,yh_ywy.yhm as ywyyhm,jc_fl.csdm as dwfldm
+		from igams_bfdxgl bfdx
+		left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+		left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		left join matridx_jcsj jc_ly on jc_ly.csid=bfdx.ly
+		left join matridx_xtyh yh_lr on yh_lr.yhid=bfdx.lrry and yh_lr.scbj='0'
+		left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+		<where>
+			bfdx.scbj !='1'
+			<if test="dwmc !=null and dwmc !=''">
+				and bfdx.dwmc like '%'||#{dwmc}||'%'
+			</if>
+			<if test="ids !=null and ids.size() !=''">
+				and bfdx.dwid  in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<update id="merge" parameterType="BfdxglDto">
+		update igams_bfdxgl set scbj='1',bhbsj=LOCALTIMESTAMP,hbztid=#{hbztid}
+		<where>
+			dwid in
+			<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getCodeSerial" parameterType="Map" resultType="String">
+		SELECT lpad(CAST(CAST(coalesce(MAX(substring(dxbm, #{startindex}, #{seriallength})), '0') AS numeric) + 1 as VARCHAR), #{seriallength}, '0')
+		FROM igams_bfdxgl
+		<where>
+			dxbm IS NOT NULL AND dxbm !=''
+			<if test="conditionList !=null and  conditionList.size() > 0">
+				<foreach collection="conditionList" item="item" index="index">
+					AND substring(dxbm,#{item.conditionIndex}, #{item.conditionLength}) = #{item.conditionKey}
+				</foreach>
+			</if>
+			AND scbj = '0'
+		</where>
+	</select>
+
+	<!--校验单位名称是否重复-->
+	<select id="getDtoByDwmc" parameterType="BfdxglDto" resultType="BfdxglDto">
+		select dwid,dwmc,dwjc,dwfl,dwdj,dwlb,sf,cxyqbj,gsbj,gsxsrs,dxbm
+		,dz,lxdh,sfrk,fprs,ywy,bz,hbztid,bhbsj,ly,lrsj
+		from igams_bfdxgl bfdx
+		where scbj='0' and dwmc=#{dwmc} and dwid!=#{dwid}
+	</select>
+</mapper>

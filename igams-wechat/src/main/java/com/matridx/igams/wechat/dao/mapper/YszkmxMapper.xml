@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IYszkmxDao">
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_yszkmx(ysmxid ,yszkid ,xmglid ,jcxmid ,jczxmid ,ywid ,mc ,jsje ,sfje ,kdfy ,bz ,lrry ,lrsj ,scbj ,lx,sfzykh)
+        values
+        <foreach collection="list" item="entity" separator=",">
+            ( #{entity.ysmxid} ,#{entity.yszkid} ,#{entity.xmglid} ,#{entity.jcxmid} ,#{entity.jczxmid} ,#{entity.ywid} ,#{entity.mc}
+            <if test="entity.jsje != null and entity.jsje != ''">
+                ,cast(#{entity.jsje} as numeric)
+            </if>
+            <if test="entity.jsje == null or entity.jsje == ''">
+                ,null
+            </if>
+            <if test="entity.sfje != null and entity.sfje != ''">
+                ,cast(#{entity.sfje} as numeric)
+            </if>
+            <if test="entity.sfje == null or entity.sfje == ''">
+                ,null
+            </if>
+            <if test="entity.kdfy != null and entity.kdfy != ''">
+                ,cast(#{entity.kdfy} as numeric)
+            </if>
+            <if test="entity.kdfy == null or entity.kdfy == ''">
+                ,null
+            </if>
+            ,#{entity.bz} ,#{entity.lrry} ,LOCALTIMESTAMP ,'0' ,#{entity.lx},#{entity.sfzykh})
+        </foreach>
+    </insert>
+
+    <select id="getDtoListOptimize" parameterType="Map" resultType="Map">
+        select
+        t_sj.sjid,t_sj.fjid,sj.db,to_char(sj.jsrq,'yyyy-MM-dd') fjsrq,sj.ybbh,sj.sjdwmc,ks.dwmc,t_sj.mc as hzxm,case when jc_yblx.cskz1 = '1' then sj.yblxmc else jc_yblx.csmc end yblxmc,
+        jcxmlx.csmc as jcxmmc,jczxmlx.csmc as jczxmmc,
+        CASE WHEN ( sj.sfjs = '0' OR sj.sfjs IS NULL ) THEN '-'
+        WHEN t_sj.sfsf = '0' THEN '0'
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' THEN
+        CASE WHEN jcxmlx.cskz1 = 'D' AND t_sj.sfsf = '1' THEN '1'
+        WHEN jcxmlx.cskz1 = 'R' AND t_sj.sfsf = '1' THEN '1'
+        WHEN jcxmlx.cskz1 = 'C' AND t_sj.sfsf = '1' THEN '2'
+        WHEN jcxmlx.cskz1 = 'C' AND t_sj.sfsf = '2' THEN '1'
+        WHEN jcxmlx.cskz1 = 'C' AND t_sj.sfsf = '3' THEN '1'
+        END
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_SEQ_TNGS_G' AND jcxmlx.cskz1 = 'C' THEN '2'
+        WHEN jcxmlx.cskz3 = 'IMP_REPORT_SEQ_XINDEX_TEMEPLATE' THEN '2'
+        ELSE '1'
+        END sfcss,jc_cskz1.csmc sfkp,t_sj.sfje,t_sj.bz,sj.kdh,t_sj.kdfy,t_sj.jsje,t_sj.mc,t_sj.lx,t_sj.ywid
+        from (
+        select yszkmx.ywid as sjid,null as fjid,null as ywid,sj.jcdw,yszkmx.jcxmid,yszkmx.jczxmid,sj.sfsf,yszkmx.sfje,yszkmx.bz,yszkmx.jsje,yszkmx.kdfy,yszkmx.mc,yszkmx.lx
+        from igams_yszkmx yszkmx
+        left join igams_sjxx sj on sj.sjid= yszkmx.ywid and sj.scbj='0'
+        <where>
+            (yszkmx.lx = 'DETECT_SJ' or yszkmx.lx = 'OTHER') and yszkmx.scbj = '0'
+            and yszkmx.yszkid=#{yszkid}
+        </where>
+        union all
+        SELECT fjsq.sjid,yszkmx.ywid as fjid,null as ywid,fjsq.jcdw,yszkmx.jcxmid,yszkmx.jczxmid,fjsq.sfff as sfsf,yszkmx.sfje,yszkmx.bz,yszkmx.jsje,yszkmx.kdfy,yszkmx.mc,yszkmx.lx
+        from igams_yszkmx yszkmx
+        left join igams_fjsq fjsq on fjsq.fjid = yszkmx.ywid and fjsq.scbj='0'
+        <where>
+            yszkmx.lx = 'DETECT_FJ' and yszkmx.scbj = '0'
+            and yszkmx.yszkid=#{yszkid}
+        </where>
+        union all
+        SELECT null as sjid,null as fjid,yszkmx.ywid,null as jcdw,yszkmx.jcxmid,yszkmx.jczxmid,null as sfsf,yszkmx.sfje,yszkmx.bz,yszkmx.jsje,yszkmx.kdfy,yszkmx.mc,yszkmx.lx
+        from igams_yszkmx yszkmx
+        left join igams_fjsq fjsq on fjsq.fjid = yszkmx.ywid and fjsq.scbj='0'
+        <where>
+            yszkmx.lx = 'SALE_ORDER' and yszkmx.scbj = '0'
+            and yszkmx.yszkid=#{yszkid}
+        </where>
+        ) t_sj
+        left join igams_sjxx sj on t_sj.sjid = sj.sjid
+        left join matridx_jcsj jc_kpsq on jc_kpsq.csid = sj.kpsq
+        left join matridx_jcsj jc_cskz1 on jc_cskz1.csid=sj.cskz1
+        left join matridx_jcsj jc_cskz2 on jc_cskz2.csid=sj.cskz2
+        left join matridx_jcsj jc_yblx on sj.yblx = jc_yblx.csid
+        left join igams_sjdwxx ks on sj.ks=ks.dwid
+        left join igams_yyxx yyxx on yyxx.dwid = sj.sjdw
+        left join matridx_jcsj jcxmlx on jcxmlx.csid = t_sj.jcxmid
+        left join matridx_jcsj jczxmlx on jczxmlx.csid = t_sj.jczxmid
+        left join matridx_jcsj jc_jcdw on jc_jcdw.csid=t_sj.jcdw
+        left join matridx_jcsj sqlx on sj.sqlx = sqlx.csid
+        left join matridx_jcsj jc_kdlx on jc_kdlx.csid =sj.kdlx
+        left join matridx_jcsj jc_ky on jc_ky.csid =sj.kyxm
+        left join matridx_jcsj jc_sjqf on jc_sjqf.csid =sj.sjqf
+        left join matridx_jcsj jc_gzlx on jc_gzlx.csid =sj.cskz3
+    </select>
+
+    <!--根据送检ID删除-->
+    <delete id="delete" parameterType="YszkmxDto">
+        update igams_yszkmx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj = '1' where
+        <if test="ids != null and ids.size()>0">
+            yszkid in
+            <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="yszkid != null and yszkid != ''">
+            yszkid = #{yszkid}
+        </if>
+    </delete>
+</mapper>
+

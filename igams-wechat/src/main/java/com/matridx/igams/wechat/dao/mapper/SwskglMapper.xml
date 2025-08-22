@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISwskglDao" >
+
+	<select id="getPagedDtoList" resultType="SwskglDto" parameterType="SwskglDto">
+		select
+		swskgl.swskglid,swskgl.yszkid,swskgl.skje,to_char(swskgl.skrq,'yyyy-mm-dd') as skrq,swskgl.zt,
+		to_char(swyszk.zdzq,'yyyy-mm') as zdzq, swyszk.qy, swyszk.dzkh, swyszk.djxs, swyszk.hkzt, swyszk.jsje, swyszk.sfje, swyszk.kprq,
+		swyszk.kphm, swyszk.kpje, swyszk.hkje, swyszk.whkje, swyszk.fkje, swyszk.wfkje, swyszk.kdfy, swyszk.sfyq, swyszk.fl, swyszk.hkzq,
+		swyszk.dkrq, swyszk.sfjq, swyszk.sfjs,swkhgl.gsmc as dzkhmc
+		from igams_swskgl swskgl
+		left join igams_swyszk swyszk on swyszk.yszkid=swskgl.yszkid and swyszk.scbj='0'
+		left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+		<where>
+			swskgl.scbj='0' and swyszk.yszkid is not null
+			<if test="dzkhmc != null and dzkhmc != ''">
+				and swkhgl.gsmc ILIKE '%'||#{dzkhmc}||'%'
+			</if>
+			<if test="qy != null and qy != ''">
+				and swyszk.qy ILIKE '%'||#{qy}||'%'
+			</if>
+			<if test="zts !=null and zts.length> 0">
+				and swskgl.zt in
+				<foreach collection="zts" open="(" close=")" separator="," index="index"  item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="skrqstart != null and skrqstart != ''">
+				and to_char(swskgl.skrq,'yyyy-mm-dd') &gt;= #{skrqstart}
+			</if>
+			<if test="skrqend != null and skrqend != ''">
+				and to_char(swskgl.skrq,'yyyy-mm-dd') &lt;= #{skrqend}
+			</if>
+			<if test="kpqk == '0'.toString()">
+				and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric)=0)
+			</if>
+			<if test="kpqk == '1'.toString()">
+				and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric)!=cast(swyszk.ykpsl as numeric))
+			</if>
+			<if test="kpqk == '2'.toString()">
+				and (cast(swyszk.whkje as numeric) >0) and (cast(swyszk.kpsl as numeric) >0) and (cast(swyszk.ykpsl as numeric) >0) and (cast(swyszk.kpsl as numeric)=cast(swyszk.ykpsl as numeric))
+			</if>
+			<if test="kpqk == '3'.toString()">
+				and (cast(swyszk.whkje as numeric) =0 or swyszk.whkje is null) and (cast(swyszk.kpsl as numeric) =0) and (cast(swyszk.ykpsl as numeric) =0)
+			</if>
+			<if test="fkqk == '0'.toString()">
+				and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric)=0)
+			</if>
+			<if test="fkqk == '1'.toString()">
+				and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric)!=cast(swyszk.yfksl as numeric))
+			</if>
+			<if test="fkqk == '2'.toString()">
+				and (cast(swyszk.wfkje as numeric) >0) and (cast(swyszk.fksl as numeric) >0) and (cast(swyszk.yfksl as numeric) >0) and (cast(swyszk.fksl as numeric)=cast(swyszk.yfksl as numeric))
+			</if>
+			<if test="fkqk == '3'.toString()">
+				and (cast(swyszk.wfkje as numeric) =0 or swyszk.wfkje is null) and (cast(swyszk.fksl as numeric) =0) and (cast(swyszk.yfksl as numeric) =0)
+			</if>
+		</where>
+	</select>
+
+	<select id="getDto" resultType="SwskglDto" parameterType="SwskglDto">
+		select
+		swskgl.swskglid,swskgl.yszkid,swskgl.skje,to_char(swskgl.skrq,'yyyy-mm-dd') as skrq,swskgl.zt,
+		to_char(swyszk.zdzq,'yyyy-mm') as zdzq, swyszk.qy, swyszk.dzkh, swyszk.djxs, swyszk.hkzt, swyszk.jsje, swyszk.sfje, swyszk.kprq,
+		swyszk.kphm, swyszk.kpje, swyszk.hkje, swyszk.whkje, swyszk.fkje, swyszk.wfkje, swyszk.kdfy, swyszk.sfyq, swyszk.fl, swyszk.hkzq,
+		swyszk.dkrq, swyszk.sfjq, swyszk.sfjs,swkhgl.gsmc as dzkhmc
+		from igams_swskgl swskgl
+		left join igams_swyszk swyszk on swyszk.yszkid=swskgl.yszkid and swyszk.scbj='0'
+		left join igams_swkhgl swkhgl on swyszk.dzkh = swkhgl.khid and swkhgl.scbj = '0'
+		<where>
+			swskgl.scbj='0'
+			and swskgl.swskglid=#{swskglid}
+		</where>
+	</select>
+
+	<select id="getDtoList" resultType="SwskglDto" parameterType="SwskglDto">
+		select
+		swskgl.swskglid,swskgl.yszkid,swskgl.skje,to_char(swskgl.skrq,'yyyy-mm-dd') as skrq,swskgl.zt,swskgl.bz
+		from igams_swskgl swskgl
+		<where>
+			swskgl.scbj='0'
+			and swskgl.yszkid=#{yszkid}
+		</where>
+	</select>
+
+	<select id="getTotalAmount" resultType="String" parameterType="String">
+		select
+		''||coalesce(sum(swskgl.skje),0)
+		from igams_swskgl swskgl
+		<where>
+			swskgl.scbj='0'
+			and swskgl.yszkid=#{yszkid}
+		</where>
+	</select>
+
+	<update id="delete" parameterType="SwskglDto">
+		update igams_swskgl
+		<set>
+			scbj='1',
+			scry=#{scry},
+			scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			swskglid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<insert id="insert" parameterType="SwskglDto">
+		insert into igams_swskgl(swskglid
+		<if test="yszkid != null and yszkid!= ''">
+			,yszkid
+		</if>
+		<if test="skje != null and skje != ''">
+			,skje
+		</if>
+		<if test="skrq != null and skrq != ''">
+			,skrq
+		</if>
+		<if test="zt != null and zt!= ''">
+			,zt
+		</if>
+		<if test="bz != null and bz!= ''">
+			,bz
+		</if>
+		,lrry,lrsj,scbj
+		)
+		values(#{swskglid}
+		<if test="yszkid != null and yszkid!= ''">
+			,#{yszkid}
+		</if>
+		<if test="skje != null and skje != ''">
+			,cast(#{skje} as numeric)
+		</if>
+		<if test="skrq != null and skrq != ''">
+			,cast(#{skrq} as timestamp)
+		</if>
+		<if test="zt != null and zt!= ''">
+			,#{zt}
+		</if>
+		<if test="bz != null and bz!= ''">
+			,#{bz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+</mapper>

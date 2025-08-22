@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IExpressDao" >
+
+    <!-- 查询快递信息 -->
+    <select id="getPagedDtoList" parameterType="ExpressDto" resultType="ExpressDto">
+        select sjkdxx.sjkdid,sjkdxx.mailno,sjkdxx.starttime,sjkdxx.endtime, case sjkdxx.kdzt
+        WHEN '0' THEN
+        '未签收'
+        WHEN '1' THEN
+        '已签收' ELSE''
+        END kdzt
+        from igams_sjkdxx sjkdxx
+        <where>
+            sjkdxx.mailno is not null
+            <if test="mailno != null and mailno != ''">
+                and (sjkdxx.mailno like '%'||#{mailno}||'%')
+            </if>
+            <if test="kdzt != null and kdzt != ''">
+                and sjkdxx.kdzt like '%'||#{kdzt}||'%'
+            </if>
+            <if test="kdfcstart != null and kdfcstart != ''">
+                and to_char(sjkdxx.starttime,'yyyy-mm-dd')  &gt;= #{kdfcstart}
+            </if>
+            <if test="kdfcend != null and kdfcend != ''">
+                and to_char(sjkdxx.starttime,'yyyy-mm-dd')  &lt;= #{kdfcend}
+            </if>
+            <if test="kdjsstart != null and kdjsstart != ''">
+                and to_char(sjkdxx.endtime,'yyyy-mm-dd')  &gt;= #{kdjsstart}
+            </if>
+            <if test="kdjsend != null and kdjsend != ''">
+                and to_char(sjkdxx.endtime,'yyyy-mm-dd')  &lt;= #{kdjsend}
+            </if>
+        </where>
+
+    </select>
+
+
+    <!-- 查询物流信息 -->
+    <select id="getKdxx" parameterType="ExpressDto" resultType="ExpressDto">
+        select accepttime,remark,px
+        from igams_kdxx
+        where mailno=#{mailno}
+        order by px desc
+    </select>
+</mapper>

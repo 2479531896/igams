@@ -1,0 +1,1284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjhbxxDao" >
+  	<!-- 批量修改合作伙伴 -->
+	<select id="getDB" resultType="SjhbxxDto">
+		select hbid,hbmc,hblx,sf,cs,yhid ,wxid,bgmb,fsfs,fl,zfl
+		from igams_sjhbxx
+	</select>
+	
+	<sql id="selectWhere">
+		<if test="hbmc!=null and hbmc !=''">
+			and hb.hbmc ILIKE '%' ||#{hbmc}||'%'
+		</if>
+		<if test="sf !=null and sf !=''">
+			and sf.csmc ILIKE '%'||#{sf}||'%'
+		</if>
+		<if test="cs !=null and cs !=''">
+			and sf.csmc ILIKE '%'||#{cs}||'%'
+		</if>
+		<if test="yhid !=null and yhid !=''">
+			and hb.yhid like '%'||#{yhid}||'%'
+		</if>
+		<if test="xtyhm !=null and xtyhm !=''">
+			and xtyh.zsxm ILIKE '%'||#{xtyhm}||'%'
+		</if>
+		<if test="tjmc !=null and tjmc !=''">
+			and hb.tjmc ILIKE '%'||#{tjmc}||'%'
+		</if>
+		<if test="cskz3 !=null and cskz3 !=''">
+			and hb.cskz3 =#{cskz3}
+		</if>
+		<if test="zdfs !=null and zdfs !=''">
+			and hb.kzsz::jsonb ->> 'zdfs'  =#{zdfs}
+		</if>
+		<if test="zdfst !=null and zdfst !=''">
+			and hb.kzsz::jsonb ->> 'zdfst'  =#{zdfst}
+		</if>
+		<if test="swmc !=null and swmc !=''">
+			and hb.swmc ILIKE '%'||#{swmc}||'%'
+		</if>
+		<if test = "fls != null and fls.length > 0"  >
+			and hb.fl in 
+			<foreach collection="fls" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zfls != null and zfls.length > 0"  >
+			and hb.zfl in 
+			<foreach collection="zfls" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "bgmbs != null and bgmbs.length > 0"  >
+			and hb.bgmb in 
+			<foreach collection="bgmbs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "scbjs != null and scbjs.length > 0 "  >
+			and hb.scbj in 
+			<foreach collection="scbjs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "ptgss != null and ptgss.length > 0 "  >
+			and hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yptgss != null and yptgss.length > 0 "  >
+			and hb.yptgs in
+			<foreach collection="yptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "sfs != null and sfs.length > 0 "  >
+			and sf.csid in
+			<foreach collection="sfs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="hzgsmc !=null and hzgsmc !=''">
+			and hb.hzgsmc ILIKE '%'||#{hzgsmc}||'%'
+		</if>
+	</sql>
+	
+	<!-- 分页查询合作伙伴信息 (原本查找列表数据的sql) -->
+<!-- 	<select id="getPagedDtoList" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select 
+			hb.hbid,hb.hbmc, hb.hblx,hb.sf,hb.cs,hb.yhid,xtyh.zsxm as xtyhm,hb.wxid,wxyh.wxm,sf.csmc as province,cs.csmc as city,
+			bgmb.csmc as bgmb,hb.yx,hb.fsfs,hb.cskz1,hb.cskz2,hb.scbj,
+			case when hb.hblx='1' then '直销'  when hb.hblx='2' then '兼职个人' when hb.hblx ='3' then '兼职公司'  when hb.hblx='4' then '兼职公司(word)'end hblxmc,
+			fl.csmc as flmc,zfl.csmc as zflmc,hb.tjmc,gzlx.csmc as gzlxmc,hb.bgfs,bgfs.csmc as bgfsmc,hb.swmc
+		from
+			igams_sjhbxx hb 
+			left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+			left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+			left join matridx_jcsj sf on sf.csid= hb.sf
+			left join matridx_jcsj cs on cs.csid=hb.cs
+			left join matridx_jcsj bgmb on bgmb.csid=hb.bgmb
+			left join matridx_jcsj fl on fl.csid=hb.fl
+			left join matridx_jcsj zfl on zfl.csid=hb.zfl
+			left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+			left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		<where>
+			<include refid="selectWhere"></include>
+		</where>
+	</select> -->
+	
+	<!-- 分页查询合作伙伴信息 (更改查询列表的sql，增加一列用来显示选择的检测单位，原本的sql为上面注释的) -->
+	<select id="getPagedDtoList" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select 
+			hb.hbid,hb.hbmc, hb.hblx,hb.sf,hb.cs,hb.yhid,xtyh.zsxm as xtyhm,hb.wxid,wxyh.wxm,sf.csmc as province,cs.csmc as city,
+			bgmb.csmc as bgmb,hb.yx,hb.fsfs,hb.cskz1,hb.cskz2,hb.cskz3,hb.scbj,sjqf.csmc sjqfmc,hb.kzsz::jsonb ->> 'zdfs' as zdfs,hb.kzsz::jsonb ->> 'zdfst' as zdfst,
+			case when hb.hblx='1' then '直销'  when hb.hblx='2' then '兼职个人' when hb.hblx ='3' then '兼职公司'  when hb.hblx='4' then '兼职公司(word)'end hblxmc,
+			fl.csmc as flmc,zfl.csmc as zflmc,hb.tjmc,gzlx.csmc as gzlxmc,hb.bgfs,bgfs.csmc as bgfsmc,hb.swmc
+		    ,array_to_string(array(select jc.csmc from igams_hbdwqx qx left join matridx_jcsj jc on jc.csid = qx.jcdw where qx.hbid = hb.hbid),'-') as jcdwstr,ptgs.csmc ptgsmc,hb.ptgs,
+		hb.hzgsmc,hb.yptgs,yptgs.csmc yptgsmc
+		from
+			igams_sjhbxx hb 
+			left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+			left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+			left join matridx_jcsj sf on sf.csid= hb.sf
+			left join matridx_jcsj cs on cs.csid=hb.cs
+			left join matridx_jcsj fl on fl.csid=hb.fl
+			left join matridx_jcsj zfl on zfl.csid=hb.zfl
+			left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+			left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		    left join matridx_jcsj sjqf on sjqf.csid=hb.sjqf
+		    left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+			left join matridx_jcsj yptgs on yptgs.csid=hb.yptgs
+			LEFT JOIN (SELECT mb.hbid,mb.bgmbid,row_number() over (partition by mb.hbid order by xh asc ) from igams_hbbgmbgl mb
+			left join matridx_jcsj jcxm on jcxm.csid=mb.jcxmid
+			where jcxm.scbj='0'
+			) tt on tt.hbid = hb.hbid and tt.row_number='1'
+			LEFT JOIN matridx_jcsj bgmb ON bgmb.csid = COALESCE ( hb.bgmb, tt.bgmbid )
+		<where>
+			<include refid="selectWhere"></include>			
+		</where>
+	</select>
+	
+	<!-- 添加合作伙伴 -->
+	<insert id="insertDto" parameterType="SjhbxxDto">
+	  	insert into igams_sjhbxx(hbid
+		<if test="hbmc !=null and hbmc !=''">
+			,hbmc
+		</if>
+		<if test="cskz4 !=null and cskz4 !=''">
+			,cskz4
+		</if>
+		<if test="hbdm !=null and hbdm !=''">
+			,hbdm
+		</if>
+		<if test="hblx !=null and hblx !=''">
+			,hblx
+		</if>
+		<if test="sf !=null and sf !=''">
+			,sf
+		</if>
+		<if test="cs !=null and cs !=''">
+			,cs
+		</if>
+		<if test="yhid !=null and yhid !=''">
+			,yhid
+		</if>
+		<if test="wxid !=null and wxid !=''">
+			,wxid
+		</if>
+		<if test="bgmb !=null and bgmb !=''">
+			,bgmb
+		</if>
+		<if test="fsfs !=null and fsfs !=''">
+			,fsfs
+		</if>
+		<if test="yx !=null and yx !=''">
+			,yx
+		</if>
+		<if test="yx2 !=null and yx2 !=''">
+			,yx2
+		</if>
+		<if test="cskz1 !=''">
+			,cskz1
+		</if>
+		<if test="cskz2 !=''">
+			,cskz2
+		</if>
+		<if test="cskz3 !=''">
+			,cskz3
+		</if>
+		<if test="wjmgz !=null and wjmgz !=''">
+			,wjmgz
+		</if>
+		<if test="fl !=''">
+			,fl
+		</if>
+		<if test="zfl !=''">
+			,zfl
+		</if>
+		<if test="tjmc !=''">
+			,tjmc
+		</if>
+		<if test="swmc !=''">
+			,swmc
+		</if>
+		<if test="gzlx !=null and gzlx !=''">
+			,gzlx
+		</if>
+		<if test="bgfs !=null and bgfs !=''">
+			,bgfs
+		</if>
+		<if test="sjqf !=null and sjqf !=''">
+			,sjqf
+		</if>
+		<if test="ptgs !=null and ptgs !=''">
+			,ptgs
+		</if>
+		<if test="hzgsmc !=null and hzgsmc !=''">
+			,hzgsmc
+		</if>
+		<if test="bz !=null and bz !=''">
+			,bz
+		</if>
+		<if test="hbjb !=null and hbjb !=''">
+			,hbjb
+		</if>
+		<if test="yptgs !=null and yptgs !=''">
+			,yptgs
+		</if>
+		<if test="kzsz !=null and kzsz !=''">
+			,kzsz
+		</if>
+		,scbj)
+			values(#{hbid}
+		<if test="hbmc !=null and hbmc !=''">
+			,#{hbmc}
+		</if>
+		<if test="cskz4 !=null and cskz4 !=''">
+			,#{cskz4}
+		</if>
+		<if test="hbdm !=null and hbdm !=''">
+			,#{hbdm}
+		</if>
+		<if test="hblx !=null and hblx!=''">
+			,#{hblx}
+		</if>
+		<if test="sf !=null and sf !=''">
+			,#{sf}
+		</if>
+		<if test="cs !=null and cs!=''">
+			,#{cs}
+		</if>
+		<if test="yhid !=null and yhid!=''">
+			,#{yhid}
+		</if>
+		<if test="wxid !=null and wxid!=''">
+			,#{wxid}
+		</if>
+		<if test="bgmb !=null and bgmb !=''">
+			,#{bgmb}
+		</if>
+		<if test="fsfs !=null and fsfs !=''">
+			,#{fsfs}
+		</if>
+		<if test="yx !=null and yx !=''">
+			,#{yx}
+		</if>
+		<if test="yx2 !=null and yx2 !=''">
+			,#{yx2}
+		</if>
+		<if test="cskz1 !=''">
+			,#{cskz1}
+		</if>
+		<if test="cskz2 !=''">
+			,#{cskz2}
+		</if>
+		<if test="cskz3 !=''">
+			,#{cskz3}
+		</if>
+		<if test="wjmgz !=null and wjmgz !=''">
+			,#{wjmgz}
+		</if>
+		<if test="fl !=''">
+			,#{fl}
+		</if>
+		<if test="zfl !=''">
+			,#{zfl}
+		</if>
+		<if test="tjmc !=''">
+			,#{tjmc}
+		</if>
+		<if test="swmc !=''">
+			,#{swmc}
+		</if>
+		<if test="gzlx !=null and gzlx !=''">
+			,#{gzlx}
+		</if>
+		<if test="bgfs !=null and bgfs !=''">
+			,#{bgfs}
+		</if>
+		<if test="sjqf !=null and sjqf !=''">
+			,#{sjqf}
+		</if>
+		<if test="ptgs !=null and ptgs !=''">
+			,#{ptgs}
+		</if>
+		<if test="hzgsmc !=null and hzgsmc !=''">
+			,#{hzgsmc}
+		</if>
+		<if test="bz !=null and bz !=''">
+			,#{bz}
+		</if>
+		<if test="hbjb !=null and hbjb !=''">
+			,#{hbjb}
+		</if>
+		<if test="yptgs !=null and yptgs !=''">
+			,#{yptgs}
+		</if>
+		<if test="kzsz !=null and kzsz !=''">
+			,#{kzsz}
+		</if>
+	  	,'0')
+	</insert>
+  	<update id="deletepartner" parameterType="SjhbxxDto">
+  	 		update igams_sjhbxx
+  	 		<set>
+  	 			scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+  	 		</set>
+  	 	<where>
+	  	 	<if test="hbid !=null and hbid !=''">
+	  	 		or hbid=#{hbid}
+	  	 	</if>
+	  	 	<if test="ids !=null and ids.size() !=''">
+	  	 	 	or hbid in
+	  	 	 		<foreach collection="ids" open="(" close=")" separator="," item="item" >
+	  	 	 		 	#{item}
+	  	 	 		</foreach>
+	  	 	</if>
+		</where>
+  	</update>
+  	
+  	<update id="enablepartner" parameterType="SjhbxxDto">
+  	 		update igams_sjhbxx
+	 		<set>
+	 			xgry=#{xgry},xgsj=LOCALTIMESTAMP,scbj='0'
+	 		</set>
+  	 	<where>
+	  	 	<if test="hbid !=null and hbid !=''">
+	  	 		or hbid=#{hbid}
+	  	 	</if>
+	  	 	<if test="ids !=null and ids.size() !=''">
+	  	 	 	or hbid in
+	  	 	 		<foreach collection="ids" open="(" close=")" separator="," item="item" >
+	  	 	 		 	#{item}
+	  	 	 		</foreach>
+	  	 	</if>
+		</where>
+  	</update>
+  	
+  	<update id="disablepartner" parameterType="SjhbxxDto">
+  	 		update igams_sjhbxx
+	 		<set>
+	 			xgry=#{xgry},xgsj=LOCALTIMESTAMP,scbj='2'
+	 		</set>
+  	 	<where>
+	  	 	<if test="hbid !=null and hbid !=''">
+	  	 		or hbid=#{hbid}
+	  	 	</if>
+	  	 	<if test="ids !=null and ids.size() !=''">
+	  	 	 	or hbid in
+	  	 	 		<foreach collection="ids" open="(" close=")" separator="," item="item" >
+	  	 	 		 	#{item}
+	  	 	 		</foreach>
+	  	 	</if>
+		</where>
+  	</update>
+	
+	<select id="getDtoById" parameterType="String" resultType="SjhbxxDto">
+		select hb.hbid,hb.hbmc,hb.sf,hb.cs,hb.yhid,xtyh.zsxm as xtyhm,xtyh.yhm as yhm,hb.wxid,wxyh.wxm,hb.hblx,sf.csmc as province,cs.csmc as city,
+		bgmb.csmc as bgmbmc,hb.bgmb,hb.fsfs,hb.yx,hb.yx2,hb.fl,hb.zfl,hb.cskz3,hb.wjmgz,hb.sjqf,sjqf.csmc sjqfmc,hb.scbj,COALESCE(dqxx.gwmc,dqxx.zsxm) gwmc,hb.dqxx,
+		case when hb.hblx='1' then '直销'  when hb.hblx='2' then '兼职个人' when hb.hblx ='3' then '兼职公司'  when hb.hblx='4' then '兼职公司(word)'end hblxmc
+		,hb.cskz1,hb.cskz2,cskz1.wxm as cskz1mc,cskz2.wxm as cskz2mc,fl.csmc as flmc,zfl.csmc as zflmc,hb.tjmc,hb.gzlx,gzlx.csmc as gzlxmc,hb.bgfs
+		,bgfs.csmc as bgfsmc, hb.swmc, hb.cskz4,hb.hzgsmc,hb.hbdm,hb.kzsz,
+		case when hb.cskz3='1' then '是'  else '否'end cskz3mc,hb.ptgs,ptgs.csmc ptgsmc,hb.bz,hb.hbjb,hbjb.csmc hbjbmc,hb.yptgs,yptgs.csmc yptgsmc,case when hb.kzsz::jsonb ->> 'zdfs' ='1' then '是' when hb.kzsz::jsonb ->> 'zdfs' ='0' then '否' else '未设置'end zdfsmc,
+		case when hb.kzsz::jsonb ->> 'zdfst' ='1' then '是' when hb.kzsz::jsonb ->> 'zdfst' ='0' then '否' else '未设置'end zdfstmc
+		from igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+		left join matridx_wxyh cskz1 on cskz1.wxid=hb.cskz1 and cskz1.scbj = '0'
+		left join matridx_wxyh cskz2 on cskz2.wxid=hb.cskz2 and cskz2.scbj = '0'
+		left join matridx_jcsj sf on sf.csid= hb.sf
+		left join matridx_jcsj cs on cs.csid=hb.cs
+		left join matridx_jcsj bgmb on bgmb.csid=hb.bgmb
+		left join matridx_jcsj fl on fl.csid=hb.fl
+		left join matridx_jcsj zfl on zfl.csid=hb.zfl
+		left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+		left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		left join matridx_jcsj sjqf on sjqf.csid=hb.sjqf
+		left join matridx_xtyh dqxx on dqxx.yhid=hb.dqxx
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+		left join matridx_jcsj yptgs on yptgs.csid=hb.yptgs
+		left join matridx_jcsj hbjb on hb.hbjb=hbjb.csid
+		<where>
+			hb.hbid=#{hbid}
+		</where>		    	
+	</select>
+	<!--  执行修改操作 -->
+	<update id="update" parameterType="SjhbxxDto">
+		update igams_sjhbxx set
+			xgsj = LOCALTIMESTAMP
+			,xgry = #{xgry}
+			<if test="hbmc !=null and hbmc !=''">
+			  	,hbmc=#{hbmc}
+			</if>	
+			<if test="hblx !=null and hblx!=''">
+				,hblx=#{hblx}
+			</if>
+			<if test="sf !=null and sf !=''">
+				,sf=#{sf}
+			</if>
+			<if test="cs !=null and cs!=''">
+				,cs=#{cs}
+			</if>
+			<if test="yhid !=null and yhid!=''">
+				,yhid=#{yhid}
+			</if>
+			<if test="wxid !=null">
+			  	,wxid=#{wxid}
+			</if>
+			<if test="bgmb !=null and bgmb !=''">
+			  	,bgmb=#{bgmb}
+			</if>
+			<if test="fsfs !=null and fsfs !=''">
+			  	,fsfs=#{fsfs}
+			</if>
+			<if test="yx !=null">
+			  	,yx=#{yx}
+			</if>
+			<if test="cskz1 !=null">
+			  	,cskz1=#{cskz1}
+			</if>
+			<if test="cskz2 !=null">
+			  	,cskz2=#{cskz2}
+			</if>	
+			<if test="cskz3 !=null">
+			  	,cskz3=#{cskz3}
+			</if>
+			<if test="wjmgz !=null and wjmgz !=''">
+			  	,wjmgz=#{wjmgz}
+			</if>
+			<if test="wjmgz ==null or wjmgz ==''">
+			  	,wjmgz=null
+			</if>
+			<if test="fl !=null">
+			  	,fl=#{fl}
+			</if>	
+			<if test="zfl !=null">
+			  	,zfl=#{zfl}
+			</if>
+			<if test="tjmc !=null and tjmc !=''">
+			  	,tjmc=#{tjmc}
+			</if>	
+			<if test="swmc !=null and swmc !=''">
+			  	,swmc=#{swmc}
+			</if>		
+			<if test="gzlx !=null and gzlx !=''">
+			 	,gzlx=#{gzlx}
+			</if>
+			<if test="gzlx ==null or gzlx ==''">
+			 	,gzlx=null
+			</if>
+			<if test="bgfs !=null and bgfs !=''">
+			 	,bgfs=#{bgfs}
+			</if>
+			<if test="sjqf !=null and sjqf !=''">
+				,sjqf=#{sjqf}
+			</if>
+			<if test="dqxx !=null and dqxx !=''">
+				,dqxx=#{dqxx}
+			</if>
+			<if test="scbj =='1'.toString()">
+				<if test="dqxx ==null or dqxx ==''">
+					,dqxx=null
+				</if>
+			</if>
+		<if test="yx2 !=null and yx2 !=''">
+			,yx2=#{yx2}
+		</if>
+		<if test="yx2 !=null and yx2 ==''">
+			,yx2=null
+		</if>
+		<if test="bz !=null and bz !=''">
+			,bz=#{bz}
+		</if>
+		<if test="hbdm !=null and hbdm !=''">
+			,hbdm=#{hbdm}
+		</if>
+		<if test="hbjb !=null and hbjb !=''">
+			,hbjb=#{hbjb}
+		</if>
+			<where>
+				hbid=#{hbid}
+			</where>
+	</update>
+	<!--  执行修改操作 -->
+	<update id="updatePageEvent" parameterType="SjhbxxDto">
+		update igams_sjhbxx set xgsj = LOCALTIMESTAMP
+		<if test="xgry !=null and xgry !=''">
+			,xgry=#{xgry}
+		</if>
+		<if test="xgry ==null or xgry ==''">
+			,xgry=null
+		</if>
+		<if test="hbmc !=null and hbmc !=''">
+			,hbmc=#{hbmc}
+		</if>
+		<if test="hbmc ==null or hbmc ==''">
+			,hbmc=null
+		</if>
+		<if test="cskz4 !=null and cskz4 !=''">
+			,cskz4=#{cskz4}
+		</if>
+		<if test="cskz4 !=null and cskz4 ==''">
+			,cskz4=null
+		</if>
+		<if test="hblx !=null and hblx !=''">
+			,hblx=#{hblx}
+		</if>
+		<if test="hblx ==null or hblx ==''">
+			,hblx=null
+		</if>
+		<if test="sf !=null and sf !=''">
+			,sf=#{sf}
+		</if>
+		<if test="sf ==null or sf ==''">
+			,sf=null
+		</if>
+		<if test="cs !=null and cs !=''">
+			,cs=#{cs}
+		</if>
+		<if test="cs ==null or cs ==''">
+			,cs=null
+		</if>
+		<if test="yhid !=null and yhid !=''">
+			,yhid=#{yhid}
+		</if>
+		<if test="yhid ==null or yhid ==''">
+			,yhid=null
+		</if>
+		<if test="yx !=null and yx !=''">
+			,yx=#{yx}
+		</if>
+		<if test="yx ==null or yx ==''">
+			,yx=null
+		</if>
+		<if test="yx2 !=null and yx2 !=''">
+			,yx2=#{yx2}
+		</if>
+		<if test="yx2 !=null and yx2 ==''">
+			,yx2=null
+		</if>
+		<if test="cskz1 !=null and cskz1 !=''">
+			,cskz1=#{cskz1}
+		</if>
+		<if test="cskz1 ==null or cskz1 ==''">
+			,cskz1=null
+		</if>
+		<if test="cskz2 !=null and cskz2 !=''">
+			,cskz2=#{cskz2}
+		</if>
+		<if test="cskz2 ==null or cskz2 ==''">
+			,cskz2=null
+		</if>
+		<if test="cskz3 !=null and cskz3 !=''">
+			,cskz3=#{cskz3}
+		</if>
+		<if test="cskz3 ==null or cskz3 ==''">
+			,cskz3=null
+		</if>
+		<if test="wjmgz !=null and wjmgz !=''">
+			,wjmgz=#{wjmgz}
+		</if>
+		<if test="wjmgz ==null or wjmgz ==''">
+			,wjmgz=null
+		</if>
+		<if test="fl !=null and fl !=''">
+			,fl=#{fl}
+		</if>
+		<if test="fl ==null or fl ==''">
+			,fl=null
+		</if>
+		<if test="zfl !=null and zfl !=''">
+			,zfl=#{zfl}
+		</if>
+		<if test="zfl ==null or zfl ==''">
+			,zfl=null
+		</if>
+		<if test="tjmc !=null and tjmc !=''">
+			,tjmc=#{tjmc}
+		</if>
+		<if test="tjmc ==null or tjmc ==''">
+			,tjmc=null
+		</if>
+		<if test="swmc !=null and swmc !=''">
+			,swmc=#{swmc}
+		</if>
+		<if test="swmc ==null or swmc ==''">
+			,swmc=null
+		</if>
+		<if test="gzlx !=null and gzlx !=''">
+			,gzlx=#{gzlx}
+		</if>
+		<if test="gzlx ==null or gzlx ==''">
+			,gzlx=null
+		</if>
+		<if test="bgfs !=null and bgfs !=''">
+			,bgfs=#{bgfs}
+		</if>
+		<if test="bgfs ==null or bgfs ==''">
+			,bgfs=null
+		</if>
+		<if test="sjqf !=null and sjqf !=''">
+			,sjqf=#{sjqf}
+		</if>
+		<if test="sjqf ==null or sjqf ==''">
+			,sjqf=null
+		</if>
+		<if test="hzgsmc !=null and hzgsmc !=''">
+			,hzgsmc=#{hzgsmc}
+		</if>
+		<if test="hzgsmc ==null or hzgsmc ==''">
+			,hzgsmc=null
+		</if>
+		<if test="bz !=null and bz !=''">
+			,bz=#{bz}
+		</if>
+		<if test="hbdm !=null and hbdm !=''">
+			,hbdm=#{hbdm}
+		</if>
+		<if test="scbj =='1'.toString()">
+			<if test="dqxx ==null or dqxx ==''">
+				,dqxx=null
+			</if>
+		</if>
+		<if test="hbjb !=null and hbjb !=''">
+			,hbjb=#{hbjb}
+		</if>
+		<if test="kzsz !=null and kzsz !=''">
+			,kzsz=#{kzsz}
+		</if>
+			,ptgs=#{ptgs},yptgs=#{yptgs}
+		<where>
+			hbid=#{hbid}
+		</where>
+	</update>
+	<!-- 查询微信用户id -->
+	<select id="getXtyh"  resultType="SjhbxxDto">
+		select xtyh.yhid as xtyhid,xtyh.zsxm as xtyhm,xtyh.yhm as yhm
+		from matridx_xtyh xtyh
+		where xtyh.sfsd!='1' and scbj!='1'
+	</select>
+	<select id="getDto" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbid,hb.hbmc,hb.hblx,hb.sf,hb.cs,jc_sf.csmc sfmc,jc_cs.csmc csmc,hb.fl,hb.zfl,hb.tjmc,hb.gzlx,gzlx.csmc as gzlxmc,gzlx.cskz1 as gzcskz1,hb.wjmgz,hb.sjqf,hb.bz
+		from igams_sjhbxx hb
+		left outer join matridx_jcsj jc_sf on jc_sf.csid = hb.sf
+		left outer join matridx_jcsj jc_cs on jc_cs.csid = hb.cs
+		left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+		<where>
+			hb.scbj !='1'
+			<if test="hbmc !=null and hbmc !=''">
+				and hb.hbmc = #{hbmc}
+			</if>
+			<if test="hbid !=null and hbid !=''">
+				and hb.hbid = #{hbid}
+			</if>
+			<if test="csmc !=null and csmc !=''">
+				and jc_cs.csmc like '%'||#{csmc}||'%'
+			</if>
+			<if test="sfmc !=null and sfmc !=''">
+				and jc_sf.csmc like '%'||#{sfmc}||'%'
+			</if>
+		</where>		    	
+	</select>
+	<!-- 查询伙伴为'无'的用户信息 -->
+	<select id="getXtyhByHbmc"  resultType="SjhbxxDto">
+		select  hb.hbid,hb.hbmc,hb.sf,hb.cs,hb.yhid,yh.zsxm as xtyhm,yh.ddid,hb.tjmc,yh.yhid,yh.yhm,hb.bz
+		from igams_sjhbxx hb 
+		left join matridx_xtyh yh on yh.yhid = hb.yhid
+		where yh.scbj != '1' and hb.hbmc = '无'
+	</select>
+	<!-- 查询合作伙伴是否存在 -->
+	<select id="selectSjhb" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbid, hb.hbmc, hb.hblx, hb.sf, hb.cs, hb.yhid, hb.wxid, hb.bgmb, jcsj.cskz2 flcskz2,hb.hbdm ,hb.sjqf
+		from igams_sjhbxx hb
+		left join matridx_jcsj jcsj on jcsj.csid = hb.fl
+		<where>
+			hb.scbj != '1' and hb.hbmc = #{hbmc}
+		</where>
+	</select>
+	<!-- 根据接收时间获取用户信息（周报） -->
+	<select id="selectDtoByJsrq" parameterType="sjxxDto" resultType="SjhbxxDto">
+		select distinct hb.hbmc,hb.hblx,hb.wxid,hb.fsfs
+			from igams_sjhbxx hb
+		join igams_sjxx sj on sj.db = hb.hbmc
+			where hb.wxid is not null
+		<if test="jsrqstart != null and jsrqstart != ''">
+			and to_char(sj.jsrq,'yyyy-mm-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend != null and jsrqend != ''">
+			and to_char(sj.jsrq,'yyyy-mm-dd') &lt;= #{jsrqend}
+		</if>
+	</select>
+	
+	<!-- 查询合作伙伴分类信息 -->
+	<select id="selectFl" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select jcsj.csid as fl,jcsj.csdm as fldm,jcsj.csmc as flmc,zjcsj.csid as zfl,zjcsj.csdm as zfldm
+		,zjcsj.csmc as zflmc,hb.hbid,hb.hbmc,hb.yhid,hb.wxid
+		from matridx_jcsj jcsj 
+		left join matridx_jcsj zjcsj on jcsj.csid = zjcsj.fcsid
+		left join igams_sjhbxx hb on jcsj.csid = hb.fl and (zjcsj.csid = hb.zfl  or zjcsj.csid is null) and hb.scbj != '1'
+		<where>
+			jcsj.scbj = '0' and (zjcsj.scbj != '1' or   zjcsj.scbj is null) 
+			and jcsj.jclb=#{jclb}
+		</where>
+		order by jcsj.cspx,jcsj.csid,zjcsj.cspx,zjcsj.csid
+	</select>
+	
+	<!--  验证合作伙伴是不是已经存在 -->
+	<select id="getCountSjhb" parameterType="SjhbxxDto" resultType="int">
+		select count(hbid) from igams_sjhbxx
+			<where>
+			    scbj != '1'
+				<if test="hbmc !=null and hbmc !=''">
+					and hbmc=#{hbmc} 
+				</if>
+				<if test="hbid !=null and hbid !=''">
+					and hbid !=#{hbid}
+				</if>
+			</where>
+	</select>
+	<!-- 查询合作伙伴信息 -->
+	<select id="getDtoList" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbid,hb.hbmc,hb.hblx,hb.sf,hb.cs,hb.fl,hb.zfl,hb.tjmc,xtyh.yhm,xtyh.zsxm as xtyhm,hb.bz
+		from igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		<where>
+			hb.scbj !='1'
+			<if test="fl !=null and fl !='' and fl !='default'">
+				and hb.fl = #{fl}
+			</if>
+			<if test="fl !=null and fl == 'default'">
+				and (hb.fl is null or hb.fl = '')
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hb.zfl = #{zfl}
+			</if>
+			<if test="hbmc != null and hbmc !=''">
+				and hb.hbmc like '%'||#{hbmc}||'%'
+			</if>
+			<if test="sf != null and sf != ''">
+				and hb.sf =#{sf}
+			</if>
+			<if test="yhid != null and yhid != ''">
+				and hb.yhid =#{yhid}
+			</if>
+			<if test = "ptgss != null and ptgss.length > 0 "  >
+				and hb.ptgs in
+				<foreach collection="ptgss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ids !=null and ids.size() !=''">
+				and hb.hbid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" >
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by hb.hbmc		    	
+	</select>
+	
+	<!-- 通过hbid查询对应的合作伙伴 -->
+	<select id="getHbmcByHbid" parameterType="list" resultType="String">
+		select sjhb.hbmc from igams_sjhbxx sjhb
+		<where> 
+			sjhb.hbid in
+		<foreach collection="list" open="(" close=")" separator=","  index="index" item="item">
+			#{item}
+		</foreach>
+		</where>
+	</select>
+	<!-- 查询伙伴统计信息 -->
+	<select id="getTjDtoList" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select coalesce(hb.tjmc,hb.hbmc) as hbmc,hb.fl
+		from igams_sjhbxx hb 
+		<where>
+			hb.scbj != '1'
+			<if test="fl !=null and fl !='' and fl !='default'">
+				and hb.fl = #{fl}
+			</if>
+			<if test="fl !=null and fl == 'default'">
+				and (hb.fl is null or hb.fl = '')
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hb.zfl = #{zfl}
+			</if>
+		</where>
+		group by coalesce(hb.tjmc,hb.hbmc),hb.fl
+		order by coalesce(hb.tjmc,hb.hbmc)
+	</select>
+	
+	<!-- 微信用户查询伙伴权限分类信息 -->
+	<select id="selectFlByHbqx" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select jcsj.csid as fl,jcsj.csdm as fldm,jcsj.csmc as flmc,zjcsj.csid as zfl,zjcsj.csdm as zfldm
+		,zjcsj.csmc as zflmc,hb.hbid,hb.hbmc,hb.yhid,hb.wxid
+		from matridx_jcsj jcsj 
+		left join matridx_jcsj zjcsj on jcsj.csid = zjcsj.fcsid
+		left join igams_sjhbxx hb on jcsj.csid = hb.fl and (zjcsj.csid = hb.zfl  or hb.zfl is null) and hb.scbj != '1'
+		left join igams_hbqx hbqx on hbqx.hbid=hb.hbid
+		<where>
+			hbqx.yhid=#{xtyhid}
+			and jcsj.scbj = '0' and (zjcsj.scbj != '1' or   zjcsj.scbj is null) 
+			and jcsj.jclb=#{jclb}
+		</where>
+		order by jcsj.cspx,jcsj.csid,zjcsj.cspx,zjcsj.csid
+	</select>
+	
+	<!-- 根据用户id伙伴权限查询伙伴统计信息 -->
+	<select id="getSjhbDtoListByHbqx" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select coalesce(hb.tjmc,hb.hbmc) as hbmc,hb.fl
+		from igams_sjhbxx hb
+		left join igams_hbqx hbqx on hbqx.hbid =hb.hbid
+		<where>
+				hbqx.yhid=#{xtyhid}
+			<if test="fl !=null and fl !=''">
+				and hb.fl = #{fl}
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hb.zfl = #{zfl}
+			</if>
+		</where>
+		group by coalesce(hb.tjmc,hb.hbmc),hb.fl
+		order by coalesce(hb.tjmc,hb.hbmc)		    	
+	</select>
+
+	<select id="getListFromXxdy" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbmc as hbmc,xxdy_hb.yxx as fl
+		from igams_sjhbxx hb
+		LEFT OUTER JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hb.fl
+		AND xxdy_hb.scbj = '0'
+		LEFT OUTER JOIN matridx_jcsj dylx_hb ON dylx_hb.csid = xxdy_hb.dylx
+		AND dylx_hb.scbj = '0'
+		AND dylx_hb.cskz1 = 'JCSJ'
+		AND dylx_hb.cskz2 = 'CLASSIFY'
+		<where>
+			dylx_hb.csid is not null
+			and hb.ptgs in
+			<foreach collection="ptgss" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+			<if test="fl !=null and fl !=''">
+				and xxdy_hb.yxx = #{fl}
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hb.zfl = #{zfl}
+			</if>
+		</where>
+		group by hb.hbmc,xxdy_hb.yxx
+		order by hb.hbmc
+	</select>
+	<!-- 根据用户id伙伴权限查询伙伴统计信息 -->
+	<select id="getnotNullDb" parameterType="SjxxDto" resultType="Map">
+	select nm.db hbmc from (SELECT COUNT
+		( sjxx.sjid ) AS num,
+		COALESCE ( hbxx.tjmc, hbxx.hbmc ) db
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_sjhbxx hbxx ON hbxx.hbmc = sjxx.db 
+		AND hbxx.scbj != '1'
+		LEFT JOIN igams_hbqx hbqx ON hbqx.hbid = hbxx.hbid
+		WHERE
+		sjxx.scbj = '0'
+		AND ( sjxx.dsyrq IS NOT NULL OR sjxx.syrq IS NOT NULL ) 
+		AND sjxx.sfjs = '1'
+		and hbqx.yhid=#{yhid}
+			<if test="fl !=null and fl !=''">
+				and hbxx.fl = #{fl}
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hbxx.zfl = #{zfl}
+			</if>
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &gt;= #{jsrqstart}
+				</if>
+				<if test="jsrqend !=null and jsrqend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM-dd') &lt;= #{jsrqend}
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &gt;= #{jsrqMstart}
+				</if>
+				<if test="jsrqMend !=null and jsrqMend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy-MM') &lt;= #{jsrqMend}
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &gt;= #{jsrqYstart}
+				</if>
+				<if test="jsrqYend !=null and jsrqYend !=''">
+					and to_char(coalesce(sjxx.dsyrq,sjxx.syrq),'yyyy') &lt;= #{jsrqYend}
+				</if>
+				<if test="db !=null and db !=''">
+					and coalesce(hbxx.tjmc, hbxx.hbmc) = #{db}
+				</if>
+				<if test = "dbs != null and dbs.size() > 0 "  >
+					and sjxx.db in 
+					<foreach collection="dbs" separator="," open="(" close=") "
+					item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+		GROUP BY
+	COALESCE ( hbxx.tjmc, hbxx.hbmc ))nm
+	 where nm.num>0    	
+	</select>
+	<!-- 根据用户id伙伴权限查询伙伴统计信息(接收日期) -->
+	<select id="getnotNullDbByJsrq" parameterType="SjxxDto" resultType="Map">
+	select nm.db hbmc from (SELECT COUNT
+		( sjxx.sjid ) AS num,
+		COALESCE ( hbxx.tjmc, hbxx.hbmc ) db
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_sjhbxx hbxx ON hbxx.hbmc = sjxx.db
+		AND hbxx.scbj != '1'
+		LEFT JOIN igams_hbqx hbqx ON hbqx.hbid = hbxx.hbid
+		WHERE
+		sjxx.scbj = '0'
+		AND sjxx.jsrq IS NOT NULL
+		AND sjxx.sfjs = '1'
+		and hbqx.yhid=#{yhid}
+			<if test="fl !=null and fl !=''">
+				and hbxx.fl = #{fl}
+			</if>
+			<if test="zfl !=null and zfl !=''">
+				and hbxx.zfl = #{zfl}
+			</if>
+				<if test="jsrqstart != null and jsrqstart != ''">
+					and to_char(sjxx.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+				</if>
+				<if test="jsrqend !=null and jsrqend !=''">
+					and to_char(sjxx.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+				</if>
+				<if test="jsrqMstart != null and jsrqMstart != ''">
+					and to_char(sjxx.jsrq,'yyyy-MM') &gt;= #{jsrqMstart}
+				</if>
+				<if test="jsrqMend !=null and jsrqMend !=''">
+					and to_char(sjxx.jsrq,'yyyy-MM') &lt;= #{jsrqMend}
+				</if>
+				<if test="jsrqYstart != null and jsrqYstart != ''">
+					and to_char(sjxx.jsrq,'yyyy') &gt;= #{jsrqYstart}
+				</if>
+				<if test="jsrqYend !=null and jsrqYend !=''">
+					and to_char(sjxx.jsrq,'yyyy') &lt;= #{jsrqYend}
+				</if>
+				<if test="db !=null and db !=''">
+					and coalesce(hbxx.tjmc, hbxx.hbmc) = #{db}
+				</if>
+				<if test = "dbs != null and dbs.size() > 0 "  >
+					and sjxx.db in
+					<foreach collection="dbs" separator="," open="(" close=") "
+					item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+		GROUP BY
+	COALESCE ( hbxx.tjmc, hbxx.hbmc ))nm
+	 where nm.num>0
+	</select>
+
+	<select id="getNotNullDbFromXxdy" parameterType="SjxxDto" resultType="Map">
+		select
+		hbxx.hbmc
+		FROM
+		igams_sjxx sjxx
+		LEFT JOIN igams_sjhbxx hbxx ON hbxx.hbmc = sjxx.db
+		AND hbxx.scbj != '1'
+		LEFT OUTER JOIN igams_xxdy xxdy_hb ON xxdy_hb.dyxx = hbxx.fl
+		AND xxdy_hb.scbj = '0'
+		LEFT OUTER JOIN matridx_jcsj dylx_hb ON dylx_hb.csid = xxdy_hb.dylx
+		AND dylx_hb.scbj = '0'
+		AND dylx_hb.cskz1 = 'JCSJ'
+		AND dylx_hb.cskz2 = 'CLASSIFY'
+		WHERE
+		sjxx.scbj = '0'
+		AND sjxx.jsrq IS NOT NULL
+		AND dylx_hb.csid IS NOT NULL
+		AND sjxx.sfjs = '1'
+		AND hbxx.hbid IS NOT NULL
+		and hbxx.ptgs in
+		<foreach collection="ptgss" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+		<if test="fl !=null and fl !=''">
+			and xxdy_hb.yxx = #{fl}
+		</if>
+		<if test="zfl !=null and zfl !=''">
+			and hbxx.zfl = #{zfl}
+		</if>
+		<if test="jsrqstart != null and jsrqstart != ''">
+			and to_char(sjxx.jsrq,'yyyy-MM-dd') &gt;= #{jsrqstart}
+		</if>
+		<if test="jsrqend !=null and jsrqend !=''">
+			and to_char(sjxx.jsrq,'yyyy-MM-dd') &lt;= #{jsrqend}
+		</if>
+		GROUP BY
+		hbxx.hbmc
+	</select>
+	
+	<!-- 通过hbid查询对应的合作伙伴 -->
+	<select id="getDbByDdid" parameterType="sjxxDto" resultType="sjhbxxDto">
+		select hbxx.hbmc 
+		from igams_sjhbxx hbxx
+		left outer join igams_hbqx hbqx on hbxx.hbid = hbqx.hbid
+		left outer join matridx_xtyh yh on yh.yhid = hbqx.yhid 
+		<where> 
+			yh.scbj != '1' and yh.ddid = #{ddid}
+		</where>
+	</select>
+	<!-- 通过hbid查询对应的合作伙伴 -->
+	<select id="getDbByWxid" parameterType="list" resultType="sjhbxxDto">
+		select hbqx.yhid,hbqx.hbid,hbxx.hbmc
+		from igams_sjhbxx hbxx
+		left outer join igams_hbqx hbqx on hbxx.hbid = hbqx.hbid
+		left outer join matridx_wxyh wx on wx.xtyhid = hbqx.yhid 
+		<where>
+			<if test="list !=null and list.size() !=''">
+	  	 	 	hbqx.yhid in
+  	 	 		<foreach collection="list" open="(" close=")" separator="," item="item" >
+  	 	 		 	#{item.xtyhid}
+  	 	 		</foreach>
+	  	 	</if>
+		</where>
+	</select>
+	
+	<!-- 恢复删除伙伴 -->
+	<update id="resumepartner" parameterType="SjhbxxDto">
+		update igams_sjhbxx 
+		<set>
+			scbj='0'
+			<if test="hbmc !=null and hbmc !=''">
+			  	,hbmc=#{hbmc}
+			</if>	
+			<if test="hblx !=null and hblx!=''">
+				,hblx=#{hblx}
+			</if>
+			<if test="sf !=null and sf !=''">
+				,sf=#{sf}
+			</if>
+			<if test="cs !=null and cs!=''">
+				,cs=#{cs}
+			</if>
+			<if test="yhid !=null and yhid!=''">
+				,yhid=#{yhid}
+			</if>
+			<if test="wxid !=null">
+			  	,wxid=#{wxid}
+			</if>
+			<if test="bgmb !=null and bgmb !=''">
+			  	,bgmb=#{bgmb}
+			</if>
+			<if test="fsfs !=null and fsfs !=''">
+			  	,fsfs=#{fsfs}
+			</if>
+			<if test="yx !=null">
+			  	,yx=#{yx}
+			</if>
+			<if test="cskz1 !=null">
+			  	,cskz1=#{cskz1}
+			</if>
+			<if test="cskz2 !=null">
+			  	,cskz2=#{cskz2}
+			</if>	
+			<if test="cskz3 !=null">
+			  	,cskz3=#{cskz3}
+			</if>	
+			<if test="fl !=null">
+			  	,fl=#{fl}
+			</if>	
+			<if test="zfl !=null">
+			  	,zfl=#{zfl}
+			</if>
+			<if test="tjmc !=null and tjmc !=''">
+			  	,tjmc=#{tjmc}
+			</if>
+			<if test="hbdm !=null and hbdm !=''">
+			  	,hbdm=#{hbdm}
+			</if>
+			<if test="gzlx !=null and gzlx !=''">
+			 	,gzlx=#{gzlx}
+			</if>
+			<if test="gzlx ==null or gzlx ==''">
+			 	,gzlx=null
+			</if>
+		</set>
+		<where>
+			hbid=#{hbid}
+		</where>
+	</update>
+	<!-- 查询伙伴为'无'的报告模板信息 -->
+	<select id="getBgmbByHbmc"  resultType="SjhbxxDto" parameterType="SjhbxxDto">
+		select hb.hbid,hb.hbmc,hb.sf,hb.cs,hb.yhid,hb.tjmc,fj.fwjlj,fj.fwjm,hb.hblx
+		from igams_sjhbxx hb 
+		LEFT JOIN matridx_fjcfb fj ON fj.ywid = hb.bgmb and fj.ywlx = #{ywlx}
+		where hb.scbj != '1' and hb.hbmc = '无'
+	</select>
+
+	<update id="updateCskz3">
+		update igams_sjhbxx set cskz3='1'
+		where scbj!='1' and fl='0954A23558524DA0BD22321EB35D3D57'
+	</update>
+	<update id="updateDqxx">
+		update igams_sjhbxx hb set dqxx = (select yh.yhid from matridx_xtyh yh
+		   left outer join matridx_yhjs js on yh.yhid = js.yhid
+		   left outer join igams_hbqx qx on qx.yhid = yh.yhid
+		where js.jsid ='0E8293228D7B43F090456EBD4BA88641' and hb.hbid = qx.hbid )
+	</update>
+	<select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+		select xtjs.dwxdbj,jsjcdw.jcdw from matridx_xtjs  xtjs
+		left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid
+		<where>
+			xtjs.jsid=#{jsid}
+		</where>
+	</select>
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbid ${sqlParam} from
+		igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+		left join matridx_jcsj sf on sf.csid= hb.sf
+		left join matridx_jcsj cs on cs.csid=hb.cs
+		left join matridx_jcsj fl on fl.csid=hb.fl
+		left join matridx_jcsj zfl on zfl.csid=hb.zfl
+		left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+		left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		left join matridx_jcsj sjqf on sjqf.csid=hb.sjqf
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+		left join matridx_jcsj yptgs on yptgs.csid=hb.yptgs
+		LEFT JOIN (SELECT mb.hbid,mb.bgmbid,row_number() over (partition by mb.hbid order by xh asc ) from igams_hbbgmbgl mb
+		left join matridx_jcsj jcxm on jcxm.csid=mb.jcxmid
+		where jcxm.scbj='0'
+		) tt on tt.hbid = hb.hbid and tt.row_number='1'
+		LEFT JOIN matridx_jcsj bgmb ON bgmb.csid = COALESCE ( hb.bgmb, tt.bgmbid )
+		<where>
+			<include refid="selectWhere"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<select id="getCountForSearchExp" parameterType="SjhbxxDto" resultType="java.lang.Integer">
+		select count (hb.hbid) from
+		igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+		left join matridx_jcsj sf on sf.csid= hb.sf
+		left join matridx_jcsj cs on cs.csid=hb.cs
+		left join matridx_jcsj fl on fl.csid=hb.fl
+		left join matridx_jcsj zfl on zfl.csid=hb.zfl
+		left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+		left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		left join matridx_jcsj sjqf on sjqf.csid=hb.sjqf
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+		left join matridx_jcsj yptgs on yptgs.csid=hb.yptgs
+		LEFT JOIN (SELECT mb.hbid,mb.bgmbid,row_number() over (partition by mb.hbid order by xh asc ) from igams_hbbgmbgl mb
+		left join matridx_jcsj jcxm on jcxm.csid=mb.jcxmid
+		where jcxm.scbj='0'
+		) tt on tt.hbid = hb.hbid and tt.row_number='1'
+		LEFT JOIN matridx_jcsj bgmb ON bgmb.csid = COALESCE ( hb.bgmb, tt.bgmbid )
+		<where>
+			<include refid="selectWhere"></include>
+		</where>
+	</select>
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		select hb.hbid ${sqlParam}
+		from (
+		<foreach item="item" index="index" collection="ids" separator=" union all ">
+			select #{item,jdbcType=VARCHAR} hbid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_sjhbxx hb on tmp.hbid = hb.hbid
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		left join matridx_wxyh wxyh on wxyh.wxid=hb.wxid
+		left join matridx_jcsj sf on sf.csid= hb.sf
+		left join matridx_jcsj cs on cs.csid=hb.cs
+		left join matridx_jcsj fl on fl.csid=hb.fl
+		left join matridx_jcsj zfl on zfl.csid=hb.zfl
+		left join matridx_jcsj gzlx on gzlx.csid=hb.gzlx
+		left join matridx_jcsj bgfs on bgfs.csid =hb.bgfs
+		left join matridx_jcsj sjqf on sjqf.csid=hb.sjqf
+		left join matridx_jcsj ptgs on ptgs.csid=hb.ptgs
+		left join matridx_jcsj yptgs on yptgs.csid=hb.yptgs
+		LEFT JOIN (SELECT mb.hbid,mb.bgmbid,row_number() over (partition by mb.hbid order by xh asc ) from igams_hbbgmbgl mb
+		left join matridx_jcsj jcxm on jcxm.csid=mb.jcxmid
+		where jcxm.scbj='0'
+		) tt on tt.hbid = hb.hbid and tt.row_number='1'
+		LEFT JOIN matridx_jcsj bgmb ON bgmb.csid = COALESCE ( hb.bgmb, tt.bgmbid )
+		order by tmp.ordernum
+	</select>
+
+   <select id="getRepeatHbxx" resultType="SjhbxxDto">
+	SELECT tmp.hbid,sjhbxx.hbmc,xtyh.zsxm FROM (SELECT count(hbid) num,hbid FROM igams_hbqx WHERE yhid in (
+		select yh.yhid from matridx_xtyh yh
+		left outer join matridx_yhjs js on yh.yhid = js.yhid
+    		where js.jsid ='0E8293228D7B43F090456EBD4BA88641')
+	  GROUP BY hbid) tmp
+		 left join igams_sjhbxx sjhbxx on sjhbxx.hbid = tmp.hbid
+		 left join igams_hbqx hbqx on hbqx.hbid = tmp.hbid
+		 left join matridx_xtyh xtyh on xtyh.yhid = hbqx.yhid
+		 left outer join matridx_yhjs yhjs on xtyh.yhid = yhjs.yhid
+	WHERE tmp.num>1 and yhjs.jsid = '0E8293228D7B43F090456EBD4BA88641';
+    </select>
+
+	<select id="getDqjlyh"  parameterType="SjhbxxDto" resultType="SjhbxxDto">
+		SELECT COALESCE(xtyh.gwmc,xtyh.zsxm) gwmc,xtyh.yhid
+		FROM "matridx_yhjs"  yhjs
+	 	LEFT JOIN  matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		LEFT JOIN  matridx_xtyh xtyh on xtyh.yhid=yhjs.yhid
+		where xtjs.jsid='0E8293228D7B43F090456EBD4BA88641'
+	</select>
+
+	<select id="getPtgsByYhid" parameterType="SjhbxxDto" resultType="String">
+		select hbxx.ptgs
+		from igams_sjhbxx hbxx
+		left join igams_hbqx hbqx on hbqx.hbid=hbxx.hbid
+		left join matridx_xtyh yh on yh.yhid=hbqx.yhid
+		where yh.yhid=#{yhid} and hbxx.ptgs is not null and hbxx.ptgs != ''
+		group by hbxx.ptgs
+	</select>
+
+	<select id="getLockedUserList" resultType="SjhbxxDto">
+		select
+		hb.hbid,hb.hbmc, xtyh.zsxm as xtyhm,xtyh.yhm
+		from
+		igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		<where>
+			hb.scbj='0' and (xtyh.scbj!='0' or xtyh.sfsd='1')
+		</where>
+	</select>
+
+	<select id="getBackUpPartnerMaxDate" resultType="String">
+		select
+		max(bfsj)
+		from
+		igams_sjhbxx_bf
+	</select>
+
+	<insert id="backUpPartnerInfo" parameterType="String">
+		INSERT INTO public.igams_sjhbxx_bf
+		(hbbfid,hbid, hbmc, hblx, sf, cs, yhid, wxid, bgmb, fsfs, yx, cskz1, cskz2, cskz3, fl, zfl, tjmc, gzlx, scry, scsj, scbj, bgfs, swmc, wjmgz, sjqf, xgsj, xgry, dqxx, wbcxid, ptgs, cskz4, hzgsmc, yx2, bz, hbdm, hbjb, yptgs, ztqf, bfsj,yxqssj,yxjssj)
+		select
+		replace(upper('' || gen_random_uuid()),'-','') as hbbfid,hbid, hbmc, hblx, sf, cs, yhid, wxid, bgmb, fsfs, yx, cskz1, cskz2, cskz3, fl, zfl, tjmc, gzlx, scry, scsj, scbj, bgfs, swmc, wjmgz, sjqf, xgsj, xgry, dqxx, wbcxid, ptgs, cskz4, hzgsmc, yx2, bz, hbdm, hbjb, yptgs, ztqf,LOCALTIMESTAMP as bfsj,cast(#{date} as timestamp) as yxqssj,LOCALTIMESTAMP as yxjssj
+		from
+		igams_sjhbxx
+		where
+		scbj = '0'
+		or scbj = '2'
+	</insert>
+</mapper>

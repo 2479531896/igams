@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IMxtzglDao">
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_mxtzgl (mxid,ryid,tzsj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.mxid},#{item.ryid},LOCALTIMESTAMP)
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="getListById" parameterType="MxtzglDto" resultType="MxtzglDto">
+        select mxid,ryid
+        from igams_mxtzgl
+        <where>
+            <if test="mxid !=null and mxid != ''">
+                and mxid=#{mxid}
+            </if>
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="MxtzglDto" resultType="MxtzglDto">
+        select tzgl.mxid,tzgl.ryid,
+        mxxx.projectCode ,mxxx.orgName ,mxxx.orgId ,mxxx.comboCode ,mxxx.mxOrderNo ,mxxx.phoneNo ,
+        mxxx.amount ,mxxx.quantity ,mxxx.totalAmount ,mxxx.equityName ,mxxx.payTime ,mxxx.orderNo ,mxxx.idName ,mxxx.idNum ,mxxx.idType ,
+        mxxx.orderTime ,mxxx.status ,mxxx.hasReport ,mxxx.reportUrl ,mxxx.statusTime ,mxxx.xgry ,mxxx.scbj ,mxxx.xgsj ,mxxx.scry ,mxxx.scsj
+        from igams_mxtzgl tzgl
+        left join igams_mxxx mxxx on mxxx.mxid=tzgl.mxid
+        <where>
+            mxxx.scbj='0'and mxxx.status='0'
+            <if test="entire != null and entire != ''">
+                and (mxxx.idName like '%'||#{entire}||'%'
+                or mxxx.projectCode like '%'||#{entire}||'%'
+                or mxxx.orgName like '%'||#{entire}||'%'
+                or mxxx.equityName like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="ryid !=null and ryid != ''">
+                and tzgl.ryid=#{ryid}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ICwglDao" >
+
+	<!-- 获取错误管理列表 -->
+	<select id="getPagedDtoList" parameterType="CwglDto" resultType="CwglDto">
+		select cwgl.cwid,cwgl.cwlx,to_char(cwgl.cwsj,'YYYY-MM-DD') AS cwsj,cwgl.ysnr,(case cwgl.sfcl when '0' then '未处理' when '1' then '已处理' end) as sfcl,to_char(cwgl.clsj,'YYYY-MM-DD') clsj,cwgl.zt
+		from matridx_cwgl cwgl
+		<where>
+			cwgl.scbj!='1' and
+			cwgl.cwlx='INSPECTION_MIN_ERROR'
+			<if test="cwlx !=null and cwlx != ''">
+				and cwgl.cwlx like '%'||#{cwlx}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 新增错误信息 -->
+	<insert id="insert" parameterType="CwglModel">
+		insert into matridx_cwgl(cwid
+		<if test="cwlx !=null and cwlx != ''">
+			,cwlx
+		</if>
+		<if test="ysnr !=null and ysnr != ''">
+			,ysnr
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		,cwsj,sfcl,scbj) values(#{cwid}
+		<if test="cwlx !=null and cwlx != ''">
+			,#{cwlx}
+		</if>
+		<if test="ysnr !=null and ysnr != ''">
+			,#{ysnr}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		,LOCALTIMESTAMP,'0','0')
+	</insert>
+	
+	<!-- 查询错误信息列表 -->
+	<select id="getDtoList" parameterType="CwglDto" resultType="CwglDto">
+		select * from matridx_cwgl cwgl
+		<where>
+			cwgl.scbj!='1'
+		    <if test="cwlx !=null and cwlx != ''">
+				and cwgl.cwlx = #{cwlx}
+			</if>
+			<if test="cwsj !=null and cwsj != ''">
+				and to_char(cwgl.cwsj,'YYYY-MM-DD') = #{cwsj}
+			</if>
+			<if test="ids !=null and ids.size >0" >
+				and cwgl.cwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据ID查询错误信息 -->
+	<select id="getDtoById" parameterType="String" resultType="CwglDto">
+		select cwgl.cwid,cwgl.cwlx,cwgl.cwsj,cwgl.ysnr,(case cwgl.sfcl when '0' then '未处理' when '1' then '已处理' end) as sfcl,cwgl.clsj,cwgl.zt
+		from matridx_cwgl cwgl
+		<where>
+			cwgl.scbj!='1'
+			and cwgl.cwid=#{cwid}
+		</where>
+	</select>
+	
+	<!--更新标本量申请的状态信息-->
+	<update id="updateZt" parameterType="CwglModel">
+		update matridx_cwgl set zt = #{zt,jdbcType=VARCHAR},clsj = LOCALTIMESTAMP,sfcl='1'
+		where cwid = #{cwid}
+	</update>
+	
+	<!-- 删除错误信息 -->
+	<update id="delete" parameterType="CwglDto">
+		update matridx_cwgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			cwid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</where> 
+	</update>
+	
+	<!-- 修改 -->
+	<update id="update" parameterType="CwglDto">
+		update matridx_cwgl 
+		<set>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="ysnr != null and ysnr != ''">
+				,ysnr=#{ysnr}
+			</if>
+			<if test="cwlx != null and cwlx != ''">
+				,cwlx=#{cwlx}
+			</if>
+		</set>
+		<where>
+			cwid=#{cwid}
+		</where>
+	</update>
+	
+	<!-- 获取标本量申请审核的ID列表 -->
+	<select id="getPagedAuditIdList" parameterType="CwglDto" resultType="CwglDto">
+		select cwgl.cwid,cwgl.cwlx,cwgl.cwsj,cwgl.ysnr,(case cwgl.sfcl when '0' then '未处理' when '1' then '已处理' end) as sfcl,cwgl.clsj,cwgl.zt
+			from matridx_cwgl cwgl
+			<where>
+				cwgl.scbj !='1' 
+				<if test="cwlx != null and cwlx != ''">
+					and cwgl.cwlx like '%'||#{cwlx}||'%'
+				</if>
+				<if test="ysnr != null and ysnr != ''">
+					and cwgl.ysnr like '%'||#{ysnr}||'%'
+				</if>
+				<if test="zt != null and zt != ''">
+					and cwgl.zt = #{zt}
+				</if>
+			</where>
+	</select>
+	
+	<!-- 临时表分页查询-审核列表-->
+	<select id="getAuditListByIds" parameterType="List" resultType="CwglDto">
+		select cwgl.cwid,cwgl.cwlx,cwgl.cwsj,cwgl.ysnr,shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+			from matridx_cwgl cwgl
+			join 
+				<foreach collection="list" separator="union" open="(" close=") "
+						item="item" index="index">
+					select #{item.cwid} cwid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_shyj} shxx_shyj,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+				</foreach>
+			tmp on tmp.cwid = cwgl.cwid
+		order by tmp.rownum
+	</select>
+</mapper>

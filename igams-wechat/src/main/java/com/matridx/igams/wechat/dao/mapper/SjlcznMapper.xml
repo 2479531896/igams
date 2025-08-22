@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjlcznDao" >
+	<insert id="insert" parameterType="SjlcznDto">
+		insert into igams_sjlczn(sjid,znid)
+		values
+		<foreach collection="ids" separator="," open="" close="" item="item" index="index">
+			(#{sjid},#{item})
+		</foreach>
+	</insert>
+
+	<insert id="batchInsert" parameterType="list">
+		insert into igams_sjlczn (sjid,znid,wzid,jclx,jczlx) VALUES
+		<foreach collection="list" open="" close="" item="item" index="index" separator=",">
+			(#{item.sjid},#{item.znid},#{item.wzid},#{item.jclx},coalesce(#{item.jczlx},''))
+		</foreach>
+	</insert>
+	
+	<delete id="delete" parameterType="SjlcznDto">
+		delete from igams_sjlczn
+		<where>
+			sjid=#{sjid}
+		</where>
+	</delete>
+	
+	<select id="getGuideForWord" parameterType="String" resultType="SjlcznDto">
+		select lczzzngl.yygs from igams_sjlczn sjlczn 
+		left join igams_lczzzngl lczzzngl on sjlczn.znid=lczzzngl.znid
+		<where>
+			lczzzngl.scbj !='1'
+			and sjlczn.sjid=#{sjid}
+		</where>
+	</select>
+</mapper>

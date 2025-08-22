@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IWzzkDao" >
+
+    <insert id="insertOrUpdateList" parameterType="WzzkDto">
+        <if test="list != null and list.size()>0">
+            insert into igams_wzzk
+            (zkid,
+            jcdwid,
+            wkbh,
+            wzid,
+            jz,
+            bzc,
+            ksrq,
+            lrsj,
+            scbj
+            ) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.zkid},#{item.jcdwid},#{item.wkbh},#{item.wzid},#{item.jz},#{item.bzc},cast(#{item.ksrq} as timestamp),LOCALTIMESTAMP,#{item.scbj})
+            </foreach>
+        </if>
+        on conflict(wkbh,wzid,jcdwid) do update set jz=excluded.jz,bzc=excluded.bzc,ksrq=excluded.ksrq
+    </insert>
+
+    <select id="getPcStatistics" parameterType="WzzkDto" resultType="WzzkDto">
+        select jcdw,wkrq,wkbh,jsjg
+        from(
+        select  mrzk.jcdw,wkgl.wkrq,wzzk.wkbh,wzzk.wzid,mrzk.sz,
+        (cast(mrzk.sz as numeric) - cast(wzzk.jz as numeric))/(case when cast(wzzk.bzc as numeric)is null then 1 else cast(wzzk.bzc as numeric) end) jsjg,wzgl.wzzwm
+        from igams_wkgl wkgl
+        left join matridx_jcsj jc_dw on wkgl.jcdw = jc_dw.csid and jc_dw.jclb='DETECTION_UNIT'
+        left join igams_wksjgl wksjgl on wksjgl.wkid = wkgl.wkid
+        left join igams_xxdy xxdy on xxdy.dylx = #{xmdyStr} and xxdy.kzcs1 = jc_dw.csmc
+        <if test="yxxs !=null and yxxs.size >0">
+            and xxdy.yxx in
+            <foreach collection="yxxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        left join igams_mrzk mrzk on mrzk.ybbh = xxdy.dyxx and mrzk.scbj ='0' and mrzk.jcdw = wkgl.jcdw and wksjgl.xpmc = mrzk.xpm
+        left join igams_wzzk wzzk on wzzk.jcdwid = mrzk.jcdw and wzzk.wzid = mrzk.wzid  and wzzk.wkbh  = xxdy.dyxx
+        left join igams_wzgl wzgl on wzgl.wzid=mrzk.wzid
+        left join matridx_jcsj cxyxx on cxyxx.csmc=wksjgl.cxy and cxyxx.jclb='SEQUENCER_CODE'
+
+        where
+        wkgl.scbj ='0' and mrzk.mrzkid is not null
+        <if test="wkrqstart !=null and wkrqstart !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &gt;= #{wkrqstart}
+        </if>
+        <if test="wkrqend !=null and wkrqend !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &lt;=#{wkrqend}
+        </if>
+        <if test="jcdws !=null and jcdws.size > 0">
+            and mrzk.jcdw in
+            <foreach collection="jcdws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="cxy !=null and cxy !='' ">
+            and cxyxx.csid=#{cxy}
+        </if>
+
+        )tmp
+        group by tmp.jcdw,tmp.wkrq,tmp.wkbh,tmp.jsjg
+    </select>
+
+    <select id="getNcStatistics" parameterType="WzzkDto" resultType="WzzkDto">
+         select count(mrzk.wzid) ncnum,wzgl.wzzwm,to_char(mrzk.lrsj,'YYYY-MM-dd')lrsj
+        from igams_wkgl wkgl
+         left join matridx_jcsj jc_dw on wkgl.jcdw = jc_dw.csid and jc_dw.jclb='DETECTION_UNIT'
+         left join igams_wksjgl wksjgl on wksjgl.wkid = wkgl.wkid
+         left join igams_xxdy xxdy on xxdy.dylx = #{xmdyStr} and xxdy.kzcs1 = jc_dw.csmc
+         left join igams_mrzk mrzk on mrzk.ybbh = xxdy.dyxx and mrzk.scbj ='0' and mrzk.jcdw = wkgl.jcdw and wksjgl.xpmc = mrzk.xpm
+         left join igams_wzgl wzgl on wzgl.wzid=mrzk.wzid
+         left join matridx_jcsj cxyxx on cxyxx.csmc=wksjgl.cxy and cxyxx.jclb='SEQUENCER_CODE'
+         where mrzk.wzid is not null
+        <if test="yxxs !=null and yxxs.size >0">
+            and xxdy.yxx in
+            <foreach collection="yxxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jcdws !=null and jcdws.size > 0">
+            and mrzk.jcdw in
+            <foreach collection="jcdws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="wkrqstart !=null and wkrqstart !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &gt;= #{wkrqstart}
+        </if>
+        <if test="wkrqend !=null and wkrqend !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &lt;=#{wkrqend}
+        </if>
+        <if test="cxy !=null and cxy !='' ">
+            and cxyxx.csid=#{cxy}
+        </if>
+         group by wzgl.wzzwm,to_char(mrzk.lrsj,'YYYY-MM-dd')
+    </select>
+
+    <select id="getNcPcTable" parameterType="WzzkDto" resultType="WzzkDto">
+        select
+        xxdy.yxx,
+        wzgl.wzzwm,
+        to_char(mrzk.lrsj,
+        'YYYY-MM-dd')lrsj,
+        mrzk.wzid,
+        mrzk.ybbh,
+        wzzk.jz,
+        wzzk.bzc
+        from
+        igams_wkgl wkgl
+        left join matridx_jcsj jc_dw on
+        wkgl.jcdw = jc_dw.csid
+        and jc_dw.jclb = 'DETECTION_UNIT'
+        left join igams_wksjgl wksjgl on
+        wksjgl.wkid = wkgl.wkid
+        left join igams_xxdy xxdy on
+
+        xxdy.kzcs1 = jc_dw.csmc
+        left join igams_mrzk mrzk on
+        mrzk.ybbh = xxdy.dyxx
+        and mrzk.scbj = '0'
+        and mrzk.jcdw = wkgl.jcdw
+        and wksjgl.xpmc = mrzk.xpm
+        left join igams_wzzk wzzk on
+        wzzk.wkbh =mrzk.ybbh
+        and mrzk.jcdw = wzzk.jcdwid
+        and mrzk.wzid =wzzk.wzid
+        left join igams_wzgl wzgl on
+        wzgl.wzid = mrzk.wzid
+        left join matridx_jcsj cxyxx on
+        cxyxx.csmc=wksjgl.cxy and cxyxx.jclb='SEQUENCER_CODE'
+        where
+        mrzk.wzid is not null
+        <if test="yxxs !=null and yxxs.size >0">
+            and xxdy.yxx in
+            <foreach collection="yxxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jcdws !=null and jcdws.size > 0">
+            and mrzk.jcdw in
+            <foreach collection="jcdws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="wkrqstart !=null and wkrqstart !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &gt;= #{wkrqstart}
+        </if>
+        <if test="wkrqend !=null and wkrqend !='' ">
+            and to_char(wkgl.wkrq,'YYYY-MM-DD') &lt;=#{wkrqend}
+        </if>
+        <if test="cxy !=null and cxy !='' ">
+            and cxyxx.csid=#{cxy}
+        </if>
+    </select>
+</mapper>

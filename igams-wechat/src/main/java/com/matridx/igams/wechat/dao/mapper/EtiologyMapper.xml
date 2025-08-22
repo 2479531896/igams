@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IEtiologyDao" >
+
+
+	<insert id="insert" parameterType="EtiologyDto">
+		insert into igams_etiology (etiologyid,wzid,wzzwm,rq,sj,cn,sjcn,scbj,lx)
+
+		select replace(cast(uuid_generate_v4() as VARCHAR),'-',''), t_wz.wzid,wzgl.wzzwm,rq,ROUND((cn * 100.0)/sjcn,2) sj,cn,sjcn,'0' as scbj,#{lx} as lx from
+		(
+			select tt.wzid,tt.monthg as rq, case when sjxx.cn is null then 0 else sjxx.cn end cn   from(select wzid, to_char( date_trunc('month', generate_series(
+			timestamp '||${zqkssj}||',
+			timestamp '||${zqjssj}||',
+			interval '1 month'
+			)), 'YYYY-MM')
+			AS monthg
+			from igams_sjwzxx sjwz
+
+			group by wzid) as tt
+			left join
+			(
+			select case when ttt.dyxx is not null then ttt.dyxx else sjwz.wzid end wzid,to_char(sjwz.lrsj,'YYYY-MM') rq,count(sjwzid) cn
+			from igams_sjwzxx sjwz
+			left join igams_xxdy ttt on ttt.yxx=sjwz.wzid
+			where to_char(sjwz.lrsj,'YYYY-MM') &gt;= #{zqkssj}
+			and to_char(sjwz.lrsj,'YYYY-MM') &lt;= #{zqjssj}
+			group by case when ttt.dyxx is not null then ttt.dyxx else sjwz.wzid end,to_char(sjwz.lrsj,'YYYY-MM')) sjxx
+			on sjxx.wzid=tt.wzid and sjxx.rq=tt.monthg
+			) t_wz
+			left outer join (
+			select to_char(sjxx.bgrq,'YYYY-MM') bgrq,count(sjxx.sjid) sjcn
+			from igams_sjxx sjxx where to_char(sjxx.bgrq,'YYYY-MM') &gt;= #{zqkssj}
+			and to_char(sjxx.bgrq,'YYYY-MM') &lt;= #{zqjssj}
+			group by  to_char(sjxx.bgrq,'YYYY-MM')
+		) tmp_sj on t_wz.rq = tmp_sj.bgrq
+		left join igams_wzgl wzgl on wzgl.wzid =t_wz.wzid
+		order by sj desc
+	</insert>
+	<insert id="insertByDay" parameterType="EtiologyDto">
+		insert into igams_etiology (etiologyid,wzid,wzzwm,rq,sj,cn,sjcn,scbj,lx)
+
+		select replace(cast(uuid_generate_v4() as VARCHAR),'-','') AS etiologyid, t_wz.wzid,wzgl.wzzwm,rq,ROUND((cn * 100.0)/sjcn,2) sj,cn,sjcn,'0' as scbj,#{lx} as lx from
+		(
+		select tt.wzid,tt.monthg as rq, case when sjxx.cn is null then 0 else sjxx.cn end cn   from(select wzid, to_char( date_trunc('day', generate_series(
+		now() - interval '30 days',
+		now(),
+		interval '1 day'
+		))::date, 'YYYY-MM-DD')
+		AS monthg
+		from igams_sjwzxx sjwz
+
+		group by wzid) as tt
+		left join
+		(
+		select case when ttt.dyxx is not null then ttt.dyxx else sjwz.wzid end wzid,to_char(sjwz.lrsj,'YYYY-MM-DD') rq,count(sjwzid) cn
+		from igams_sjwzxx sjwz
+
+		left join igams_xxdy ttt on ttt.yxx=sjwz.wzid
+
+		where to_char(sjwz.lrsj,'YYYY-MM-DD') &gt;= to_char(now() - interval '30 days','YYYY-MM-DD')
+		and to_char(sjwz.lrsj,'YYYY-MM-DD') &lt;= to_char(now() ,'YYYY-MM-DD')
+		group by case when ttt.dyxx is not null then ttt.dyxx else sjwz.wzid end,to_char(sjwz.lrsj,'YYYY-MM-DD')) sjxx
+		on sjxx.wzid=tt.wzid and sjxx.rq=tt.monthg
+		) t_wz
+		left outer join (
+		select to_char(sjxx.bgrq,'YYYY-MM-DD') bgrq,count(sjxx.sjid) sjcn
+		from igams_sjxx sjxx where to_char(sjxx.bgrq,'YYYY-MM-DD') &gt;= to_char(now() - interval '30 days','YYYY-MM-DD')
+		and to_char(sjxx.bgrq,'YYYY-MM-DD') &lt;= to_char(now() ,'YYYY-MM-DD')
+		group by to_char(sjxx.bgrq,'YYYY-MM-DD')
+		) tmp_sj on t_wz.rq = tmp_sj.bgrq
+		left join igams_wzgl wzgl on wzgl.wzid =t_wz.wzid
+		order by sj desc
+	</insert>
+
+	<insert id="insertList" parameterType="EtiologyDto">
+
+		with tmpppp as(
+		with tmppp as(
+		with tmpp as(
+		with tmp as(
+		select wzid,ceil(count(wzid)*0.75) as fcrount from igams_etiology
+		where lx='MONTH_ETIOLOGY' and scbj ='0'
+		group by wzid
+		)
+		select etiology.wzid,etiology.wzzwm,etiology.sj,etiology.rq,ROW_NUMBER() OVER (partition BY etiology.wzid order by cast(etiology.sj as numeric) asc ) as xh,tmp.fcrount
+		from igams_etiology etiology
+		left join tmp on tmp.wzid=etiology.wzid
+		where lx='MONTH_ETIOLOGY' and scbj ='0'
+		order by wzid,cast(sj as numeric) asc
+		)
+		select tmpp.wzid,tmpp.wzzwm,sum(cast(tmpp.sj as numeric)),sum(cast(tmpp.sj as numeric))/tmpp.fcrount as tt,tmpp.fcrount
+		from tmpp
+		where tmpp.xh&lt;=tmpp.fcrount
+		group by tmpp.wzid,tmpp.wzzwm,tmpp.fcrount
+		)
+		select etiology.wzid,etiology.wzzwm,etiology.sj,etiology.rq,ROW_NUMBER() OVER (partition BY etiology.wzid order by cast(etiology.sj as numeric) asc ) as xh,tmppp.fcrount,tmppp.tt,
+		(cast(etiology.sj as numeric)-cast(tmppp.tt as numeric))*(cast(etiology.sj as numeric)-cast(tmppp.tt as numeric)) as fc
+		from igams_etiology etiology
+		left join tmppp on tmppp.wzid=etiology.wzid
+		where lx='MONTH_ETIOLOGY' and scbj ='0'
+		)
+		insert into igams_etiology (etiologyid,wzid,wzzwm,fc,bzc,jz,lx,scbj)
+
+		select replace(cast(uuid_generate_v4() as VARCHAR),'-','')AS etiologyid,tmpppp.wzid,tmpppp.wzzwm,round(cast(sum(tmpppp.fc)/count(tmpppp.wzid) as numeric),9) as fc,
+		round(cast((|/sum(tmpppp.fc)/count(tmpppp.wzid)) as numeric),9)  as bzc, round(cast(tmpppp.tt as numeric),3)  as jz,'TOTAL_SD_MEAN' as lx,'0' as scbj
+		from tmpppp
+		where tmpppp.xh&lt;=tmpppp.fcrount
+		group by tmpppp.wzid,tmpppp.wzzwm ,tmpppp.tt
+	</insert>
+
+	<delete id="delBylx"  parameterType="EtiologyDto">
+		delete from igams_etiology
+		where lx=#{lx}
+	</delete>
+
+	<select id="getGroupWzid" parameterType="EtiologyDto" resultType="EtiologyDto">
+		select wzid from igams_sjwzxx group by wzid
+	</select>
+
+	<select id="getYjByCxlx" parameterType="EtiologyDto" resultType="EtiologyDto">
+		select tmpp.wzid,tmpp.wzzwm,max(tmpp.jz) jz,max(tmpp.gl) gl,max(tmpp.bzc) bzc,max(tmpp.addfm)addfm,max(cast(tmpp.gl as numeric)-cast(tmpp.addfm as numeric)) tsl,
+		    max(cast(tmpp.gl as numeric)-cast(tmpp.addfm as numeric))/(case when max(tmpp.addfm)=0 then 1 else max(tmpp.addfm) end) bs
+		from(
+		select tmp.*,case when tmp.gl>tmp.addfm then 1 else 0 end yj
+		from(
+		select tt.wzzwm,tt.jz,tt.bzc,tt.wzid,sum(cast(cn as numeric))cn,sum(cast(sjcn as numeric))sjcn,round(sum(cast(cn as numeric))*100.0/sum(cast(sjcn as numeric)),2)gl,(cast(tt.jz as numeric)+cast(tt.bzc as numeric)) addfm from(
+		select ie.wzzwm,ie.wzid,ie.sj,ie.cn,ie.sjcn,ie.rq,ie2.fc,ie2.jz,ie2.bzc
+		from igams_etiology ie
+		left outer join igams_wzgl wzgl on wzgl.zbx in ('pathogenic','likely pathogenic') and ie.wzid = wzgl.wzid
+		left join (
+		select * from igams_etiology
+		where lx= 'TOTAL_SD_MEAN'
+		)ie2 on ie.wzid=ie2.wzid
+		where ie.lx='DAY_ETIOLOGY' and wzgl.wzid is not null
+		<if test="cxlx='week'">
+			and ie.rq &lt;=to_char(now() ,'YYYY-MM-DD')
+			and ie.rq &gt;=to_char(now() - interval '29 days','YYYY-MM-DD')
+		</if>
+		<if test="cxlx='month'">
+			and ie.rq &lt;=to_char(now() ,'YYYY-MM-DD')
+			and ie.rq &gt;=to_char(now() - interval '6 days','YYYY-MM-DD')
+		</if>
+		)tt
+		group by tt.wzzwm,tt.wzid,tt.jz,tt.bzc
+		)as tmp
+		)as tmpp
+		where tmpp.yj='1' and tmpp.wzid is not null
+		group by tmpp.wzid,tmpp.wzzwm
+		order by tsl desc
+		limit 10
+	</select>
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IHbhzkhDao" >
+    <insert id="insertList" parameterType="list">
+        insert into igams_hbhzkh(khid,hbid,xh,zykh)
+        values
+        <foreach collection="list" item="item" separator="," index="index">
+            (#{item.khid},#{item.hbid},(select cast(coalesce(max(xh),'0') as numeric) +1 + #{index} from igams_hbhzkh where hbid = #{item.hbid}),#{item.zykh})
+        </foreach>
+    </insert>
+
+
+    <!--通过主键删除-->
+    <delete id="delete" parameterType="HbhzkhDto">
+        delete from igams_hbhzkh where
+        <choose>
+            <when test="ids !=null and ids.size > 0">
+                hbid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                <if test="hbid !=null and hbid != ''">
+                    hbid = #{hbid}
+                </if>
+            </otherwise>
+        </choose>
+    </delete>
+
+
+    <select id="getDtoList" parameterType="HbhzkhDto" resultType="HbhzkhDto">
+        select hbhzkh.hbid,hbhzkh.khid,hbhzkh.xh,swkhgl.gsmc,COALESCE(dqxx.gwmc,dqxx.zsxm) gwmc,sjhbxx.hbmc,sjhbxx.fl,hbhzkh.zykh,sjhbxx.yhid
+        from igams_hbhzkh hbhzkh
+        left join igams_swkhgl swkhgl on hbhzkh.khid = swkhgl.khid and swkhgl.scbj='0'
+        left join igams_sjhbxx sjhbxx on sjhbxx.hbid = hbhzkh.hbid
+        left join matridx_xtyh dqxx on dqxx.yhid=sjhbxx.dqxx
+        <where>
+            sjhbxx.scbj='0'
+            <if test="hbid != null and hbid !=''">
+                and hbhzkh.hbid = #{hbid}
+            </if>
+            <if test="khid != null and khid !=''">
+                and hbhzkh.khid = #{khid}
+            </if>
+        </where>
+        order by hbhzkh.xh
+    </select>
+
+    <select id="getDto" parameterType="HbhzkhDto" resultType="HbhzkhDto">
+        select * from igams_hbhzkh
+        <where>
+            hbid=#{hbid} and khid=#{khid}
+        </where>
+    </select>
+
+</mapper>
+

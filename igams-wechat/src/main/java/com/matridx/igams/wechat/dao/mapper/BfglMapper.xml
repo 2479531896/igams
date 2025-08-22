@@ -1,0 +1,1110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.IBfglDao" >
+	<select id="getDtoByLrry" parameterType="BfglDto" resultType="BfglDto">
+			select * from
+			(
+			select bfdx.dwjc,sf.csmc sfmc,dwdj.csmc dwdjmc,dwlb.csmc dwlbmc,dwfl.csmc dwflmc,dwfl.csdm dwfldm,bf.khxm,bf.ks,max(bf.lrsj) as lrsj,max(bf.dwid) dwid,bf.zc,max(bf.lxfs) lxfs,max(bf.xsfx) xsfx,bfdx.dwmc
+			from igams_bfgl bf
+			left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+			left join matridx_jcsj sf on sf.csid=bfdx.sf
+			left join matridx_jcsj dwdj on dwdj.csid=bfdx.dwdj
+			left join matridx_jcsj dwlb on dwlb.csid=bfdx.dwlb
+			left join matridx_jcsj dwfl on dwfl.csid=bfdx.dwfl
+			where
+				bf.scbj!='1' 
+				<if test="list_flg == 'personal'">
+					and bf.bfr in 
+					<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+						#{item}
+					</foreach>
+				</if>
+			group by bfdx.dwjc,sf.csmc,dwdj.csmc,dwlb.csmc,dwfl.csmc,bf.khxm,bf.ks,bf.zc,bfdx.dwmc,dwfl.csdm
+			union all
+			select bfdx.dwjc,sf.csmc sfmc,dwdj.csmc dwdjmc,dwlb.csmc dwlbmc,dwfl.csmc dwflmc,dwfl.csdm dwfldm,'' as khxm,'' as ks,cast(case when bfdx.lrsj is null then '2019-05-05 11:10:04' else bfdx.lrsj end as timestamp),bfdx.dwid,'' as zc,'' as lxfs,'' as xsfx,bfdx.dwmc
+			from igams_bfdxgl bfdx
+			left join matridx_jcsj sf on sf.csid=bfdx.sf
+			left join matridx_jcsj dwdj on dwdj.csid=bfdx.dwdj
+			left join matridx_jcsj dwlb on dwlb.csid=bfdx.dwlb
+			left join matridx_jcsj dwfl on dwfl.csid=bfdx.dwfl
+			where bfdx.scbj!='1'
+			)tmp
+			<where>
+			<if test="entire != null and entire != ''">
+				tmp.dwjc like '%'||#{entire}||'%'
+				or
+				tmp.dwmc like '%'||#{entire}||'%'
+				or
+				tmp.sfmc like '%'||#{entire}||'%'
+				or
+				tmp.dwdjmc like '%'||#{entire}||'%'
+				or
+				tmp.dwflmc like '%'||#{entire}||'%'
+				or
+				tmp.dwlbmc like '%'||#{entire}||'%'
+				or
+				tmp.khxm like '%'||#{entire}||'%'
+				or
+				tmp.ks like '%'||#{entire}||'%'
+				or
+				tmp.zc like '%'||#{entire}||'%'
+				or
+				tmp.lxfs like '%'||#{entire}||'%'
+				or
+				tmp.xsfx like '%'||#{entire}||'%'
+			</if>
+			</where>
+			order by lrsj desc limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+	<insert id="insert" parameterType="BfglDto">
+		insert into igams_bfgl(bfid
+		<if test="dwid != null and dwid != ''">
+			,dwid
+		</if>
+		<if test="khxm != null and khxm != ''">
+			,khxm
+		</if>
+		<if test="ks != null and ks != ''">
+			,ks
+		</if>
+		<if test="zc != null and zc != ''">
+			,zc
+		</if>
+		<if test="lxfs != null and lxfs != ''">
+			,lxfs
+		</if>
+		<if test="xsfx != null and xsfx != ''">
+			,xsfx
+		</if>
+		<if test="bfsjqs != null and bfsjqs != ''">
+			,bfsjqs
+		</if>
+		<if test="bfsjjs != null and bfsjjs != ''">
+			,bfsjjs
+		</if>
+		<if test="gtnr != null and gtnr != ''">
+			,gtnr
+		</if>
+		<if test="ygywl != null and ygywl != ''">
+			,ygywl
+		</if>
+		<if test="hzyx != null and hzyx != ''">
+			,hzyx
+		</if>
+		<if test="cws != null and cws != ''">
+			,cws
+		</if>
+		<if test="yss != null and yss != ''">
+			,yss
+		</if>
+		<if test="fzs != null and fzs != ''">
+			,fzs
+		</if>
+		<if test="kshzgs != null and kshzgs != ''">
+			,kshzgs
+		</if>
+		<if test="bfr != null and bfr != ''">
+			,bfr
+		</if>
+		<if test="lxrid != null and lxrid != ''">
+			,lxrid
+		</if>
+		<if test="bflx != null and bflx != ''">
+			,bflx
+		</if>
+		<if test="qf != null and qf != ''">
+			,qf
+		</if>
+		<if test="xcgjjh != null and xcgjjh != ''">
+			,xcgjjh
+		</if>
+		<if test="xqfk != null and xqfk != ''">
+			,xqfk
+		</if>
+		<if test="bfmd != null and bfmd != ''">
+			,bfmd
+		</if>
+		<if test="wzxx != null and wzxx != ''">
+			,wzxx
+		</if>
+		,lrry,lrsj,scbj
+		)values(#{bfid}
+		<if test="dwid != null and dwid != ''">
+			,#{dwid}
+		</if>
+		<if test="khxm != null and khxm != ''">
+			,#{khxm}
+		</if>
+		<if test="ks != null and ks != ''">
+			,#{ks}
+		</if>
+		<if test="zc != null and zc != ''">
+			,#{zc}
+		</if>
+		<if test="lxfs != null and lxfs != ''">
+			,#{lxfs}
+		</if>
+		<if test="xsfx != null and xsfx != ''">
+			,#{xsfx}
+		</if>
+		<if test="bfsjqs != null and bfsjqs != ''">
+			,cast(#{bfsjqs} as timestamp)
+		</if>
+		<if test="bfsjjs != null and bfsjjs != ''">
+			,cast(#{bfsjjs} as timestamp)
+		</if>
+		<if test="gtnr != null and gtnr != ''">
+			,#{gtnr}
+		</if>
+		<if test="ygywl != null and ygywl != ''">
+			,cast(#{ygywl} as numeric)
+		</if>
+		<if test="hzyx != null and hzyx != ''">
+			,#{hzyx}
+		</if>
+		<if test="cws != null and cws != ''">
+			,#{cws}
+		</if>
+		<if test="yss != null and yss != ''">
+			,#{yss}
+		</if>
+		<if test="fzs != null and fzs != ''">
+			,#{fzs}
+		</if>
+		<if test="kshzgs != null and kshzgs != ''">
+			,#{kshzgs}
+		</if>
+	
+		<if test="bfr != null and bfr != ''">
+			,#{bfr}
+		</if>
+		<if test="lxrid != null and lxrid != ''">
+			,#{lxrid}
+		</if>
+		<if test="bflx != null and bflx != ''">
+			,#{bflx}
+		</if>
+		<if test="qf != null and qf != ''">
+			,#{qf}
+		</if>
+		<if test="xcgjjh != null and xcgjjh != ''">
+			,#{xcgjjh}
+		</if>
+		<if test="xqfk != null and xqfk != ''">
+			,#{xqfk}
+		</if>
+		<if test="bfmd != null and bfmd != ''">
+			,#{bfmd}
+		</if>
+		<if test="wzxx != null and wzxx != ''">
+			,#{wzxx}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+	
+	<select id="getPagedDtoList" parameterType="BfglDto" resultType="BfglDto">
+		select  bfgl.bfid,bfgl.dwid,bfdx.dwmc,bfdx.dwjc,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,
+				jc_lb.csmc as dwlbmc,bfgl.khxm,bfgl.ks,bfgl.zc,bfgl.lxfs,bfgl.xsfx,to_char(bfgl.bfsjqs,'YYYY-MM-DD hh24:mi') bfsjqs,to_char(bfgl.bfsjjs,'YYYY-MM-DD hh24:mi') bfsjjs,
+				jc_sf.csmc as sfmc,bfgl.gtnr,bfgl.hzyx,bfgl.lrry,bfgl.lrsj,bfgl.cws,bfgl.yss,bfgl.fzs,bfdx.dxbm,jc_bflx.csmc as bflxmc,jc_qf.csmc as qfmc,bflxr.lxrxm,bfgl.xqfk,bfgl.xcgjjh,
+				bfgl.kshzgs,yh_lrry.zsxm as lrrymc,yh_bfr.zsxm as bfrmc,bfgl.bfmd
+			from igams_bfgl bfgl
+			left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid and bfdx.scbj='0'
+			left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfgl.lxrid
+			left join matridx_jcsj jc_bflx on jc_bflx.csid=bfgl.bflx
+			left join matridx_jcsj jc_qf on jc_qf.csid=bfgl.qf
+			left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+			left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+			left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+			left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+			left join matridx_xtyh yh_lrry on yh_lrry.yhid=bfgl.lrry and yh_lrry.scbj='0'
+			left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr and yh_bfr.scbj='0'
+			left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+			LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = bfdx.ywy
+		<where>
+			bfgl.scbj !='1'
+			<if test="dwmc !=null and dwmc !=''">
+				and bfdx.dwmc like '%'||#{dwmc}||'%'
+			</if>
+			<if test="bfrmc !=null and bfrmc !=''">
+				and yh_bfr.zsxm like '%'||#{bfrmc}||'%'
+			</if>
+			<if test="lxrxm !=null and lxrxm !=''">
+				and bflxr.lxrxm like '%'||#{lxrxm}||'%'
+			</if>
+
+			<if test = "dwfls != null and dwfls.length > 0 "  >
+				and bfdx.dwfl in 
+				<foreach collection="dwfls" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "bflxs != null and bflxs.length > 0 "  >
+				and bfgl.bflx in
+				<foreach collection="bflxs" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "qfs != null and qfs.length > 0 "  >
+				and bfgl.qf in
+				<foreach collection="qfs" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bfsjstart != null and bfsjstart != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &gt;= #{bfsjstart}
+			</if>
+			<if test="bfsjend != null and bfsjend != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &lt;= #{bfsjend}
+			</if>
+			<if test = "jgids != null and jgids.length > 0"  >
+				and yhssjg.jgid in
+				<foreach collection="jgids" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ywys != null and ywys.length > 0"  >
+				and bfdx.ywy in
+				<foreach collection="ywys" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 钉钉小程序查询个人清单 -->
+	<select id="getPersonalListByLrry" parameterType="BfglDto" resultType="BfglDto">
+		select  bfgl.bfid,bfgl.dwid,bfdx.dwmc,bfdx.dwjc,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,
+				jc_lb.csmc as dwlbmc,bfgl.khxm,bfgl.ks,bfgl.zc,bfgl.lxfs,bfgl.xsfx,to_char(bfgl.bfsjqs,'YYYY-MM-DD hh24:mi') bfsjqs,to_char(bfgl.bfsjjs,'YYYY-MM-DD hh24:mi') bfsjjs,
+				jc_sf.csmc as sfmc,bfgl.gtnr,bfgl.ygywl,bfgl.hzyx,bfgl.lrry,bfgl.lrsj,yh.zsxm lrrymc,bfr.zsxm bfrmc
+			from igams_bfgl bfgl
+			left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid
+			left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+			left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+			left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+			left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+			left join matridx_xtyh yh on yh.ddid=bfgl.lrry
+			left join matridx_xtyh bfr on bfr.yhid=bfgl.bfr
+			<where>
+				bfgl.scbj!='1'
+				<if test="list_flg == 'personal'">
+					and bfgl.bfr in
+					<foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+				<if test="entire != null and entire != ''">
+					and (
+					bfdx.dwmc like '%'||#{entire}||'%'
+					or
+					bfdx.dwjc like '%'||#{entire}||'%'
+					or
+					bfgl.khxm like '%'||#{entire}||'%'
+					or
+					bfgl.ks like '%'||#{entire}||'%'
+					or
+					bfgl.zc like '%'||#{entire}||'%'
+					or
+					bfgl.lxfs like '%'||#{entire}||'%'
+					or
+					bfr.zsxm like '%'||#{entire}||'%'
+					)
+				</if>
+			</where>
+			order by bfgl.bfsjqs desc limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+	
+	<update id="update" parameterType="BfglDto">
+		update igams_bfgl 
+		<set>
+				xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="dwid != null and dwid != ''">
+				,dwid=#{dwid}
+			</if>
+			<if test="khxm != null and khxm != ''">
+				,khxm=#{khxm}
+			</if>
+			<if test="ks != null and ks != ''">
+				,ks=#{ks}
+			</if>
+			<if test="zc != null and zc != ''">
+				,zc=#{zc}
+			</if>
+			<if test="lxfs != null and lxfs != ''">
+				,lxfs=#{lxfs}
+			</if>
+			<if test="xsfx != null and xsfx != ''">
+				,xsfx=#{xsfx}
+			</if>
+			<if test="bfsjqs != null and bfsjqs != ''">
+				,bfsjqs=cast(#{bfsjqs} as timestamp)
+			</if>
+			<if test="bfsjjs != null and bfsjjs != ''">
+				,bfsjjs=cast(#{bfsjjs} as timestamp)
+			</if>
+			<if test="gtnr != null and gtnr != ''">
+				,gtnr=#{gtnr}
+			</if>
+			<if test="ygywl != null and ygywl != ''">
+				,ygywl=cast(#{ygywl} as numeric)
+			</if>
+			<if test="hzyx != null and hzyx != ''">
+				,hzyx=#{hzyx}
+			</if>
+			<if test="fzs != ''">
+				,fzs=#{fzs}
+			</if>
+			<if test="cws != ''">
+				,cws=#{cws}
+			</if>
+			<if test="yss != ''">
+				,yss=#{yss}
+			</if>
+			<if test="kshzgs != ''">
+				,kshzgs=#{kshzgs}
+			</if>
+			<if test="bfr != null and bfr != ''">
+				,bfr=#{bfr}
+			</if>
+			<if test="lxrid != null and lxrid != ''">
+				,lxrid=#{lxrid}
+			</if>
+			<if test="bflx != null and bflx != ''">
+				,bflx=#{bflx}
+			</if>
+			<if test="qf != null and qf != ''">
+				,qf=#{qf}
+			</if>
+			<if test="xcgjjh != null and xcgjjh != ''">
+				,xcgjjh=#{xcgjjh}
+			</if>
+			<if test="xqfk != null and xqfk != ''">
+				,xqfk=#{xqfk}
+			</if>
+			<if test="bfmd != null and bfmd != ''">
+				,bfmd=#{bfmd}
+			</if>
+			<if test="wzxx != null and wzxx != ''">
+				,wzxx=#{wzxx}
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			and bfid=#{bfid}
+		</where>
+	</update>
+	
+	<!-- 根据拜访id获取拜访登记信息 -->
+	<select id="getDtoById" parameterType="String" resultType="BfglDto">
+		select  bfgl.bfid,bfgl.dwid,bfdx.dwmc,bfdx.dwjc,jc_fl.csmc as dwflmc,jc_dj.csmc as dwdjmc,
+				jc_lb.csmc as dwlbmc,bfgl.khxm,bfgl.ks,bfgl.zc,bfgl.lxfs,bfgl.xsfx,to_char(bfgl.bfsjqs,'YYYY-MM-DD hh24:mi') bfsjqs,to_char(bfgl.bfsjjs,'YYYY-MM-DD hh24:mi') bfsjjs,
+				jc_sf.csmc as sfmc,bfgl.gtnr,bfgl.ygywl,bfgl.hzyx,bfgl.lrry,bfgl.lrsj,bfgl.cws,bfgl.fzs,bfgl.yss,bfgl.kshzgs,case when bfdx.cxyqbj ='0' then '否'  when bfdx.cxyqbj ='1' then '是'  end  cxyqbjmc,
+				yh_bfr.zsxm as bfrmc,bfgl.bfr,jc_fl.csdm as fl_csdm
+			from igams_bfgl bfgl
+			left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid
+			left join matridx_jcsj jc_fl on jc_fl.csid=bfdx.dwfl
+			left join matridx_jcsj jc_dj on jc_dj.csid=bfdx.dwdj
+			left join matridx_jcsj jc_lb on jc_lb.csid=bfdx.dwlb
+			left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+			left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr
+			<where>
+				bfgl.scbj!='1'
+				and bfgl.bfid=#{bfid}
+			</where>
+	</select>
+
+	<select id="getDto" parameterType="BfglDto" resultType="BfglDto">
+		select  bfgl.bfid,bfgl.dwid,bfgl.khxm,bfgl.ks,bfgl.zc,bfgl.lxfs,bfgl.xsfx,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi') as bfsjqs,to_char(bfgl.bfsjjs,'yyyy-mm-dd hh24:mi') as bfsjjs,bfgl.bfsjjs,bfgl.gtnr,bfgl.ygywl
+		,bfgl.hzyx,bfgl.cws,bfgl.yss,bfgl.kshzgs,bfgl.bfr,bfgl.bflx,bfgl.qf,bfgl.xcgjjh,bfgl.xqfk,bfgl.bfmd,bfdx.dwmc,bflxr.lxrxm,bflxr.dh,bflxr.bmks,yh_bfr.zsxm as bfrmc,
+		to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi') as bfsj,
+		bfgl.bfmd,jc_bflx.csmc as bflxmc,jc_qf.csmc as qfmc,bfgl.gtnr,bfgl.xqfk,bfgl.xcgjjh,bfgl.lxrid,yc.ycid
+		from igams_bfgl bfgl
+		left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid and bfdx.scbj='0'
+		left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfgl.lxrid and bflxr.scbj='0'
+		left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr and yh_bfr.scbj='0'
+		left join matridx_jcsj jc_bflx on jc_bflx.csid=bfgl.bflx
+		left join matridx_jcsj jc_qf on jc_qf.csid=bfgl.qf
+		left join igams_sjyc yc on yc.ywid=bfgl.bfid
+		<where>
+			bfgl.scbj!='1'
+			and bfgl.bfid=#{bfid}
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="BfglDto" resultType="BfglDto">
+		select  bfgl.bfid,bfgl.dwid,bfgl.khxm,bfgl.ks,bfgl.zc,bfgl.lxfs,bfgl.xsfx,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi') as bfsjqs,to_char(bfgl.bfsjjs,'yyyy-mm-dd hh24:mi') as bfsjjs,bfgl.bfsjjs,bfgl.gtnr,bfgl.ygywl
+		,bfgl.hzyx,bfgl.cws,bfgl.yss,bfgl.kshzgs,bfgl.bfr,bfgl.bflx,bfgl.qf,bfgl.xcgjjh,bfgl.xqfk,bfgl.bfmd,bfdx.dwmc,bflxr.lxrxm,bflxr.dh,bflxr.bmks,yh_bfr.zsxm as bfrmc,bfgl.lxrid,
+		to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi') as bfsj,
+		bfgl.bfmd,jc_bflx.csmc as bflxmc,jc_qf.csmc as qfmc,bfgl.gtnr,bfgl.xqfk,bfgl.xcgjjh,
+		case when (to_char(bfgl.lrsj,'yyyy-mm-dd')= to_char(CURRENT_DATE,'yyyy-mm-dd') and bfgl.lrry=#{yhid}) then '1' else '0' end ddanbj
+		from igams_bfgl bfgl
+		left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid and bfdx.scbj='0'
+		left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfgl.lxrid and bflxr.scbj='0'
+		left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr and yh_bfr.scbj='0'
+		left join matridx_jcsj jc_bflx on jc_bflx.csid=bfgl.bflx
+		left join matridx_jcsj jc_qf on jc_qf.csid=bfgl.qf
+		<where>
+			bfgl.scbj!='1'
+			<if test="dwid != null and dwid != ''">
+				and bfgl.dwid=#{dwid}
+			</if>
+			<if test="lxrid != null and lxrid != ''">
+				and bfgl.lxrid=#{lxrid}
+			</if>
+			<if test="bfr != null and bfr != ''">
+				and bfgl.bfr=#{bfr}
+			</if>
+			<if test="ids != null and ids.size()>0">
+				and bfid in
+				<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bfsjstart != null and bfsjstart != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &gt;= #{bfsjstart}
+			</if>
+			<if test="bfsjend != null and bfsjend != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &lt;= #{bfsjend}
+			</if>
+			order by bfgl.bfsjqs desc
+		</where>
+	</select>
+	
+	<!-- 根据拜访ID删除拜访  -->
+	<update id="delete" parameterType="BfglDto">
+		update igams_bfgl 
+		<set>
+			scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		</set>
+		<where>	
+			<if test="bfid != null and bfid != ''">
+				or bfid=#{bfid}
+			</if>
+			<if test="ids != null and ids.size()>0">
+				or bfid in 
+				<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<!-- 获取最新的医生数,床位数,分组数,科室合作公司信息 -->
+	<select id="getNewKsxx" parameterType="BfglDto" resultType="BfglDto">
+	select bfdx.dwjc,sf.csmc sfmc,dwdj.csmc dwdjmc,dwlb.csmc dwlbmc,dwfl.csmc dwflmc,bf.khxm,bf.ks,bfdx.dwmc,
+			bf.yss,bf.fzs,bf.cws,bf.kshzgs
+			from igams_bfgl bf
+			left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+			left join matridx_jcsj sf on sf.csid=bfdx.sf
+			left join matridx_jcsj dwdj on dwdj.csid=bfdx.dwdj
+			left join matridx_jcsj dwlb on dwlb.csid=bfdx.dwlb
+			left join matridx_jcsj dwfl on dwfl.csid=bfdx.dwfl
+			where
+				bf.scbj!='1' 
+				<if test="list_flg == 'personal'">
+					and bf.bfr in 
+					<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+						#{item}
+					</foreach>
+				</if>
+				<if test="dwjc != null and dwjc != ''">
+					and bfdx.dwjc=#{dwjc}
+				</if>
+				<if test="sfmc != null and sfmc != ''">
+					and sf.csmc=#{sfmc}
+				</if>
+				<if test="dwdjmc != null and dwdjmc != ''">
+					and dwdj.csmc=#{dwdjmc}
+				</if>
+				<if test="dwlbmc != null and dwlbmc != ''">
+					and dwlb.csmc=#{dwlbmc}
+				</if>
+				<if test="dwflmc != null and dwflmc != ''">
+					and dwfl.csmc=#{dwflmc}
+				</if>
+				<if test="khxm != null and khxm != ''">
+					and bf.khxm=#{khxm}
+				</if>
+				<if test="ks != null and ks != ''">
+					and bf.ks=#{ks}
+				</if>
+				<if test="zc != null and zc != ''">
+					and bf.zc=#{zc}
+				</if>
+				<if test="dwmc != null and dwmc != ''">
+					and bfdx.dwmc=#{dwmc}
+				</if>
+				order by bf.lrsj desc limit 1
+	</select>
+	
+	<sql id="EXPORT_JOINS">
+		<if test="bfr_flg !=null">
+			left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr
+		</if>
+		<if test="dwfl_flg !=null">
+			left join matridx_jcsj jc_dwfl on jc_dwfl.csid=bfdx.dwfl
+		</if>
+		<if test="dwdj_flg !=null">
+			left join matridx_jcsj jc_dwdj on jc_dwdj.csid=bfdx.dwdj
+		</if>
+		<if test="dwlb_flg !=null">
+			left join matridx_jcsj jc_dwlb on jc_dwlb.csid=bfdx.dwlb
+		</if>
+		<if test="sf_flg !=null">
+			left join matridx_jcsj jc_sf on jc_sf.csid=bfdx.sf
+		</if>
+	</sql>
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="BfglDto" resultType="BfglDto">
+		select bfgl.bfid,bfgl.scbj ${sqlparam} from (
+			<foreach item="item" index="index" collection="ids" separator=" union all ">  
+			   select #{item,jdbcType=VARCHAR} bfid,#{index} ordernum
+			</foreach>
+			) tmp
+			left outer join igams_bfgl bfgl on tmp.bfid = bfgl.bfid
+			left join igams_bfdxgl bfdx on bfdx.dwid =bfgl.dwid
+			<include refid="EXPORT_JOINS"></include>
+		order by tmp.ordernum
+	</select>
+	<!-- 查询导出条数 -->
+	<select id="getCountForSearchExp"  parameterType="BfglDto" resultType="int">
+		select count(bfgl.bfid) from 
+		igams_bfgl bfgl
+		<where>
+			bfgl.scbj!='1'
+			<if test="bfr != null and bfr !=''">
+				and bfgl.bfr=#{bfr}
+			</if>
+		</where>
+	</select>
+	 <!-- 搜索导出 --> 
+	<select id="getListForSearchExp" parameterType="BfglDto" resultType="BfglDto">
+		select bfgl.bfid ${sqlparam} from (
+		select bfgl.bfid 
+			from igams_bfgl bfgl
+		<where>
+			bfgl.scbj!='1'
+			<if test="bfr != null and bfr != ''">
+				and bfgl.bfr=#{bfr}
+			</if>
+		</where>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+		) t_bfgl
+		left outer join igams_bfgl bfgl on t_bfgl.bfid = bfgl.bfid
+		left join igams_bfdxgl bfdx on bfdx.dwid =bfgl.dwid
+		<include refid="EXPORT_JOINS"></include>
+		order by 
+		<if test="sortName != null and sortName != ''">
+		${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select> 
+	
+	<!-- 钉钉小程序统计本周的拜访次数，拜访单位个数，拜访时长 -->
+	<select id="getStatictisByWeek" parameterType="BfglDto" resultType="BfglDto">
+		select count(t.bfdwgs) bfdwgs,sum(t.bfzsc) bfzsc,sum(t.bfcs) bfcs from(
+		select COUNT(dwid) bfdwgs,sum(extract(epoch FROM (to_timestamp(CAST(bfsjjs AS CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')
+		         - to_timestamp(CAST(bfsjqs AS CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')))/60)  bfzsc,COUNT(bfid) bfcs
+		  FROM igams_bfgl
+		      WHERE scbj != '1'
+		        AND to_char(bfsjqs, 'YYYY-MM-DD') &gt;= #{tjrqstart}
+		        AND to_char(bfsjqs, 'YYYY-MM-DD') &lt;= #{tjrqend}
+		        <if test="list_flg == 'personal'">
+					and bfr in 
+					<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+						#{item}
+					</foreach>
+				</if>
+		      GROUP BY dwid) t
+	</select>
+	
+	<!-- 钉钉小程序统计本月的拜访次数，拜访单位个数，拜访时长 -->
+	<select id="getStatictisByMonth" parameterType="BfglDto" resultType="BfglDto">
+		select (select count(bfid)  from igams_bfgl where scbj!='1' 
+		and to_char(bfsjqs,'YYYY-MM') = #{tjrqstart}
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) bfcs,
+		(select count(t.dwid)  from (select dwid from igams_bfgl where scbj!='1' and to_char(bfsjqs,'YYYY-MM') = #{tjrqstart} 
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		group by dwid) t 
+		) bfdwgs,
+		(select sum(t.minutes) from(
+		select date_part('day', interval_value) * 24 * 60 + date_part('minute', interval_value) as minutes
+		from (
+		select (to_timestamp(cast(bfsjjs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi') - to_timestamp(cast(bfsjqs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')) as interval_value
+		from igams_bfgl where scbj!='1' and to_char(bfsjqs,'YYYY-MM') = #{tjrqstart}
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) s)t) bfzsc
+	</select>
+	
+		<!-- 钉钉小程序统计本日的拜访次数，拜访单位个数，拜访时长 -->
+	<select id="getStatictisByDAY" parameterType="BfglDto" resultType="BfglDto">
+		select (select count(bfid)  from igams_bfgl where scbj!='1' 
+		and to_char(bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) bfcs,
+		(select count(t.dwid)  from (select dwid from igams_bfgl where scbj!='1' and to_char(bfsjqs,'YYYY-MM-DD') = #{tjrqstart} 
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		group by dwid) t 
+		) bfdwgs,
+		(select sum(t.minutes) from(
+		select date_part('day', interval_value) * 24 * 60 + date_part('minute', interval_value) as minutes
+		from (
+		select (to_timestamp(cast(bfsjjs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi') - to_timestamp(cast(bfsjqs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')) as interval_value
+		from igams_bfgl where scbj!='1' and to_char(bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) s)t) bfzsc
+	</select>
+	
+	<!-- 钉钉小程序统计全部的拜访次数，拜访单位个数，拜访时长 -->
+	<select id="getStatictisByAll" parameterType="BfglDto" resultType="BfglDto">
+		select (select count(bfid)  from igams_bfgl where scbj!='1' 
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) bfcs,
+		(select count(t.dwid)  from (select dwid from igams_bfgl where scbj!='1' 
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		group by dwid
+		) t  
+		) bfdwgs,
+		(select sum(t.minutes) from(
+		select date_part('day', interval_value) * 24 * 60 + date_part('minute', interval_value) as minutes
+		from (
+		select (to_timestamp(cast(bfsjjs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi') - to_timestamp(cast(bfsjqs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')) as interval_value
+		from igams_bfgl where scbj!='1'
+		<if test="list_flg == 'personal'">
+			and bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		) s)t) bfzsc
+	</select>
+	
+	<!-- 钉钉小程序查询拜访次数统计图(根据单位区分) -->
+	<select id="getStatictisCountByDwid" parameterType="BfglDto" resultType="BfglDto">
+		select count(bfid),bfdx.dwjc 
+		<if test="list_flg == 'all'">
+		,bf.bfr
+		</if>
+		from igams_bfgl bf
+		left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+		<where>
+		bf.scbj!='1'
+		<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="tjtj_flag == 'day'">
+			and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+		</if>
+		<if test="tjtj_flag == 'week'">
+			and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+		</if>
+		<if test="tjtj_flag == 'month'">
+			and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+		</if>
+		group by bfdx.dwjc
+		<if test="list_flg == 'all'">
+		,bf.bfr
+		</if>
+		</where>
+	</select>
+	
+	<!-- 钉钉小程序查询拜访次数统计图(根据人员区分) -->
+	<select id="getStatictisCountByBfr" parameterType="BfglDto" resultType="BfglDto">
+		select count(bfid),bf.bfr,yh.zsxm bfrmc
+		from igams_bfgl bf
+		left join matridx_xtyh yh on yh.yhid=bf.bfr
+		<where>
+		bf.scbj!='1'
+		<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="tjtj_flag == 'day'">
+			and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+		</if>
+		<if test="tjtj_flag == 'week'">
+			and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+		</if>
+		<if test="tjtj_flag == 'month'">
+			and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+		</if>
+		group by bf.bfr,yh.zsxm
+		</where>
+	</select>
+	
+	<!-- 钉钉小程序查询拜访单位个数统计图(根据拜访时间起始区分) -->
+	<select id="getStatictisDwgsByBfsjqs" parameterType="BfglDto" resultType="BfglDto">
+		select count(dwid),bfsjqs
+		<if test="list_flg == 'all'">
+		,bfr
+		</if>
+		from
+		(select bf.dwid
+		<if test="tjtj_flag == 'day'">
+			,to_char(bf.bfsjqs,'YYYY-MM-DD') bfsjqs
+		</if>
+		<if test="tjtj_flag == 'week'">
+			,to_char(bf.bfsjqs,'YYYY-MM-DD') bfsjqs
+		</if>
+		<if test="tjtj_flag == 'month'">
+			,to_char(bf.bfsjqs,'YYYY-MM') bfsjqs
+		</if> 
+		<if test="tjtj_flag == 'all'">
+			,to_char(bf.bfsjqs,'YYYY') bfsjqs
+		</if>
+		<if test="list_flg == 'all'">
+			,bf.bfr
+		</if>
+		from igams_bfgl bf
+		left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+		<where>
+			bf.scbj!='1'
+			<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+			</if>
+			<if test="tjtj_flag == 'day'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+			</if>
+			<if test="tjtj_flag == 'week'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+			</if>
+			<if test="tjtj_flag == 'month'">
+				and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+			</if>
+		</where>
+			<if test="tjtj_flag == 'day'">
+				group by bf.dwid,to_char(bf.bfsjqs,'YYYY-MM-DD')
+				<if test="list_flg == 'all'">
+					,bf.bfr
+				</if>
+			</if>
+			<if test="tjtj_flag == 'week'">
+				group by bf.dwid,to_char(bf.bfsjqs,'YYYY-MM-DD')
+				<if test="list_flg == 'all'">
+					,bf.bfr
+				</if>
+			</if>
+			<if test="tjtj_flag == 'month'">
+				group by bf.dwid,to_char(bf.bfsjqs,'YYYY-MM') 
+				<if test="list_flg == 'all'">
+					,bf.bfr
+				</if>
+			</if>
+			<if test="tjtj_flag == 'all'">
+				group by bf.dwid,to_char(bf.bfsjqs,'YYYY')
+				<if test="list_flg == 'all'">
+					,bf.bfr
+				</if>
+			</if>
+			) t group by bfsjqs
+			<if test="list_flg == 'all'">
+			,bfr
+			</if>
+	</select>
+	
+	<!-- 钉钉小程序查询拜访单位个数统计图(根据拜访人区分) -->
+	<select id="getStatictisDwgsByBfr" parameterType="BfglDto" resultType="BfglDto">
+		select count(dwid),bfr,bfrmc
+		from
+		(select bf.dwid,bf.bfr,yh.zsxm bfrmc
+		from igams_bfgl bf
+		left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+		left join matridx_xtyh yh on yh.yhid=bf.bfr
+		<where>
+			bf.scbj!='1'
+			<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+			</if>
+			<if test="tjtj_flag == 'day'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+			</if>
+			<if test="tjtj_flag == 'week'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+			</if>
+			<if test="tjtj_flag == 'month'">
+				and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+			</if>
+		</where>
+			group by bf.bfr,bf.dwid,yh.zsxm
+			) t 
+			group by bfr,bfrmc
+	</select>
+	
+	<!--钉钉小程序查询拜访时长统计图(根据拜访单位区分)   -->
+	<select id="getStatictisBfscByDwid" parameterType="BfglDto" resultType="BfglDto">
+		select t.count,t.dwjc
+		<if test="list_flg == 'all'">
+		,bfr
+		</if>
+		from(
+		select sum(date_part('day', interval_value) * 24 * 60 +date_part('hour', interval_value)* 60+ date_part('minute', interval_value)) as count,dwjc
+		<if test="list_flg == 'all'">
+		,bfr
+		</if>
+		from (
+		select (to_timestamp(cast(bf.bfsjjs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi') - to_timestamp(cast(bf.bfsjqs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')) as interval_value,bfdx.dwjc
+		<if test="list_flg == 'all'">
+		,bf.bfr
+		</if>
+		from igams_bfgl bf 
+		left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid																							
+		where bf.scbj!='1'  
+		<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+			</if>
+			<if test="tjtj_flag == 'day'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+			</if>
+			<if test="tjtj_flag == 'week'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+			</if>
+			<if test="tjtj_flag == 'month'">
+				and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+			</if>
+		) s group by dwjc
+		<if test="list_flg == 'all'">
+		,bfr
+		</if>
+		)t
+	</select>
+	
+	<!--钉钉小程序查询拜访时长统计图(根据拜访人区分)   -->
+	<select id="getStatictisBfscByBfr" parameterType="BfglDto" resultType="BfglDto">
+		select t.count,t.bfrmc,t.bfr
+		from(
+		select sum(date_part('day', interval_value) * 24 * 60 +date_part('hour', interval_value)* 60+ date_part('minute', interval_value)) as count,bfrmc,bfr
+		from (
+		select (to_timestamp(cast(bf.bfsjjs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi') - to_timestamp(cast(bf.bfsjqs as CHARACTER VARYING), 'yyyy-mm-dd hh24:mi')) as interval_value,yh.zsxm bfrmc
+		,bf.bfr
+		from igams_bfgl bf 
+		left join matridx_xtyh yh on yh.yhid=bf.bfr																							
+		where bf.scbj!='1'  
+		<if test="list_flg == 'personal'">
+			and bf.bfr in 
+			<foreach collection="lrrylist" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+			</if>
+			<if test="tjtj_flag == 'day'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+			</if>
+			<if test="tjtj_flag == 'week'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+			</if>
+			<if test="tjtj_flag == 'month'">
+				and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+			</if>
+		) s group by bfr,bfrmc
+		)t
+	</select>
+	
+	<!-- 获取统计周期内拜访人信息 -->
+	<select id="getBfrByTjrq" parameterType="BfglDto" resultType="BfglDto">
+		select xt.zsxm bfrmc,bf.bfr from igams_bfgl bf
+			left join matridx_xtyh xt on xt.yhid=bf.bfr
+			left join igams_bfdxgl bfdx on bfdx.dwid=bf.dwid
+			<where>
+			bf.scbj!='1'
+			<if test="tjtj_flag == 'day'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') = #{tjrqstart}
+			</if>
+			<if test="tjtj_flag == 'week'">
+				and to_char(bf.bfsjqs,'YYYY-MM-DD') &gt;= #{tjrqstart} and  to_char(bf.bfsjqs,'YYYY-MM-DD') &lt;= #{tjrqend}
+			</if>
+			<if test="tjtj_flag == 'month'">
+				and to_char(bf.bfsjqs,'YYYY-MM') = #{tjrqstart}
+			</if>
+			</where>
+			group by bf.bfr,xt.zsxm
+	</select>
+
+	<update id="merge" parameterType="BfglDto">
+		update igams_bfgl set dwid=#{dwid}
+		<where>
+			dwid in
+			<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="mergeLxrid" parameterType="List">
+		update igams_bfgl bfgl
+		set lxrid=tmp.hbz
+		from(
+		<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+			select #{item.hbz} hbz,#{item.dwid} dwid,#{item.lxrid} lxrid
+		</foreach>
+		)
+		tmp
+		where
+		bfgl.lxrid=tmp.lxrid and bfgl.dwid=tmp.dwid
+	</update>
+
+	<select id="getStatisticsListByBfr" parameterType="BfglDto" resultType="BfglDto">
+		select tb.count,tb.bfr,yh.zsxm as bfrmc from(<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+			select  bfgl.bfr,count(bfgl.bfid) as count
+			from igams_khzyfp khzyfp
+			left join igams_bfgl bfgl on bfgl.dwid=khzyfp.dwid and bfgl.scbj='0'
+		</if>
+		<if test="dwxzbj == null or dwxzbj == ''">
+			select  bfgl.bfr,count(bfgl.bfid) as count
+			from igams_bfgl bfgl
+		</if>
+		<where>
+			<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+				khzyfp.scbj='0'
+				and bfgl.bfid is not null
+				and khzyfp.yhid =#{yhid}
+			</if>
+			<if test="dwxzbj == null or dwxzbj == ''">
+				bfgl.scbj='0'
+			</if>
+			<if test="bfsjstart != null and bfsjstart != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &gt;= #{bfsjstart}
+			</if>
+			<if test="bfsjend != null and bfsjend != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &lt;= #{bfsjend}
+			</if>
+		</where>
+		group by bfgl.bfr)tb
+		left join matridx_xtyh yh on yh.yhid=tb.bfr and yh.scbj='0'
+		order by tb.count desc
+	</select>
+
+
+	<select id="getStatisticsListByDw" parameterType="BfglDto" resultType="BfglDto">
+		select tb.count,tb.dwid,bfdx.dwmc from(<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+		select  bfgl.dwid,count(bfgl.bfid) as count
+		from igams_khzyfp khzyfp
+		left join igams_bfgl bfgl on bfgl.dwid=khzyfp.dwid and bfgl.scbj='0'
+	</if>
+		<if test="dwxzbj == null or dwxzbj == ''">
+			select  bfgl.dwid,count(bfgl.bfid) as count
+			from igams_bfgl bfgl
+		</if>
+		<where>
+			<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+				khzyfp.scbj='0'
+				and bfgl.bfid is not null
+				and khzyfp.yhid =#{yhid}
+			</if>
+			<if test="dwxzbj == null or dwxzbj == ''">
+				bfgl.scbj='0'
+			</if>
+			<if test="bfr != null and bfr != ''">
+				and bfgl.bfr=#{bfr}
+			</if>
+			<if test="bfsjstart != null and bfsjstart != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &gt;= #{bfsjstart}
+			</if>
+			<if test="bfsjend != null and bfsjend != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &lt;= #{bfsjend}
+			</if>
+		</where>
+		group by bfgl.dwid)tb
+		left join igams_bfdxgl bfdx on bfdx.dwid=tb.dwid and bfdx.scbj='0'
+		order by tb.count desc
+	</select>
+
+	<select id="viewStatisticList" parameterType="BfglDto" resultType="BfglDto">
+		<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+			select  bfgl.bfr,bfgl.bfid,khzyfp.dwid,bfdx.dwmc,bflxr.lxrxm,yh_bfr.zsxm as bfrmc,jc_bflx.csmc as bflxmc,bfgl.gtnr,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi:ss') bfsjqs
+			from igams_khzyfp khzyfp
+			left join igams_bfgl bfgl on bfgl.dwid=khzyfp.dwid and bfgl.scbj='0'
+		</if>
+		<if test="dwxzbj == null or dwxzbj == ''">
+			select  bfgl.bfr,bfgl.bfid,bfgl.dwid,bfdx.dwmc,bflxr.lxrxm,yh_bfr.zsxm as bfrmc,jc_bflx.csmc as bflxmc,bfgl.gtnr,to_char(bfgl.bfsjqs,'yyyy-mm-dd hh24:mi:ss') bfsjqs
+			from igams_bfgl bfgl
+		</if>
+		left join igams_bfdxgl bfdx on bfdx.dwid=bfgl.dwid and bfdx.scbj='0'
+		left join igams_bfdxlxrgl bflxr on bflxr.lxrid =bfgl.lxrid and bflxr.scbj='0'
+		left join matridx_xtyh yh_bfr on yh_bfr.yhid=bfgl.bfr and yh_bfr.scbj='0'
+		left join matridx_jcsj jc_bflx on jc_bflx.csid=bfgl.bflx
+		<where>
+			<if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString()">
+				khzyfp.scbj='0'
+				and bfgl.bfid is not null
+				and khzyfp.yhid =#{yhid}
+			</if>
+			<if test="dwxzbj == null or dwxzbj == ''">
+				bfgl.scbj='0'
+			</if>
+			<if test="bfr != null and bfr != ''">
+				and bfgl.bfr=#{bfr}
+			</if>
+			<if test="dwid != null and dwid != ''">
+				and bfgl.dwid=#{dwid}
+			</if>
+			<if test="bfsjstart != null and bfsjstart != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &gt;= #{bfsjstart}
+			</if>
+			<if test="bfsjend != null and bfsjend != ''">
+				and to_char(bfgl.bfsjqs,'yyyy-mm-dd') &lt;= #{bfsjend}
+			</if>
+		</where>
+		order by  bfgl.bfsjqs desc
+	</select>
+</mapper>

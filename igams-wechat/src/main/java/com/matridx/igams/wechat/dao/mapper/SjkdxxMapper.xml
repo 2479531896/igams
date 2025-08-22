@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.wechat.dao.post.ISjkdxxDao" >
+
+	<select id="getDtoListByMailno" parameterType="String" resultType="String">
+		select ywid from igams_sjkdxx where mailno = #{mailno}
+	</select>
+	<select id="getMailnoSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(sjmailno,LENGTH(sjmailno)-strpos(reverse(sjmailno),'-')+2,LENGTH(sjmailno))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial
+		FROM igams_sjkdxx
+		<where>
+			 sjmailno like #{prefix}||'%'
+		</where>
+	</select>
+    
+    <!-- 查询出所有未签收的送检快递数据 -->
+    <select id="getAllDto" resultType="SjkdxxDto">
+        select sjkd.sjkdid, sjkd.mailno, sjkd.ywid, sjkd.starttime, sjkd.endtime, sjkd.kdzt
+        from igams_sjkdxx sjkd 
+        <where>
+            ( sjkd.kdzt is null or sjkd.kdzt = '0' )
+        </where>
+    </select>
+
+	<update id="modSjkdxxByList" parameterType="list">
+		<if test="list!=null and list.size>0">
+			WITH temp_new_data AS (
+			SELECT sjkd.sjkdid,tmp.mailno,tmp.ywid,NULLIF(NULLIF(tmp.starttime, ''), '') AS starttime,
+				NULLIF(NULLIF(tmp.endtime, ''), '') AS endtime,tmp.kdzt,tmp.ywlx,tmp.kdlx
+			FROM (
+				<foreach collection="list" separator="union all" item="item" index="index">
+					select #{item.mailno} mailno,#{item.ywid} ywid,#{item.starttime} starttime,#{item.endtime} endtime,
+					#{item.kdzt} kdzt,#{item.ywlx} ywlx,#{item.kdlx} kdlx
+				</foreach>
+				) tmp
+				LEFT JOIN igams_sjkdxx sjkd ON (sjkd.kdzt IS NULL OR sjkd.kdzt = '0') AND sjkd.ywid = tmp.ywid AND sjkd.mailno = tmp.mailno
+			)
+			INSERT INTO igams_sjkdxx(sjkdid, mailno, ywid, starttime, endtime, kdzt, ywlx, kdlx)
+			SELECT UPPER(REPLACE(gen_random_uuid()::text, '-', '')) AS sjkdid,b.mailno,b.ywid,b.starttime::timestamp,
+				b.endtime::timestamp,b.kdzt,b.ywlx,b.kdlx
+			FROM temp_new_data b
+			left outer join igams_sjkdxx sjkd on sjkd.ywid = b.ywid and sjkd.mailno = b.mailno
+			WHERE sjkd.sjkdid is null AND b.sjkdid IS NULL AND b.starttime IS NOT NULL;
+
+			WITH temp_new_data AS (
+			SELECT sjkd.sjkdid,tmp.mailno,tmp.ywid,NULLIF(NULLIF(tmp.starttime, ''), '') AS starttime,
+			NULLIF(NULLIF(tmp.endtime, ''), '') AS endtime,tmp.kdzt,tmp.ywlx,tmp.kdlx
+			FROM (
+			<foreach collection="list" separator="union all" item="item" index="index">
+				select #{item.mailno} mailno,#{item.ywid} ywid,#{item.starttime} starttime,#{item.endtime} endtime,
+				#{item.kdzt} kdzt,#{item.ywlx} ywlx,#{item.kdlx} kdlx
+			</foreach>
+			) tmp
+			LEFT JOIN igams_sjkdxx sjkd ON (sjkd.kdzt IS NULL OR sjkd.kdzt = '0') AND sjkd.ywid = tmp.ywid AND sjkd.mailno = tmp.mailno
+			)
+			UPDATE igams_sjkdxx sjkdxx SET endtime = b.endtime::timestamp, kdzt = b.kdzt
+			FROM temp_new_data b
+			WHERE sjkdxx.sjkdid = b.sjkdid AND b.sjkdid IS NOT NULL AND b.endtime IS NOT NULL;
+		</if>
+	</update>
+
+
+	<select id="getKdhListByKdlx" parameterType="SjkdxxDto" resultType="String">
+		select sjkd.mailno
+		from igams_sjkdxx sjkd
+		where sjkd.kdlx=#{kdlx} and sjkd.kdzt = '0'
+	</select>
+
+	<select id="getSjkdDtosNotAccept" parameterType="SjkdxxDto" resultType="SjkdxxDto" >
+		select sjkd.sjkdid, sjkd.mailno, sjkd.ywid, sjkd.starttime, sjkd.endtime, sjkd.kdzt, sjkd.ywlx, sjkd.kdlx
+		from igams_sjkdxx sjkd
+		where sjkd.kdlx=#{kdlx} and sjkd.kdzt = '0' and sjkd.mailno is not null
+	</select>
+
+	<select id="getDto" resultType="SjkdxxDto">
+		select sjkd.sjkdid, sjkd.mailno, sjkd.ywid, sjkd.starttime, sjkd.endtime, sjkd.kdzt,sjkd.kdlx,kdlx.csdm kdlxdm
+		from igams_sjkdxx sjkd
+		left join matridx_jcsj kdlx on kdlx.csid=sjkd.kdlx
+		<where>
+			sjkd.ywid=#{ywid} and sjkd.ywlx=#{ywlx}
+			<if test="mailno !=null and  mailno !=''">
+				and mailno= #{mailno}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" resultType="SjkdxxDto">
+		select sjkd.sjkdid, sjkd.mailno, sjkd.ywid, sjkd.starttime, sjkd.endtime, sjkd.kdzt,sjkd.kdlx,kdlx.csdm kdlxdm
+		from igams_sjkdxx sjkd
+		left join matridx_jcsj kdlx on kdlx.csid=sjkd.kdlx
+		<where>
+			 sjkd.ywlx=#{ywlx} and sjkd.ywid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+   
+    <!-- 将list数据全部插入送检快递信息表中 -->
+	<insert id="inserDtoList" parameterType="SjkdxxDto">
+	    insert into igams_sjkdxx 
+	    select tmp.sjkdid, tmp.mailno, tmp.ywid, tmp.starttime, tmp.endtime, tmp.kdzt, tmp.ywlx, tmp.kdlx
+	    from
+	    (
+	    <foreach collection="list" item="item" index="index" separator="union all">
+	        select #{item.sjkdid} sjkdid, #{item.mailno} mailno, #{item.ywid} ywid, CAST(#{item.starttime} AS TIMESTAMP) starttime,
+	               CAST(#{item.endtime} AS TIMESTAMP) endtime, #{item.kdzt} kdzt, #{item.ywlx} ywlx, #{item.kdlx} kdlx
+	    </foreach>
+	    ) tmp 
+	    left outer join igams_sjkdxx sjkd on sjkd.ywid = tmp.ywid and sjkd.mailno = tmp.mailno
+	    <where>
+	        sjkd.sjkdid is null and tmp.starttime is not null
+	    </where>
+	</insert> 
+	
+	<!-- 更新送检快递表中的数据 -->
+	<update id="updateDto" parameterType="SjkdxxDto">
+	    update igams_sjkdxx
+	    set
+		<if test="endtime !=null and  endtime !=''">
+			endtime= cast(#{endtime} as timestamp)
+		</if>
+		<if test="kdzt !=null and  kdzt !=''">
+			,kdzt=#{kdzt}
+		</if>	
+		<where>
+			ywid = #{ywid} and mailno = #{mailno}
+ 		</where>
+	</update>
+
+	<!-- 根据快递号更新快递信息表的快递开始时间，该SQL不可随意增加更新字段 -->
+	<update id="updateStarttimeByMailno" parameterType="SjkdxxDto">
+		update igams_sjkdxx
+		set
+		<if test="starttime !=null and  starttime !=''">
+			starttime=cast(#{starttime} as timestamp)
+		</if>
+		<where>
+			mailno = #{mailno}
+		</where>
+	</update>
+
+	<!-- 根据快递号更新送检快递表的快递结束时间和签收状态，该SQL不可随意增加更新字段 -->
+	<update id="updateEndtimeByMailno" parameterType="SjkdxxDto">
+		update igams_sjkdxx
+		set
+		<if test="endtime !=null and  endtime !=''">
+			endtime= cast(#{endtime} as timestamp)
+		</if>
+		<if test="kdzt !=null and  kdzt !=''">
+			,kdzt=#{kdzt}
+		</if>
+		<where>
+			mailno = #{mailno}
+		</where>
+	</update>
+
+	<!-- 根据快递号更新快递信息，该SQL可往后继续添加更新字段 -->
+	<update id="updateByMailno" parameterType="SjkdxxDto">
+		update igams_sjkdxx
+		set
+		mailno = null
+		<if test="sfqx !=null and sfqx !=''">
+			,sfqx=#{sfqx}
+		</if>
+		<if test="starttime !=null and  starttime !=''">
+			,starttime=cast(#{starttime} as timestamp)
+		</if>
+		<if test="endtime !=null and  endtime !=''">
+			,endtime= cast(#{endtime} as timestamp)
+		</if>
+		<if test="kdzt !=null and kdzt !=''">
+			,kdzt=#{kdzt}
+		</if>
+		<if test="ywlx !=null and ywlx !=''">
+			,ywlx=#{ywlx}
+		</if>
+		<if test="kdlx !=null and kdlx !=''">
+			,kdlx=#{kdlx}
+		</if>
+		<where>
+			mailno = #{mailno}
+		</where>
+	</update>
+
+	<update id="update" parameterType="SjkdxxDto">
+		update igams_sjkdxx
+		set
+		sjkdid=#{sjkdid}
+		<if test="mailno != null and mailno != ''">
+			,mailno=#{mailno}
+		</if>
+		<if test="starttime != null and starttime != ''">
+			,starttime=cast(#{starttime} as timestamp)
+		</if>
+		<if test="endtime !=null and  endtime !=''">
+			,endtime= cast(#{endtime} as timestamp)
+		</if>
+		<if test="kdzt !=null and  kdzt !=''">
+			,kdzt=#{kdzt}
+		</if>
+		<if test="kdlx !=null and  kdlx !=''">
+			,kdlx=#{kdlx}
+		</if>
+		<if test="ywlx !=null and  ywlx !=''">
+			,ywlx=#{ywlx}
+		</if>
+		<if test="jdlx !=null and  jdlx !=''">
+			,jdlx=#{jdlx}
+		</if>
+		<where>
+			sjkdid = #{sjkdid}
+		</where>
+	</update>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_sjkdxx
+				<set>
+					sjkdid=#{item.sjkdid}
+					<if test="item.mailno != null and item.mailno != ''">
+						,mailno=#{item.mailno}
+					</if>
+					<if test="item.starttime != null and item.starttime != ''">
+						,starttime=cast(#{item.starttime} as timestamp)
+					</if>
+					<if test="item.endtime !=null and  item.endtime !=''">
+						endtime= cast(#{item.endtime} as timestamp)
+					</if>
+					<if test="item.kdzt !=null and  item.kdzt !=''">
+						,kdzt=#{item.kdzt}
+					</if>
+					<if test="item.kdlx !=null and  item.kdlx !=''">
+						,kdlx=#{item.kdlx}
+					</if>
+					<if test="item.ywlx !=null and  item.ywlx !=''">
+						,ywlx=#{item.ywlx}
+					</if>
+					<if test="item.sjmailno !=null and  item.sjmailno !=''">
+						,sjmailno=#{item.sjmailno}
+					</if>
+					<if test="item.sfqx != null and item.sfqx != ''">
+						,sfqx=#{item.sfqx}
+					</if>
+				</set>
+				<where>
+					sjkdid = #{item.sjkdid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<insert id="insert" parameterType="SjkdxxDto">
+		insert into igams_sjkdxx(sjkdid,ywid
+		<if test="mailno != null and mailno != ''">
+			,mailno
+		</if>
+		<if test="starttime != null and starttime != ''">
+			,starttime
+		</if>
+		<if test="endtime != null and endtime != ''">
+			,endtime
+		</if>
+		<if test="kdzt != null and kdzt != ''">
+			,kdzt
+		</if>
+		<if test="kdlx != null and kdlx != ''">
+			,kdlx
+		</if>
+		<if test="ywlx != null and ywlx != ''">
+			,ywlx
+		</if>
+		<if test="sjmailno != null and sjmailno != ''">
+			,sjmailno
+		</if>
+		<if test="jdlx != null and jdlx != ''">
+			,jdlx
+		</if>
+		)
+		values(#{sjkdid},#{ywid}
+		<if test="mailno != null and mailno != ''">
+			,#{mailno}
+		</if>
+		<if test="starttime != null and starttime != ''">
+			,cast(#{starttime} as timestamp)
+		</if>
+		<if test="endtime != null and endtime != ''">
+			,cast(#{endtime} as timestamp)
+		</if>
+		<if test="kdzt != null and kdzt != ''">
+			,#{kdzt}
+		</if>
+		<if test="kdlx != null and kdlx != ''">
+			,#{kdlx}
+		</if>
+		<if test="ywlx != null and ywlx != ''">
+			,#{ywlx}
+		</if>
+		<if test="sjmailno != null and sjmailno != ''">
+			,#{sjmailno}
+		</if>
+		<if test="jdlx != null and jdlx != ''">
+			,#{jdlx}
+		</if>
+		)
+	</insert>
+	
+	<!-- 根据送检Id和快递号查找一条数据 -->
+    <select id="getSjkdDto" parameterType="SjkdxxDto" resultType="int">
+         select count(*) from igams_sjkdxx
+         <where>
+            ywid = #{ywid} and mailno = #{mailno}
+         </where>
+    </select>
+    
+    <insert id="insertDto" parameterType="SjkdxxDto">
+          insert into igams_sjkdxx (sjkdid, mailno, ywid, starttime, endtime, kdzt)
+          values
+          (#{sjkdid}, #{mailno}, #{ywid} ,CAST(#{starttime} as timestamp), CAST(#{endtime} as timestamp), #{kdzt})
+    </insert>
+
+	<update id="updateMailnoByOld" parameterType="Map">
+		update igams_sjkdxx
+		set mailno =#{newmailno}, sfqx=#{sfqx}, sjmailno=#{sjmailno}, starttime = null ,endtime = null ,kdzt=#{kdzt}
+		where mailno =#{oldmailno}
+	</update>
+
+	<update id="insertOrUpdateList" parameterType="SjkdxxDto">
+		<if test="list != null and list.size()>0">
+			insert into igams_sjkdxx
+			(sjkdid,
+			mailno,
+			ywid,
+			starttime,
+			endtime,
+			kdzt,
+			ywlx,
+			kdlx,
+			sjmailno,
+			sfqx,
+			jdlx
+			) values
+			<foreach collection="list" open="" close="" separator="," item="item">
+				( #{item.sjkdid},#{item.mailno},#{item.ywid},cast(#{item.starttime} as timestamp),cast(#{item.endtime} as timestamp),#{item.kdzt},#{item.ywlx},#{item.kdlx}
+				,#{item.sjmailno},#{item.sfqx},#{item.jdlx})
+			</foreach>
+		</if>
+		on conflict(sjkdid) do update set kdlx=excluded.kdlx,jdlx=excluded.jdlx
+	</update>
+
+</mapper>
