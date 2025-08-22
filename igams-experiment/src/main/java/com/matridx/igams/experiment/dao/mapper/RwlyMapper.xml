@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IRwlyDao" >
+
+	<!-- 增加留言 -->
+	<insert id="insert" parameterType="RwlyModel">
+		insert into igams_rwly(lyid
+		<if test="rwid !=null and rwid != ''">
+			,rwid
+		</if>
+		<if test="lyxx !=null and lyxx != ''">
+			,lyxx
+		</if>
+		,lrry,lrsj,scbj,lylx) values(#{lyid}
+		<if test="rwid !=null and rwid != ''">
+			,#{rwid}
+		</if>
+		<if test="lyxx !=null and lyxx != ''">
+			,#{lyxx}
+		</if>
+		,#{lrry},clock_timestamp(),'0',#{lylx})
+	</insert>
+	<!-- 通过id获取获取任务的list留言 -->
+	<select id="getDtoList" parameterType="RwlyDto" resultType="RwlyDto">
+		select rwly.lyid,rwly.rwid,rwly.lyxx,rwly.lrry,to_char(rwly.lrsj,'MM-DD  HH24:MI') as lysj,rwly.lylx,xtyh.zsxm as lyry,xtyh.yhm
+		from igams_rwly rwly 
+		left join matridx_xtyh xtyh on xtyh.yhid=rwly.lrry
+		<where> 
+			rwly.scbj!='1' and rwly.rwid=#{rwid} order by rwly.lrsj desc
+			<if test="pageSize!=null and pageSize !=''">
+				 limit #{pageSize}
+			</if>
+		</where>
+	</select>
+	<!-- 通过id查询任务留言 -->
+	<select id="getDtoById" parameterType="String" resultType="RwlyDto">
+		select  rwly.lyid,rwly.rwid,rwly.lyxx,rwly.lrry,to_char(rwly.lrsj,'MM-DD  HH24:MI') as lysj,rwly.lylx,xtyh.zsxm as lyry
+		from igams_rwly rwly 
+		left join matridx_xtyh xtyh on xtyh.yhid=rwly.lrry
+		where rwly.scbj!='1' and rwly.lyid=#{lyid} 
+	</select>
+</mapper>

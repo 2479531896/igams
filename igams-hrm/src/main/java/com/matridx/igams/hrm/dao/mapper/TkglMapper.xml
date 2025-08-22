@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.ITkglDao" >
+
+    <select id="getPagedDtoList" parameterType="TkglDto" resultType="TkglDto">
+        select tkgl.tkid,tkgl.tkmc,tkgl.tklx,tkgl.tkbq,jcsj.csmc tklxmc,(select count(ksid) danxts from igams_ksgl where tkid=tkgl.tkid and tmlx='SELECT')
+        ,(select count(ksid) duoxts from igams_ksgl where tkid=tkgl.tkid and tmlx='MULTIPLE')
+        ,(select count(ksid) jdts from igams_ksgl where tkid=tkgl.tkid and tmlx='EXPLAIN')
+        ,(select count(ksid) tkts from igams_ksgl where tkid=tkgl.tkid and tmlx='GAP')
+        ,(select count(ksid) pdts from igams_ksgl where tkid=tkgl.tkid and tmlx='JUDGE'),
+        ssgs.csmc ssgsmc
+        from igams_tkgl tkgl
+        left join matridx_jcsj jcsj on jcsj.csid=tkgl.tklx
+        left join matridx_jcsj ssgs on ssgs.csid=tkgl.ssgs
+        <where>
+            tkgl.scbj='0'
+            <if test="tkmc !=null and tkmc != ''">
+                and tkgl.tkmc ILIKE '%'||#{tkmc}||'%'
+            </if>
+            <if test="tklxmc !=null and tklxmc != ''">
+                and jcsj.csmc ILIKE '%'||#{tklxmc}||'%'
+            </if>
+            <if test="tkbq !=null and tkbq != ''">
+                and tkgl.tkbq ILIKE '%'||#{tkbq}||'%'
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and tkgl.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="TkglDto" resultType="TkglDto">
+        select tkgl.tkid,tkgl.tkmc,tkgl.tklx,tkgl.tkbq,jcsj.csmc tklxmc,tkgl.ssgs,(select count(ksid) danxts from igams_ksgl where tkid=tkgl.tkid and tmlx='SELECT')
+        ,(select count(ksid) duoxts from igams_ksgl where tkid=tkgl.tkid and tmlx='MULTIPLE')
+        ,(select count(ksid) jdts from igams_ksgl where tkid=tkgl.tkid and tmlx='EXPLAIN')
+        ,(select count(ksid) tkts from igams_ksgl where tkid=tkgl.tkid and tmlx='GAP')
+        ,(select count(ksid) pdts from igams_ksgl where tkid=tkgl.tkid and tmlx='JUDGE')
+        from igams_tkgl tkgl
+        left join matridx_jcsj jcsj on jcsj.csid=tkgl.tklx
+        <where>
+            tkgl.scbj='0'
+            <if test="ssgs !=null and ssgs != ''">
+                and tkgl.ssgs =#{ssgs}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="TkglDto" resultType="TkglDto">
+        select tkgl.tkid,tkgl.tkmc,tkgl.tklx,tkgl.tkbq,jcsj.csmc tklxmc,tkgl.ssgs,(select count(ksid) danxts from igams_ksgl where tkid=tkgl.tkid and tmlx='SELECT')
+        ,(select count(ksid) duoxts from igams_ksgl where tkid=tkgl.tkid and tmlx='MULTIPLE')
+        ,(select count(ksid) jdts from igams_ksgl where tkid=tkgl.tkid and tmlx='EXPLAIN')
+        ,(select count(ksid) tkts from igams_ksgl where tkid=tkgl.tkid and tmlx='GAP')
+        ,(select count(ksid) pdts from igams_ksgl where tkid=tkgl.tkid and tmlx='JUDGE')
+        from igams_tkgl tkgl
+        left join matridx_jcsj jcsj on jcsj.csid=tkgl.tklx
+        <where>
+            tkgl.scbj='0'
+            <if test="tkmc !=null and tkmc != ''">
+                and tkgl.tkmc =#{tkmc}
+            </if>
+            <if test="tkid !=null and tkid != ''">
+                and tkgl.tkid =#{tkid}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="TkglDto">
+        insert into igams_tkgl(tkid
+        <if test="tkmc !=null and tkmc != ''">
+            ,tkmc
+        </if>
+        <if test="tklx !=null and tklx != ''">
+            ,tklx
+        </if>
+        <if test="tkbq !=null and tkbq != ''">
+            ,tkbq
+        </if>
+        <if test="ssgs !=null and ssgs != ''">
+            ,ssgs
+        </if>
+        ,lrry,lrsj,scbj) values(#{tkid}
+        <if test="tkmc !=null and tkmc != ''">
+            ,#{tkmc}
+        </if>
+        <if test="tklx !=null and tklx != ''">
+            ,#{tklx}
+        </if>
+        <if test="tkbq !=null and tkbq != ''">
+            ,#{tkbq}
+        </if>
+        <if test="ssgs !=null and ssgs != ''">
+            ,#{ssgs}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="delete" parameterType="TkglDto">
+        update igams_tkgl set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                or tkid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <update id="update" parameterType="TkglDto">
+        update igams_tkgl
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="tkmc !=null and tkmc != ''">
+                ,tkmc=#{tkmc}
+            </if>
+            <if test="tklx !=null and tklx != ''">
+                ,tklx=#{tklx}
+            </if>
+            <if test="tkbq !=null and tkbq != ''">
+                ,tkbq=#{tkbq}
+            </if>
+            <if test="ssgs !=null and ssgs != ''">
+                ,ssgs=#{ssgs}
+            </if>
+        </set>
+        <where>
+            tkid=#{tkid}
+        </where>
+    </update>
+</mapper>

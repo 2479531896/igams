@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IJdmbDao" >
+
+	<!-- 增加阶段模板 -->
+	<insert id="insert" parameterType="JdmbModel">
+		insert into igams_jdmb(jdid
+		<if test="mbid !=null and mbid != ''">
+			,mbid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="jdmc !=null and jdmc != ''">
+			,jdmc
+		</if>
+		<if test="fjdid !=null and fjdid != ''">
+			,fjdid
+		</if>
+		<if test="jdlx !=null and jdlx != ''">
+			,jdlx
+		</if>
+		<if test="xsbj !=null and xsbj != ''">
+			,xsbj
+		</if>
+		<if test="yflx !=null and yflx != ''">
+			,yflx
+		</if>
+		<if test="jc !=null and jc != ''">
+			,jc
+		</if>
+		<if test="mrfzr !=null and mrfzr != ''">
+			,mrfzr
+		</if>
+		<if test="qx !=null and qx != ''">
+			,qx
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,kzcs
+		</if>
+		,lrry,lrsj,scbj) values(#{jdid}
+		<if test="mbid !=null and mbid != ''">
+			,#{mbid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="jdmc !=null and jdmc != ''">
+			,#{jdmc}
+		</if>
+		<if test="fjdid !=null and fjdid != ''">
+			,#{fjdid}
+		</if>
+		<if test="jdlx !=null and jdlx != ''">
+			,#{jdlx}
+		</if>
+		<if test="xsbj !=null and xsbj != ''">
+			,#{xsbj}
+		</if>
+		<if test="yflx !=null and yflx != ''">
+			,#{yflx}
+		</if>
+		<if test="jc !=null and jc != ''">
+			,#{jc}
+		</if>
+		<if test="mrfzr !=null and mrfzr != ''">
+			,#{mrfzr}
+		</if>
+		<if test="qx !=null and qx != ''">
+			,#{qx}
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,#{kzcs}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 查询默认阶段模板信息 -->
+	<select id="selectDefaultStage" resultType="JdmbDto">
+		select jdmb.jdid,jdmb.jdmc,jdmb.jdlx,jdmb.mrfzr,jdmb.kzcs,xtyh.zsxm as fzrmc
+		from igams_jdmb jdmb
+		left outer join igams_mbgl mbgl on mbgl.mbid = jdmb.mbid
+		left join matridx_xtyh xtyh on xtyh.yhid=jdmb.mrfzr
+		where
+			jdmb.scbj !='1'
+			and mbgl.scbj !='1'
+			and mbgl.mbmc = 'default'
+	</select>
+	
+	<!-- 根据模板ID新增阶段模板 -->
+	<insert  id="insertByMbid" parameterType="list">
+		insert into igams_jdmb (jdid, mbid, xh,jdmc,fjdid,jdlx,xsbj,yflx,jc,mrfzr,qx,kzcs,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.jdid},#{item.mbid},#{item.xh},#{item.jdmc},#{item.fjdid},#{item.jdlx},#{item.xsbj},#{item.yflx},
+					#{item.jc},#{item.mrfzr},#{item.qx},#{item.kzcs},#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 根据当前模板id查询所有阶段 -->
+	<select id="selectStageByID" parameterType="MbglDto"   resultType="JdmbDto">
+		select jdmb.jdid,jdmb.jdmc,jdmb.jdlx,jdmb.mrfzr,jdmb.kzcs
+		from igams_jdmb jdmb
+		where
+			jdmb.scbj !='1'
+		<if test="mbid !=null and mbid != ''">
+			and jdmb.mbid=#{mbid}
+		</if>
+		order by jdmb.xh
+	</select>
+	<!-- 根据阶段id删除当前阶段 -->
+	<update id="updateDto" parameterType="JdmbDto">
+		update igams_jdmb set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			jdid=#{jdid}
+		</where>
+	</update>
+	<!-- 双击修改阶段名称 -->
+	<update id="updatejdmc" parameterType="JdmbDto">
+		update igams_jdmb set
+				xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="jdmc !=null and jdmc !=''">
+				,jdmc=#{jdmc}
+			</if>
+			<if test="jdlx !=null and jdlx !=''">
+				,jdlx=#{jdlx}
+			</if>
+			<if test="xsbj !=null and xsbj !=''">
+				,xsbj=#{xsbj}
+			</if>
+			<if test="yflx !=null and yflx !=''">
+				,yflx=#{yflx}
+			</if>
+			<if test="jc !=null and jc !=''">
+				,jc=cast(#{jc} as muneric)
+			</if>
+			<if test="mrfzr !=null and mrfzr !=''">
+				,mrfzr=#{mrfzr}
+			</if>
+			<if test="qx !=null and qx !=''">
+				,qx=#{qx}
+			</if>
+		<where>
+			jdid=#{jdid}
+		</where>
+	</update> 
+	<select id="getXh" parameterType="JdmbDto" resultType="int">
+		select coalesce(max(xh),0) as xh from 
+		igams_jdmb
+		<where> 
+		scbj !='1' 
+			<if test="mbid !=null and mbid!=''">
+			and mbid=#{mbid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 单个查询 -->
+	<select id="getDtoById" parameterType="String" resultType="JdmbDto">
+		select jdmb.jdid,jdmb.jdmc,jdmb.jdlx,jdmb.mrfzr,jdmb.qx,jdmb.yflx,jdmb.kzcs,xtyh.zsxm as fzrmc
+		from igams_jdmb jdmb
+		left join matridx_xtyh xtyh on xtyh.yhid=jdmb.mrfzr
+		<where>
+			jdmb.scbj !='1'
+			and jdmb.jdid=#{jdid}
+		</where>
+	</select>
+	<!-- 查询默认阶段模板名称 -->
+	<select id="selectmrjdmb" parameterType="JdmbDto" resultType="JdmbDto">
+		select jdmc from igams_jdmb
+		<where>
+			scbj!='1'
+			and mbid='default'
+		</where> 
+	</select>
+	<!-- 增加默认阶段模板 -->
+	<insert id="insertdefaultJdmb" parameterType="JdmbModel">
+		insert into igams_jdmb(mbid,jdid,jdmc
+			,lrry,lrsj,scbj,xh) values(#{mbid},#{jdid},#{jdmc},#{lrry},LOCALTIMESTAMP,'0',cast(#{xh} as numeric))
+	</insert>
+	
+		<!-- 项目阶段排序 -->
+	<update id="stageSort" parameterType="JdmbDto">
+		<if test="ids !=null and ids.size > 0">
+			<foreach collection="ids" index="index" open="" close="" separator=";" item="item">
+				update igams_jdmb 
+				<set>
+					xh=cast(#{index} as numeric)+1,
+					xgry=#{xgry},
+					xgsj=LOCALTIMESTAMP
+				</set>
+				where jdid=#{item}
+			</foreach>
+		</if>
+	</update>
+	<!-- 根据模板ID查询阶段模板信息 -->
+	<select id="selectJdmbByMbid" parameterType="String" resultType="JdmbDto">
+		select jdid,mbid,xh,jdmc,fjdid,jdlx,xsbj,yflx,mrfzr,qx,kzcs
+		from igams_jdmb
+		<where>
+			scbj!='1'
+			and mbid=#{mbid}
+		</where>
+		order by xh
+	</select>
+</mapper>

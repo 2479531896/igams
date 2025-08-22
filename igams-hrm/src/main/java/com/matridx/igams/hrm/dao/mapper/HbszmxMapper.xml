@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IHbszmxDao" >
+    <select id="getDtoList" parameterType="HbszmxDto" resultType="HbszmxDto">
+        SELECT
+            hbszmx.hbszid,hbszmx.hbmxid,hbszmx.je,hbszmx.sl,hbszmx.sysl,hbszmx.zdf,hbszmx.zgf,hbszmx.sftz,hbszmx.tznr,tzq.cskz1 tzqcskz1,hbszmx.bs
+        FROM
+            igams_hbszmx hbszmx
+            LEFT JOIN igams_hbsz hbsz ON hbszmx.hbszid = hbsz.hbszid
+            LEFT JOIN matridx_jcsj tzq ON tzq.csid = hbsz.tzq
+        WHERE
+            hbszmx.scbj!='1' AND hbszmx.hbszid = #{hbszid}
+        <if test="df !=null and  df !=''">
+            AND  cast (#{df} as numeric) &gt;= hbszmx.zdf AND cast (#{df} as numeric)  &lt;= hbszmx.zgf
+        </if>
+    </select>
+
+    <insert id="insertHbszmxDtos" parameterType="List">
+        insert into igams_hbszmx(hbmxid,hbszid,je,sl,sysl,zdf,zgf,sftz,tznr,bs,lrry,lrsj,scbj)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.hbmxid}, #{item.hbszid},
+            cast (#{item.je} as numeric),
+            cast (#{item.sl} as numeric),
+            cast (#{item.sysl} as numeric),
+            cast (#{item.zdf} as numeric),
+            cast (#{item.zgf} as numeric),
+            #{item.sftz},
+            #{item.tznr},
+            cast (#{item.bs} as numeric),
+            #{item.lrry},
+            LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <delete id="delete" parameterType="HbszmxDto">
+        update igams_hbszmx set scbj ='1' , scry = #{scry} ,scsj = LOCALTIMESTAMP
+        where hbszid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <update id="update" parameterType="HbszmxDto">
+        update igams_hbszmx set xgsj = LOCALTIMESTAMP
+        <if test="sysl !=null and  sysl !=''">
+            ,sysl = cast (#{sysl} as numeric)
+        </if>
+        where hbmxid=#{hbmxid}
+    </update>
+
+    <delete id="deleteByHbmxids" parameterType="HbszmxDto">
+        update igams_hbszmx set scbj ='1' , scry = #{scry} ,scsj = LOCALTIMESTAMP
+        where hbmxid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <!-- 批量修改红包设置明细信息 -->
+    <update id="updateHbszmxDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_hbszmx set
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.je !=null and  item.je !=''">
+                    ,je=cast(#{item.je} as numeric)
+                </if>
+                <if test="item.sl !=null and  item.sl !=''">
+                    ,sl=cast(#{item.sl} as numeric)
+                </if>
+                <if test="item.zdf !=null and  item.zdf !=''">
+                    ,zdf=cast(#{item.zdf} as numeric)
+                </if>
+                <if test="item.zgf !=null and  item.zgf !=''">
+                    ,zgf=cast(#{item.zgf} as numeric)
+                </if>
+                <if test="item.sftz !=null and  item.sftz !=''">
+                    ,sftz=#{item.sftz}
+                </if>
+                <if test="item.tznr !=null and  item.tznr !=''">
+                    ,tznr=#{item.tznr}
+                </if>
+                <if test="item.bs !=null and  item.bs !=''">
+                    ,bs=cast(#{item.bs} as numeric)
+                </if>
+                <where>
+                    hbmxid=#{item.hbmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <!-- 批量修改红包设置明细信息 -->
+    <update id="updateHbszmxSysl" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_hbszmx set
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.sysl !=null and  item.sysl !=''">
+                    ,sysl=cast(#{item.sysl} as numeric)
+                </if>
+                <where>
+                    hbmxid=#{item.hbmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+</mapper>

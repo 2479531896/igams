@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IGrjxDao" >
+    <sql id="SelectWhere">
+	<if test="scbj!=null and scbj!=''">
+		and grjx.scbj=#{scbj}
+	</if>
+	<if test="entire != null and entire != ''">
+		and (jxmb.mbmc ILIKE '%'||#{entire}||'%'
+		or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+		)
+	</if>
+	<if test="ryid!=null and ryid!=''">
+		and grjx.yhid=#{ryid} and grjx.scbj!='1'
+	</if>
+	<if test="jgid!=null and jgid!=''">
+		and jgxx.jgid=#{jgid}
+	</if>
+	<if test="zp!=null and zp!=''">
+		and mbsz.zp=#{zp}
+	</if>
+	<if test="nfs!=null and nfs.length > 0">
+		and grjx.nf in
+		<foreach collection="nfs" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+	</if>
+		<if test="yfs!=null and yfs.length > 0">
+			and grjx.yf in
+			<foreach collection="yfs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	<if test="khlxs!=null and khlxs.length > 0">
+		and jxmb.khlx in
+		<foreach collection="khlxs" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+	</if>
+	<if test="mbjbs!=null and mbjbs.length > 0">
+		and mbsz.mbjb in
+		<foreach collection="mbjbs" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+	</if>
+	<if test="bms!=null and bms.length > 0">
+		and grjx.bm in
+		<foreach collection="bms" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+	</if>
+	<if test="khzqstart!=null and khzqstart!=''">
+		and to_char(grjx.zqkssj,'yyyy-mm-dd') &gt;= #{khzqstart}
+	</if>
+	<if test="khzqend!=null and khzqend!=''">
+		and to_char(grjx.zqjssj,'yyyy-mm-dd') &lt;= #{khzqend}
+	</if>
+	<if test="khfsmin!=null and khfsmin!=''">
+		and coalesce(grjx.khzf,0)&gt;= cast(#{khfsmin} as numeric)
+	</if>
+	<if test="khfsmax!=null and khfsmax!=''">
+		and coalesce(grjx.khzf,0) &lt;= cast(#{khfsmax} as numeric)
+	</if>
+	<if test="zts!=null and zts.size > 0">
+		and grjx.zt in
+		<foreach collection="zts" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+	</if>
+	<if test="ryids !=null and ryids.size > 0">
+		and grjx.scbj!='1' and grjx.yhid in
+		<foreach collection="ryids" open="(" close=")" separator="," item="item" index="index">
+			#{item}
+		</foreach>
+	</if>
+    </sql>
+    <select id="getPagedDtoList" resultType="GrjxDto" parameterType="GrjxDto">
+        SELECT
+	grjx.grjxid,
+	jxmb.mbmc,
+	grjx.xh,
+	concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS zqsj,
+	grjx.zf,
+	grjx.khzf,
+	grjx.zt,
+	grjx.scbj,
+	xtyh.zsxm xm,
+	jgxx.jgmc bm,
+	mbsz.jxshid,
+	mbsz.zp,
+	xtsh.shlb,grjx.scbj,spgw.gwmc,grjx.qrzt,grjx.grjxid _key,grjx.performanceresult
+FROM
+	igams_grjx grjx
+	LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+	LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+	left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+	left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+	left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+	left join matridx_xtsh xtsh on xtsh.shid=mbsz.jxshid
+    left join matridx_shgc shgc on shgc.ywid = grjx.grjxid
+    left join matridx_shlc shlc on shlc.lcxh = shgc.xlcxh and shgc.shid = shlc.shid and shlc.tysj is null
+    left join matridx_spgw spgw on spgw.gwid = shlc.gwid
+	where grjx.scbj!='1'
+	<include refid="SelectWhere"></include>
+		<if test="xm!=null and xm!=''">
+			and xtyh.zsxm ILIKE '%'||#{xm}||'%'
+		</if>
+    </select>
+	<select id="getDtoList" resultType="GrjxDto" parameterType="GrjxDto">
+    	SELECT
+			grjx.grjxid,grjx.mbszid,grjx.yhid,grjx.zqkssj,grjx.zqjssj,grjx.qrzt
+		FROM
+			igams_grjx grjx
+		WHERE grjx.scbj='0' and grjx.mbszid = #{mbszid} and grjx.jxmbid = #{jxmbid}
+		<if test="zqkssj!=null and zqkssj!=''">
+			and to_char(grjx.zqkssj,'yyyy-mm-dd') &gt;= #{zqkssj}
+		</if>
+
+		<if test="zqjssj!=null and zqjssj!=''">
+			and to_char(grjx.zqjssj,'yyyy-mm-dd') &lt;= #{zqjssj}
+		</if>
+    </select>
+	<select id="getPagedListPerformanceConfirm" resultType="GrjxDto" parameterType="GrjxDto">
+		SELECT
+		grjx.grjxid,jxmb.mbmc,concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS zqsj,grjx.zt,grjx.qrzt,xtyh.zsxm,grjx.jxmbid,grjx.mbszid
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_jcsj jcsj on jcsj.csid = mbsz.mbzlx
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grjx.yhid
+		WHERE
+		grjx.scbj != '1' and jcsj.cskz1 = '1' and grjx.yhid = #{yhid}
+    </select>
+	<select id="getNeedSubmitByMbid" resultType="GrjxDto" parameterType="GrjxDto">
+    	SELECT
+			grjx.grjxid,grjx.mbszid,grjx.yhid,grjx.zqkssj,grjx.zqjssj,xtyh.zsxm,xtyh.ddid,mbsz.jxshid,xtyh.yhm
+		FROM
+			igams_grjx grjx
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid and xtyh.scbj='0'
+		LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		WHERE grjx.scbj='0' and grjx.sfjs='0' and grjx.mbszid = #{mbszid}
+		and grjx.zt in
+		<foreach collection="zts" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+    </select>
+	<select id="getNeedRemindByMbid" resultType="GrjxDto" parameterType="GrjxDto">
+    	SELECT
+			grjx.grjxid,grjx.mbszid,grjx.yhid,grjx.zqkssj,grjx.zqjssj,xtyh.zsxm,xtyh.ddid,mbsz.jxshid,xtyh.yhm
+		FROM
+			igams_grjx grjx
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid and xtyh.scbj='0'
+		LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		WHERE grjx.scbj='0' and grjx.sfjs='0' and grjx.mbszid = #{mbszid}
+		and grjx.zt in
+		<foreach collection="zts" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+    </select>
+	<select id="getDtoById" parameterType="String" resultType="GrjxDto">
+		        SELECT
+	grjx.grjxid,
+	jxmb.mbmc,
+	grjx.xh,
+	concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS khsj,
+	coalesce(grjx.jxzf,'0') jxzf,
+	coalesce(grjx.khzf,0) khzf,
+	grjx.zt,
+	grjx.scbj,
+	xtyh.zsxm xm,
+	jgxx.jgmc bm,mbsz.zp,mbsz.jxshid,jxmb.jxmbid,jxmb.zf mbzf,mbsz.mbszid,
+		grjx.zqkssj,grjx.zqjssj,jxsh.shlb,mbsz.jxtzsj,grjx.qrzt,jgxx.jgid,grjx.performanceresult,grjx.feedbackrecord
+FROM
+	igams_grjx grjx
+	LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+	left join igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+	left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+	left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+	left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+	left join matridx_xtsh jxsh on jxsh.shid=mbsz.jxshid
+	<where>
+		grjx.grjxid=#{grjxid}
+	</where>
+	</select>
+	<insert id="insertGrjxDtos" parameterType="List">
+		insert into igams_grjx(grjxid,yhid,mbszid,jxmbid,gwid,lx,shr,bm,nf,yf,zf,khzf,jxzf,sjbz,zqkssj,zqjssj,qz,zt,sfjs,lrry,lrsj,scbj,qrzt)
+		VALUES
+		<foreach collection="list" separator="," item="item">
+			(#{item.grjxid}, #{item.yhid},#{item.mbszid},#{item.jxmbid},#{item.gwid},#{item.lx},#{item.shr},#{item.bm},#{item.nf}
+			,#{item.yf},#{item.zf},cast (#{item.khzf} as numeric),#{item.jxzf},#{item.sjbz},cast (#{item.zqkssj} as date),cast (#{item.zqjssj} as date),
+			 cast (#{item.qz} as numeric),#{item.zt},#{item.sfjs},#{item.lrry},LOCALTIMESTAMP,'0',#{item.qrzt})
+		</foreach>
+	</insert>
+	<insert id="insert" parameterType="GrjxDto">
+		insert into igams_grjx(grjxid,yhid,mbszid,jxmbid,gwid,lx,shr,bm,nf,yf,zf,khzf,jxzf,sjbz,zqkssj,zqjssj,qz,zt,sfjs,lrry,lrsj,scbj,qrzt)
+		VALUES
+			(#{grjxid}, #{yhid},#{mbszid},#{jxmbid},#{gwid},#{lx},#{shr},#{bm},#{nf}
+			,#{yf},#{zf},cast (#{khzf} as numeric),#{jxzf},#{sjbz},cast (#{zqkssj} as date),cast (#{zqjssj} as date),
+			cast (#{qz} as numeric),#{zt},#{sfjs},#{lrry},LOCALTIMESTAMP,'0',#{qrzt})
+	</insert>
+	<update id="updateGrjxDtos" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_grjx set
+				grjxid=#{item.grjxid}
+				<if test="item.sfjs !=null and  item.sfjs !=''">
+					,sfjs=#{item.sfjs}
+				</if>
+				<if test="item.khzf !=null and  item.khzf !=''">
+					,khzf=cast (#{item.khzf} as numeric)
+				</if>
+				<if test="item.jxzf !=null and  item.jxzf !=''">
+					,jxzf=#{item.jxzf}
+				</if>
+				<where>
+					grjxid=#{item.grjxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<update id="update" parameterType="GrjxDto">
+		update igams_grjx
+		<set>
+			xgry=#{xgry},
+			xgsj=LOCALTIMESTAMP
+			<if test="nf!=null and nf!=''">
+				,nf=#{nf}
+			</if>
+			<if test="yf!=null and yf!=''">
+				,yf=#{yf}
+			</if>
+			<if test="zf!=null and zf!=''">
+				,zf=#{zf}
+			</if>
+			<if test="khzf!=null and khzf!=''">
+				,khzf = cast (#{khzf} as numeric)
+			</if>
+			<if test="jxzf!=null and jxzf!=''">
+				,jxzf = #{jxzf}
+			</if>
+			<if test="jxbz!=null and jxbz!=''">
+				,jxbz=#{jxbz}
+			</if>
+			<if test="zqkssj!=null and zqkssj!=''">
+				,zqkssj=cast(#{zqkssj} as timestamp )
+			</if>
+			<if test="zqjssj!=null and zqjssj!=''">
+				,zqjssj=cast(#{zqjssj} as timestamp )
+			</if>
+			<if test="qz!=null and qz!=''">
+				,qz=#{qz}
+			</if>
+			<if test="zt!=null and zt!=''">
+				,zt=#{zt}
+			</if>
+			<if test="lx!=null and lx!=''">
+				,lx=#{lx}
+			</if>
+			<if test="scbj!=null and scbj!=''">
+				,scbj=#{scbj}
+			</if>
+			<if test="qrzt!=null and qrzt!=''">
+				,qrzt=#{qrzt}
+			</if>
+			<if test="performanceresult!=null and performanceresult!=''">
+				,performanceresult=#{performanceresult}
+			</if>
+			<if test="feedbackrecord!=null and feedbackrecord!=''">
+				,feedbackrecord=#{feedbackrecord}
+			</if>
+		</set>
+		<where>
+			grjxid=#{grjxid}
+		</where>
+	</update>
+	<update id="delete" parameterType="GrjxDto">
+		update igams_grjx set
+		scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			grjxid in
+			<if test="ids!=null and ids.size>0">
+				<foreach collection="ids" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="GrjxDto"
+			resultType="java.lang.Integer">
+		select count(grjx.grjxid)
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		left join igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_jcsj khzq on khzq.csid=mbsz.khzq
+		left join matridx_xtyh khry on khry.yhid=grjx.yhid
+		<if test="dcFlag!=null and dcFlag!='' and dcFlag=='1'.toString">
+			left join igams_grjxmx grjxmx on grjxmx.grjxid=grjx.grjxid
+			left join igams_qzsz qzsz on qzsz.jxmbid=grjxmx.jxmbid and qzsz.mbszid=grjx.mbszid and (case when grjxmx.gwid is null or grjxmx.gwid ='' then '1' else grjxmx.gwid end)=(case when qzsz.gwid is null or qzsz.gwid='' then '1' else qzsz.gwid end)
+			left join igams_jxmbmx jxmbmx on jxmbmx.jxmbmxid=grjxmx.jxmbmxid
+			left join matridx_spgw spgw on spgw.gwid=grjxmx.gwid
+			left join matridx_xtyh pfr on pfr.yhid=grjxmx.shr
+		</if>
+		<where>
+			<include refid="SelectWhere"></include>
+		</where>
+	</select>
+	<select id="getListForSearchExp" parameterType="GrjxDto" resultType="GrjxDto">
+		select grjx.grjxid ${sqlParam}
+		FROM (
+		select
+		t.grjxid,
+		split_part(split_part(temp,',',1),':',2) as zpfs,
+		split_part(split_part(temp,',',2),':',2) as sjpf
+		from (
+		select tt.grjxid,string_agg(tt.gwmc||':'||tt.jxzf,',') as temp
+		from
+		(select
+		case when gw.gwmc is null then '自评' else gw.gwmc end,mx.grjxid, mx.jxzf   from
+		igams_grjxmx mx
+		left join matridx_spgw gw on gw.gwid=mx.gwid
+		left join igams_grjx jx on jx.grjxid=mx.grjxid
+		where mx.scbj='0'
+		group by mx.grjxid,mx.jxzf,gw.gwmc
+		order by gw.gwmc desc) as tt
+		group by tt.grjxid
+		) as t
+		) as temp2 left join igams_grjx grjx on grjx.grjxid=temp2.grjxid
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		left join igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_jcsj khzq on khzq.csid=mbsz.khzq
+		left join matridx_xtyh khry on khry.yhid=grjx.yhid
+		<if test="dcFlag!=null and dcFlag!='' and dcFlag=='1'.toString">
+			left join igams_grjxmx grjxmx on grjxmx.grjxid=grjx.grjxid
+			left join igams_qzsz qzsz on qzsz.jxmbid=grjxmx.jxmbid and qzsz.mbszid=grjx.mbszid and (case when grjxmx.gwid is null or grjxmx.gwid ='' then '1' else grjxmx.gwid end)=(case when qzsz.gwid is null or qzsz.gwid='' then '1' else qzsz.gwid end)
+			left join igams_jxmbmx jxmbmx on jxmbmx.jxmbmxid=grjxmx.jxmbmxid
+			left join matridx_spgw spgw on spgw.gwid=grjxmx.gwid
+			left join matridx_xtyh pfr on pfr.yhid=grjxmx.shr
+		</if>
+		<where>
+			<include refid="SelectWhere"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="GrjxDto" resultType="GrjxDto">
+		select grjx.grjxid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} grjxid,#{index} ordernum
+		</foreach>
+		) tmp left join (
+		select
+		t.grjxid,
+		split_part(split_part(temp,',',1),':',2) as zpfs,
+		split_part(split_part(temp,',',2),':',2) as sjpf
+		from (
+		select tt.grjxid,string_agg(tt.gwmc||':'||tt.jxzf,',') as temp
+		from
+		(select
+		case when gw.gwmc is null then '自评' else gw.gwmc end,mx.grjxid, mx.jxzf   from
+		igams_grjxmx mx
+		left join matridx_spgw gw on gw.gwid=mx.gwid
+		left join igams_grjx jx on jx.grjxid=mx.grjxid
+		where mx.scbj='0'
+		group by mx.grjxid,mx.jxzf,gw.gwmc
+		order by gw.gwmc desc) as tt
+		group by tt.grjxid
+		) as t
+		) as temp2 on temp2.grjxid=tmp.grjxid
+		left outer join igams_grjx grjx on tmp.grjxid = grjx.grjxid
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		left join igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_jcsj khzq on khzq.csid=mbsz.khzq
+		left join matridx_xtyh khry on khry.yhid=grjx.yhid
+		<if test="dcFlag!=null and dcFlag!='' and dcFlag=='1'.toString">
+			left join igams_grjxmx grjxmx on grjxmx.grjxid=grjx.grjxid
+			left join igams_qzsz qzsz on qzsz.jxmbid=grjxmx.jxmbid and qzsz.mbszid=grjx.mbszid and (case when grjxmx.gwid is null or grjxmx.gwid ='' then '1' else grjxmx.gwid end)=(case when qzsz.gwid is null or qzsz.gwid='' then '1' else qzsz.gwid end)
+			left join igams_jxmbmx jxmbmx on jxmbmx.jxmbmxid=grjxmx.jxmbmxid
+			left join matridx_spgw spgw on spgw.gwid=grjxmx.gwid
+			left join matridx_xtyh pfr on pfr.yhid=grjxmx.shr
+		</if>
+		order by tmp.ordernum
+	</select>
+	<select id="getLastPerformance" parameterType="GrjxDto" resultType="GrjxDto">
+	SELECT
+	grjx.grjxid,
+	jxmb.mbmc,
+	grjx.xh,
+	concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS khsj,
+	grjx.zf,
+	grjx.khzf,
+	grjx.zt,
+	grjx.scbj,
+	date_part( 'day', grjx.zqkssj :: TIMESTAMP - grjx.zqjssj :: TIMESTAMP ) khzq,
+	xtyh.zsxm xm,
+	jgxx.jgmc bm,grjx.qrzt
+	FROM
+	igams_grjx grjx
+	LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+	left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+	left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+	left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+	where	grjx.yhid=#{yhid}
+	order by grjx.lrsj desc limit 1
+	</select>
+
+	<select id="getToDoList" resultType="GrjxDto" parameterType="GrjxDto">
+		SELECT
+		grjx.grjxid,
+		jxmb.mbmc,
+		grjx.xh,
+		grjx.zqkssj, grjx.zqjssj,
+		grjx.zf,
+		grjx.khzf,
+		grjx.zt,
+		grjx.scbj,
+		xtyh.zsxm xm,
+		jgxx.jgmc bm,
+		mbsz.jxshid,
+		mbsz.zp,
+		grjx.jxzf,grjx.qrzt
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		where grjx.scbj='0'
+		<include refid="SelectWhere"></include>
+		order by grjx.lrsj desc
+	</select>
+
+	<select id="getPagedAuditData" parameterType="GrjxDto" resultType="GrjxDto">
+		SELECT
+		grjx.grjxid,
+		jxmb.mbmc,
+		grjx.xh,
+		grjx.zqkssj, grjx.zqjssj,
+		grjx.zf,
+		grjx.khzf,
+		grjx.zt,
+		grjx.scbj,
+		xtyh.zsxm xm,
+		jgxx.jgmc bmmc,
+		grjx.lrsj,
+		concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS zqsj,grjx.qrzt,grjx.bm
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		where grjx.scbj='0'
+		<include refid="SelectWhere"></include>
+	</select>
+	<!-- 审核列表-->
+	<select id="getAuditList" parameterType="List" resultType="GrjxDto">
+		SELECT
+		grjx.grjxid,
+		jxmb.mbmc,
+		grjx.xh,
+		grjx.zqkssj, grjx.zqjssj,
+		grjx.zf,
+		grjx.khzf,
+		grjx.zt,
+		grjx.scbj,
+		xtyh.zsxm xm,
+		jgxx.jgmc bm,
+		jxsh.shlb,
+		concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS zqsj,
+		shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj,grjx.qrzt
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_yhssjg jg on jg.yhid=grjx.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=jg.jgid
+		left join matridx_xtyh xtyh on xtyh.yhid=grjx.yhid
+		LEFT JOIN igams_mbsz mbsz ON mbsz.mbszid = grjx.mbszid
+		left join matridx_xtsh jxsh on jxsh.shid=mbsz.jxshid
+		join
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.grjxid} grjxid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach>
+		tmp on tmp.grjxid = grjx.grjxid
+		order by tmp.rownum
+	</select>
+	<select id="getGrjxYears" resultType="String">
+		SELECT nf
+		from igams_grjx
+		where scbj='0' and nf is not null
+		group by nf
+	</select>
+	<select id="getGrjxBms" resultType="Map">
+		SELECT grjx.bm,jgxx.jgmc
+		from igams_grjx grjx
+		left join matridx_jgxx jgxx on jgxx.jgid=grjx.bm
+		where grjx.scbj='0' and jgxx.jgmc is not null
+		group by grjx.bm,jgxx.jgmc
+	</select>
+	<select id="getDtoListByIds" parameterType="GrjxDto" resultType="GrjxDto">
+		SELECT
+			grjx.grjxid,
+			jxmb.mbmc,
+			grjx.zqkssj, grjx.zqjssj,jxmb.syrq,jxmb.lrry,xtyh.zsxm zdrymc,xtyh.yhm,xtyh.yhid,grjx.qrzt
+		FROM
+			igams_grjx grjx
+			LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+			left join matridx_xtyh xtyh on xtyh.yhid = grjx.yhid
+		where
+		grjx.scbj ='0' and grjx.grjxid in
+		<if test="ids!=null and ids.size>0">
+			<foreach collection="ids" separator="," open="(" close=")" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	<select id="getDtoListByYhIds" parameterType="GrjxDto" resultType="GrjxDto">
+		SELECT
+		grjx.grjxid,
+		jxmb.mbmc,
+		grjx.zqkssj, grjx.zqjssj,jxmb.syrq,jxmb.lrry,xtyh.zsxm zdrymc,xtyh.yhm,xtyh.yhid,grjx.qrzt
+		FROM
+		igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+		left join matridx_xtyh xtyh on xtyh.yhid = grjx.yhid
+		where
+		grjx.scbj ='0' and grjx.qrzt = '0' and grjx.jxmbid = #{jxmbid} and grjx.yhid in
+		<if test="ids!=null and ids.size>0">
+			<foreach collection="ids" separator="," open="(" close=")" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	<!-- 获取绩效目标统计数据 -->
+	<select id="getPerformanceStatistics" parameterType="YghmcDto" resultType="Map">
+		SELECT COALESCE(sum(case when rown = 1 then allcount else 0 end),0) AS totalcount, COALESCE(sum(case when rown = 1 then incompletecount else 0 end),0) AS incompletecount FROM (
+			SELECT yh.zsxm AS xm,1 as allcount,CASE when tmp.zt = '10' or tmp.zt = '80' THEN 1 ELSE 0 END incompletecount,tmp.*,
+		   		row_number() over(partition by yh.zsxm order by
+		      	case when tmp.mbmc is null or tmp.mbmc = '' then 0
+				when tmp.zt = '00' then 1
+				when tmp.zt ='10' then 3
+				when tmp.zt ='15' then 2
+				else 4 end desc
+			    ) rown
+			FROM matridx_yghmc yghmc
+			LEFT JOIN matridx_xtyh yh ON yghmc.yhid = yh.yhid
+			LEFT JOIN (
+				SELECT grjx.yhid, grjxid, grjx.zt, jxmb.mbmc
+				FROM igams_grjx grjx
+				LEFT JOIN igams_jxmb jxmb ON grjx.jxmbid = jxmb.jxmbid
+				WHERE grjx.scbj = '0'
+				AND jxmb.scbj = '0'
+				<if test="dqy !=null and dqy!=''">
+					AND to_char(grjx.zqkssj, 'yyyy-mm-dd')  &gt;= to_char(date_trunc('month', current_date - interval '1 month'), 'yyyy-mm-dd')
+					AND to_char(grjx.zqjssj, 'yyyy-mm-dd') &lt;= to_char((date_trunc('month', current_date - interval '1 month') + interval '1 month - 1 day'), 'yyyy-mm-dd')
+				</if>
+				<if test="dqy ==null or dqy==''">
+					and to_char(grjx.zqkssj, 'yyyy-mm-dd') &lt;= to_char(LOCALTIMESTAMP, 'yyyy-mm-dd')
+					and to_char(grjx.zqjssj, 'yyyy-mm-dd') &gt;= to_char(LOCALTIMESTAMP, 'yyyy-mm-dd')
+				</if>
+			) tmp ON tmp.yhid = yh.yhid
+			WHERE yghmc.zszg = #{zszg} AND yh.scbj = '0' AND yh.sfsd = '0'
+		)counttmp
+	</select>
+	<!-- 获取绩效目标统计数据 -->
+	<select id="getPerformanceStatisticsView" parameterType="YghmcDto" resultType="Map">
+		SELECT tt.xm,tt.mbmc,tt.grjxid,tt.zt  FROM (
+		SELECT yh.zsxm AS xm,tmp.mbmc AS mbmc, tmp.grjxid,
+		row_number() over(partition by yh.zsxm order by case when tmp.mbmc is null or tmp.mbmc = '' then 0
+		when tmp.zt = '00' then 1
+		when tmp.zt ='10' then 3
+		when tmp.zt ='15' then 2
+		else 4 end desc) rown,
+		case when tmp.mbmc is null or tmp.mbmc = '' then '未创建'
+		when tmp.zt = '00' then '未提交'
+		when tmp.zt ='10' then '审核中'
+		when tmp.zt ='15' then '已拒绝'
+		else '已通过' end AS zt,
+		case when tmp.mbmc is null or tmp.mbmc = '' then 0
+		when tmp.zt = '00' then 1
+		when tmp.zt ='10' then 3
+		when tmp.zt ='15' then 2
+		else 4 end AS xh
+		FROM matridx_yghmc yghmc
+		LEFT JOIN matridx_xtyh yh ON yghmc.yhid = yh.yhid
+		LEFT JOIN (
+		SELECT grjx.yhid, grjxid,grjx.zt, jxmb.mbmc
+		FROM igams_grjx grjx
+		LEFT JOIN igams_jxmb jxmb ON grjx.jxmbid = jxmb.jxmbid
+		WHERE grjx.scbj = '0'
+		AND jxmb.scbj = '0'
+		<if test="dqy !=null and dqy!=''">
+			AND to_char(grjx.zqkssj, 'yyyy-mm-dd')  &gt;= to_char(date_trunc('month', current_date - interval '1 month'), 'yyyy-mm-dd')
+			AND to_char(grjx.zqjssj, 'yyyy-mm-dd') &lt;= to_char((date_trunc('month', current_date - interval '1 month') + interval '1 month - 1 day'), 'yyyy-mm-dd')
+		</if>
+		<if test="dqy ==null or dqy==''">
+			and to_char(grjx.zqkssj, 'yyyy-mm-dd') &lt;= to_char(LOCALTIMESTAMP, 'yyyy-mm-dd')
+			and to_char(grjx.zqjssj, 'yyyy-mm-dd') &gt;= to_char(LOCALTIMESTAMP, 'yyyy-mm-dd')
+		</if>
+
+		) tmp on tmp.yhid = yh.yhid
+		where yghmc.zszg = #{zszg} and yh.scbj = '0' and yh.sfsd='0'
+		ORDER BY xh ,yh.zsxm,tmp.mbmc
+		) tt WHERE tt.rown = 1
+	</select>
+</mapper>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+	<script type="text/javascript" src="/js/experiment/library/library_uploadComputerWatch.js?v=20250521v11" charset="utf-8"></script>
+<title>Insert title here</title>
+	<style>
+		html,body{
+			display: grid;
+			height: 100%;
+			place-items: center;
+			background: #8f8f8f;
+			font-family: 'Lato', sans-serif;
+		}
+		.wrapper{
+			display: inline-flex;
+		}
+		.wrapper .option{
+			background: #fff;
+			height: 100%;
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: space-evenly;
+			margin: 0 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 0 10px;
+			border: 2px solid lightgrey;
+			transition: all 0.3s ease;
+		}
+		.wrapper .option .dot{
+			height: 12px;            /* radio 圆直径 */
+			width: 12px;             /* radio 圆直径 */
+			background: #58ACFA;     /* radio 圆颜色（非checked） */
+			border-radius: 50%;
+			position: relative;
+		}
+		.wrapper .option .dot::before{
+			position: absolute;
+			content: "";
+			top: 2px;                /* radio 小圆相对大圆的位置 */
+			left: 2px;               /* radio 小圆相对大圆的位置 */
+			width: 8px;              /* radio 小圆直径 */
+			height: 8px;             /* radio 小圆直径 */
+			background: #58ACFA;     /* radio 小圆颜色 */
+			border-radius: 50%;
+			opacity: 0;
+			transform: scale(1.5);
+			transition: all 0.3s ease;
+		}
+		input[type="radio"]{
+			display: none;
+		}
+		#option-1:checked:checked ~ .option-1,
+		#option-2:checked:checked ~ .option-2{
+			border-color: #58ACFA;   /* 按钮颜色(checked) */
+			background: #58ACFA;     /* 按钮颜色(checked) */
+		}
+		#option-1:checked:checked ~ .option-1 .dot,
+		#option-2:checked:checked ~ .option-2 .dot{
+			background: #fff;        /* radio 大圆颜色(checked) */
+		}
+		#option-1:checked:checked ~ .option-1 .dot::before,
+		#option-2:checked:checked ~ .option-2 .dot::before{
+			opacity: 1;
+			transform: scale(1);
+		}
+		.wrapper .option span{
+			font-size: 15px;         /* 文字大小 */
+			color: #808080;          /* 文字颜色（默认） */
+		}
+		#option-1:checked:checked ~ .option-1 span,
+		#option-2:checked:checked ~ .option-2 span{
+			color: #fff;             /* 文字颜色（checked） */
+		}
+
+		.table-fixedHeader thead {
+			display: table;
+			width: 100%;
+			table-layout: fixed;
+		}
+
+		.table-fixedHeader thead tr>th {
+			text-align: center;
+		}
+
+		.table-fixedHeader tbody {
+			display: table;
+			width: 100%;
+			table-layout: fixed;
+		}
+	</style>
+</head>
+<body>
+	<form id="ajaxForm"  action="/experiment/library/uploadcomputerwatchSaveWk"  class="form-horizontal sl_all_form sjbody"  method="post" theme="simple" data-bs-toggle="validation" autocomplete="off">
+		<input type="hidden" id="wksj_Json" name="wksj_Json">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" id="xpid" name="xpid">
+		<input type="hidden" id="t_xpmc" name="xpmc">
+		<input type="hidden" id="t_cxy" name="cxy">
+		<input type="hidden" id="t_sjsj" name="sjsj">
+		<input type="hidden" id="t_xjsj" name="xjsj">
+		<input type="hidden" id="t_yjxjsj" name="yjxjsj">
+		<input type="hidden" id="t_fwq" name="fwq">
+		<input type="hidden" id="t_sssys" name="sssys">
+		<input type="hidden" id="length" name="length" th:value="${length}">
+		<input type="hidden" id="wkid" name="wkid" th:value="${wkglDto.wkid}">
+		<input type="hidden" id="bcbj" name="bcbj">
+		<input type="hidden" id="wksjid" name="wksjid" th:value="${wksjglDto.wksjid}">
+		<input type="hidden" id="poolingjson" name="poolingjson" th:value="${poolingjson}">
+		<input type="hidden" id="sfqyjyh" name="sfqyjyh" th:value="${sfqyjyh}">
+		<div class="body-content tab-content" style="height:500px;">
+			<div class="col-sm-12 col-md-12 col-xs-12 panel panel-default" >
+				<div class="row">
+					<div id="sjdiv">
+					<div class="col-md-12 col-sm-12" style="margin-top:10px;">
+						<div class="form-group">
+							<div>
+								<label for="" class="col-md-1 col-sm-1 col-xs-1 control-label">
+									<span style="color: red;">*</span>测序仪：
+								</label>
+								<div class="col-sm-3 col-md-3 col-xs-3">
+									<select id="cxyid" name="cxyid" th:value="${wksjglDto.cxyid}"  class="form-control chosen-select" >
+										<option  value="">--请选择--</option>
+										<option th:each="list:${cxyxxlist}" th:id="${list.cxyid}" th:text="${list.mc}" th:value="${list.cxyid}"  th:selected="${{list.cxyid eq wksjglDto.cxyid}}"
+										></option>
+									</select>
+								</div>
+							</div>
+							<div>
+								<label for="" class="col-md-1 col-sm-1 col-xs-1 control-label">
+									芯片：
+								</label>
+								<div class="col-sm-4 col-md-4 col-xs-4">
+									<select id="xpxx" name="xpxx"    class="form-control chosen-select" >
+										<option  value="">--请选择--</option>
+										<option th:each="list:${xplist}" th:id="${list.id}" th:value="${list.id}" th:text="${list.name}" th:xpmc="${list.name}"
+												th:sjsj="${list.start_time}" th:xjsj="${list.finish_time}" th:cxymc="${list.machine}" th:fwq="${list.zone}" th:sssys="${list.organization}" th:yjxjsj="${list.expect_finish_time}"
+												></option>
+									</select>
+								</div>
+							</div>
+							<div class="col-sm-3 col-md-3 col-xs-3">
+								<div class="wrapper">
+									<input type="radio" name="select" id="option-1">
+									<input type="radio" name="select" id="option-2">
+									<label for="option-1" class="option option-1">
+										<div class="dot"></div>
+										<span>加R</span>
+									</label>
+									<label for="option-2" class="option option-2">
+										<div class="dot"></div>
+										<span>去R</span>
+									</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" style="padding:0px;">
+						<div class="col-md-3 col-sm-3" style="height:40px">
+							<div class="form-group" >
+								<label for="" class="col-sm-5 control-label">
+									芯片名称:
+								</label>
+								<div class="col-sm-7 col-xs-12 padding_t7">
+									<span id="xpmc"></span>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-9 col-sm-9" style="height:40px">
+							<div class="form-group" >
+								<button type="button" onclick="regenerationSjbxx()" class="btn btn-info" style="position: absolute;right: 50%;">删除并重新创建</button>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								上机时间:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="sjsj"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								下机时间:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="xjsj"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								测序仪名:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="cxym"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								服务器:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="fwq"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								实验室:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="sssys"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								预计下机时间:
+							</label>
+							<div class="col-sm-7 col-xs-12 padding_t7">
+								<span id="yjxjsj"></span>
+							</div>
+						</div>
+					</div>
+					</div>
+					<div id="sjdivhidden">
+						<!--该DIV用来计算表格标题滚动时候的与顶端的距离使用-->
+					</div>
+					<div class="col-md-12 col-sm-12" style="margin-top:10px;" >
+						<div class="form-group">
+							<table class="table table-bordered table-hover col-md-12 col-sm-12 col-xs-12 table-fixedHeader" style="margin-bottom:20px;table-layout:fixed;">
+								<thead id="sjbbt">
+									<tr>
+										<th style="width:5%;" ><div style="text-align: center">序号</div><div style="text-align: center"><button id="index-bt" class="CopyEntire index btn btn-primary" type="button">全部</button></div></th>
+										<th style="width:11%;"><div style="text-align: center">标本编号</div><div style="text-align: center"><button id="ybbh-bt" class="CopyEntireColumn ybbh btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:25%;"><div style="text-align: center">文库编号</div><div style="text-align: center"><button id="wkbm-bt" class="CopyEntireColumn wkbm btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:5%;"><div style="text-align: center">接头1</div><div style="text-align: center"><button id="jt1-bt" class="CopyEntireColumn jt1 btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:5%;"><div style="text-align: center">接头2</div><div style="text-align: center"><button id="jt2-bt" class="CopyEntireColumn jt2 btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:6%;"><div style="text-align: center">spike</div><div style="text-align: center"><button id="spike-bt" class="CopyEntireColumn spike btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:8%;"><div style="text-align: center">CDNA浓度</div><div style="text-align: center"><button id="dnand-bt" class="CopyEntireColumn dnand btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:8%;"><div style="text-align: center">核酸浓度</div><div style="text-align: center"><button id="hsnd-bt" class="CopyEntireColumn hsnd btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:8%;"><div style="text-align: center">文库浓度</div><div style="text-align: center"><button id="wknd-bt" class="CopyEntireColumn wknd btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:8%;"><div style="text-align: center">定量浓度</div><div style="text-align: center"><button id="dlnd-bt" class="CopyEntireColumn dlnd btn btn-primary" type="button">复制列</button></div></th>
+										<th id="th-tj" style="width:8%;"><div style="text-align: center" id="text-tj">体积</div><div style="text-align: center"><button id="tj-bt" class="CopyEntireColumn tj btn btn-primary" type="button">复制列</button></div></th>
+										<th id="th-hbnd" style="width:8%;"><div style="text-align: center" id="text-hbnd">合并浓度</div><div style="text-align: center"><button id="hbnd-bt" class="CopyEntireColumn hbnd btn btn-primary" type="button">复制列</button></div></th>
+										<th id="th-nddw" style="width:8%;"><div style="text-align: center" id="text-nddw">浓度单位</div><div style="text-align: center"><button id="nddw-bt" class="CopyEntireColumn dnnw btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:8%;"><div style="text-align: center">原因</div><div style="text-align: center"><button id="yy-bt" class="CopyEntireColumn yy btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:9%;"><div style="text-align: center">预计下机数据量</div><div style="text-align: center"><button id="yjxjsjl-bt" class="CopyEntireColumn yjxjsjl btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:9%;"><div style="text-align: center">稀释倍数</div><div style="text-align: center"><button id="xsbs-bt" class="CopyEntireColumn yjxjsjl btn btn-primary" type="button">复制列</button></div></th>
+										<th style="width:6%;"><div style="text-align: center">project</div><div style="text-align: center"><button id="project_type-bt" class="CopyEntireColumn yjxjsjl btn btn-primary" type="button">复制列</button></div></th>
+									</tr>
+								</thead>
+								<tbody id="trmx">
+									<tr th:each="list:${wksjmxList}" class="wksjmc">
+										<td style="width:5%;" th:text="${listStat.index+1}"></td>
+										<td style="width:11%;" id="ybbh"><input th:id="${'ybbh-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" name="quantity" th:title="${list.ybbh}" th:value="${list.ybbh}"></td>
+										<td style="width:25%;" id="wkbm"><input th:id="${'wkbm-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" name="quantity" th:title="${list.wkbm}" th:value="${list.wkbm}" th:xh="${listStat.index+1}"></td>
+										<td style="width:5%;" id="jt1"><input th:id="${'jt1-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" name="quantity" th:title="${list.jt1}" th:value="${list.jt1}"></td>
+										<td style="width:5%;" id="jt2"><input th:id="${'jt2-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" name="quantity" th:title="${list.jt2}" th:value="${list.jt2}"></td>
+										<td style="width:6%;" id="spike"><input th:id="${'spike-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" name="quantity" th:title="${list.spike}" th:value="${list.spike}"></td>
+										<td style="width:8%;" id="dnand"><input th:id="${'dnand-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.dnand}" name="quantity" th:value="${list.dnand}"></td>
+										<td style="width:8%;" id="hsnd"><input th:id="${'hsnd-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.hsnd}" name="quantity" th:value="${list.hsnd}"></td>
+										<td style="width:8%;" id="wknd"><input th:id="${'wknd-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.wknd}" name="quantity" th:value="${list.wknd}"></td>
+										<td style="width:8%;" id="dlnd"><input th:id="${'dlnd-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.dlnd}" name="quantity" th:value="${list.dlnd}"></td>
+										<td style="width:8%;" id="tj"><input th:id="${'tj-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.tj}" name="quantity" th:value="${list.tj}"></td>
+										<td style="width:8%;" id="hbnd" ><input th:id="${'hbnd-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.hbnd}" name="quantity" th:value="${list.hbnd}"></td>
+										<td style="width:8%;" id="nddw" ><input th:id="${'nddw-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.nddw}" name="quantity" th:value="${list.nddw}"></td>
+										<td style="width:8%;" id="yy"><input th:id="${'yy-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.yy}" name="quantity" th:value="${list.yy}"></td>
+										<td style="width:9%;" id="yjxjsjl"><input th:id="${'yjxjsjl-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.yjxjsjl}" name="quantity" th:value="${list.yjxjsjl}"></td>
+										<td style="width:9%;" id="xsbs"><input th:id="${'xsbs-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.xsbs}" name="quantity" th:value="${list.xsbs}"></td>
+										<td style="width:6%;" id="project_type"><input  th:id="${'project_type-'+(listStat.index+1)}"  style="height:100%;border:0px;width:100%;" th:title="${list.project_type}" name="l_project_type" th:value="${list.project_type}" ></td>
+										<input type="hidden" th:id="${'xmdm-'+(listStat.index+1)}"  name="l_xmdm" th:value="${list.xmdm}" >
+										<input type="hidden" th:id="${'syglid-'+(listStat.index+1)}"  name="l_syglid" th:value="${list.syglid}" >
+										<input type="hidden" th:id="${'nbbm-'+(listStat.index+1)}"  name="l_nbbm" th:value="${list.nbbm}" >
+										<input type="hidden" th:id="${'ywkbm-'+(listStat.index+1)}"  name="l_ywkbm" th:value="${list.wkbm}" >
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>
+</html>

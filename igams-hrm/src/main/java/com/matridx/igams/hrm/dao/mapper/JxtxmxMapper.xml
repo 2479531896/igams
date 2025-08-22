@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJxtxmxDao" >
+    <select id="getDtoList" parameterType="JxtxmxDto" resultType="JxtxmxDto">
+        SELECT
+            jxtxmx.jxtxid,jxtxmx.jxtxmxid,jxtxmx.ryid,zj.csmc zjmc,yhqtxx.zj,ry.yhm,ry.zsxm,ryjg.jgmc,ry.gwmc, khzq.cskz1 khzqcskz1,khzq.cskz2 khzqcskz2
+            ,jxtx.txjb,jxtx.txy,jxtx.txrq,jxtx.khzq
+        FROM
+            igams_jxtxmx jxtxmx
+        LEFT JOIN igams_jxtx jxtx ON jxtx.jxtxid = jxtxmx.jxtxid
+        LEFT JOIN matridx_jcsj khzq ON khzq.csid = jxtx.khzq
+        LEFT JOIN matridx_xtyh ry ON ry.yhid = jxtxmx.ryid
+        LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = ry.yhid
+        LEFT JOIN matridx_jcsj zj ON zj.csid = yhqtxx.zj
+        left outer join matridx_yhssjg ryssjg on ry.yhid = ryssjg.yhid
+        left outer join matridx_jgxx ryjg on ryjg.jgid=ryssjg.jgid
+        WHERE
+            jxtxmx.scbj ='0'
+        <if test="jxtxid!=null and jxtxid!=''">
+            and jxtxmx.jxtxid=#{jxtxid}
+        </if>
+    </select>
+
+    <update id="delete" parameterType="JxtxmxDto">
+        update igams_jxtxmx set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jxtxmxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <update id="deleteByJxtxid" parameterType="JxtxmxDto">
+        update igams_jxtxmx set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jxtxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <insert id="insertJxtxmxDtos" parameterType="List">
+        insert into igams_jxtxmx(jxtxid,jxtxmxid,ryid,lrry,lrsj,scbj)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.jxtxid}, #{item.jxtxmxid},#{item.ryid},#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+    <update id="updateJxtxmxDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_jxtxmx set
+                xgsj = LOCALTIMESTAMP
+                <if test="item.ryid !=null and  item.ryid !=''">
+                    ,ryid = #{item.ryid}
+                </if>
+                <if test="item.xgry !=null and  item.xgry !=''">
+                    ,xgry = #{item.xgry}
+                </if>
+                <where>
+                    jxtxmxid=#{item.jxtxmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+</mapper>

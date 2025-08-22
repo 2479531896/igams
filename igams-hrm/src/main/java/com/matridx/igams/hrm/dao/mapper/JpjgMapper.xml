@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJpjgDao" >
+    <select id="getCount" parameterType="JpjgModel" resultType="int">
+        select count(jpjgid)  from igams_jpjg where yhid =#{yhid} and jpglid = #{jpglid}
+    </select>
+    <insert id="insert" parameterType="JpjgDto">
+        INSERT INTO public.igams_jpjg
+        (yhid, jpmxid, jpjgid, hjsj, jpglid)
+        VALUES(#{yhid}, #{jpmxid}, #{jpjgid}, cast(#{hjsj} as TIMESTAMP), #{jpglid})
+    </insert>
+    <select id="getLotteryRecords" parameterType="JpjgDto" resultType="JpjgDto">
+        select jpjg.yhid,to_char(jpjg.hjsj,'yyyy-MM-dd hh24:MI:ss') hjsj,jpjg.jpglid,xtyh.zsxm,xtyh.yhm,jpmx.jpmc,coalesce(jpgl.jsrq-jpgl.ksrq,0)+1 rqc,jpjg.hjsj hjsjDate  from
+        igams_jpjg jpjg
+        left join igams_jpmx jpmx on jpjg.jpmxid = jpmx.jpmxid
+        left join igams_jpgl jpgl on jpjg.jpglid = jpgl.jpglid
+        left join matridx_xtyh xtyh on xtyh.yhid = jpjg.yhid
+        where jpjg.jpglid = #{jpglid} and jpmx.jpmc !='谢谢参与'
+        order by jpjg.hjsj
+    </select>
+    <select id="getPersonalLotteryRecord" parameterType="JpjgDto" resultType="JpjgDto">
+        select jpjg.yhid,to_char(jpjg.hjsj,'yyyy-MM-dd hh24:MI:ss') hjsj,jpjg.jpglid,xtyh.zsxm,xtyh.yhm,jpmx.jpmc,coalesce(jpgl.jsrq-jpgl.ksrq,0)+1 rqc  from
+        igams_jpjg jpjg
+        left join igams_jpmx jpmx on jpjg.jpmxid = jpmx.jpmxid
+        left join igams_jpgl jpgl on jpjg.jpglid = jpgl.jpglid
+        left join matridx_xtyh xtyh on xtyh.yhid = jpjg.yhid
+        where jpjg.yhid = #{yhid} and jpjg.jpglid = #{jpglid}
+    </select>
+</mapper>

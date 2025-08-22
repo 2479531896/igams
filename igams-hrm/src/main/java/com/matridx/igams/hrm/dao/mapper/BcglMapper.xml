@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IBcglDao" >
+    <select id="getDtoList" parameterType="BcglDto" resultType="BcglDto">
+        SELECT
+            bcgl.bcid,bcgl.bcglid,bcgl.bcmc,to_char(bcgl.sbdksj,'hh24:mi:ss') sbdksj,to_char(bcgl.xbdksj,'hh24:mi:ss') xbdksj,
+            btgl.btglid,btgl.btmc,btgl.bzsc,to_char(btgl.bzsj,'hh24:mi:ss') bzsj,btgl.bzje,btgl.dzje,btgl.dzjg,to_char(btgl.dzkssj,'hh24:mi:ss') dzkssj,btgl.fdje,
+            btgl.bzjrcr,btgl.dzjrcr
+        FROM
+            igams_bcgl bcgl
+                LEFT JOIN igams_btgl btgl ON bcgl.btglid = btgl.btglid and btgl.scbj='0'
+        <where>
+            bcgl.scbj ='0'
+            <if test="btglid!=null and btglid!=''">
+               and bcgl.btglid=#{btglid}
+            </if>
+        </where>
+    </select>
+    <select id="getDto" resultType="BcglDto" parameterType="BcglDto">
+        SELECT
+            bcgl.bcid,bcgl.bcglid,bcgl.bcmc,to_char(bcgl.sbdksj,'hh24:mi:ss') sbdksj,to_char(bcgl.xbdksj,'hh24:mi:ss') xbdksj,
+            btgl.btglid,btgl.btmc,btgl.bzsc,to_char(btgl.bzsj,'hh24:mi:ss') bzsj,btgl.bzje,btgl.dzje,btgl.dzjg,to_char(btgl.dzkssj,'hh24:mi:ss') dzkssj,btgl.fdje
+        FROM
+            igams_bcgl bcgl
+                LEFT JOIN igams_btgl btgl ON bcgl.btglid = btgl.btglid
+        <where>
+        <if test="btglid!=null and btglid!=''">
+            bcgl.btglid=#{btglid}
+        </if>
+        </where>
+    </select>
+    <update id="update" parameterType="BcglDto">
+        update igams_bcgl set
+        xgry=#{xgry},
+        xgsj=LOCALTIMESTAMP
+        <if test="btglid!=null and btglid!=''">
+            ,btglid=#{btglid}
+        </if>
+        <where>
+            <if test="ids!=null and ids.size>0">
+                bcglid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <update id="delete" parameterType="BcglDto">
+        update igams_bcgl set
+        scry=#{scry},
+        scbj='1',
+        scsj=LOCALTIMESTAMP
+        <where>
+            <if test="ids!=null and ids.size>0">
+                bcglid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <select id="getPagedDtoList" parameterType="BcglDto" resultType="BcglDto">
+        SELECT
+        bcgl.bcid,bcgl.bcglid,bcgl.bcmc,to_char(bcgl.sbdksj,'hh24:mi:ss') sbdksj,to_char(bcgl.xbdksj,'hh24:mi:ss') xbdksj,
+        btgl.btglid,btgl.btmc,btgl.bzsc,to_char(btgl.bzsj,'hh24:mi:ss') bzsj,btgl.bzje,btgl.dzje,btgl.dzjg,to_char(btgl.dzkssj,'hh24:mi:ss') dzkssj,btgl.fdje,
+        lrry.zsxm lrrymc,xgry.zsxm xgrymc,to_char(bcgl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj
+        FROM
+        igams_bcgl bcgl
+        LEFT JOIN igams_btgl btgl ON bcgl.btglid = btgl.btglid and btgl.scbj='0'
+        left join matridx_xtyh lrry on lrry.yhid=bcgl.lrry
+        left join matridx_xtyh xgry on xgry.yhid=bcgl.xgry
+        <where>
+            bcgl.scbj ='0'
+            <if test="bcmc!=null and bcmc!=''">
+                and bcgl.bcmc like '%'||#{bcmc}||'%'
+            </if>
+            <if test="btmc!=null and btmc!=''">
+                and btgl.btmc like '%'||#{btmc}||'%'
+            </if>
+        </where>
+    </select>
+    <select id="getDtoById" resultType="BcglDto" parameterType="String">
+        SELECT
+        bcgl.bcid,bcgl.bcglid,bcgl.bcmc,to_char(bcgl.sbdksj,'hh24:mi:ss') sbdksj,to_char(bcgl.xbdksj,'hh24:mi:ss') xbdksj,
+        btgl.btglid,btgl.btmc,btgl.bzsc,to_char(btgl.bzsj,'hh24:mi:ss') bzsj,btgl.bzje,btgl.dzje,btgl.dzjg,to_char(btgl.dzkssj,'hh24:mi:ss') dzkssj,btgl.fdje,
+        lrry.zsxm lrrymc,xgry.zsxm xgrymc,to_char(bcgl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj
+        FROM
+        igams_bcgl bcgl
+        LEFT JOIN igams_btgl btgl ON bcgl.btglid = btgl.btglid and btgl.scbj='0'
+        left join matridx_xtyh lrry on lrry.yhid=bcgl.lrry
+        left join matridx_xtyh xgry on xgry.yhid=bcgl.xgry
+        where
+            bcgl.bcglid =#{bcglid}
+    </select>
+    <select id="getBcglDtoList" parameterType="BcglDto" resultType="BcglDto">
+        SELECT
+        bcgl.bcid,bcgl.bcglid,bcgl.bcmc,to_char(bcgl.sbdksj,'yyyy-mm-dd hh24:mi:ss') sbdksj,to_char(bcgl.xbdksj,'yyyy-mm-dd hh24:mi:ss') xbdksj,
+        btgl.btglid,btgl.btmc,btgl.bzsc,to_char(btgl.bzsj,'hh24:mi:ss') bzsj,btgl.bzje,btgl.dzje,btgl.dzjg,to_char(btgl.dzkssj,'hh24:mi:ss') dzkssj,btgl.fdje
+        FROM
+        igams_bcgl bcgl
+        LEFT JOIN igams_btgl btgl ON bcgl.btglid = btgl.btglid and btgl.scbj='0'
+        <where>
+            bcgl.scbj ='0'
+            <if test="bcids!=null and bcids.size>0!=''">
+                and bcgl.btglid in
+                <foreach collection="bcids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getBcByCqsj" parameterType="String" resultType="BcglDto">
+        SELECT round(cast(date_part('epoch', to_timestamp(to_char(sbdksj, 'hh24:MI:SS'),'hh24:MI:SS') - to_timestamp(#{cqsj},'hh24:MI:SS'))/60 as numeric ),1) rqc,bcid,sbdksj,bcmc from igams_bcgl
+        WHERE round(cast(date_part('epoch', to_timestamp(to_char(sbdksj, 'hh24:MI:SS'),'hh24:MI:SS') - to_timestamp(#{cqsj},'hh24:MI:SS'))/60 as numeric ),1)>0
+        ORDER BY rqc LIMIT 1
+    </select>
+    <update id="updateList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item"
+                     index="index">
+                update  igams_bcgl
+                <set>
+                    <if test="item.bcmc != null and item.bcmc != ''">
+                        "bcmc"=#{item.bcmc},
+                    </if>
+                    <if test="item.xgry != null and item.xgry != ''">
+                        "xgry"=#{item.xgry},
+                    </if>
+                    "xgsj"=LOCALTIMESTAMP
+                </set>
+                where bcglid = #{item.bcglid}
+            </foreach>
+        </if>
+    </update>
+    <insert id="insertList" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            insert into igams_bcgl(
+            <if test="item.bcglid !=null and item.bcglid !=''">
+                bcglid
+            </if>
+            <if test="item.btglid !=null and item.btglid !=''">
+                ,btglid
+            </if>
+            <if test="item.bcid !=null and item.bcid !=''">
+                ,bcid
+            </if>
+            <if test="item.bcmc !=null and item.bcmc !=''">
+                ,bcmc
+            </if>
+            <if test="item.sbdksj !=null and item.sbdksj !=''">
+                ,sbdksj
+            </if>
+            <if test="item.xbdksj !=null and item.xbdksj !=''">
+                ,xbdksj
+            </if>
+           ,lrry,lrsj,scbj
+            ) values
+            (
+            <if test="item.bcglid !=null and item.bcglid !=''">
+                #{item.bcglid}
+            </if>
+            <if test="item.btglid !=null and item.btglid !=''">
+                ,#{item.btglid}
+            </if>
+            <if test="item.bcid !=null and item.bcid !=''">
+                ,#{item.bcid}
+            </if>
+            <if test="item.bcmc !=null and item.bcmc !=''">
+                ,#{item.bcmc}
+            </if>
+            <if test="item.sbdksj !=null and item.sbdksj !=''">
+                ,cast (#{item.sbdksj} as timestamp)
+            </if>
+            <if test="item.xbdksj !=null and item.xbdksj !=''">
+                ,cast (#{item.xbdksj} as timestamp)
+            </if>
+                ,#{item.lrry}
+            ,LOCALTIMESTAMP
+            ,'0'
+            )
+        </foreach>
+    </insert>
+</mapper>

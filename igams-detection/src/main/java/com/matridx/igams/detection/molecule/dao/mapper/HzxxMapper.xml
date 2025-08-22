@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IHzxxDao" >
+	<!--根据证件号码查询患者预约列表-->
+	<select id="getOrderHzxxDtoByZjh" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxx.jcxmid,fzjcxx.jcxmmc,fzjcxx.cjsj,fzjcxx.fzjcid,to_char(fzjcxx.yyjcrq,'yyyy-mm-dd') yyjc
+		from igams_fzjcxx fzjcxx
+		left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid and hzxx.scbj != '1'
+		<where>
+			fzjcxx.scbj !='1' and fzjcxx.cjsj isnull and to_char(now(),'yyyy-mm-dd') &lt;= to_char(yyjcrq,'yyyy-mm-dd') and hzxx.zjh = #{zjh} and hzxx.zjlx=#{zjlx}
+		</where>
+	</select>
+
+    <select id="getHzxxByHzid" parameterType="HzxxDto" resultType="HzxxDto">
+    	 select hzxx.hzid, hzxx.xm, hzxx.xb, hzxx.nl, hzxx.sj,
+	            hzxx.tw, hzxx.twjcz, hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz, hzxx.sfqr, hzxx.zjlx
+	     from igams_hzxx hzxx
+	     <where>
+	         hzxx.hzid=#{hzid} and  hzxx.scbj='0'
+	     </where>
+    </select>
+    
+	<!-- 通过身份证号查找未被删除的患者信息 -->
+	<select id="getHzxxByZjh" parameterType="HzxxDto" resultType="HzxxDto">
+	     select hzxx.hzid, hzxx.xm, hzxx.xb, hzxx.nl, hzxx.sj,hzxx.tw, hzxx.twjcz, hzxx.zjh, hzxx.sf,hzxx.cs,hzxx.qy,hzxx.xxdz, hzxx.sfqr, hzxx.zjlx
+		       ,jc_sf.csmc sfmc, jc_cs.csmc csmc
+	     from igams_hzxx hzxx
+	     left join matridx_jcsj jc_sf on jc_sf.csid=hzxx.sf and jc_sf.scbj = '0'
+	     left join matridx_jcsj jc_cs on jc_cs.csid=hzxx.cs and jc_cs.scbj = '0'
+	     <where>
+	         hzxx.scbj='0' and hzxx.zjh=#{zjh} and hzxx.zjlx=#{zjlx}
+	     </where>
+	</select>
+
+	<!-- 需要增加录入人员和录入时间 -->
+	<insert id="insertDto" parameterType="HzxxDto">
+	     insert into igams_hzxx (hzid
+         <if test="xm != null and xm != ''">
+             ,xm
+         </if>	 
+         <if test="xb != null and xb != ''">
+             ,xb
+         </if>	 
+         <if test="nl != null and nl != ''">
+             ,nl
+         </if>	 
+         <if test="sj != null and sj != ''">
+             ,sj
+         </if>	 
+         <if test="twjcz != null and twjcz != ''">
+             ,twjcz
+         </if>	 
+         <if test="zjh != null and zjh != ''">
+             ,zjh
+         </if>
+		 <if test="sf != null and sf != ''">
+		 	,sf
+		 </if>
+		 <if test="cs != null and cs != ''">
+		 	,cs
+		 </if>
+		 <if test="xxdz != null and xxdz != ''">
+		 	,xxdz
+		 </if>
+         <if test="zjlx != null and zjlx != ''">
+             ,zjlx
+         </if>
+	     ,lrry,lrsj,scbj) values (#{hzid}
+         <if test="xm != null and xm != ''">
+             ,#{xm}
+         </if>	 
+         <if test="xb != null and xb != ''">
+             ,#{xb}
+         </if>	 
+         <if test="nl != null and nl != ''">
+             ,#{nl}
+         </if>	 
+         <if test="sj != null and sj != ''">
+             ,#{sj}
+         </if>	 
+         <if test="twjcz != null and twjcz != ''">
+             ,#{twjcz}
+         </if>	 
+         <if test="zjh != null and zjh != ''">
+             ,#{zjh}
+         </if>
+		<if test="sf != null and sf != ''">
+			,#{sf}
+		</if>
+		<if test="cs != null and cs != ''">
+			,#{cs}
+		</if>
+		<if test="xxdz != null and xxdz != ''">
+			,#{xxdz}
+		</if>
+         <if test="zjlx != null and zjlx != ''">
+             ,#{zjlx}
+         </if>	 
+	     ,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 通过身份证号更新一条患者信息，增加修改人员和修改时间 -->
+	<update id="updateDto" parameterType="HzxxDto">
+		  update igams_hzxx
+	      <set>
+	       xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			  <if test="sf != null and sf != ''">
+				  ,sf=#{sf}
+			  </if>
+			  <if test="cs != null and cs != ''">
+				  ,cs=#{cs}
+			  </if>
+			  <if test="xxdz != null and xxdz != ''">
+				  ,xxdz=#{xxdz}
+			  </if>
+	          <if test="xm != null and xm != ''">
+		         ,xm=#{xm}
+		      </if>
+		      <if test="xb != null and xb != ''">
+		         ,xb=#{xb}
+		      </if>
+		      <if test="nl != null and nl != ''">
+		         ,nl=#{nl}
+		      </if>
+		      <if test="sj != null and sj != ''">
+		         ,sj=#{sj}
+		      </if>
+		      <if test="twjcz != null and twjcz != ''">
+		         ,twjcz=#{twjcz}
+		      </if>
+		      <if test="zjlx != null and zjlx != ''">
+		         ,zjlx=#{zjlx}
+		      </if>
+		      <if test="sfqr != null and sfqr != ''">
+				  ,sfqr=#{sfqr}
+			  </if>
+	      </set>
+	      <where>
+	         hzid=#{hzid}
+	      </where>
+	</update>
+	
+	<!-- 更新患者信息表的是否确认字段 -->
+	<update id="updateSfqr" parameterType="HzxxDto">
+	    update igams_hzxx
+	      <set>
+	         xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfqr='1'     
+	      </set>
+	      <where>
+	         hzid=#{hzid}
+	      </where>
+	</update>
+
+	<!--根据微信id查询患者信息列表-->
+	<select id="getHzxxListByWxid" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxx.jcxmmc,fzjcxx.cjsj,fzjcxx.fzjcid
+		case when (to_char(now(),'yyyy-mm-dd') &lt;= to_char(yyjcrq,'yyyy-mm-dd') and cjsj is null )then 2 when cjsj is not null then 1 when (to_char(now(),'yyyy-mm-dd') &gt; to_char(yyjcrq,'yyyy-mm-dd') and cjsj is null ) then 0 end px
+		from igams_hzxx hzxx
+		left join igams_fzjcxx fzjcxx on hzxx.hzid = fzjcxx.hzid and fzjcxx.scbj !='1'
+		left join matridx_jcsj jc_jcxm on fzjcxx.jcxmid = jc_jcxm.csid
+		<where>
+			fzjcxx.scbj != '1' and fzjcxx.wxid = #{wxid}
+		</where>
+		ORDER BY px desc,yyjcrq desc
+	</select>
+
+	<!--根据证件号码查询患者信息列表-->
+	<select id="getHzxxDtoByZjh" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxx.jcxmmc,fzjcxx.cjsj
+		from igams_fzjcxx fzjcxx
+		left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid and hzxx.scbj != '1'
+		<where>
+			fzjcxx.scbj !='1' and fzjcxx.cjsj isnull and to_char(now(),'yyyy-mm-dd') &lt;= to_char(yyjcrq,'yyyy-mm-dd') and hzxx.zjh = #{zjh}
+		</where>
+	</select>
+	<!--根据证件号码查询患者信息列表-->
+	<select id="getHzxxDtoByZjhAndDate" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxx.jcxmmc,fzjcxx.cjsj,fzjcxx.jcxmid
+		from igams_fzjcxx fzjcxx
+		left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid and hzxx.scbj != '1'
+		<where>
+			fzjcxx.scbj ='0' and fzjcxx.cjsj isnull and to_char(now(),'yyyy-mm-dd')  &lt;=  to_char(yyjcrq,'yyyy-mm-dd') and hzxx.zjh = #{zjh}
+		</where>
+	</select>
+	<!--根据患者id查询患者信息列表-->
+	<select id="getHzxxDtoByHzid" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxx.jcxmmc,fzjcxx.jcxmid,fzjcxx.cjsj,fzjcxx.cyd,fzjcxx.fzjcid
+		from igams_fzjcxx fzjcxx
+		left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid and hzxx.scbj != '1'
+		<where>
+			fzjcxx.scbj !='1' and hzxx.hzid = #{hzid} and fzjcxx.fzjcid = #{fzjcid}
+		</where>
+	</select>
+
+	<!--根据患者id查询预约检测项目-->
+	<select id="getFzjcxmListByHzid" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.zjh,hzxx.sf,hzxx.cs,hzxx.xxdz,hzxx.sfqr,hzxx.zjlx,fzjcxx.wxid,fzjcxx.yyjcrq,fzjcxm.fzjcxmid,jc_jcxm.csmc fzjcxmmc
+		from igams_hzxx hzxx
+		left join igams_fzjcxx fzjcxx on hzxx.hzid = fzjcxx.hzid and fzjcxx.scbj !='1'
+		left join igams_fzjcxm fzjcxm on fzjcxx.fzjcid = fzjcxm.fzjcid
+		left join matridx_jcsj jc_jcxm on fzjcxm.fzjcxmid = jc_jcxm.csid
+		<where>
+			hzxx.scbj != '1' and hzxx.hzid = #{hzid}
+		</where>
+	</select>
+
+	<!--预约新增患者信息-->
+	<insert id="insertDetectionAppointmentHzxx" parameterType="HzxxDto">
+		insert into igams_hzxx(hzid
+		<if test="xm !=null and xm !=''">
+			,xm
+		</if>
+		<if test="xb !=null and xb !=''">
+			,xb
+		</if>
+		<if test="nl !=null and nl !=''">
+			,nl
+		</if>
+		<if test="sj !=null and sj !=''">
+			,sj
+		</if>
+		<if test="zjlx !=null and zjlx !=''">
+			,zjlx
+		</if>
+		<if test="zjh !=null and zjh !=''">
+			,zjh
+		</if>
+		<if test="sf != null and sf != ''">
+			,sf
+		</if>
+		<if test="cs != null and cs != ''">
+			,cs
+		</if>
+		<if test="xxdz != null and xxdz != ''">
+			,xxdz
+		</if>
+		,lrry,lrsj,scbj)values(#{hzid}
+		<if test="xm !=null and xm !=''">
+			,#{xm}
+		</if>
+		<if test="xb !=null and xb !=''">
+			,#{xb}
+		</if>
+		<if test="nl !=null and nl !=''">
+			,#{nl}
+		</if>
+		<if test="sj !=null and sj !=''">
+			,#{sj}
+		</if>
+		<if test="zjlx !=null and zjlx !=''">
+			,#{zjlx}
+		</if>
+		<if test="zjh !=null and zjh !=''">
+			,#{zjh}
+		</if>
+		<if test="sf != null and sf != ''">
+			,#{sf}
+		</if>
+		<if test="cs != null and cs != ''">
+			,#{cs}
+		</if>
+		<if test="xxdz != null and xxdz != ''">
+			,#{xxdz}
+		</if>
+		<if test="lrry != null and lrry != ''">
+			,#{lrry}
+		</if>
+		<if test="lrry == null or lrry == ''">
+			,#{wxid}
+		</if>
+		,cast(#{lrsj} as TIMESTAMP),'0')
+	</insert>
+
+	<!--预约修改患者信息-->
+	<update  id="updateDetectionAppointmentHzxx" parameterType="HzxxDto">
+		update igams_hzxx
+		<set>
+			<if test="xm !=null and xm != ''">
+				xm = #{xm},
+			</if>
+			<if test="xb !=null and xb != ''">
+				xb = #{xb},
+			</if>
+			<if test="nl !=null and nl != ''">
+				nl = #{nl},
+			</if>
+			<if test="sj !=null and sj != ''">
+				sj = #{sj},
+			</if>
+			<if test="zjlx !=null and zjlx != ''">
+				zjlx = #{zjlx},
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				zjh = #{zjh},
+			</if>
+			<if test="sf != null and sf != ''">
+				sf=#{sf},
+			</if>
+			<if test="cs != null and cs != ''">
+				cs=#{cs},
+			</if>
+			<if test="xxdz != null and xxdz != ''">
+				xxdz=#{xxdz},
+			</if>
+			<if test="xgry != null and xgry != ''">
+				xgry=#{xgry},
+			</if>
+			<if test="xgry == null or xgry == ''">
+				xgry=#{wxid},
+			</if>
+			xgsj = cast(#{xgsj} as TIMESTAMP)
+		</set>
+		<where>
+			hzid = #{hzid}
+		</where>
+	</update>
+
+	<update  id="updateWxid" parameterType="HzxxDto">
+		update igams_hzxx
+		<set>
+			<if test="wxid !=null and wxid != ''">
+				wxid = #{wxid},
+			</if>
+			xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			scbj!='1'
+				and sj = #{sj}
+				and zjh = #{zjh}
+		</where>
+	</update>
+	<!-- 通过wxid获取患者信息 -->
+	<select id="getDtoListByWxid" parameterType="String" resultType="HzxxDto">
+		select hzxx.hzid
+		from igams_hzxx hzxx
+		<where>
+			hzxx.scbj != '1'and hzxx.wxid = #{wxid}
+		</where>
+	</select>
+	<!-- 通过sj获取患者信息 -->
+	<select id="getDtoListBySj" parameterType="String" resultType="HzxxDto">
+		select hzxx.hzid
+		from igams_hzxx hzxx
+		<where>
+			hzxx.scbj != '1'and hzxx.sj = #{sj}
+		</where>
+	</select>
+	<!-- 获取手机验证码 -->
+	<select id="getCode" parameterType="String" resultType="HzxxDto">
+		select yzm,fssj
+		from igams_hzxx
+		<where>
+			scbj != '1'and sj = #{sj} and zjh=#{zjh}
+		</where>
+	</select>
+	<!-- 更新患者信息 -->
+	<update  id="updatePatient" parameterType="HzxxDto">
+		update igams_hzxx
+		<set>
+			<if test="xm !=null and xm != ''">
+				xm = #{xm},
+			</if>
+			<if test="xb !=null and xb != ''">
+				xb = cast(#{xb} as numeric),
+			</if>
+			<if test="nl !=null and nl != ''">
+				nl = #{nl},
+			</if>
+			<if test="sj !=null and sj != ''">
+				sj = #{sj},
+			</if>
+			<if test="tw !=null and tw != ''">
+				tw = #{tw},
+			</if>
+			<if test="twjcz !=null and twjcz != ''">
+				twjcz = #{twjcz},
+			</if>
+			<if test="zjlx !=null and zjlx != ''">
+				zjlx = #{zjlx},
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				zjh = #{zjh},
+			</if>
+			<if test="yzm !=null and yzm != ''">
+				yzm = #{yzm},
+			</if>
+			<if test="fssj !=null and fssj != ''">
+				fssj = LOCALTIMESTAMP,
+			</if>
+			xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			scbj!='1'
+			<if test="hzid !=null and hzid != ''">
+				and hzid = #{hzid}
+			</if>
+			<if test="sj !=null and sj != ''">
+				and sj = #{sj}
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				and zjh = #{zjh}
+			</if>
+		</where>
+	</update>
+	<!-- 获取新冠患者列表 -->
+	<select id="getPagedDtoList" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.xm,case hzxx.xb
+		WHEN '1' THEN
+		'男'
+		WHEN '2' THEN
+		'女' ELSE''
+		END xb,hzxx.hzid,hzxx.nl,hzxx.sj,hzxx.tw,hzxx.twjcz,hzxx.zjh,sf_jcsj.csmc sf,cs_jcsj.csmc cs,qy,xxdz,
+		hzxx.zjlx,hzxx.zjh
+		from igams_hzxx hzxx
+		left join matridx_jcsj sf_jcsj on sf_jcsj.csid=hzxx.sf
+		left join matridx_jcsj cs_jcsj on cs_jcsj.csid=hzxx.cs
+		<where>
+			hzxx.scbj != '1'
+			<if test="xm !=null and xm != ''">
+				and hzxx.xm like '%'||#{xm}||'%'
+			</if>
+			<if test="xb !=null and xb != ''">
+				and hzxx.xb = #{xb}
+			</if>
+			<if test="nl !=null and nl != ''">
+				and hzxx.nl like '%'||#{nl}||'%'
+			</if>
+			<if test="sj !=null and sj != ''">
+				and hzxx.sj like '%'||#{sj}||'%'
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				and hzxx.zjh like '%'||#{zjh}||'%'
+			</if>
+		</where>
+	</select>
+	<select id="viewPatientDetails" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.xm,case hzxx.xb
+		WHEN '1' THEN
+		'男'
+		WHEN '2' THEN
+		'女' ELSE''
+		END xb,
+		hzxx.hzid,hzxx.nl,hzxx.sj,hzxx.tw,hzxx.twjcz,hzxx.zjh,sf_jcsj.csmc sf,cs_jcsj.csmc cs,hzxx.qy,hzxx.xxdz,to_char(fzjcxx.sysj,'yyyy-mm-dd') sysj,jcjg_jcsj.csmc jcjg,jcsj.csmc jcxm,jcsj_jcdw.csmc jcdw,sf_jcsj.csid sfid
+		,hzxx.zjlx,hzxx.zjh
+		from igams_hzxx hzxx
+		left join igams_fzjcxx fzjcxx on hzxx.hzid=fzjcxx.hzid
+		left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid=fzjcxx.fzjcid
+		left join igams_fzjcjg fzjcjg on fzjcxm.fzxmid=fzjcjg.fzxmid
+		left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid=fzjcjg.jcjg
+		left join matridx_jcsj sf_jcsj on sf_jcsj.csid=hzxx.sf
+		left join matridx_jcsj cs_jcsj on cs_jcsj.csid=hzxx.cs
+		left join matridx_jcsj jcsj on fzjcxm.fzjcxmid=jcsj.csid
+		left join matridx_jcsj jcsj_jcdw on fzjcxx.jcdw=jcsj_jcdw.csid
+		<where>
+			hzxx.scbj != '1'
+			and hzxx.hzid=#{hzid}
+		</where>
+		order by fzjcxx.sysj desc
+	</select>
+
+	<select id="getZjlx"  resultType="HzxxDto">
+		select csmc as zjlx from matridx_jcsj where jclb='IDCARD_CATEGORY' and scbj!='1'
+	</select>
+	
+	<select id="escapeJcsj" parameterType="HzxxDto" resultType="HzxxDto">
+		select csid as zjcsid from matridx_jcsj where jclb='IDCARD_CATEGORY' and scbj!='1' and csmc=#{zjlx}
+	</select>
+
+	<update  id="updateCovidPatient" parameterType="HzxxDto">
+		update igams_hzxx
+		<set>
+			<if test="xm !=null and xm != ''">
+				xm = #{xm}
+			</if>
+			<if test="xb !=null and xb != ''">
+				,xb = #{xb}
+			</if>
+			<if test="nl !=null and nl != ''">
+				,nl = #{nl}
+			</if>
+			<if test="sj !=null and sj != ''">
+				,sj = #{sj}
+			</if>
+			<if test="tw !=null and tw != ''">
+				,tw = #{tw}
+			</if>
+			<if test="twjcz !=null and twjcz != ''">
+				,twjcz = #{twjcz}
+			</if>
+			<if test="zjlx !=null and zjlx != ''">
+				,zjlx = #{zjlx}
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				,zjh = #{zjh}
+			</if>
+			<if test="sf != null and sf != ''">
+				,sf=#{sf}
+			</if>
+			<if test="cs != null and cs != ''">
+				,cs=#{cs}
+			</if>
+			<if test="xxdz != null and xxdz != ''">
+				,xxdz=#{xxdz}
+			</if>
+			,xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			scbj!='1'
+			and hzid = #{hzid}
+		</where>
+	</update>
+
+	<delete id="deleteCovidPatient" parameterType="HzxxDto" >
+		update igams_hzxx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				or hzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

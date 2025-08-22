@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IXmcyDao" >
+	<!-- 查询项目已有成员 -->
+	<select id="selectSelMember" parameterType="XmcyDto" resultType="XmcyDto">
+		select xmcy.xmid,xmcy.xh,xmcy.yhid,yh.zsxm,yh.yhm
+		from igams_xmcy xmcy
+		left outer join matridx_xtyh yh on yh.yhid = xmcy.yhid
+		<where>
+			yh.scbj !='1'
+			<if test="xmid != null and xmid != ''">
+				and xmcy.xmid=#{xmid}
+			</if>
+		</where>
+	</select>
+	<!-- 查询项目未选用户 -->
+	<select id="selectUnSelMember" parameterType="XmcyDto" resultType="XmcyDto">
+		select yh.yhid,yh.zsxm
+		from matridx_xtyh yh
+		<where>
+			yh.scbj !='1'
+			<if test="xmid != null and xmid != ''">
+				and not exists (select 1 from igams_xmcy xmcy where xmcy.yhid=yh.yhid and xmcy.xmid = #{xmid})
+			</if>
+		</where>
+	</select>
+	<!-- 新增项目成员 -->
+	<insert id="insert" parameterType="XmcyModel">
+		insert into igams_xmcy(xmid
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="yhid !=null and yhid != ''">
+			,yhid
+		</if>
+		) values(#{xmid}
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="yhid !=null and yhid != ''">
+			,#{yhid}
+		</if>
+		)
+	</insert>
+	<!-- 将子项目的成员更新至父项目 -->
+	<insert id="addMemberToFxm" parameterType="XmcyDto">
+		insert into igams_xmcy
+			select #{fxmid},(select max(xh) from igams_xmcy where xmid = #{fxmid}) + row_number() OVER (ORDER BY xmcy.xh) as xh,xmcy.yhid
+				from igams_xmcy xmcy 
+			left join igams_xmcy cy on xmcy.yhid = cy.yhid and cy.xmid =#{fxmid}
+				where xmcy.xmid =#{xmid} and cy.yhid is null
+	</insert>
+	<!-- 查询用户列表 -->
+	<select id="selectYhidGroup" parameterType="list" resultType="String">
+		select yhid
+		from igams_xmcy
+		<where>
+			<if test="list !=null and list.size > 0">
+			xmid in
+				<foreach collection="list" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		group by yhid
+	</select>
+	<!-- 根据项目ID删除已选成员 -->
+ 	<delete id="deleteXmcyByXmid" parameterType="XmglDto">
+		delete from igams_xmcy 
+		<where>
+			xmid=#{xmid}
+		</where>
+	</delete>
+	<!-- 根据yhids新增项目成员 -->
+	<insert id="insertXmcyByYhids" parameterType="XmglDto">
+		insert into igams_xmcy (xmid,xh,yhid)
+	    values
+	      <if test="ids !=null and ids.size > 0">
+		      <foreach collection="ids" separator="," item="item" index="index">
+				 (#{xmid},cast(#{index} as numeric)+1,#{item})
+		      </foreach>
+	      </if>
+	</insert>
+	<!-- 查询子项目所有用户列表 -->
+	<select id="selectYhidsByXmid" parameterType="XmglDto" resultType="String">
+		select cy.yhid
+		from igams_xmcy cy
+		left outer join igams_xmgl xm on cy.xmid = xm.xmid
+		<where>
+			xm.fxmid = #{xmid} 
+		</where>
+		group by yhid
+	</select>
+	<!-- 查询项目已有成员列表 -->
+	<select id="selectSelYhids" parameterType="XmcyDto" resultType="String">
+		select xmcy.yhid
+		from igams_xmcy xmcy
+		<where>
+			and xmid=#{xmid}
+		</where>
+	</select>
+	<select id="getxmcyByxmid" parameterType="XmjdrwDto" resultType="XmcyDto">
+		select cy.yhid ,yh.zsxm
+			from igams_xmcy cy
+			left join matridx_xtyh yh on yh.yhid=cy.yhid
+			<where>
+				xmid=(select xmid from igams_xmjdrw where  scbj!='1' and rwid=#{rwid})
+			</where> 
+	</select>
+</mapper>

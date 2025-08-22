@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IMbglDao" >
+
+	<!-- 增加模板 -->
+	<insert id="insert" parameterType="MbglModel">
+		insert into igams_mbgl(mbid
+		<if test="mbmc !=null and mbmc != ''">
+			,mbmc
+		</if>
+		,lrry,lrsj,scbj) values(#{mbid}
+		<if test="mbmc !=null and mbmc != ''">
+			,#{mbmc}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 查询模板 -->
+	<select id="getAllMb" parameterType="MbglDto" resultType="MbglModel">
+		select  mbid,mbmc,mblx,lrry,lrsj,xgry,xgsj,scry,scsj,mbys,mbtb,bz
+		from igams_mbgl
+		<where>
+			scbj!='1' and mbid !='default'
+			<if test="lrry !=null and lrry !=''">
+				and lrry = #{lrry}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 删除模板 -->
+	<update id="delete" parameterType="MbglDto">
+		update igams_mbgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+		scbj!='1' and mbid = #{mbid}
+		</where>
+	</update>	
+	
+	<!-- 根据模板id查询对应模板 -->	
+	<select id="getModById" parameterType="MbglDto" resultType="MbglDto">
+		select  mbid,mbmc,mblx,lrry,lrsj,xgry,xgsj,scry,scsj,bz,mbys,mbtb
+		from igams_mbgl
+		<where>
+			scbj!='1'
+			<if test="mbid !=null and mbid !=''">
+				and mbid = #{mbid}
+			</if>
+		</where>
+	</select>	
+	<!-- 编辑模板 -->
+	<update id="update" parameterType="MbglDto">
+		update igams_mbgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP,mbmc=#{mbmc},bz=#{bz},mbys=#{mbys},mbtb=#{mbtb}
+		<where>
+		scbj!='1' and mbid = #{mbid}
+		</where>
+	</update>	
+	<!-- 通过模板名称查询是否存在名称相同的模板(若存在则不能保存模板) -->
+	<select id="selectMbidByMbmc" parameterType="MbglDto" resultType="MbglDto">
+	select mbid from igams_mbgl
+	<where>
+		scbj!='1'
+		<if test="mbmc !=null and mbmc !=''">
+		and mbmc=#{mbmc}
+		</if>
+	</where>
+	</select>
+</mapper>

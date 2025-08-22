@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IKsglDao" >
+
+    <insert id="insert" parameterType="KsglDto">
+        insert into igams_ksgl(ksid,tkid
+        <if test="xh !=null and xh != ''">
+            ,xh
+        </if>
+        <if test="tmlx !=null and tmlx != ''">
+            ,tmlx
+        </if>
+        <if test="tmnr !=null and tmnr != ''">
+            ,tmnr
+        </if>
+        <if test="fs !=null and fs != ''">
+            ,fs
+        </if>
+        <if test="da !=null and da != ''">
+            ,da
+        </if>
+        <if test="dajx !=null and dajx != ''">
+            ,dajx
+        </if>
+        ,lrry,lrsj,scbj) values(#{ksid},#{tkid}
+        <if test="xh !=null and xh != ''">
+            ,cast(#{xh} as numeric)
+        </if>
+        <if test="tmlx !=null and tmlx != ''">
+            ,#{tmlx}
+        </if>
+        <if test="tmnr !=null and tmnr != ''">
+            ,#{tmnr}
+        </if>
+        <if test="fs !=null and fs != ''">
+            ,#{fs}
+        </if>
+        <if test="da !=null and da != ''">
+            ,#{da}
+        </if>
+        <if test="dajx !=null and dajx != ''">
+            ,#{dajx}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_ksgl(ksid, tkid, xh, tmlx, tmnr, fs, da,dajx,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ksid},#{item.tkid},cast(#{item.xh} as numeric),#{item.tmlx},#{item.tmnr},#{item.fs},#{item.da},#{item.dajx},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="getListQuestions" parameterType="KsglDto" resultType="KsglDto">
+        select ksgl.tmnr,ksgl.fs,ksgl.ksid,ksgl.da,ksgl.dajx
+        ,(select xxnr as xxA from igams_ksmx where ksid=ksgl.ksid and xxdm='A')
+        ,(select xxnr as xxB from igams_ksmx where ksid=ksgl.ksid and xxdm='B')
+        ,(select xxnr as xxC from igams_ksmx where ksid=ksgl.ksid and xxdm='C')
+        ,(select xxnr as xxD from igams_ksmx where ksid=ksgl.ksid and xxdm='D')
+        ,(select xxnr as xxE from igams_ksmx where ksid=ksgl.ksid and xxdm='E')
+        ,(select xxnr as xxF from igams_ksmx where ksid=ksgl.ksid and xxdm='F')
+        ,(select xxnr as xxG from igams_ksmx where ksid=ksgl.ksid and xxdm='G')
+        ,(select xxnr as xxH from igams_ksmx where ksid=ksgl.ksid and xxdm='H')
+        ,case when ksgl.tmlx ='SELECT' then '单选题' when ksgl.tmlx ='MULTIPLE' then '多选题' when ksgl.tmlx ='EXPLAIN' then '简答题'when ksgl.tmlx ='GAP' then '填空题'when ksgl.tmlx ='JUDGE' then '判断题' end tmlxmc,ksgl.tmlx
+        from igams_ksgl ksgl
+        <where>
+            ksgl.scbj='0'
+            <if test="tkid !=null and tkid != ''">
+              and ksgl.tkid=#{tkid}
+            </if>
+        </where>
+        order by ksgl.tmlx desc
+        <if test="pageSize !=null and pageSize != ''">
+        LIMIT #{pageSize} OFFSET #{pageStart}
+        </if>
+    </select>
+    <select id="getQuestions" parameterType="KsglDto" resultType="KsglDto">
+        select ksgl.tmnr,ksgl.fs,ksgl.ksid,ksgl.da,ksgl.dajx,ksgl.tmlx,${fz} fz
+        from igams_ksgl ksgl
+        <where>
+            ksgl.scbj='0'
+            <if test="tkid !=null and tkid != ''">
+              and ksgl.tkid=#{tkid}
+            </if>
+            <if test="tmlx !=null and tmlx != ''">
+                and ksgl.tmlx=#{tmlx}
+            </if>
+        </where>
+        ORDER BY random() LIMIT cast(#{sl} as numeric)
+    </select>
+
+    <select id="getDtoList" parameterType="KsglDto" resultType="KsglDto">
+        select ksgl.tmnr,ksgl.fs,ksgl.ksid,ksgl.da,ksgl.tmlx
+        ,(select xxnr as xxA from igams_ksmx where ksid=ksgl.ksid and xxdm='A')
+        ,(select xxnr as xxB from igams_ksmx where ksid=ksgl.ksid and xxdm='B')
+        ,(select xxnr as xxC from igams_ksmx where ksid=ksgl.ksid and xxdm='C')
+        ,(select xxnr as xxD from igams_ksmx where ksid=ksgl.ksid and xxdm='D')
+        ,(select xxnr as xxE from igams_ksmx where ksid=ksgl.ksid and xxdm='E')
+        ,(select xxnr as xxF from igams_ksmx where ksid=ksgl.ksid and xxdm='F')
+        ,(select xxnr as xxG from igams_ksmx where ksid=ksgl.ksid and xxdm='G')
+        ,(select xxnr as xxH from igams_ksmx where ksid=ksgl.ksid and xxdm='H')
+        ,case when ksgl.tmlx ='SELECT' then '单选题' when ksgl.tmlx ='MULTIPLE' then '多选题' when ksgl.tmlx ='EXPLAIN' then '简答题' end tmlxmc,ksgl.tmlx
+        from igams_ksgl ksgl
+        <where>
+            ksgl.scbj='0'
+            <if test="ksid !=null and ksid != ''">
+               and ksgl.ksid=#{ksid}
+            </if>
+            <if test="tkid !=null and tkid != ''">
+                and ksgl.tkid=#{tkid}
+            </if>
+        </where>
+    </select>
+    <update id="update" parameterType="KsglDto">
+        update igams_ksgl
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="xh !=null and xh != ''">
+                ,xh=cast(#{xh} as numeric)
+            </if>
+            <if test="tmlx !=null and tmlx != ''">
+                ,tmlx=#{tmlx}
+            </if>
+            <if test="tmnr !=null and tmnr != ''">
+                ,tmnr=#{tmnr}
+            </if>
+            <if test="fs !=null and fs != ''">
+                ,fs=#{fs}
+            </if>
+            <if test="da !=null and da != ''">
+                ,da=#{da}
+            </if>
+        </set>
+        <where>
+            ksid=#{ksid}
+        </where>
+    </update>
+
+    <delete id="deleteByTkid" parameterType="KsglDto">
+        delete from igams_ksgl
+        <where>
+            <if test="tkid !=null and tkid != ''">
+                tkid=#{tkid}
+            </if>
+        </where>
+    </delete>
+
+    <select id="getCount" parameterType="KsglDto" resultType="int">
+        select count(ksid)
+        from igams_ksgl
+        <where>
+            scbj='0'
+            <if test="tkid !=null and tkid != ''">
+                and tkid=#{tkid}
+            </if>
+            <if test="tmlx !=null and tmlx != ''">
+                and tmlx=#{tmlx}
+            </if>
+            <if test="tmnr !=null and tmnr != ''">
+                and tmnr=#{tmnr}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.ISyfwDao" >
+    <insert id="insert" parameterType="SyfwDto">
+        insert into igams_syfw(syfwid,jxmbid,yhid,zt
+        )values(#{syfwid},#{jxmbid},#{yhid},#{zt})
+    </insert>
+    <update id="update" parameterType="SyfwDto">
+        update igams_syfw
+        <set>
+            <if test="jxmbid!=null and jxmbid!=''">
+            ,jxmbid=#{jxmbid}
+            </if>
+            <if test="yhid!=null and yhid!=''">
+                ,yhid=#{yhid}
+            </if>
+            <if test="zt!=null and zt!=''">
+                ,zt=#{zt}
+            </if>
+        </set>
+        <where>
+            syfwid=#{syfwid}
+        </where>
+    </update>
+    <select id="getDtoList" parameterType="SyfwDto" resultType="SyfwDto">
+        select syfwid,jxmb.jxmbid,syfw.yhid,syfw.zt,jxmb.mbmc,xtyh.zsxm xm,to_char(jxmb.lrsj,'yyyy-mm-dd') lrsj,xtyh.ddid,xtyh.yhm
+        from igams_jxmb jxmb
+        left join igams_syfw syfw on jxmb.jxmbid=syfw.jxmbid
+        left join matridx_xtyh xtyh on xtyh.yhid=syfw.yhid and xtyh.scbj='0'
+        <where>
+            jxmb.scbj='0'
+            <if test="yhid !=null and  yhid !=''">
+                and  jxmb.lrry=#{yhid}
+            </if>
+            <if test="jxmbid !=null and  jxmbid !=''">
+                and  syfw.jxmbid=#{jxmbid}
+            </if>
+        </where>
+    </select>
+    <select id="getPagedDtoList" parameterType="SyfwDto" resultType="SyfwDto">
+        select syfwid,jxmb.jxmbid,syfw.yhid,syfw.zt,jxmb.mbmc,xtyh.zsxm xm,to_char(jxmb.lrsj,'yyyy-mm-dd') lrsj,xtyh.ddid,jxmb.khlx
+        from igams_jxmb jxmb
+        left join igams_syfw syfw on jxmb.jxmbid=syfw.jxmbid
+        left join matridx_xtyh xtyh on xtyh.yhid=jxmb.lrry and xtyh.scbj='0'
+        left join matridx_jcsj jcsj on jcsj.csid=jxmb.khlx
+        <where>
+            jxmb.scbj='0' and jcsj.scbj='0'
+            <if test="yhid !=null and  yhid !=''">
+                and  coalesce(syfw.yhid,jxmb.lrry)=#{yhid}
+            </if>
+        </where>
+    </select>
+    <select id="getPagedDtoListByJxmbid" parameterType="SyfwDto" resultType="SyfwDto">
+        select  syfw.yhid,syfw.jxmbid,syfw.syfwid,syfw.zt,xtyh.ddid,xtyh.yhm,xtyh.gwmc,xtyh.zsxm
+        from igams_syfw syfw
+        left join igams_jxmb jxmb on jxmb.jxmbid=syfw.jxmbid
+        left join matridx_xtyh xtyh on xtyh.yhid=syfw.yhid and xtyh.scbj='0'
+        <where>
+            syfw.jxmbid = #{jxmbid} and jxmb.scbj='0'
+        </where>
+    </select>
+    <select id="getDtoListByJxmbid" resultType="SyfwDto" parameterType="SyfwDto">
+        SELECT
+            syfw.yhid,syfw.jxmbid,syfw.syfwid,syfw.zt,xtyh.ddid,xtyh.yhm,xtyh.gwmc,xtyh.zsxm,jg.jgid bm,jg.jgmc bmmc
+        FROM
+            igams_syfw syfw
+            left join matridx_xtyh xtyh on xtyh.yhid=syfw.yhid  and xtyh.scbj='0'
+            left outer join matridx_yhssjg ssjg on xtyh.yhid = ssjg.yhid
+            left outer join matridx_jgxx jg on jg.jgid=ssjg.jgid
+        WHERE syfw.jxmbid = #{jxmbid}
+    </select>
+    <insert id="insertSyfwDtos" parameterType="List">
+        insert into igams_syfw(syfwid,jxmbid,yhid,zt)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.syfwid}, #{item.jxmbid},#{item.yhid},#{item.zt})
+        </foreach>
+    </insert>
+    <update id="updateSyfwDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_syfw set
+                syfwid=#{item.syfwid}
+                <if test="item.zt !=null and  item.zt !=''">
+                    ,zt=#{item.zt}
+                </if>
+                <where>
+                    syfwid=#{item.syfwid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <delete id="deleteById" parameterType="SyfwDto" >
+        delete from igams_syfw where jxmbid=#{jxmbid}
+    </delete>
+    <delete id="delete" parameterType="SyfwDto" >
+        delete from igams_syfw where jxmbid=#{jxmbid}
+    </delete>
+
+    <delete id="deleteByJxmbids" parameterType="SyfwDto">
+        delete from  igams_syfw
+        <where>
+            jxmbid in
+            <if test="ids!=null and ids.size>0">
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+    <delete id="deleteByYhids" parameterType="SyfwDto">
+        delete from  igams_syfw
+        <where>
+            jxmbid = #{jxmbid} and yhid in
+            <if test="yhids!=null and yhids.size>0">
+                <foreach collection="yhids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+</mapper>

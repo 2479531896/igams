@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>Insert title here</title>
+    <script type="text/javascript" src="/js/detection/covid/patient_edit.js"></script>
+    <style type="text/css">
+    </style>
+</head>
+<body>
+<form id="covidPayForm"  action=""  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+    <div class="body-content tab-content ">
+        <input id="menuurl" name="menuurl" type="hidden" th:value="${menuurl}"/>
+        <input id="fzjcid" type="hidden" name="fzjcid"  th:value="${fzjcid}"/>
+        <div role="tabpanel" aria-labelledby="home-tab" >
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <div class="form-group">
+                            <label for="" class="col-md-4 col-sm-4 col-xs-4 control-label">
+                                <span style="color: red;">*</span>付款金额：
+                            </label>
+                            <div class="col-md-8 col-sm-8 col-xs-8 ">
+                                <input id="fkje" autoComplete="off" style="min-width: 100%;height:28px;" th:value="${fkje}" name="fkje" type="text" class="form-control"  validate="{required:true,digits:true}"  />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" style="text-align: center;margin-top: 30px">
+                        <button type="button" onclick="payCovidOrder()" class="btn btn-primary"  style="height:28px !important;">生成支付二维码</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    function payCovidOrder() {
+        let fzjcid = $("#covidPayForm #fzjcid").val();
+        let amount = $("#covidPayForm #fkje").val();
+        $.ajax({
+            url: $("#covidPayForm #menuurl").val()+'/wechat/pay/createOrderQRCode',
+            type: 'post',
+            dataType: 'json',
+            data : {"ywid" : fzjcid, "ybbh" : "XGBDJC","fkje": amount,"ywlx": "XG"},
+            success: function(data) {
+                if(data.status == 'success'){
+                    // 二维码路径 data.qrCode
+                    $.showDialog('/detection/detection/pagedataGoPay?payUtl='+data.qrCode+'&fzjcid='+fzjcid,'扫码支付',payDetectionConfig);
+                }else{
+                    $.alert(data.message);
+                }
+            }
+        });
+    }
+    function closePayModal(modalName) {
+        $.closeModal(modalName);
+    }
+    /*查看详情信息模态框*/
+    var payDetectionConfig = {
+        width		: "600px",
+        height		: "300px",
+        modalName	: "payModal",
+        offAtOnce	: true,  //当数据提交成功，立刻关闭窗口
+        buttons		: {
+            success : {
+                label : "现金支付",
+                className : "btn-primary",
+                callback : function() {
+                    clearTimeout(timer);
+                    let fzjcid = $("#covidPayForm #fzjcid").val();
+                    if (!fzjcid){
+                        $.error("更新失败!");
+                        return;
+                    }
+                    let sfje = $("#covidPayForm #fkje").val();
+                    zfwc(fzjcid,sfje);
+                }
+            },
+            cancel : {
+                label : "关 闭",
+                className : "btn-default",
+                callback : function() {
+                    clearTimeout(timer);
+                }
+            }
+        }
+    };
+
+</script>
+</body>
+</html>

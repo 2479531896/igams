@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" src="/js/experiment/sample/sample_experimentList.js"
+            charset="utf-8"></script>
+    <script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/weui/weui.js"></script>
+    <link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+    <link rel="stylesheet" href="/js/weui/weui.css">
+    <style>
+        .weui-mask {
+            visibility: visible;
+        }
+        .weui-cell:before {
+            left: 0;
+        }
+        .weui-form-preview__label {
+            min-width: 1em;
+        }
+        /*选择框样式*/
+		.RadioStyle input {
+			display: none
+		}
+		.RadioStyle label {
+			border: 2px solid #CCC;
+			color: #666;
+			padding: 1px 10px 1px 5px;
+			line-height: 28px;
+			min-width: 40px;
+			text-align: center;
+			float: left;
+			margin: 2px;
+			border-radius: 4px
+		}
+		.RadioStyle input:checked + label {
+			background: url(/images/ico_checkon.svg) no-repeat right bottom;
+			border: 2px solid #00a4ff;
+			background-size: 21px 21px;
+			color: #00a4ff
+		}
+		.RadioStyle input:disabled + label {
+			opacity: 0.7;
+		}
+    </style>
+</head>
+<body>
+<form id="wbybxx_formSearch" class="form-horizontal form-inline" style="background-color:white;">
+    <div class="panel-body body-content" style="padding-bottom: 0px;">
+        <input type="hidden" name="syzt" id="syzt" value="1">
+        <div class="form-group padding_l10">
+            <div class="col-md-7 col-xs-7 col-sm-7">
+                <input id="cxnr" name="cxnr" class="form-control"  placeholder="模糊匹配"/>
+            </div>
+            <div class="col-md-5 col-xs-5 col-sm-5">
+                <button type="button"  id="btn_query" class="btn btn-primary">查询</button>
+                <button type="button"  id="showDialog" class="btn btn-primary  open-popup" data-target="#dateFilter">筛选</button>
+            </div>
+        </div>
+        <div class="form-group padding_l10">
+            <button type="button"  id="btn_syz" class="btn btn-primary" onclick="changetab(1,'btn_syz')">实验中</button>
+            <button type="button"  id="btn_ywc" class="btn btn-default" onclick="changetab(2,'btn_ywc')">已完成</button>
+            <button type="button"  id="btn_lsjl" class="btn btn-default" onclick="changetab(3,'btn_lsjl')">历史记录</button>
+        </div>
+        <table class="table table-condensed" id="tb">
+            <tbody >
+            <tr th:each="list:${list}" th:onclick="viewSample([[${list.ybxxid}]])">
+                <td th:text="${list.bbbm}"></td>
+                <td style="color:green;" th:text="${(list.lcmc!=null?list.lcmc:'')+''+(list.lcxh!=null?list.lcxh:'')}"></td>
+                <td style="color:orange;" th:text="${(list.zlcmc!=null?list.zlcmc:'')+''+(list.zlcxh!=null?list.zlcxh:'')}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div id="dateFilter" class="weui-popup__container popup-bottom" style="display: none;">
+            <div class="weui-popup__overlay"></div>
+            <div class="weui-popup__modal" style="background-color: white;">
+                <div class="weui-half-screen-dialog__hd">
+                    <div class="weui-half-screen-dialog__hd__side"></div>
+                    <div class="weui-half-screen-dialog__hd__main">
+                        <strong class="weui-half-screen-dialog__title" style="color: gray;" id="js_title4">高级筛选</strong>
+                    </div>
+                    <div class="weui-half-screen-dialog__hd__side"></div>
+                </div>
+                <div class="weui-half-screen-dialog__bd" style="padding-bottom: 30px;">
+                    <div id="jcdwFw" class="weui-cell weui-cell_active" style="padding: 0">
+                        <div class="weui-cell__hd"><label class="weui-label" style="text-align: right;">检测单位</label></div>
+                        <div class="weui-cell__bd" style="height: 100%;">
+                            <span class="RadioStyle" th:each="jcdw,stat:${jcdwlist}">
+                                <input th:id="${jcdw.csid}" th:value="${jcdw.csid}" th:data-jcdwmc="${jcdw.csmc}" th:data-cskz2="${jcdw.cskz2}" th:data-csdm="${jcdw.csdm}" name="jcdw" type="checkbox"  validate="{required:true}"/>
+                                <label th:for="${jcdw.csid}" th:text="${jcdw.csmc}" style="font-size: small;width:32%"></label>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="kssjChoose" class="weui-cell weui-cell_active weui-cell_select weui-cell_select-after" >
+                        <div class="weui-cell__hd"><label class="weui-label" style="text-align: right;">开始时间</label></div>
+                        <div class="weui-cell__bd">
+                            <div class="weui-select" style="padding-right: 0">
+                                <input id="kssjstart" class="weui-input" style="text-align: center;width:40%;" placeholder="请选择开始时间"  onclick="changeKssjStart()">~
+                                <input id="kssjend" class="weui-input" style="text-align: center;width:40%;" placeholder="请选择结束时间"  onclick="changeKssjEnd()">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="jssjChoose" class="weui-cell weui-cell_active weui-cell_select weui-cell_select-after" >
+                        <div class="weui-cell__hd"><label class="weui-label" style="text-align: right;">完成时间</label></div>
+                        <div class="weui-cell__bd">
+                            <div class="weui-select" style="padding-right: 0">
+                                <input id="jssjstart" class="weui-input" style="text-align: center;width:40%;" placeholder="请选择结束时间"  onclick="changeJssjStart()">~
+                                <input id="jssjend" class="weui-input" style="text-align: center;width:40%;" placeholder="请选择结束时间"  onclick="changeJssjEnd()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-half-screen-dialog__ft">
+                    <div class="weui-half-screen-dialog__btn-area">
+                        <a class="weui-btn weui-btn_primary close-popup" onclick="searchReportResult()">确定</a>
+                        <a class="weui-btn weui-btn_warn" style="color: var(--weui-BLUE)" onclick="emptyFilter()">清空</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>

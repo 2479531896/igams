@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IYhcqtzDao" >
+	<!-- 用户出勤通知列表(分页) -->
+	<select id="getPagedDtoList" parameterType="YhcqtzDto" resultType="YhcqtzDto">
+		select cq.yhid,cq.sjid,cq.cqsj,cq.tqsj,cq.bz,xtyh.zsxm yhmc,xtyhsj.zsxm sjyhmc,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,to_char(cq.tqsj,'YYYY-MM-DD') tqrq
+		from igams_yhcqtz cq
+		left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+		left join matridx_xtyh xtyhsj on xtyhsj.yhid=cq.sjid
+		<where>
+			<if test="yhmc != null and yhmc != ''">
+				and xtyh.zsxm like '%'||#{yhmc}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 用户出勤通知列表 -->
+	<select id="getYhcqList" parameterType="YhcqtzDto" resultType="YhcqtzDto">
+		select cq.yhid,cq.sjid,xtyhsj.sjyhm,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,cq.cqsj,to_char(cq.tqsj,'YYYY-MM-DD') tqrq,cq.tqsj,cq.bz,xtyh.zsxm yhmc,xtyhsj.zsxm sjyhmc,
+        xtyh.ddid ddid,xtyhsj.ddid sjddid
+		from igams_yhcqtz cq
+		left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+		left join matridx_xtyh xtyhsj on xtyhsj.yhid=cq.sjid
+	</select>
+
+
+
+	
+	<!-- 新增用户出勤信息 -->
+	<insert id="insert" parameterType="YhcqtzDto">
+		insert into igams_yhcqtz(yhid,sjid
+		<if test="cqsj != null and cqsj != ''">
+			,cqsj
+		</if>
+		<if test="tqsj != null and tqsj != ''">
+			,tqsj
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		,lrry,lrsj)
+		values(#{yhid},#{sjid}
+		<if test="cqsj != null and cqsj != ''">
+			,cast(#{cqsj} as timestamp)
+		</if>
+		<if test="tqsj != null and tqsj != ''">
+			,cast(#{tqsj} as timestamp)
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP)
+	</insert>
+	<!-- 根据用户id查询用户出勤信息 -->
+	<select id="getCqxxByYhid" parameterType="YhcqtzDto" resultType="YhcqtzDto">
+		select cq.yhid,cq.sjid,cq.cqsj,cq.tqsj,cq.bz,xtyh.zsxm yhmc,xtyhsj.zsxm sjyhmc
+		from igams_yhcqtz cq
+		left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+		left join matridx_xtyh xtyhsj on xtyhsj.yhid=cq.sjid
+		<where>
+			and cq.yhid=#{yhid}
+		</where>
+	</select>
+	<!-- 删除用户出勤信息 -->
+	<update id="delYhcqtzxx" parameterType="YhcqtzDto">
+		delete from igams_yhcqtz
+		<where>
+			yhid in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<!-- 更新出勤退勤时间 -->
+	<update id="updateCqAndTq" parameterType="List">
+		<foreach collection="list" item="item" open="" close="" separator=";" index="index">
+		update igams_yhcqtz
+		<set>
+				yhid=#{item.yhid}
+				<if test="item.cqsj != null and item.cqsj != ''">
+				,cqsj=cast (#{item.cqsj} as timestamp)
+				</if>
+				<if test="item.tqsj != null and item.tqsj != ''">
+				,tqsj=cast (#{item.tqsj} as timestamp)
+				</if>
+		</set>
+		<where>
+			yhid=#{item.yhid}
+		</where>
+		</foreach>
+	</update>
+
+	<!-- 更新出勤退勤时间 -->
+	<update id="updateSj" parameterType="YhcqtzDto">
+			update igams_yhcqtz
+			<set>
+				yhid=#{yhid}
+				<if test="cqsj != null and cqsj != ''">
+					,cqsj=cast (#{cqsj} as timestamp)
+				</if>
+				<if test="tqsj != null and tqsj != ''">
+					,tqsj=cast (#{tqsj} as timestamp)
+				</if>
+			</set>
+			<where>
+				yhid=#{yhid}
+			</where>
+	</update>
+	<!-- 修改时根据原用户id删除出勤信息 -->
+	<delete id="delByYyhid" parameterType="YhcqtzDto">
+		delete from igams_yhcqtz
+		<where>
+			yhid=#{yyhid}
+		</where>
+	</delete>
+</mapper>

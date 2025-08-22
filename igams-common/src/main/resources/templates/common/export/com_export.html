@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script src="/js/plugins/dragsort/jquery.dragsort.js"></script>
+		<script type="text/javascript" src="/js/common/export/com_export.js"></script>
+	</head>
+	<body>
+	<form id="ajaxForm" th:action="${urlPrefix}+'/common/export/exportSearch'" method="post" data-bs-toggle="validation" theme="simple" class="form-horizontal sl_all_form">
+		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="concatCs" id ="concatCs" th:value="${concatCs}">
+		<div class="sl_all_bg body-content">
+			<div class="custom-export">
+				<div class="pull-left export-left">
+					<div class="search-box form-inline">
+						<div class="form-group">
+							<input type="text" class="form-control" id="search_input" name="search_input" placeholder="关键字">
+						</div>
+					</div>
+					<h3 class="text-center">
+						可选择导出列
+					</h3>
+					<ul class="dragsort" id="list1" th:if="${cateMap!=null && cateMap.size() >0}">
+						<li th:class='${subCateMap.sfbc eq "0"?"sorting-line":""}' th:each="subCateMap:${cateMap}">
+							<div th:if="${subCateMap.sfbc eq '0'}" class="sorting-line-desc" th:text="${subCateMap.flmc}" th:id="${subCateMap.flmc}"></div>
+							<div id="choseListDiv" th:if="${subCateMap.sfbc eq '1'}"  th:title="${subCateMap.zdsm}" >
+								<input type="hidden" th:value="${subCateMap.dczd}" id="dczd" name="dczd" ></input>
+								<input type="hidden" th:value="${subCateMap.flmc}" id="flmc" name="flmc" ></input>
+								<div style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;" th:text="${subCateMap.xsmc}"></div>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="pull-left export-mid">
+					<dl>
+						<dd id="right-all"></dd>
+						<dd id="left-all" class="export-leftico"></dd>
+					</dl>
+				</div>
+				<div class="pull-right export-right">
+					<h3 class="text-center">
+						已选择导出列
+						<small class="text-danger">（拖拽可以排序）</small>
+					</h3>
+					<input type="hidden" name="ywid" id="ywid" th:value="${dcszDto.ywid}"></input>
+					<input type="hidden" name="ids" id="ids" th:value="${dcszDto.ids}"></input>
+					<input type="hidden" name="selectjson" id="selectjson" th:value="${dcszDto.selectjson}"></input>
+					<input type="hidden" name="expType" id="expType" th:value="${dcszDto.expType}"></input>
+					<input type="hidden" name="callbackJs" id="callbackJs" th:value="${dcszDto.callbackJs}"></input>
+					<input type="hidden" name="sfbc" id="sfbc"></input>
+					<ul class="dragsort" id="list2">
+						<li th:if="${choseList!=null && choseList.size() > 0 }" th:each="dcsz,iterStat:${choseList }">
+							<div id="choseListDiv" th:title="${dcsz.zdsm}">
+								<input type="hidden" th:value="${dcsz.dczd}" id="dczd" th:name="'choseList['+${iterStat.index}+']'"></input>
+								<input type="hidden" th:value="${dcsz.flmc}" id="flmc" name="flmc" ></input>
+								<div style="width:105px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;" th:text="${dcsz.dczdmc}"></div>
+							</div>
+						</li>
+					</ul>
+					<div id="sendData"></div>
+				</div>
+			</div>
+			<div class="col-sm-12 margin_t15" style="padding-top: 15px;">
+				<th:block th:if="${ cydcszs!= null && cydcszs.size() > 0}" th:each="cydcsz,iterStat:${cydcszs}">
+					<div class="col-xs-2 text-left" th:if="${iterStat.first}">
+						<label title="常用项选择">
+							常用项选择
+						</label>
+					</div>
+					<div class="col-xs-3 td-hidden">
+						<input type="radio"  th:id="'cyid_'+${iterStat.index}" name="cyid" th:onclick="changeDczd([[${cydcsz.cyid}]])"
+							th:value="${cydcsz.cyid}" />
+						<label th:text="${cydcsz.cydm}+'&nbsp;&nbsp;'+${cydcsz.cymc}">
+						</label>
+					</div>
+					<div class="col-xs-7 td-hidden">
+						<label th:text="${cydcsz.bz}">
+						
+						</label>
+					</div>
+				</th:block>
+			</div>
+			<div class="col-sm-12 margin_t15">
+				<div class="col-xs-6 text-left">
+					<label class="radio-inline">
+						<input type="radio" name="fileType" id="inlineRadio1"
+							value="0" checked>
+						EXCEL表格
+					</label>
+					<label class="radio-inline">
+						<input type="radio" name="fileType" id="inlineRadio2"
+							value="1">
+						CSV文档
+					</label>
+				</div>
+				<div class="col-xs-6 text-right">
+					<button type="button" class="btn btn-primary" onclick = "exportSubject('1',this);">
+						保存设置并导出
+					</button>
+					<button type="button" class="btn btn-primary" onclick = "exportSubject('0',this);">
+						直接导出
+					</button>
+				</div>
+			</div>
+		</div>
+		</form>
+		<div class="clearfix"></div>
+	</body>
+</html>

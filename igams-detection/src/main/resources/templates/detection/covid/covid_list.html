@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" th:inline="javascript">
+        var FieldList = [];
+        var map = {};
+        var waitList= [[${waitList}]];
+        if(waitList && waitList.length>0){
+            map = {};
+            map["checkbox"] = true;
+            FieldList.push(map);
+            for(i=0;i<waitList.length;i++){
+                map = {};
+                map["title"] = waitList[i].xszdmc;
+                map["titleTooltip"] = waitList[i].xszdmc;
+                map["field"] = waitList[i].xszd;
+                if(waitList[i].pxzd&&waitList[i].pxzd!="")
+                    map["sortable"] = true;
+                map["width"] = waitList[i].xskd + "%";
+                if(waitList[i].xsgs){
+                    map["formatter"] = waitList[i].xsgs;
+                }
+                if(waitList[i].mrxs == '1'){
+                    map["visible"] = true;
+                }else{
+                    map["visible"] = false;
+                }
+                FieldList.push(map);
+            }
+        }
+    </script>
+    <script type="text/javascript" src="/js/detection/covid/covid_list.js" charset="utf-8"></script>
+
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;" id="dcpBody">
+    <form id="covidformSearch" class="form-horizontal form-inline">
+        <input type="hidden" id="auditType" name="auditType" th:value="${fzjcxxDto.auditType}">
+        <input type="hidden" id="jclx" name="jclx" th:value="${fzjcxxDto.jclx}">
+        <input type="hidden" name="limitColumns" id="limitColumns" th:value="${limitColumns}">
+        <div class="panel panel-default">
+            <div class="panel-body" style="padding-left: 12px;">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj">
+                            <option value="0">全&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;部</option>
+                            <option value="1">标本编号</option>
+                            <option value="2">患者姓名</option>
+                            <option value="3">年龄</option>
+                            <option value="4">实验号</option>
+                            <option value="5">标本类型</option>
+                            <option value="6">标本子编号</option>
+                            <option value="7">医院名称</option>
+                            <option value="8">支付订单号</option>
+                            <option value="9">发票号码</option>
+                            <option value="10">平台订单号</option>
+                            <option value="11">平台</option>
+                            <option value="12">手机号</option>
+                            <option value="13">采集人员</option>
+                            <option value="14">证件号</option>
+                        </select>
+                        <input id="cxnr" name="mhcx" class="form-control" placeholder="模糊查询"
+                        onkeydown="if(event.keyCode==13) {searchCovidResult(); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit" style="color:black;">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:60px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="jcdxlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测对象类型">检测对象类型：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${jcdxlxlist!=null && jcdxlxlist.size() >0}" th:each="dto:${jcdxlxlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[jcdxlx]],[[${dto.csid}]],[[covidformSearch]]);" th:id="'jcdxlx_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jczxm_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="单/混检">单/混检：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${zxmlist!=null && zxmlist.size() >0}" th:each="dto:${zxmlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[jczxm]],[[${dto.csid}]],[[covidformSearch]]);" th:id="'jczxm_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态" style="color:black;">审核状态：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','00','covidformSearch');"
+                                                   id="zt_id_00"><span>未提交</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','10','covidformSearch');"
+                                                   id="zt_id_10"><span>审核中</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','15','covidformSearch');"
+                                                   id="zt_id_15"><span>审核未通过</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','80','covidformSearch');"
+                                                   id="zt_id_80"><span>审核通过</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfsy_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否实验" style="color:black;">是否实验：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfsy','0','covidformSearch');"
+                                                   id="sfsy_id_0">
+                                                    <span>否</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfsy','1','covidformSearch');"
+                                                   id="sfsy_id_1">
+                                                <span>是</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfjs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否接收" style="color:black;">是否接收：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjs','0','covidformSearch');"
+                                                   id="sfjs_id_0">
+                                                    <span>否</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjs','1','covidformSearch');"
+                                                   id="sfjs_id_1">
+                                                <span>是</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfjf_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否交付" style="color:black;">是否交付：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjf','0','covidformSearch');"
+                                                   id="sfjf_id_0">
+                                                    <span>否</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjf','1','covidformSearch');"
+                                                   id="sfjf_id_1">
+                                                <span>是</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="fkbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="付款标记" style="color:black;">付款标记：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('fkbj','0','covidformSearch');"
+                                                   id="fkbj_id_0">
+                                                    <span>未付款</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('fkbj','1','covidformSearch');"
+                                                   id="fkbj_id_1">
+                                                <span>已付款</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="kpbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="开票标记" style="color:black;">开票标记：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('kpbj','0','covidformSearch');"
+                                                   id="kpbj_id_0">
+                                                    <span>未开票</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('kpbj','1','covidformSearch');"
+                                                   id="kpbj_id_1">
+                                                <span>已开票</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jssj" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="接收时间" >接收时间：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="jssjstart" name="jsrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="jssjend" name="jsrqend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sysj" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="实验时间" >实验时间：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="sysjstart" name="sysjstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="sysjend" name="sysjend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="cjsj" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="采集时间" >采集时间：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="cjsjstart" name="cjrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="cjsjend" name="cjrqend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="bgrq" class="col-xs-6 col-sm-6 col-lg-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="报告日期" >报告日期：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="bgrqstart" name="bgrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="bgrqend" name="bgrqend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yyrq" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="预约日期" >预约日期：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="yyrqstart" name="yyrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="yyrqend" name="yyrqend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="fkrq" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="付款日期" >付款日期：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="fkrqstart" name="fkrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="fkrqend" name="fkrqend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="sfsy_id_tj" name="sfsy_id_tj">
+        <input type="hidden" id="jczxm_id_tj" name="jczxm_id_tj">
+        <input type="hidden" id="jcdxlx_id_tj" name="jcdxlx_id_tj">
+        <input type="hidden" id="sfjs_id_tj" name="sfjs_id_tj">
+        <input type="hidden" id="fkbj_id_tj" name="fkbj_id_tj">
+        <input type="hidden" id="kpbj_id_tj" name="kpbj_id_tj">
+        <input type="hidden" id="sfjf_id_tj" name="sfjf_id_tj">
+        <input  type="hidden"  id="zt_id_tj" name="zt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="covid_list" class="table table-hover table-bordered table-hidden"></table>
+    </form>
+</div>
+</body>
+</html>
+
+

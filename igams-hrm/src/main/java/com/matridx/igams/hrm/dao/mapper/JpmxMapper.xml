@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJpmxDao" >
+
+    <select id="getDtoList" parameterType="JpmxDto" resultType="JpmxDto">
+        select jpmx.jpmxid ,jpmx.jpglid,jpmx.jpmc ,jpmx.sl ,jpmx.bs ,jpmx.xh ,jpmx.sysl,fj.fjid,fj.wjm,jpmx.sftz,jpmx.tznr
+        from igams_jpmx jpmx
+        left join matridx_fjcfb fj on fj.ywid=jpmx.jpglid and fj.zywid=jpmx.jpmxid
+        <where>
+            jpmx.scbj='0'
+            and jpmx.jpglid =#{jpglid}
+        </where>
+        order by cast(jpmx.xh as numeric) asc
+    </select>
+
+    <update id="delete" parameterType="JpmxDto">
+        update igams_jpmx set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jpglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_jpmx(jpmxid,jpglid,jpmc,sl,bs,xh,sysl,sftz,tznr,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.jpmxid},#{item.jpglid},#{item.jpmc},cast(#{item.sl} as numeric),cast(#{item.bs} as numeric),cast(#{item.xh} as numeric),cast(#{item.sysl} as numeric)
+                <if test="item.sftz != null and item.sftz !=''">
+                    ,#{item.sftz}
+                </if>
+                <if test="item.sftz == null or item.sftz ==''">
+                    ,null
+                </if>
+                <if test="item.tznr != null and item.tznr !=''">
+                    ,#{item.tznr}
+                </if>
+                <if test="item.tznr == null or item.tznr ==''">
+                    ,null
+                </if>
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            update igams_jpmx jpmx
+            set jpmc=tmp.jpmc,
+            sl=tmp.sl,
+            bs=tmp.bs,
+            xh=tmp.xh,
+            sysl=tmp.sysl,
+            sftz=tmp.sftz,
+            tznr=tmp.tznr,
+            xgry=tmp.xgry,
+            xgsj=LOCALTIMESTAMP,
+            scbj='0',
+            scry=null,
+            scsj=null
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.jpmc} jpmc,cast(#{item.sl} as numeric) sl,cast(#{item.bs} as numeric) bs,cast(#{item.xh} as numeric) xh,cast(#{item.sysl} as numeric) sysl,#{item.jpmxid} jpmxid,#{item.xgry} xgry,#{item.sftz} sftz,#{item.tznr} tznr
+            </foreach>
+            )
+            tmp
+            where
+            jpmx.jpmxid=tmp.jpmxid
+        </if>
+    </update>
+    
+      <select id="getLotteryInfos" parameterType="JpmxDto" resultType="JpmxDto">
+        SELECT jpmx.jpmxid, jpmx.jpglid, jpmx.sl, jpmx.bs, jpmx.jpmc, jpmx.xh, jpmx.sysl,coalesce(jpgl.jsrq-jpgl.ksrq,0)+1 rqc,jpmx.sftz,jpmx.tznr,tzq.cskz1 tzqcskz1,fjcfb.fjid,fjcfb.wjlj
+        FROM igams_jpmx jpmx
+        left join igams_jpgl jpgl on jpgl.jpglid = jpmx.jpglid
+        left join matridx_fjcfb fjcfb on fjcfb.ywid=jpgl.jpglid and fjcfb.zywid = jpmx.jpmxid
+        LEFT JOIN matridx_jcsj tzq ON tzq.csid = jpgl.tzq
+        WHERE jpmx.jpglid=#{jpglid} and jpmx.scbj='0'
+        ORDER BY jpmx.xh
+    </select>
+    <update id="updateSysl" parameterType="JpmxDto">
+        update igams_jpmx set
+        xgsj = LOCALTIMESTAMP,sysl = COALESCE(sysl,0) - 1
+        where jpmxid = #{jpmxid}
+    </update>
+</mapper>

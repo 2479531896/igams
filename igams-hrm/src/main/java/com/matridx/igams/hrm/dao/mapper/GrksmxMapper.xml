@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IGrksmxDao" >
+
+    <select id="getListByGrksid" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select to_char(grksmx.dtkssj,'YYYY-MM-dd HH24:mi:ss') dtkssj,to_char(grksmx.dtjssj,'YYYY-MM-dd HH24:mi:ss') dtjssj,grksmx.df,grksmx.dtjg,
+        ksgl.tmnr,ksgl.da,grksmx.fs,grksmx.ksid,ksgl.tmlx,grksmx.grksmxid,ksgl.dajx
+        ,case when ksgl.tmlx ='SELECT' then '单选题' when ksgl.tmlx ='MULTIPLE' then '多选题' when ksgl.tmlx ='EXPLAIN' then '简答题'when ksgl.tmlx ='GAP' then '填空题'when ksgl.tmlx ='JUDGE' then '判断题' end tmlxmc
+        from igams_grksmx grksmx
+        left join igams_grksgl grksgl on grksgl.grksid=grksmx.grksid
+        left join igams_ksgl ksgl on ksgl.ksid=grksmx.ksid
+        <where>
+            grksmx.scbj!='1' and grksmx.grksid=#{grksid}
+        </where>
+        order by ksgl.tmlx desc
+    </select>
+
+    <insert id="insert" parameterType="GrksmxDto">
+        insert into igams_grksmx(grksmxid,grksid
+        <if test="ksid !=null and ksid != ''">
+            ,ksid
+        </if>
+        <if test="dtkssj !=null and dtkssj != ''">
+            ,dtkssj
+        </if>
+        <if test="dtjssj !=null and dtjssj != ''">
+            ,dtjssj
+        </if>
+        <if test="dtjg !=null and dtjg != ''">
+            ,dtjg
+        </if>
+        <if test="df !=null and df != ''">
+            ,df
+        </if>
+        ,lrry,lrsj,scbj
+        )values(#{grksmxid},#{grksid}
+        <if test="ksid !=null and ksid != ''">
+            ,#{ksid}
+        </if>
+        <if test="dtkssj !=null and dtkssj != ''">
+            ,cast(#{dtkssj} as timestamp)
+        </if>
+        <if test="dtjssj !=null and dtjssj != ''">
+            ,cast(#{dtjssj} as timestamp)
+        </if>
+        <if test="dtjg !=null and dtjg != ''">
+            ,#{dtjg}
+        </if>
+        <if test="df !=null and df != ''">
+            ,#{df}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_grksmx (grksmxid, grksid, ksid,dtkssj,dtjssj,dtjg,df,xh,lrry,lrsj,scbj,fs)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.grksmxid},#{item.grksid},#{item.ksid},cast(#{item.dtkssj} as timestamp),cast(#{item.dtjssj} as timestamp),#{item.dtjg}
+                ,#{item.df},#{item.xh},#{item.lrry},LOCALTIMESTAMP,'0',#{item.fs})
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="update" parameterType="GrksmxDto">
+        update igams_grksmx
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="dtkssj !=null and dtkssj != ''">
+                ,dtkssj=cast(#{dtkssj} as timestamp)
+            </if>
+            <if test="dtjssj !=null and dtjssj != ''">
+                ,dtjssj=cast(#{dtjssj} as timestamp)
+            </if>
+            <if test="dtjg !=null and dtjg != ''">
+                ,dtjg=#{dtjg}
+            </if>
+            <if test="df !=null and df != ''">
+                ,df=#{df}
+            </if>
+        </set>
+        <where>
+            grksid=#{grksid} and ksid=#{ksid}
+        </where>
+    </update>
+
+    <update id="updateDto" parameterType="GrksmxDto">
+        update igams_grksmx
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="dtkssj !=null and dtkssj != ''">
+                ,dtkssj=cast(#{dtkssj} as timestamp)
+            </if>
+            <if test="dtjssj !=null and dtjssj != ''">
+                ,dtjssj=cast(#{dtjssj} as timestamp)
+            </if>
+            <if test="dtjg !=null and dtjg != ''">
+                ,dtjg=#{dtjg}
+            </if>
+            <if test="df !=null and df != ''">
+                ,df=#{df}
+            </if>
+        </set>
+        <where>
+            grksmxid=#{grksmxid}
+        </where>
+    </update>
+
+    <select id="getListForSelectExp" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select ksmx.grksid,ksmx.ksid ${sqlParam} from(
+        select to_char(grksmx.dtkssj,'YYYY-MM-dd HH24:mi:ss') dtkssj,to_char(grksmx.dtjssj,'YYYY-MM-dd HH24:mi:ss') dtjssj,grksmx.df,grksmx.dtjg,
+        ksgl.tmnr,ksgl.da,grksmx.fs,grksgl.zf,yh.zsxm xm,pxgl.pxbt,grksmx.grksid,grksmx.ksid,ksgl.tmlx,jgxx.jgmc,yh.yhm,grksgl.kskssj,grksgl.ksjssj,pxgl.tgfs,jcsj.csmc ssgs
+        from(
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} grksid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join  igams_grksmx grksmx on grksmx.grksid=tmp.grksid
+        left join igams_grksgl grksgl on grksgl.grksid=grksmx.grksid
+        left join igams_ksgl ksgl on ksgl.ksid=grksmx.ksid
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        )ksmx
+        order by ksmx.grksid desc
+    </select>
+
+    <select id="getListForSelect" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select ksmx.grksid ${sqlParam} from(
+        select grksgl.zf,yh.zsxm xm,pxgl.pxbt,grksgl.grksid,jgxx.jgmc,yh.yhm,grksgl.kskssj,grksgl.ksjssj,jcsj.csmc ssgs,pxgl.tgfs
+        from(
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} grksid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join  igams_grksgl grksgl on grksgl.grksid=tmp.grksid
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        )ksmx
+        order by ksmx.grksid desc
+    </select>
+
+    <select id="getCountForSearchExp" parameterType="GrksmxDto" resultType="java.lang.Integer">
+        select count(grksgl.grksid)
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        <where>
+            grksgl.scbj!='1'
+            <if test="xm !=null and xm != ''">
+                and yh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="pxbt !=null and pxbt != ''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="jgmc !=null and jgmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+            <if test="kssjstart !=null and kssjstart != ''">
+                and to_char(grksgl.kskssj,'yyyy-mm-dd') &gt;= #{kssjstart}
+            </if>
+            <if test="kssjend !=null and kssjend != ''">
+                and to_char(grksgl.ksjssj,'YYYY-mm-dd') &lt;= #{kssjend}
+            </if>
+            <if test="minscore !=null and minscore != ''">
+                and cast(grksgl.zf as numeric ) &gt;= cast (#{minscore} as numeric )
+            </if>
+            <if test="maxscore !=null and maxscore != ''">
+                and cast(grksgl.zf as numeric )&lt;= cast (#{maxscore} as numeric )
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and pxgl.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfhgs != null and sfhgs.length > 0 "  >
+                and (select case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '1' else '0' end sfhg) in
+                <foreach collection="sfhgs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getListForSearch" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select ksmx.grksid ${sqlParam} from(
+        select grksgl.zf,yh.zsxm xm,pxgl.pxbt,grksgl.grksid,jgxx.jgmc,yh.yhm,grksgl.ksjssj,grksgl.kskssj,jcsj.csmc ssgs,pxgl.tgfs
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        <where>
+            grksgl.scbj!='1'
+            <if test="xm !=null and xm != ''">
+                and yh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="pxbt !=null and pxbt != ''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="jgmc !=null and jgmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+            <if test="kssjstart !=null and kssjstart != ''">
+                and to_char(grksgl.kskssj,'yyyy-mm-dd') &gt;= #{kssjstart}
+            </if>
+            <if test="kssjend !=null and kssjend != ''">
+                and to_char(grksgl.ksjssj,'YYYY-mm-dd') &lt;= #{kssjend}
+            </if>
+            <if test="minscore !=null and minscore != ''">
+                and cast(grksgl.zf as numeric ) &gt;= cast (#{minscore} as numeric )
+            </if>
+            <if test="maxscore !=null and maxscore != ''">
+                and cast(grksgl.zf as numeric )&lt;= cast (#{maxscore} as numeric )
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and pxgl.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfhgs != null and sfhgs.length > 0 "  >
+                and (select case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '1' else '0' end sfhg) in
+                <foreach collection="sfhgs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        )ksmx
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSearchExp" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select ksmx.grksid,ksmx.ksid ${sqlParam} from(
+        select to_char(grksmx.dtkssj,'YYYY-MM-dd HH24:mi:ss') dtkssj,to_char(grksmx.dtjssj,'YYYY-MM-dd HH24:mi:ss') dtjssj,grksmx.df,grksmx.dtjg,
+        ksgl.tmnr,ksgl.da,grksmx.fs,grksgl.zf,yh.zsxm xm,yh.yhm,pxgl.pxbt,grksmx.grksid,grksmx.ksid,ksgl.tmlx,jgxx.jgmc,grksgl.kskssj,grksgl.ksjssj,pxgl.tgfs,jcsj.csmc ssgs
+        from igams_grksmx grksmx
+        left join igams_grksgl grksgl on grksgl.grksid=grksmx.grksid
+        left join igams_ksgl ksgl on ksgl.ksid=grksmx.ksid
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        <where>
+            grksgl.scbj!='1'
+            <if test="xm !=null and xm != ''">
+                and yh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="pxbt !=null and pxbt != ''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="jgmc !=null and jgmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+        </where>
+        )ksmx
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getCountForSellSearchExp" parameterType="GrksmxDto" resultType="java.lang.Integer">
+        select count(*)
+        from(select to_char(grksmx.dtkssj,'YYYY-MM-dd HH24:mi:ss') dtkssj,to_char(grksmx.dtjssj,'YYYY-MM-dd HH24:mi:ss') dtjssj,grksmx.df,grksmx.dtjg,
+        ksgl.tmnr,ksgl.da,grksmx.fs,grksgl.zf,yh.zsxm xm,yh.yhm,pxgl.pxbt,grksmx.grksid,grksmx.ksid,ksgl.tmlx,jgxx.jgmc
+        from(select yhid from(select
+        case when qtxx_5.yhid is not null then qtxx_5.yhid
+        when qtxx_4.yhid is not null then qtxx_4.yhid
+        when qtxx_3.yhid is not null then qtxx_3.yhid
+        when qtxx_2.yhid is not null then qtxx_2.yhid
+        when qtxx_1.yhid is not null then qtxx_1.yhid
+        when qtxx.yhid is not null then qtxx.yhid
+        end yhid
+        from matridx_yhqtxx qtxx
+        left join matridx_jcsj jcsj on jcsj.csid= qtxx.yhzqf
+        left join matridx_yhqtxx qtxx_1 on qtxx_1.sjid=qtxx.yhid
+        left join matridx_yhqtxx qtxx_2 on qtxx_2.sjid=qtxx_1.yhid
+        left join matridx_yhqtxx qtxx_3 on qtxx_3.sjid=qtxx_2.yhid
+        left join matridx_yhqtxx qtxx_4 on qtxx_4.sjid=qtxx_3.yhid
+        left join matridx_yhqtxx qtxx_5 on qtxx_5.sjid=qtxx_4.yhid
+        where jcsj.csmc ILIKE '%'||#{dq}||'%') yhqt group by yhqt.yhid)qt
+        left join igams_grksgl grksgl  on qt.yhid=grksgl.ryid
+        left join igams_grksmx grksmx on grksgl.grksid=grksmx.grksid
+        left join igams_ksgl ksgl on ksgl.ksid=grksmx.ksid
+        left join matridx_xtyh yh on yh.yhid=qt.yhid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid) ksxx
+    </select>
+
+    <select id="getListForSellSearchExp" parameterType="GrksmxDto" resultType="GrksmxDto">
+        select ksmx.grksid,ksmx.ksid ${sqlParam} from(
+        select to_char(grksmx.dtkssj,'YYYY-MM-dd HH24:mi:ss') dtkssj,to_char(grksmx.dtjssj,'YYYY-MM-dd HH24:mi:ss') dtjssj,grksmx.df,grksmx.dtjg,
+        ksgl.tmnr,ksgl.da,grksmx.fs,grksgl.zf,yh.zsxm xm,yh.yhm,pxgl.pxbt,grksmx.grksid,grksmx.ksid,ksgl.tmlx,jgxx.jgmc
+        from(select yhid from(select
+        case when qtxx_5.yhid is not null then qtxx_5.yhid
+        when qtxx_4.yhid is not null then qtxx_4.yhid
+        when qtxx_3.yhid is not null then qtxx_3.yhid
+        when qtxx_2.yhid is not null then qtxx_2.yhid
+        when qtxx_1.yhid is not null then qtxx_1.yhid
+        when qtxx.yhid is not null then qtxx.yhid
+        end yhid
+        from matridx_yhqtxx qtxx
+        left join matridx_jcsj jcsj on jcsj.csid= qtxx.yhzqf
+        left join matridx_yhqtxx qtxx_1 on qtxx_1.sjid=qtxx.yhid
+        left join matridx_yhqtxx qtxx_2 on qtxx_2.sjid=qtxx_1.yhid
+        left join matridx_yhqtxx qtxx_3 on qtxx_3.sjid=qtxx_2.yhid
+        left join matridx_yhqtxx qtxx_4 on qtxx_4.sjid=qtxx_3.yhid
+        left join matridx_yhqtxx qtxx_5 on qtxx_5.sjid=qtxx_4.yhid
+        where jcsj.csmc ILIKE '%'||#{dq}||'%') yhqt group by yhqt.yhid)qt
+        left join igams_grksgl grksgl  on qt.yhid=grksgl.ryid
+        left join igams_grksmx grksmx on grksgl.grksid=grksmx.grksid
+        left join igams_ksgl ksgl on ksgl.ksid=grksmx.ksid
+        left join matridx_xtyh yh on yh.yhid=qt.yhid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        )ksmx
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <update id="delete" parameterType="GrksmxDto">
+        update igams_grksmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                 grksid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <select id="getListByKsIds" parameterType="list" resultType="GrksmxDto">
+        SELECT
+        grksmx.dtjg,
+        grksgl.ryid,
+        grksmx.grksmxid,
+        grksmx.fs,
+        pxgl.tgfs,
+        grksgl.gzid,
+        grksgl.grksid,
+        ksgl.tmlx,
+        grksmx.ksid,
+        grksmx.df
+        FROM
+        igams_grksmx grksmx
+        LEFT JOIN igams_grksgl grksgl ON grksgl.grksid = grksmx.grksid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_ksgl ksgl ON ksgl.ksid = grksmx.ksid
+        WHERE
+        grksmx.grksid IN (
+        SELECT
+        grksgl.grksid
+        FROM
+        igams_grksmx grksmx
+        LEFT JOIN igams_grksgl grksgl ON grksgl.grksid = grksmx.grksid
+        WHERE
+        grksmx.ksid IN
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        )
+    </select>
+    <update id="updateGrksmxDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_grksmx
+                <set>
+                    <if test="item.df != null and item.df != ''">
+                        ,df=#{item.df}
+                    </if>
+                </set>
+                <where>
+                    grksmxid=#{item.grksmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+</mapper>

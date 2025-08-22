@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IFzjcxmDao" >
+     <select id="getDtoListByFzjcid" parameterType="FzjcxmDto" resultType="FzjcxmDto">
+        select fzjcxm.fzxmid,fzjcxm.fzjcid,fzjcxm.fzjcxmid,fzjcxm.fzjczxmid,jc_jcxm.csmc jcxmmc,jc_jczxm.csmc jczxmmc
+        from igams_fzjcxm fzjcxm
+        left join matridx_jcsj jc_jcxm on jc_jcxm.csid=fzjcxm.fzjcxmid
+        left join matridx_jcsj jc_jczxm on jc_jczxm.csid=fzjcxm.fzjczxmid
+        <where>
+            fzjcxm.fzjcid=#{fzjcid}
+        </where>
+    </select>
+    
+    <insert id="insertDto" parameterType="FzjcxmDto">
+       insert into igams_fzjcxm(fzxmid
+       <if test="fzjcid != null and fzjcid != ''">
+          ,fzjcid
+       </if>
+       <if test="fzjcxmid != null and fzjcxmid != ''">
+          ,fzjcxmid
+       </if>
+       <if test="fzjczxmid != null and fzjczxmid != ''">
+          ,fzjczxmid
+       </if>
+          )values(#{fzxmid}
+       <if test="fzjcid != null and fzjcid != ''">
+          ,#{fzjcid}
+       </if>
+       <if test="fzjcxmid != null and fzjcxmid != ''">
+          ,#{fzjcxmid}
+       </if>
+       <if test="fzjczxmid != null and fzjczxmid != ''">
+          ,#{fzjczxmid}
+       </if>
+       
+       )
+   </insert>
+
+    <insert id="insertFzjcxmDto" parameterType="FzjcxmDto">
+        insert into igams_fzjcxm(fzxmid
+        <if test="fzjcid != null and fzjcid != ''">
+            ,fzjcid
+        </if>
+        <if test="fzjcxmid != null and fzjcxmid != ''">
+            ,fzjcxmid
+        </if>
+        <if test="fzjczxmid != null and fzjczxmid != ''">
+            ,fzjczxmid
+        </if>
+        )values(#{fzxmid}
+        <if test="fzjcid != null and fzjcid != ''">
+            ,#{fzjcid}
+        </if>
+        <if test="fzjcxmid != null and fzjcxmid != ''">
+            ,#{fzjcxmid}
+        </if>
+        <if test="fzjczxmid != null and fzjczxmid != ''">
+            ,#{fzjczxmid}
+        </if>
+        )
+    </insert>
+
+   <select id="generateReportList" parameterType="String" resultType="Map">
+   		select  jc_xm.csmc as xmmc,fzjcjg.jcjg,jc_xm.cskz1 as xmjc
+			from igams_fzjcxm fzjcxm
+			left join matridx_jcsj jc_xm on jc_xm.csid=fzjcxm.fzxmid and jc_xm.scbj!='1'
+			left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzjcid
+			where fzjcxm.fzjcid=#{fzjcid}
+   </select>
+   <delete id="deleteFzjcxmByFzjcid" parameterType="java.lang.String">
+		delete from igams_fzjcxm where fzjcid =#{fzjcid}
+   </delete>
+   <delete id="delFzjcxmByFzjcid" parameterType="FzjcxxDto">
+		delete from igams_fzjcxm where fzjcid =#{fzjcid}
+   </delete>
+   
+    <!--获取新冠报告-->
+    <select id="getFzjcxxByybbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,
+        hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,fzjcxx.cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        <where>
+            fzjcxx.scbj='0'
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh=#{ybbh}
+            </if>
+            <if test="fzjcid != null and fzjcid != ''">
+                and fzjcxx.fzjcid=#{fzjcid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFzjcxmxxList" parameterType="FzjcxmDto" resultType="FzjcxmDto">
+        select jcxm.fzxmid,jcxm.fzjcid,jcxm.fzjcxmid,jcxm.fzjczxmid
+            from igams_fzjcxm jcxm
+            left join igams_fzjcxx jcxx on jcxx.fzjcid=jcxm.fzjcid
+        where
+            jcxm.fzjcid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+
+    </select>
+
+
+    <insert id="insertList" parameterType="list" >
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                insert into igams_fzjcxm(fzxmid
+                <if test="item.fzjcid != null and item.fzjcid != ''">
+                    ,fzjcid
+                </if>
+                <if test="item.fzjcxmid != null and item.fzjcxmid != ''">
+                    ,fzjcxmid
+                </if>
+                <if test="item.fzjczxmid != null and item.fzjczxmid != ''">
+                    ,fzjczxmid
+                </if>
+                )values(#{item.fzxmid}
+                <if test="item.fzjcid != null and item.fzjcid != ''">
+                    ,#{item.fzjcid}
+                </if>
+                <if test="item.fzjcxmid != null and item.fzjcxmid != ''">
+                    ,#{item.fzjcxmid}
+                </if>
+                <if test="item.fzjczxmid != null and item.fzjczxmid != ''">
+                    ,#{item.fzjczxmid}
+                </if>
+                )
+            </foreach>
+        </if>
+    </insert>
+</mapper>

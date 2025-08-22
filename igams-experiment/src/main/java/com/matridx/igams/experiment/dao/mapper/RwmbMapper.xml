@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IRwmbDao" >
+
+	<!-- 增加任务模板 -->
+	<insert id="insert" parameterType="RwmbDto">
+		insert into igams_rwmb(rwmbid
+		<if test="jdid !=null and jdid != ''">
+			,jdid
+		</if>
+		<if test="mbid !=null and mbid != ''">
+			,mbid
+		</if>
+		<if test="frwmbid !=null and frwmbid != ''">
+			,frwmbid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			,rwmc
+		</if>
+		<if test="mrfzr !=null and mrfzr != ''">
+			,mrfzr
+		</if>
+		<if test="qx !=null and qx != ''">
+			,qx
+		</if>
+		<if test="rwjb !=null and rwjb != ''">
+			,rwjb
+		</if>
+		<if test="rwbq !=null and rwbq != ''">
+			,rwbq
+		</if>
+		<if test="rwms !=null and rwms != ''">
+			,rwms
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,kzcs
+		</if>
+		,lrry,lrsj,scbj) values(#{rwmbid}
+		<if test="jdid !=null and jdid != ''">
+			,#{jdid}
+		</if>
+		<if test="mbid !=null and mbid != ''">
+			,#{mbid}
+		</if>
+		<if test="frwmbid !=null and frwmbid != ''">
+			,#{frwmbid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			,#{rwmc}
+		</if>
+		<if test="mrfzr !=null and mrfzr != ''">
+			,#{mrfzr}
+		</if>
+		<if test="qx !=null and qx != ''">
+			,#{qx}
+		</if>
+		<if test="rwjb !=null and rwjb != ''">
+			,#{rwjb}
+		</if>
+		<if test="rwbq !=null and rwbq != ''">
+			,#{rwbq}
+		</if>
+		<if test="rwms !=null and rwms != ''">
+			,#{rwms}
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,#{kzcs}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<select id="getrwmbxh" parameterType="RwmbDto" resultType="int">
+		select coalesce(max(xh),0) as xh from 
+		igams_rwmb
+		<where> 
+		scbj !='1' 
+			<if test="jdid !=null and jdid!=''">
+			and jdid=#{jdid}
+			</if>
+		</where>
+	</select>
+	<!-- 查询每个阶段的所有任务 -->
+	<select id="getrwmbbyid" parameterType="String"  resultType="RwmbDto">
+		select rwmb.rwmbid,rwmb.jdid,rwmb.mbid,rwmb.frwmbid,rwmb.xh,rwmb.rwmc,rwmb.mrfzr,rwmb.qx,rwmb.rwjb,rwmb.rwbq,rwmb.rwms,rwmb.kzcs,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,xtyh.zsxm as fzrmc
+		from igams_rwmb rwmb
+		left join matridx_jcsj rwjb on rwjb.csid= rwmb.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= rwmb.rwbq
+		left join matridx_xtyh xtyh on xtyh.yhid=rwmb.mrfzr
+		<where>
+			rwmb.scbj!='1'
+			and rwmb.frwmbid is null
+			and rwmb.jdid=#{jdid}
+			order by xh
+		</where>
+	</select>
+	<!-- 通过任务id查询任务 -->
+	<select id="getDtoById" parameterType="String"  resultType="RwmbDto">
+		select rwmb.rwmbid,rwmb.jdid,rwmb.mbid,rwmb.frwmbid,rwmb.xh,rwmb.rwmc,rwmb.mrfzr,rwmb.qx,rwmb.rwjb,rwmb.rwbq,rwmb.rwms,rwmb.kzcs,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,xtyh.zsxm as fzrmc
+		from igams_rwmb rwmb
+		left join matridx_jcsj rwjb on rwjb.csid= rwmb.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= rwmb.rwbq
+		left join matridx_xtyh xtyh on xtyh.yhid=rwmb.mrfzr
+		<where>
+			rwmb.scbj!='1'
+			and rwmb.rwmbid=#{rwmbid}
+		</where>
+	</select>
+	<update id="update" parameterType="RwmbDto">
+		update igams_rwmb set 
+		xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="jdid !=null and jdid != ''">
+			,jdid=#{jdid}
+		</if>
+		<if test="rwmc!=null and rwmc !=''">
+			,rwmc=#{rwmc}
+		</if>
+		<if test="frwmbid !=null and frwmbid != ''">
+			,frwmbid=#{frwmbid}
+		</if>
+		<if test="mrfzr !=null and mrfzr != ''">
+			,mrfzr=#{mrfzr}
+		</if>
+		<if test="qx !=null and qx != ''">
+			,qx=#{qx}
+		</if>
+		<if test="rwjb !=null and rwjb != ''">
+			,rwjb=#{rwjb}
+		</if>
+		<if test="rwbq !=null and rwbq != ''">
+			,rwbq=#{rwbq}
+		</if>
+		<if test="rwms !=null and rwms != ''">
+			,rwms=#{rwms}
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,kzcs=#{kzcs}
+		</if>
+		<where>
+			rwmbid=#{rwmbid}
+		</where>
+	</update>
+	<!-- 删除任务 -->
+	<update id="updatescbj" parameterType="RwmbDto">
+		update igams_rwmb set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			rwmbid=#{rwmbid}
+		</where>
+	</update>
+	<select id="getcount" parameterType="String" resultType="int">
+		select count(*) from igams_rwmb
+		where 
+		scbj!='1'
+		and frwmbid=#{frwmbid}
+	</select>
+	<!-- 任务模板排序 -->
+	<update id="taskSort" parameterType="RwmbDto">
+		<if test="ids !=null and ids.size > 0">
+			<foreach collection="ids" index="index" open="" close="" separator=";" item="item">
+				update igams_rwmb 
+				<set>
+					xh=cast(#{index} as numeric)+1,
+					xgry=#{xgry},
+					xgsj=LOCALTIMESTAMP
+				</set>
+				where rwmbid=#{item}
+			</foreach>
+		</if>
+	</update>
+	<!-- 修改任务模板阶段 -->
+	<update id="updateJdByRwmbid" parameterType="RwmbDto"> 
+		update igams_rwmb 
+		set xgry=#{xgry},xgsj=LOCALTIMESTAMP,jdid=#{jdid}
+		where 
+			rwmbid=#{rwmbid}
+	</update>
+</mapper>

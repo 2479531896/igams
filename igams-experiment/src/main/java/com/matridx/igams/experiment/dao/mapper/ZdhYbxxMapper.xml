@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IZdhYbxxDao" >
+    <select id="getDto" parameterType="ZdhYbxxDto" resultType="ZdhYbxxDto">
+        select ybxx.ybxxid,ybxx.sjid,ybxx.bbbm,ybxx.jclx,ybxx.jkgw,ybxx.chgw,ybxx.sgbh,ybxx.sgjbh,ybxx.ybjbh,ybxx.jthbh,ybxx.jtblgwz,ybxx.kssj,ybxx.jssj,ybxx.hssywz,ybxx.wksywz,ybxx.lcmc,
+        ybxx.zlcmc,ybxx.jcdw,ybxx.bz,ybxx.lcxh,ybxx.zlcxh,
+        jc_jclx.csmc jclxmc,
+        to_char(ybxx.kssj,'yyyy-mm-dd hh24:mi') format_kssj,to_char(ybxx.jssj,'yyyy-mm-dd hh24:mi') format_jssj,
+        to_char(tqks_ybmx.lckssj,'yyyy-mm-dd hh24:mi') format_tqlckssj,to_char(tqjs_ybmx.lcjssj,'yyyy-mm-dd hh24:mi') format_tqlcjssj,
+        to_char(jkjs_ybmx.lckssj,'yyyy-mm-dd hh24:mi') format_jklckssj,to_char(jkjs_ybmx.lcjssj,'yyyy-mm-dd hh24:mi') format_jklcjssj
+        from igams_zdh_ybxx ybxx
+        LEFT JOIN (SELECT * FROM igams_zdh_ybmx ybmx WHERE ybmxid = #{ybxxid} and ybmx.lc = '提取' and ybmx.scbj='0' ORDER BY ybmx.lckssj ASC LIMIT 1) tqks_ybmx on tqks_ybmx.ybxxid = ybxx.ybxxid
+        LEFT JOIN (SELECT * FROM igams_zdh_ybmx ybmx WHERE ybmxid = #{ybxxid} and ybmx.lc = '提取' and ybmx.scbj='0' ORDER BY ybmx.lcjssj DESC LIMIT 1) tqjs_ybmx on tqjs_ybmx.ybxxid = ybxx.ybxxid
+        LEFT JOIN (SELECT * FROM igams_zdh_ybmx ybmx WHERE ybmxid = #{ybxxid} and ybmx.lc = '建库' and ybmx.scbj='0' ORDER BY ybmx.lckssj ASC LIMIT 1) jkks_ybmx on jkks_ybmx.ybxxid = ybxx.ybxxid
+        LEFT JOIN (SELECT * FROM igams_zdh_ybmx ybmx WHERE ybmxid = #{ybxxid} and ybmx.lc = '建库' and ybmx.scbj='0' ORDER BY ybmx.lcjssj DESC LIMIT 1) jkjs_ybmx on jkjs_ybmx.ybxxid = ybxx.ybxxid
+
+        left join matridx_jcsj jc_jclx on jc_jclx.csid = ybxx.jclx
+        <where>
+        ybxx.scbj='0' and ybxx.ybxxid = #{ybxxid}
+        </where>
+    </select>
+    <select id="queryByYbxxDto" parameterType="List" resultType="ZdhYbxxDto">
+        <if test="ybxxDtoList != null and ybxxDtoList.size>0">
+            <foreach collection="ybxxDtoList" separator="union all" item="item" index="index">
+                select ybxx.ybxxid,ybxx.sjid,ybxx.bbbm,ybxx.jclx,ybxx.jkgw,ybxx.chgw,ybxx.sgbh,ybxx.sgjbh,ybxx.ybjbh,ybxx.jthbh,ybxx.jtblgwz,ybxx.kssj,ybxx.jssj,ybxx.sywz,ybxx.lcmc,
+                ybxx.zlcmc,ybxx.jcdw,ybxx.bz,ybxx.lcxh,ybxx.zlcxh,ybmx.ybmxid,ybmx.lckssj,ybmx.lcjssj,ybmx.zlckssj,ybmx.zlcjssj,ybmx.lc,ybmx.zlc,ybsjxx.sjmc,ybsjxx.ph,ybsjxx.yl,
+                ybsjxx.ybsjid
+		        from igams_zdh_ybxx ybxx
+                left join igams_zdh_ybmx ybmx on ybmx.ybxxid=ybxx.ybxxid and ybmx.lc=#{item.lcmc}
+                and coalesce(ybmx.zlc,'ZLC')=coalesce(#{item.zlcmc},'ZLC') and ybmx.scbj='0'
+                left join igams_zdh_ybsjxx ybsjxx on ybsjxx.ybmxid=ybmx.ybmxid and ybsjxx.scbj='0'
+                <where>
+		        ybxx.scbj='0' and ybxx.zt!='80'
+                    <if test="item.bbbm != null and item.bbbm!=''">
+                        and ybxx.bbbm = #{item.bbbm}
+                    </if>
+		    <if test="item.ybjbh != null and item.ybjbh!=''">
+                        and ybxx.ybjbh = #{item.ybjbh}
+                    </if>
+		</where>
+            </foreach>
+        </if>
+    </select>
+           
+    <insert id="insertYbxxDtoList" parameterType="List">
+        insert into igams_zdh_ybxx(ybxxid,sjid,bbbm,jclx,jkgw,chgw,sgbh,sgjbh,ybjbh,jthbh,jtblgwz,kssj,jssj,lcmc,zlcmc,jcdw,ybmxid,bz,lcxh,zlcxh,lrry,lrsj,scbj,zt,hssywz,wksywz)
+        <foreach collection="ybxxDtoList" separator="union all" item="item" index="index">
+            select #{item.ybxxid},(select sjid from igams_sjxx where ybbh=#{item.bbbm} and scbj='0'),#{item.bbbm},#{item.jclx},#{item.jkgw},#{item.chgw},#{item.sgbh},#{item.sgjbh},#{item.ybjbh},#{item.jthbh},#{item.jtblgwz},
+            cast(#{item.kssj} as TIMESTAMP),cast(#{item.jssj} as TIMESTAMP),#{item.lcmc},#{item.zlcmc},
+            (select fcsid from matridx_jcsj where csdm=#{item.yqbm} and jclb='MACHINE_TYPE'),
+            #{item.ybmxid},#{item.bz},#{item.lcxh},#{item.zlcxh},#{item.lrry},
+            LOCALTIMESTAMP,'0',#{item.zt},#{item.hssywz},#{item.wksywz}
+        </foreach>
+    </insert>
+                
+    <select id="queryYbmxDtoList" parameterType="List" resultType="ZdhYbxxDto">
+        select ybxx.ybxxid,ybxx.sjid,ybxx.bbbm,ybxx.jclx,ybxx.jkgw,ybxx.chgw,ybxx.sgbh,ybxx.sgjbh,ybxx.ybjbh,ybxx.jthbh,ybxx.jtblgwz,ybxx.kssj,ybxx.jssj,ybxx.sywz,ybxx.lcmc,
+        ybxx.zlcmc,ybxx.jcdw,ybxx.bz,ybxx.lcxh,ybxx.zlcxh,ybmx.ybmxid,ybmx.lckssj,ybmx.lcjssj,ybmx.zlckssj,ybmx.zlcjssj,ybmx.lc,ybmx.zlc
+        from igams_zdh_ybxx ybxx
+        left join igams_zdh_ybmx ybmx on ybmx.ybxxid=ybxx.ybxxid  and ybmx.zlc is null
+        <where>
+        ybxx.scbj='0' and ybmx.scbj='0'
+            <if test="ybxxDtoList != null and ybxxDtoList.size>0">
+                and ybxx.ybxxid in
+                <foreach collection="ybxxDtoList" open="(" close=")" separator="," item="item">
+                    #{item.ybxxid}
+                </foreach>
+                and ybmx.lc in
+                <foreach collection="ybxxDtoList" open="(" close=")" separator="," item="item">
+                    #{item.lcmc}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="updateYbxxDtoList" parameterType="List">
+        <if test="ybxxDtoList !=null and ybxxDtoList.size > 0">
+            <foreach collection="ybxxDtoList" separator=";" item="item" index="index">
+                update igams_zdh_ybxx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.xgry != null and item.xgry != ''">
+                        ,xgry=#{item.xgry}
+                    </if>
+                    <if test="item.jkgw != null and item.jkgw != ''">
+                        ,jkgw=#{item.jkgw}
+                    </if>
+                    <if test="item.chgw != null and item.chgw != ''">
+                        ,chgw=#{item.chgw}
+                    </if>
+                    <if test="item.sgbh != null and item.sgbh != ''">
+                        ,sgbh=#{item.sgbh}
+                    </if>
+                    <if test="item.sgjbh != null and item.sgjbh != ''">
+                        ,sgjbh=#{item.sgjbh}
+                    </if>
+                    <if test="item.ybjbh != null and item.ybjbh != ''">
+                        ,ybjbh=#{item.ybjbh}
+                    </if>
+                    <if test="item.jthbh != null and item.jthbh != ''">
+                        ,jthbh=#{item.jthbh}
+                    </if>
+                    <if test="item.jtblgwz != null and item.jtblgwz != ''">
+                        ,jtblgwz=#{item.jtblgwz}
+                    </if>
+                    <if test="item.kssj != null and item.kssj != ''">
+                        ,kssj=cast(#{item.kssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.jssj != null and item.jssj != ''">
+                        ,jssj=cast(#{item.jssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.lcmc != null and item.lcmc != ''">
+                        ,lcmc=#{item.lcmc}
+                    </if>
+                    <if test="item.zlcmc != null and item.zlcmc != ''">
+                        ,zlcmc=#{item.zlcmc}
+                    </if>
+                    <if test="item.ybmxid != null and item.ybmxid != ''">
+                        ,ybmxid=#{item.ybmxid}
+                    </if>
+                    <if test="item.bz != null and item.bz != ''">
+                        ,bz=#{item.bz}
+                    </if>
+                    <if test="item.zt != null and item.zt != ''">
+                        ,zt=#{item.zt}
+                    </if>
+                    <if test="item.lcxh != null and item.lcxh != ''">
+                        ,lcxh=#{item.lcxh}
+                    </if>
+                    <if test="item.zlcxh != null and item.zlcxh != ''">
+                        ,zlcxh=#{item.zlcxh}
+                    </if>
+                    <if test="item.yqbm != null and item.yqbm != ''">
+                        ,jcdw=coalesce((select jcdw from igams_zdh_ybxx where ybxxid=#{item.ybxxid}),(select fcsid from matridx_jcsj where csdm=#{item.yqbm} and jclb='MACHINE_TYPE'))
+                    </if>
+                    <if test="item.hssywz != null and item.hssywz != ''">
+                        ,hssywz=#{item.hssywz}
+                    </if>
+                    <if test="item.wksywz != null and item.wksywz != ''">
+                        ,wksywz=#{item.wksywz}
+                    </if>
+                </set>
+                <where>
+                    ybxxid=#{item.ybxxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <insert id="insertYbmxDtoList" parameterType="List">
+        insert into igams_zdh_ybmx(ybmxid,ybxxid,lc,zlc,yqid,lckssj,lcjssj,zlckssj,zlcjssj,lrry,lrsj,scbj)values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="ybxxDtoList" separator="," item="item" index="index">
+                (
+                #{item.ybmxid},#{item.ybxxid},#{item.lcmc},#{item.zlcmc},
+                (select csid from matridx_jcsj where csdm=#{item.yqbm} and jclb='MACHINE_TYPE')
+                <if test="item.lckssj == null or item.lckssj== ''">
+                    ,null
+                </if>
+                <if test="item.lckssj != null and item.lckssj!= ''">
+                    ,cast(#{item.lckssj} as TIMESTAMP)
+                </if>
+                <if test="item.lcjssj == null or item.lcjssj== ''">
+                    ,null
+                </if>
+                <if test="item.lcjssj != null and item.lcjssj!= ''">
+                    ,cast(#{item.lcjssj} as TIMESTAMP)
+                </if>
+                <if test="item.zlckssj == null or item.zlckssj== ''">
+                    ,null
+                </if>
+                <if test="item.zlckssj != null and item.zlckssj!= ''">
+                    ,cast(#{item.zlckssj} as TIMESTAMP)
+                </if>
+                <if test="item.zlcjssj == null or item.zlcjssj== ''">
+                    ,null
+                </if>
+                <if test="item.zlcjssj != null and item.zlcjssj!= ''">
+                    ,cast(#{item.zlcjssj} as TIMESTAMP)
+                </if>
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateYbmxDtoList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="ybxxDtoList" separator=";" item="item" index="index">
+                update igams_zdh_ybmx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.xgry != null and item.xgry != ''">
+                        ,xgry=#{item.xgry}
+                    </if>
+                    <if test="item.lc != null and item.lc != ''">
+                        ,lc=#{item.lcmc}
+                    </if>
+                    <if test="item.zlc != null and item.zlc != ''">
+                        ,zlc=#{item.zlcmc}
+                    </if>
+                    <if test="item.lckssj != null and item.lckssj != ''">
+                        ,lckssj=cast(#{item.lckssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.lcjssj != null and item.lcjssj != ''">
+                        ,lcjssj=cast(#{item.lcjssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.zlckssj != null and item.zlckssj != ''">
+                        ,zlckssj=cast(#{item.zlckssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.zlcjssj != null and item.zlcjssj != ''">
+                        ,zlcjssj=cast(#{item.zlcjssj} as TIMESTAMP)
+                    </if>
+                </set>
+                <where>
+                    ybmxid=#{item.ybmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <insert id="insertYbsjxxDtoList" parameterType="List">
+        insert into igams_zdh_ybsjxx(ybsjid,ybmxid,sjmc,ph,yl,sj,lrry,lrsj,scbj)values
+        <if test="ybxxDtoList !=null and ybxxDtoList.size > 0">
+            <foreach collection="ybxxDtoList" separator="," item="item" index="index">
+                (
+                #{item.ybsjid},#{item.ybmxid},#{item.sjmc},#{item.ph},#{item.yl}
+                <if test="item.zlckssj == null or item.zlckssj== ''">
+                    ,null
+                </if>
+                <if test="item.zlckssj != null and item.zlckssj!= ''">
+                    ,cast(#{item.zlckssj} as timestamp)
+                </if>
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getDtoList" parameterType="ZdhYbxxDto" resultType="ZdhYbxxDto">
+        select ybxx.ybxxid,ybxx.sjid,ybxx.bbbm,ybxx.jclx,ybxx.jkgw,ybxx.chgw,ybxx.sgbh,ybxx.sgjbh,ybxx.ybjbh,ybxx.jthbh,ybxx.jtblgwz,to_char(ybxx.kssj,'yyyy-MM-dd HH24:mi') kssj,to_char(ybxx.jssj,'yyyy-MM-dd HH24:mi')jssj,
+        ybxx.sywz,ybxx.lcmc,ybxx.zlcmc,ybxx.jcdw,ybxx.ybmxid,ybxx.bz,ybxx.lcxh,ybxx.zlcxh,ybxx.zt,jcdw.csmc as jcdwmc,jclx.csmc as jclxmc
+        from igams_zdh_ybxx ybxx
+        left join matridx_jcsj jclx on jclx.csid=ybxx.jclx
+        left join matridx_jcsj jcdw on jcdw.csid = ybxx.jcdw
+        <where>
+            ybxx.scbj='0'
+            <if test="cxnr != null and cxnr!=''">
+                and ybxx.bbbm ilike '%'||#{cxnr}||'%'
+            </if>
+            <if test="syzt=='1'.toString()">
+                and ybxx.jssj is null
+            </if>
+            <if test="syzt=='2'.toString()">
+                and ybxx.jssj is not null and ybxx.zt!='80' and ybxx.jssj>now()-INTERVAL '12 hours'
+            </if>
+            <if test="syzt=='3'.toString()">
+                and ybxx.zt='80'
+            </if>
+            <if test="jcdws!= null and jcdws.size()>0">
+                and ybxx.jcdw in
+                <foreach collection="jcdws" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jclxs!= null and jclxs.size()>0">
+                and ybxx.jclx in
+                <foreach collection="jclxs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zts!= null and zts.size()>0">
+                and ybxx.zt in
+                <foreach collection="zts" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lcmcs!= null and lcmcs.size()>0">
+                and ybxx.lcmc in
+                <foreach collection="lcmcs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lcxhs!= null and lcxhs.size()>0">
+                and ybxx.lcxh in
+                <foreach collection="lcxhs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zlcmcs!= null and zlcmcs.size()>0">
+                and ybxx.zlcmc in
+                <foreach collection="zlcmcs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zlcxhs!= null and zlcxhs.size()>0">
+                and ybxx.zlcxh in
+                <foreach collection="zlcxhs" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="kssjstart!= null and kssjstart!=''">
+                and to_char(ybxx.kssj,'yyyy-mm-dd') &gt; #{kssjstart}
+            </if>
+            <if test="kssjend!= null and kssjend!=''">
+                and to_char(ybxx.kssj,'yyyy-mm-dd') &lt; #{kssjend}
+            </if>
+            <if test="jssjstart!= null and jssjstart!=''">
+                and to_char(ybxx.jssj,'yyyy-mm-dd') &gt; #{jssjstart}
+            </if>
+            <if test="jssjend!= null and jssjend!=''">
+                and to_char(ybxx.jssj,'yyyy-mm-dd') &lt; #{jssjend}
+            </if>
+        </where>
+    </select>
+</mapper>

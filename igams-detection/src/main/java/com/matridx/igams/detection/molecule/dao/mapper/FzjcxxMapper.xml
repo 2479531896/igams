@@ -1,0 +1,2899 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IFzjcxxDao" >
+    <select id="getNbbhSerial" parameterType="String" resultType="String">
+        SELECT   lpad(cast((CAST(coalesce(MAX(substring(nbbh,7)),'0') AS numeric) + 1) as VARCHAR), 5, '0') serial
+        FROM igams_fzjcxx
+        <where>
+            scbj = '0' AND nbbh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <!-- 查询组装内部编码所需要的的数据 -->
+    <select id="getconfirmDmInfo" parameterType="FzjcxxDto" resultType="Map">
+        select fzjcxx.fzjcid,fzjcxx.jclx,jc_jclx.csmc jclxmc,jc_jclx.cskz1 jclxcskz1,jc_jclx.cskz2 jclxcskz2,jc_jcdw.csdm jcdwdm
+        from igams_fzjcxx fzjcxx
+        left join matridx_jcsj jc_jclx on jc_jclx.csid = fzjcxx.jclx
+        left join matridx_jcsj jc_jcdw on jc_jcdw.csid=fzjcxx.jcdw
+        <where>
+            fzjcxx.scbj ='0' and fzjcxx.fzjcid=#{fzjcid}
+        </where>
+    </select>
+
+    <select id="getCustomSerial" parameterType="Map" resultType="String">
+        SELECT lpad(CAST(CAST(coalesce(MAX(substring(nbbh, #{startindex}, #{seriallength})), '0') AS numeric) + 1 as VARCHAR), #{seriallength}, '0') serial
+        FROM igams_fzjcxx
+        <where>
+            nbbh IS NOT NULL
+            <if test="conditionList !=null and  conditionList.size() > 0">
+                <foreach collection="conditionList" item="item" index="index">
+                    AND substring(nbbh,#{item.conditionIndex}, #{item.conditionLength}) = #{item.conditionKey}
+                </foreach>
+            </if>
+            AND scbj = '0'
+        </where>
+    </select>
+
+    <select id="getSyhSerial" parameterType="Map" resultType="String">
+        SELECT   lpad(cast((CAST(coalesce(MAX(substring(syh,10)),'0') AS numeric) + 1) as VARCHAR), 5, '0') serial
+        FROM igams_fzjcxx
+        <where>
+            scbj = '0' AND syh like #{prefix}||'%' and jclx=#{jclx}
+        </where>
+    </select>
+
+
+    <!--获取新冠报告-->
+    <select id="getFzjcxxByybbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,fzjcxx.nbbh,fzjcxx.syh,
+        hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,to_char(fzjcxx.cjsj,'yyyy-MM-dd HH24:mi') cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc,fzjcxx.jy,fzjcxx.bbzt,
+        fzjcxx.bbzbh,jcsj_jcdx.csdm jcdxcsdm,fzjcxx.yblxmc,fzjcxx.jcdw,fzjcxx.jclx
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid=fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj='0'
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh=#{ybbh}
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh=#{bbzbh}
+            </if>
+            <if test="fzjcid != null and fzjcid != ''">
+                and fzjcxx.fzjcid=#{fzjcid}
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+        </where>
+    </select>
+
+    <!--获取新冠报告-->
+    <select id="getFzjcxxByybbhs" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,jcsj_jcdx.csdm jcdxcsdm,fzjcxx.jclx,
+        hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,fzjcxx.cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc,fzjcxx.bbzbh,fzjcxx.zt
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj='0' and ybbh in
+            <foreach collection="ybbhs" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+        </where>
+    </select>
+
+    <!--获取新冠报告-->
+    <select id="getInfoByNbbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.nbbh,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb, fzjcxx.sysj,
+        hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,to_char(fzjcxx.cjsj,'yyyy-MM-dd HH24:mi') cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc,fzjcxx.syh,fzjcxx.bbzbh
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        <where>
+            fzjcxx.scbj='0'
+            <if test="nbbh != null and nbbh != ''">
+                and fzjcxx.nbbh=#{nbbh}
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+        </where>
+    </select>
+    <!--获取新冠报告-->
+    <select id="getFzjcxxByNbbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,
+        hzxx.sj,hzxx.nl,jcxm.csmc jcxm,yblx_jcsj.csmc yblx,fzjcxx.sfjs,to_char(fzjcxx.cjsj,'yyyy-MM-dd HH24:mi') cjsj,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.syh,fzjcxx.bbzbh
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jcxm on jcxm.csid = fzjcxm.fzjcxmid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        <where>
+            fzjcxx.nbbh=#{nbbh} and fzjcxx.scbj='0'
+        </where>
+    </select>
+
+
+    <!--获取新冠报告-->
+    <select id="getRefundOrder" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.refundno,fzjcxx.hzid,fzjcxx.wxid,fzjcxx.czbs
+        from igams_fzjcxx fzjcxx
+        where fzjcxx.refundno is not null and fzjcxx.fkbj = '3' and fzjcxx.tkrq > now() - INTERVAL '3' DAY
+    </select>
+
+    <!--获取新冠报告-->
+    <select id="getFzjcxxBySyh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,fzjcxx.syh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.syh=#{syh} and fzjcxx.scbj='0' and fzjcxx.jclx = #{jclx}
+        </where>
+    </select>
+
+    <select id="getExistBySyhYbbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid, fzjcxx.hzid, fzjcxx.syh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.syh=#{syh}  and fzjcxx.scbj='0' and fzjcxx.ybbh!=#{ybbh} and fzjcxx.jclx = #{jclx}
+        </where>
+    </select>
+
+    <select id="getExistBbzbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,fzjcxx.syh,fzjcxx.bbzbh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.bbzbh=#{bbzbh} and fzjcxx.fzjcid!=#{fzjcid} and fzjcxx.scbj='0'
+        </where>
+    </select>
+    <select id="getCountBbzbh" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,fzjcxx.syh,fzjcxx.bbzbh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.bbzbh=#{bbzbh} and fzjcxx.scbj='0'
+        </where>
+    </select>
+    <!--更改新冠报告-->
+    <update id="saveFzjcxxInfo" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            sfjs=#{sfjs},jsry=#{jsry},jssj=LOCALTIMESTAMP,syh=#{syh},bbzt=#{bbzt}
+            <if test="nbbh != null and nbbh != ''">
+                ,nbbh=#{nbbh}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy== '1'.toString">
+                ,sfsy='1',syry=#{syry},sysj=LOCALTIMESTAMP
+            </if>
+        </set>
+        <where>
+            ybbh=#{ybbh}
+        </where>
+    </update>
+    <update id="updateInfoByNbbh" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            sfsy='1',syry=#{syry},sysj=LOCALTIMESTAMP
+        </set>
+        <where>
+            nbbh=#{nbbh}
+        </where>
+    </update>
+    <select id="getPagedDtoList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select hzxx.hzid,hzxx.xm, hzxx.sj,hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE''
+        END xb,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid, fzjcxx.syry, syry_xtyh.zsxm syrymc, fzjcxx.fsbj ,fzjcxx.bbzbh,fzjcxx.zffs,fzjcxm.fzxmid,fzjcxm.fzjczxmid,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.fssj,'yyyy-mm-dd HH24:mi') fssj,
+        to_char(fzjcxx.sbsj,'yyyy-mm-dd HH24:mi') sbsj,
+        to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,
+        fzjcxx.yyjcrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd, fzjcxx.sfjf,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.zt,fzjcxx.jy,fzjcxx.bz,fzjcxx.jcxmmc,yblx_jcsj.csmc yblxmc,fzjcxx.nbbh,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,fzjcxx.sfjs,fzjcxx.sfsy,jczxm_jcsj.csmc jczxmmc,
+        case fzjcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,
+        case fzjcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+        case jcsj_jcdx.csdm WHEN 'W' THEN '物检' WHEN 'R' THEN '人检' end jcdxmc,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc, fzjcxx.jcdxlx, jcsj_jcdx.csdm jcdxcsdm,
+        xx.cskz1 yyxxcskz1,fzjcxx.fkbj,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,fzjcxx.kpbj,fzjcxx.fphm,fzjcxx.scbj,fzjcxx.orderno,fzjcxx.ptorderno,fzjcxx.sfje,fzjcxx.pt,
+        fzjcxx.cyd,cyd_jcsj.csmc cydmc,cjry.zsxm cjrymc
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+	    left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+		       or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                or cjry.zsxm like '%'||#{entire}||'%'
+                or hzxx.sj like '%'||#{entire}||'%'
+                or hzxx.zjh like '%'||#{entire}||'%'
+		)
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj !=1 ">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj == 1">
+                and fzjcxx.ybbh = #{ybbh}
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='1'.toString">
+                and fzjcxx.sfjf ='1'
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='0'.toString">
+                and (fzjcxx.sfjf ='0' or fzjcxx.sfjf is null)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sj != null and sj != '' " >
+                and hzxx.sj = #{sj}
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test = "jclx != null and jclx != '' " >
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="delCovidDetails" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            fzjcid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="discardCovidDetails" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            scbj='2',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            fzjcid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateCjxxsc" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_fzjcxx
+                <set>
+                    <if test="item.cjxxsczt != null and item.cjxxsczt != ''">
+                        ,cjxxsczt=#{item.cjxxsczt}
+                    </if>
+                    <if test="item.cjxxscsj != null and item.cjxxscsj != ''">
+                        ,cjxxscsj=cast(#{item.cjxxscsj} as timestamp )
+                    </if>
+                </set>
+                <where>
+                    bbzbh=#{item.bbzbh}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="viewCovidDetails" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+      select hzxx.xm,fzjcxx.bbzbh,hzxx.nl,fzjcxx.hzid,fzjcxx.tw,fzjcxx.ybbh,hzxx.sj,xtyh_cjry.zsxm cjry,xtyh_syry.zsxm syry,xtyh_jsry.zsxm jsry,fzjcxx.nbbh,fzjcxm.fzxmid,fzjcxx.fzjcid,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,
+        fzjcxx.yyjcrq,
+        case fzjcxx.zt WHEN '00' THEN '未提交' WHEN '10' THEN '审核中' WHEN '15' THEN '审核未通过' WHEN '80' THEN '审核通过' END zt,
+        case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE'' END xb,
+        case fzjcxx.fkbj WHEN '1' THEN '已付款' WHEN '2' THEN '退款完成' WHEN '3' THEN '退款中' WHEN '0' THEN '未付款' END fkbj,
+        case fzjcxx.kpbj WHEN '1' THEN '已开票' ELSE'未开票' END kpbj,
+        case jcsj_jcdx.csdm WHEN 'W' THEN '物检' WHEN 'R' THEN '人检' end jcdxmc,
+        fzjcxx.jy,fzjcxx.bz,jcxm_jcsj.csmc jcxm,yblx_jcsj.csmc yblx,yblx_jcsj.cskz1 yblxcskz1,jcjg_jcsj.csmc jcjg,fzjcsj.fyk,fzjcsj.jymc,fzjcsj.bgjy,fzjcsj.ctz,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd,
+        xx.cskz1 yyxxcskz1, fzjcxx.zffs, zffs_jcsj.csmc zffsmc,fzjcxx.pt,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,
+        fzjcxx.fphm,fzjcxx.orderno,fzjcxx.ptorderno,fzjcxx.sfje,fzjcxx.refundno,jcsj_jcdx.csdm jcdxcsdm,fzjcxx.jcjgmc,fzjcxx.jcxmmc,
+        fzjcxx.scrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd,fzjcxx.yblxmc,jczxm_jcsj.csmc jczxmmc,zjlx_jcsj.csmc zjlxmc,hzxx.zjh,cyd_jcsj.csmc cydmc,
+        to_char(fzjcxx.sbsj,'yyyy-mm-dd HH24:mi') sbsj,to_char(fzjcxx.bgwcsj,'yyyy-mm-dd HH24:mi') bgwcsj,to_char(fzjcxx.tkrq,'yyyy-mm-dd HH24:mi') tkrq,
+        to_char(fzjcxx.tkcgrq,'yyyy-mm-dd HH24:mi') tkcgrq,jcsj_ybzt.csmc ybztmc,jcjg_jcsj.csdm jcjgdm
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+         left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join igams_fzjcxm fzjcxm on fzjcxx.fzjcid=fzjcxm.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+		left join matridx_jcsj jcxm_jcsj on jcxm_jcsj.csid=fzjcxm.fzjcxmid
+		left join igams_fzjcsj fzjcsj on fzjcsj.fzxmid=fzjcxm.fzxmid
+		left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzxmid
+		left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid=fzjcjg.jcjg
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh_cjry on xtyh_cjry.yhid=fzjcxx.cjry
+        left join matridx_xtyh xtyh_jsry on xtyh_jsry.yhid=fzjcxx.jsry
+        left join matridx_xtyh xtyh_syry on xtyh_syry.yhid=fzjcxx.syry
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join matridx_jcsj zffs_jcsj on zffs_jcsj.csid=fzjcxx.zffs
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        left join matridx_jcsj jcsj_ybzt on jcsj_ybzt.csid=fzjcxx.bbzt
+        where fzjcxx.scbj!='1'and fzjcxx.fzjcid=#{fzjcid}
+        <if test="jclx!=null and jclx!=''">
+            and fzjcxx.jclx = #{jclx}
+        </if>
+    </select>
+
+
+    <!--新冠报告选中导出-->
+    <select id="getListForSelectExp" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select covid.fzjcid  ${sqlParam} from(    select hzxx.xm, hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE''
+        END xb,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid, fzjcxx.syry, syry_xtyh.zsxm syrymc, fzjcxx.fsbj ,fzjcxx.bbzbh,fzjcxx.zffs,fzjcxm.fzxmid,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.fssj,'yyyy-mm-dd HH24:mi') fssj,
+        to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,
+        fzjcxx.yyjcrq,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.zt,fzjcxx.jy,fzjcxx.bz,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,fzjcxx.nbbh,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,fzjcxx.sfjs,fzjcxx.sfsy,
+        case fzjcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,
+        case fzjcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc,
+        xx.cskz1 yyxxcskz1,case fzjcxx.fkbj WHEN '1' THEN '已付款' WHEN '0' THEN '未付款' end fkbj,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,
+        case fzjcxx.kpbj WHEN '1' THEN '已开票' WHEN '0' THEN '未开票' end kpbj,fzjcxx.fphm,cyd_jcsj.csmc cydmc,cjry.zsxm cjrymc,hzxx.sj
+        from (
+        <foreach item="item" index="index" collection="ids" separator=" union all ">
+            select #{item,jdbcType=VARCHAR} fzjcid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_fzjcxx fzjcxx on fzjcxx.fzjcid=tmp.fzjcid
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx )covid
+        order by covid.ybbh asc
+    </select>
+
+    <!-- 搜索导出查询条数 -->
+    <select id="getCountForSearchExp" parameterType="FzjcxxDto" resultType="java.lang.Integer">
+        select count(fzjcxx.fzjcid)
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                or cjry.zsxm like '%'||#{entire}||'%'
+                or hzxx.sj like '%'||#{entire}||'%'
+                or hzxx.zjh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sj != null and sj != '' " >
+                and hzxx.sj = #{sj}
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--新冠报告搜索导出-->
+    <select id="getListForSearchExp" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select covid.fzjcid  ${sqlParam} from(  select hzxx.xm, hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE''
+        END xb,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid, fzjcxx.syry, syry_xtyh.zsxm syrymc, fzjcxx.fsbj ,fzjcxx.bbzbh,fzjcxx.zffs,fzjcxm.fzxmid,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.fssj,'yyyy-mm-dd HH24:mi') fssj,
+        to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,
+        fzjcxx.yyjcrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd, jczxm_jcsj.csmc jczxmmc, jcsj_jcdx.csmc jcdxmc,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.zt,fzjcxx.jy,fzjcxx.bz,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,fzjcxx.nbbh,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,fzjcxx.sfjs,fzjcxx.sfsy,
+        case fzjcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,
+        case fzjcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc,
+        xx.cskz1 yyxxcskz1,case fzjcxx.fkbj WHEN '1' THEN '已付款' WHEN '0' THEN '未付款' end fkbj,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,
+        case fzjcxx.kpbj WHEN '1' THEN '已开票' WHEN '0' THEN '未开票' end kpbj,fzjcxx.fphm,cyd_jcsj.csmc cydmc,cjry.zsxm cjrymc,hzxx.sj
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                or cjry.zsxm like '%'||#{entire}||'%'
+                or hzxx.sj like '%'||#{entire}||'%'
+                or hzxx.zjh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sj != null and sj != '' " >
+                and hzxx.sj = #{sj}
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        )covid
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    
+    <select id="afterDayList" parameterType="HzxxDto" resultType="FzjcxxDto">
+       select jcxx.fzjcid, jcxx.hzid, jcxx.tw,jcxx.ks,jcxx.qtks,jcxx.sjdw,jcxx.sjdwmc, jcxx.ybbh, jcxx.nbbh, jcxx.yblx, jcxx.yyrq, jcxx.yyjcrq, jcxx.cjsj, jcxx.cjry, jcxx.sfjs, jcxx.jssj,yyxx.cskz1 yyxxcskz1,yyxx.dwmc,
+              jcxx.jsry, jcxx.syry, jcxx.sysj, jcxx.bgrq, jcxx.zt, jcxx.bz,jcxx.jcxmid,jcxx.jcxmmc,jcxx.cyd, hzxx.xm, hzxx.xb, hzxx.nl, jcxx.pt,
+	          hzxx.sj, hzxx.twjcz, hzxx.sfqr ,hzxx.zjlx,jcxx.jcdw, jcsj.csmc jcdwmc,jcxx.bbzbh,jcxx.fkbj,jcxx.wxid
+		from igams_fzjcxx jcxx
+        left join matridx_jcsj jcsj on jcsj.csid = jcxx.jcdw and jcsj.scbj = '0'
+		left join igams_hzxx hzxx on jcxx.hzid = hzxx.hzid and hzxx.scbj = '0' 
+		left join igams_yyxx yyxx on jcxx.sjdw=yyxx.dwid and yyxx.scbj = '0'
+		<where>
+		   hzxx.zjh = #{zjh} and jcxx.scbj = '0' and jcxx.cjsj is null
+		   and jcxx.yyjcrq &gt;= cast(to_char(now()::timestamp,'yyyyMMdd') as timestamp)
+		   and jcxx.jclx=#{jclx}
+		</where>
+		order by jcxx.yyjcrq asc
+		limit 1
+    </select>
+
+    <select id="getHzidByFzjcid" parameterType="String" resultType="String">
+        select fz.hzid from igams_fzjcxx fz where fz.fzjcid=#{fzjcid}
+    </select>
+
+    <select id="getOderDtoByFzjcid" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select jcxx.fzjcid, jcxx.hzid, jcxx.tw,jcxx.ks,jcxx.qtks,jcxx.sjdw,jcxx.sjdwmc, jcxx.ybbh, jcxx.nbbh, jcxx.yblx, jcxx.yyrq, jcxx.yyjcrq, jcxx.cjsj, jcxx.cjry, jcxx.sfjs, jcxx.jssj,yyxx.cskz1 yyxxcskz1,yyxx.dwmc,
+               jcxx.jsry, jcxx.syry, jcxx.sysj, jcxx.bgrq, jcxx.zt, jcxx.bz,jcxx.jcxmid,jcxx.jcxmmc,jcxx.cyd, hzxx.xm, hzxx.xb, hzxx.nl, jcxx.pt,
+               hzxx.sj, hzxx.twjcz, hzxx.sfqr ,hzxx.zjlx,jcxx.jcdw, jcsj.csmc jcdwmc,jcxx.bbzbh,jcxx.fkbj,jcxx.wxid
+        from igams_fzjcxx jcxx
+         left join matridx_jcsj jcsj on jcsj.csid = jcxx.jcdw and jcsj.scbj = '0'
+         left join igams_hzxx hzxx on jcxx.hzid = hzxx.hzid and hzxx.scbj = '0'
+         left join igams_yyxx yyxx on jcxx.sjdw=yyxx.dwid and yyxx.scbj = '0'
+       <where>
+           jcxx.fzjcid=#{fzjcid} and jcxx.scbj = '0' and jcxx.cjsj is null
+           and jcxx.yyjcrq &gt;= cast(to_char(now()::timestamp,'yyyyMMdd') as timestamp)
+       </where>
+    </select>
+
+    
+    <select id="beforeDayList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select jcxx.fzjcid, jcxx.hzid, jcxx.tw, jcxx.ybbh, jcxx.nbbh, jcxx.yblx, jcxx.yyrq, jcxx.yyjcrq, jcxx.ks,jcxx.qtks,jcxx.sjdw,jcxx.sjdwmc,yyxx.cskz1 yyxxcskz1,yyxx.dwmc,
+               jcxx.cjsj, jcxx.cjry, jcxx.sfjs, jcxx.jssj, jcxx.jsry, jcxx.sfsy, jcxx.syry, jcxx.sysj, jcxx.fkbj, jcxx.pt,
+               jcxx.bgrq, jcxx.zt, jcxx.bz,jcxx.jcxmid,jcxx.jcxmmc, hzxx.hzid,jcxx.cyd, hzxx.xm, hzxx.xb,jcxx.fkje,
+               hzxx.nl, hzxx.sj, hzxx.tw, hzxx.twjcz, hzxx.sfqr,jcxx.jcdw, jcsj.csmc jcdwmc,jcxx.bbzbh,jcxx.wxid
+		from igams_fzjcxx jcxx
+        left join matridx_jcsj jcsj on jcsj.csid = jcxx.jcdw and jcsj.scbj = '0'
+		left join igams_hzxx hzxx on jcxx.hzid = hzxx.hzid and hzxx.scbj = '0'
+		left join igams_yyxx yyxx on jcxx.sjdw=yyxx.dwid and yyxx.scbj = '0'
+		<where>
+            jcxx.scbj = '0' and jcxx.cjsj is null and jcxx.ybbh is null
+            <if test="zjh != null and zjh !=''">
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test="hzid != null and hzid != ''">
+                and hzxx.hzid = #{hzid}
+            </if>
+-- 		   and jcxx.yyjcrq  &lt;= cast(to_char(now()::timestamp,'yyyyMMdd') as timestamp)
+		</where>
+		order by jcxx.yyjcrq asc
+-- 		limit 3 OFFSET 0
+    </select>
+    
+    <select id="getxxBysfzhAndrq" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select jcxx.fzjcid, jcxx.hzid, jcxx.tw, jcxx.ybbh, jcxx.nbbh, jcxx.yblx, jcxx.yyrq, jcxx.yyjcrq, 
+               jcxx.cjsj, jcxx.cjry, jcxx.sfjs, jcxx.jssj, jcxx.jsry, jcxx.sfsy, jcxx.syry, jcxx.sysj, 
+               jcxx.bgrq, jcxx.zt, jcxx.bz,jcxx.jcxmid,jcxx.jcxmmc,jcxx.cyd, hzxx.hzid,  hzxx.xm, hzxx.xb, 
+               hzxx.nl, hzxx.sj, hzxx.tw, hzxx.twjcz, hzxx.sfqr,jcxx.bbzbh
+        from igams_fzjcxx jcxx
+        left join igams_hzxx hzxx on jcxx.hzid = hzxx.hzid and hzxx.scbj = '0'
+        <where>
+            hzxx.zjh = #{zjh} and jcxx.sfsy = '0' and jcxx.scbj = '0'
+            and jcxx.yyjcrq = #{yyjcrq} and jcxx.scbj='0'
+        </where>
+    </select>
+    
+    <!-- 生成分子检测的标本编号 -->
+    <select id="generateFzjcYbbh" parameterType="String" resultType="String">
+	    select lpad( CAST( (cast(coalesce( MAX( SUBSTRING(ybbh, LENGTH(ybbh)-4 )),'0')as numeric)+1) as VARCHAR ) ,7,'0') serial
+		from igams_fzjcxx
+		<where>
+		   ybbh like #{prefix}||'%'
+		</where>
+	</select>
+
+    <select id="generateFzjcBbzbh" parameterType="String" resultType="String">
+        select lpad( CAST( (cast(coalesce( MAX( SUBSTRING(bbzbh, LENGTH(bbzbh)-2 )),'0')as numeric)+1) as VARCHAR ) ,2,'0') serial
+        from igams_fzjcxx
+        <where>
+            bbzbh like #{prefix}||'%'
+        </where>
+    </select>
+	
+	<select id="getFjzcByJcid" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+	    select jcxx.hzid, jcxx.tw,jcxx.twjcz, jcxx.ybbh, jcxx.nbbh, jcxx.yblx, jcxx.yyrq, jcxx.yyjcrq, 
+               jcxx.cjsj, jcxx.cjry, jcxx.sfjs, jcxx.jssj, jcxx.jsry, jcxx.syry, jcxx.sysj, 
+               jcxx.bgrq, jcxx.zt, jcxx.bz,jcxx.jcxmid,jcxx.jcxmmc,jcxx.cyd,jcxx.bbzbh
+		from igams_fzjcxx jcxx
+		<where>
+		   fzjcid = #{fzjcid}
+		</where>
+	</select>
+
+    <!-- 更新分子检测信息表 -->
+    <update id="update" parameterType="FzjcxxModel">
+        update igams_fzjcxx
+        <set>
+            <if test="czbs != null and czbs != '' and czbs != '0'.toString ">
+                ,czbs=#{czbs}
+            </if>
+            <if test="orderno == '0'.toString and orderno != ''">
+                ,orderno= null
+            </if>
+            <if test="ptorderno == '1'.toString and ptorderno != ''">
+                ,ptorderno= null
+            </if>
+            <if test="sfje == '1'.toString and sfje != ''">
+                ,sfje = null
+            </if>
+            <if test="czbs == '0'.toString and czbs != ''">
+                ,czbs= null
+            </if>
+            <if test="zffs == '1'.toString and zffs != ''">
+                ,zffs= null
+            </if>
+            <if test="orderno != null and orderno != '' and orderno != '1'.toString ">
+                ,orderno=#{orderno}
+            </if>
+            <if test="imgurl != null and imgurl != ''">
+                ,imgurl=#{imgurl}
+            </if>
+            <if test="pdfurl != null and pdfurl != ''">
+                ,pdfurl=#{pdfurl}
+            </if>
+            <if test="kpbj != null and kpbj != ''">
+                ,kpbj=#{kpbj}
+            </if>
+            <if test="fphm != null and fphm != ''">
+                ,fphm=#{fphm}
+            </if>
+            <if test="tkcgrq != null and tkcgrq != ''">
+                ,tkcgrq=LOCALTIMESTAMP
+            </if>
+            <if test="refundno != null and refundno != ''">
+                ,refundno=#{refundno},tkrq = LOCALTIMESTAMP
+            </if>
+            <if test="zffs != null and zffs != '' and zffs != '1'.toString ">
+                ,zffs=#{zffs}
+            </if>
+            <if test="ptorderno != null and ptorderno != '' and ptorderno != '1'.toString ">
+                ,ptorderno=#{ptorderno}
+            </if>
+            <if test="sfje != null and sfje != '' and sfje != '1'.toString ">
+                ,sfje=cast(#{sfje} as numeric)
+            </if>
+            <if test="yyjcrq !=null and yyjcrq !=''">
+                ,yyjcrq=cast(#{yyjcrq} as TIMESTAMP)
+            </if>
+            <if test="fkbj != null and fkbj != ''">
+                ,fkbj=#{fkbj}
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                ,fkrq = LOCALTIMESTAMP
+            </if>
+            <if test="scbj != null and scbj != ''">
+                ,scbj = #{scbj},scsj = LOCALTIMESTAMP
+            </if>
+        </set>
+        <where>
+            fzjcid=#{fzjcid}
+        </where>
+    </update>
+
+
+    <update id="updateAliOrder" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            xgsj=LOCALTIMESTAMP
+            <if test="ptorderno != null and ptorderno != ''">
+                ,ptorderno=#{ptorderno}
+            </if>
+            <if test="sfje != null and sfje != ''">
+                ,sfje=cast(#{sfje} as numeric)
+            </if>
+            <if test="fkje != null and fkje != ''">
+                ,fkje=cast(#{fkje} as numeric)
+            </if>
+            <if test="fkbj != null and fkbj != ''">
+                ,fkbj=#{fkbj}
+            </if>
+            <if test="fkrq != null and fkrq != ''">
+                ,fkrq=cast(#{fkrq} as TIMESTAMP)
+            </if>
+        </set>
+        <where>
+            fzjcid=#{fzjcid}
+        </where>
+    </update>
+
+    <update id="updateList" parameterType="List">
+        with recursive t (fzjcid,fkbj,fkje,sfje,fkrq,ptorderno,xgsj) as (
+        select tmp.fzjcid,tmp.fkbj,tmp.fkje,tmp.sfje,tmp.fkrq,tmp.ptorderno,tmp.xgsj from
+        <foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+            select
+            #{item.fzjcid} fzjcid,#{item.fkbj} fkbj,cast(#{item.fkje} as NUMERIC ) fkje,cast(#{item.sfje} as NUMERIC ) sfje,#{item.ptorderno} ptorderno,cast(#{item.fkrq} as TIMESTAMP) fkrq,cast(#{item.xgsj} as TIMESTAMP) xgsj
+        </foreach>
+        left outer join igams_fzjcxx fzjc on fzjc.fzjcid = tmp.fzjcid
+        where fzjc.fzjcid is not null and ((fzjc.xgsj is null and tmp.xgsj > fzjc.lrsj )
+        or (fzjc.xgsj is not null and tmp.xgsj > fzjc.xgsj) )
+        )
+        update igams_fzjcxx fzjcxx set fkbj=(select fkbj from t where fzjcid=fzjcxx.fzjcid),
+        fkje=(select fkje from t where fzjcid=fzjcxx.fzjcid),sfje=(select sfje from t where fzjcid=fzjcxx.fzjcid),
+        ptorderno=(select ptorderno from t where fzjcid=fzjcxx.fzjcid),
+        fkrq=(select fkrq from t where fzjcid=fzjcxx.fzjcid),
+        xgsj=(select xgsj from t where fzjcid=fzjcxx.fzjcid)
+        where fzjcxx.fzjcid in (
+        select fzjcid from t
+        )
+    </update>
+    
+    <update id="updateConfirm" parameterType="FzjcxxDto">
+       	  update igams_fzjcxx
+	      <set>
+	       cjry=#{cjry},cjsj=cast(#{cjsj} as timestamp)
+	          <if test="ybbh != null and ybbh != ''">
+		         ,ybbh=#{ybbh}
+		      </if>
+              <if test="bbzbh != null and bbzbh != ''">
+                  ,bbzbh=#{bbzbh}
+              </if>
+              <if test="wybh != null and wybh != ''">
+                  ,wybh=#{wybh}
+              </if>
+		      <if test="nbbh != null and nbbh != ''">
+		         ,nbbh=#{nbbh}
+		      </if>
+		      <if test="tw != null and tw != ''">
+		         ,tw=#{tw}
+		      </if>
+		       <if test="yblx != null and yblx != ''">
+		         ,yblx=#{yblx}
+		      </if>
+		      <if test="yyjcrq != null and yyjcrq != ''">
+		         ,yyjcrq=cast(#{yyjcrq} as TIMESTAMP)
+		      </if>
+		      <if test="jcxmid != null and jcxmid != ''">
+		         ,jcxmid=#{jcxmid}
+		      </if>
+		      <if test="jcxmmc != null and jcxmmc != ''">
+		         ,jcxmmc=#{jcxmmc}
+		      </if>
+		      <if test="cyd != null and cyd != ''">
+		         ,cyd=#{cyd}
+		      </if>
+		      <if test="ks != null and ks != ''">
+	             ,ks=#{ks}
+              </if>
+              <if test="sjdw != null and sjdw != ''">
+                 ,sjdw=#{sjdw}
+              </if>
+              <if test="sjdwmc != null and sjdwmc != ''">
+                 ,sjdwmc=#{sjdwmc}
+              </if>
+              <if test="qtks != null and qtks != ''">
+                 ,qtks=#{qtks}
+              </if>
+              <if test="jcdw != null and jcdw != ''">
+                  ,jcdw=#{jcdw}
+              </if>
+              <if test="jcdxlx != null and jcdxlx != ''">
+                  ,jcdxlx=#{jcdxlx}
+              </if>
+	      </set>
+	      <where>
+	         fzjcid=#{fzjcid}
+	      </where>
+    </update>
+
+     <update id="saveEditCovid" parameterType="FzjcxxDto">
+       	  update igams_fzjcxx
+	      <set>
+          <if test="xgry != null and xgry != ''">
+             xgry=#{xgry}
+          </if>
+          <if test="xgsj != null and xgsj != ''">
+             ,xgsj=cast(#{xgsj} as TIMESTAMP )
+          </if>
+          <if test="tw != null and tw != ''">
+             ,tw=#{tw}
+          </if>
+          <if test="tw == null or tw == ''">
+                  ,tw=''
+          </if>
+          <if test="zffs != null and zffs != ''">
+              ,zffs=#{zffs}
+          </if>
+          <if test="zffs == null or zffs == ''">
+                  ,zffs=''
+          </if>
+          <if test="yblx != null and yblx != ''">
+             ,yblx=#{yblx}
+          </if>
+          <if test="yblx == null or yblx == ''">
+                  ,yblx=''
+          </if>
+          <if test="yblxmc != null and yblxmc != ''">
+             ,yblxmc=#{yblxmc}
+          </if>
+          <if test="yblxmc == null or yblxmc == ''">
+                  ,yblxmc=null
+          </if>
+	  <if test="yyjcrq != null and yyjcrq != ''">
+		  ,yyjcrq=cast(#{yyjcrq} as TIMESTAMP)
+          </if>
+          <if test="yyjcrq == null or yyjcrq == ''">
+                  ,yyjcrq = null
+          </if>
+          <if test="jcxmid != null and jcxmid != ''">
+             ,jcxmid=#{jcxmid}
+          </if>
+          <if test="jcxmid == null or jcxmid == ''">
+                  ,jcxmid = ''
+          </if>
+          <if test="jcxmmc != null and jcxmmc != ''">
+             ,jcxmmc=#{jcxmmc}
+          </if>
+          <if test="jcxmmc == null or jcxmmc == ''">
+                  ,jcxmmc = ''
+          </if>
+          <if test="cyd != null and cyd != ''">
+             ,cyd=#{cyd}
+          </if>
+          <if test="bbzt != null and bbzt != ''">
+              ,bbzt=#{bbzt}
+          </if>
+          <if test="bbzt == null or bbzt == ''">
+                  ,bbzt = ''
+          </if>
+          <if test="syh != null and syh != ''">
+              ,syh=#{syh}
+          </if>
+          <if test="ks != null and ks != ''">
+	         ,ks=#{ks}
+	      </if>
+          <if test="ks == null or ks == ''">
+                  ,ks = ''
+          </if>
+	      <if test="sjdw != null and sjdw != ''">
+	         ,sjdw=#{sjdw}
+	      </if>
+          <if test="sjdw == null or sjdw == ''">
+                  ,sjdw = ''
+          </if>
+	      <if test="sjdwmc != null and sjdwmc != ''">
+	         ,sjdwmc=#{sjdwmc}
+	      </if>
+          <if test="sjdwmc == null or sjdwmc == ''">
+                  ,sjdwmc = ''
+          </if>
+	      <if test="qtks != null and qtks != ''">
+	         ,qtks=#{qtks}
+	      </if>
+          <if test="qtks == null or qtks == ''">
+                  ,qtks = ''
+          </if>
+          <if test="jcdw != null and jcdw != ''">
+              ,jcdw=#{jcdw}
+          </if>
+          <if test="jcdw == null or jcdw == ''">
+                  ,jcdw = ''
+          </if>
+          <if test="cjsj != null and cjsj != ''">
+              ,cjsj=cast (#{cjsj} as timestamp )
+          </if>
+          <if test="cjsj == null or cjsj == ''">
+                  ,cjsj = null
+          </if>
+          <if test="jssj != null and jssj != ''">
+              ,jssj=cast (#{jssj} as timestamp )
+          </if>
+          <if test="jssj == null or jssj == ''">
+                  ,jssj = null
+          </if>
+          <if test="ybbh != null and ybbh != ''">
+              ,ybbh= #{ybbh}
+          </if>
+          <if test="ybbh == null or ybbh == ''">
+                  ,ybbh = null
+          </if>
+          <if test="bbzbh != null and bbzbh != ''">
+              ,bbzbh= #{bbzbh}
+          </if>
+	      <if test="bbzbh == null or bbzbh == ''">
+                  ,bbzbh = null
+          </if>
+          <if test="bz != null and bz != ''">
+              ,bz=#{bz}
+          </if>
+          <if test="bz == null or bz == ''">
+              ,bz=''
+          </if>
+          <if test="jcdxlx != null and jcdxlx != ''">
+              ,jcdxlx = #{jcdxlx}
+          </if>
+          <if test="ypmc != null and ypmc != ''">
+              ,ypmc = #{ypmc}
+          </if>
+          <if test="sccj != null and sccj != ''">
+              ,sccj = #{sccj}
+          </if>
+          <if test="scpc != null and scpc != ''">
+              ,scpc = #{scpc}
+          </if>
+          <if test="scrq != null and scrq != ''">
+              ,scrq=#{scrq}
+          </if>
+          <if test="scd != null and scd != ''">
+              ,scd = #{scd}
+          </if>
+          <if test="bgrq != null and bgrq != ''">
+              ,bgrq =cast(#{bgrq} as TIMESTAMP)
+          </if>
+          </set>
+	  <where>
+	     fzjcid=#{fzjcid}
+	  </where>
+    </update>
+    <!--修改预约日期-->
+    <update id="updateAppDate" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            <if test="xgry != null and xgry != ''">
+                xgry=#{xgry}
+            </if>
+            <if test="xgsj != null and xgsj != ''">
+                ,xgsj=cast(#{xgsj} as TIMESTAMP )
+            </if>
+            <if test="yyjcrq != null and yyjcrq != ''">
+                ,yyjcrq=cast(#{yyjcrq} as TIMESTAMP)
+            </if>
+        </set>
+        <where>
+            fzjcid=#{fzjcid}
+        </where>
+    </update>
+    <insert id="insertDto" parameterType="FzjcxxDto">
+         insert into igams_fzjcxx (fzjcid
+         <if test="hzid != null and hzid != ''">
+             ,hzid
+         </if>	 
+         <if test="tw != null and tw != ''">
+             ,tw
+         </if>	 
+         <if test="ybbh != null and ybbh != ''">
+             ,ybbh
+         </if>
+         <if test="bbzbh != null and bbzbh != ''">
+            ,bbzbh
+         </if>
+         <if test="wybh != null and wybh != ''">
+            ,wybh
+         </if>
+         <if test="nbbh != null and nbbh != ''">
+             ,nbbh
+         </if>	 
+         <if test="yblx != null and yblx != ''">
+             ,yblx
+         </if>
+         <if test="yblxmc != null and yblxmc != ''">
+             ,yblxmc
+         </if>
+         <if test="yblxmc == null and yblxmc == ''">
+             ,yblxmc
+         </if>
+         <if test="yyrq != null and yyrq != ''">
+             ,yyrq
+         </if>	 
+         <if test="yyjcrq != null and yyjcrq != ''">
+             ,yyjcrq
+         </if>	
+         <if test="jcxmid != null and jcxmid != ''">
+	         ,jcxmid
+	     </if>
+	     <if test="jcxmmc != null and jcxmmc != ''">
+	         ,jcxmmc
+	     </if>
+	     <if test="cyd != null and cyd != ''">
+	         ,cyd
+	     </if>
+	     <if test="ks != null and ks != ''">
+	         ,ks
+	     </if>
+	     <if test="sjdw != null and sjdw != ''">
+	         ,sjdw
+	     </if>
+	     <if test="sjdwmc != null and sjdwmc != ''">
+	         ,sjdwmc
+	     </if>
+	     <if test="qtks != null and qtks != ''">
+	         ,qtks
+	     </if>
+         <if test="jcdw != null and jcdw != ''">
+             ,jcdw
+         </if>
+         <if test="jcdxlx != null and jcdxlx != ''">
+            ,jcdxlx
+         </if>
+         <if test="ypmc != null and ypmc != ''">
+            ,ypmc
+         </if>
+         <if test="sccj != null and sccj != ''">
+            ,sccj
+         </if>
+         <if test="scpc != null and scpc != ''">
+            ,scpc
+         </if>
+	     <if test="fkje != null and fkje != ''">
+            ,fkje
+         </if>
+<!--         <if test="bbzt != null and bbzt != ''">-->
+<!--            ,bbzt-->
+<!--         </if>-->
+         <if test="zffs != null and zffs != ''">
+            ,zffs
+         </if>
+         <if test="scd != null and scd != ''">
+            ,scd
+         </if>
+        <if test="scrq != null and scrq != ''">
+            ,scrq
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="cjsj != null and cjsj != ''">
+            ,cjsj
+        </if>
+        <if test="bgrq != null and bgrq != ''">
+            ,bgrq
+        </if>
+         ,jclx,lrry,lrsj,scbj,cjry,zt,fkbj,kpbj) values(#{fzjcid}
+	     <if test="hzid != null and hzid != ''">
+             ,#{hzid}
+         </if>	 
+         <if test="tw != null and tw != ''">
+             ,#{tw}
+         </if>	 
+         <if test="ybbh != null and ybbh != ''">
+             ,#{ybbh}
+         </if>
+         <if test="bbzbh != null and bbzbh != ''">
+            ,#{bbzbh}
+         </if>
+         <if test="wybh != null and wybh != ''">
+            ,#{wybh}
+         </if>
+         <if test="nbbh != null and nbbh != ''">
+             ,#{nbbh}
+         </if>	 
+         <if test="yblx != null and yblx != ''">
+             ,#{yblx}
+         </if>
+        <if test="yblxmc != null and yblxmc != ''">
+            ,#{yblxmc}
+        </if>
+        <if test="yblxmc == null and yblxmc == ''">
+            ,null
+        </if>
+         <if test="yyrq != null and yyrq != ''">
+             ,cast(#{yyrq} as TIMESTAMP)
+         </if>	 
+         <if test="yyjcrq != null and yyjcrq != ''">
+             ,cast(#{yyjcrq} as TIMESTAMP)
+         </if>	
+         <if test="jcxmid != null and jcxmid != ''">
+	         ,#{jcxmid}
+	      </if> 
+	      <if test="jcxmmc != null and jcxmmc != ''">
+	         ,#{jcxmmc}
+	      </if>	
+	      <if test="cyd != null and cyd != ''">
+	         ,#{cyd}
+	      </if> 
+	      <if test="ks != null and ks != ''">
+	         ,#{ks}
+	      </if>	
+	      <if test="sjdw != null and sjdw != ''">
+	         ,#{sjdw}
+	      </if>	
+	      <if test="sjdwmc != null and sjdwmc != ''">
+	         ,#{sjdwmc}
+	      </if>	
+	      <if test="qtks != null and qtks != ''">
+	         ,#{qtks}
+	      </if>
+          <if test="jcdw != null and jcdw != ''">
+            ,#{jcdw}
+          </if>
+          <if test="jcdxlx != null and jcdxlx != ''">
+            ,#{jcdxlx}
+          </if>
+          <if test="ypmc != null and ypmc != ''">
+            ,#{ypmc}
+          </if>
+          <if test="sccj != null and sccj != ''">
+            ,#{sccj}
+          </if>
+          <if test="scpc != null and scpc != ''">
+            ,#{scpc}
+          </if>
+          <if test="fkje != null and fkje != ''">
+             ,cast(#{fkje} as numeric)
+          </if>
+<!--          <if test="bbzt != null and bbzt != ''">-->
+<!--            ,#{bbzt}-->
+<!--          </if>-->
+          <if test="zffs != null and zffs != ''">
+            ,#{zffs}
+          </if>
+          <if test="scd != null and scd != ''">
+            ,#{scd}
+          </if>
+        <if test="scrq != null and scrq != ''">
+            ,#{scrq}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="cjsj != null and cjsj != ''">
+            ,cast(#{cjsj} as timestamp )
+        </if>
+        <if test="bgrq != null and bgrq != ''">
+            ,cast(#{bgrq} as timestamp )
+        </if>
+        ,#{jclx},#{lrry},LOCALTIMESTAMP,'0',#{cjry}, '00','0','0' )
+    </insert>
+    <!--更新申请的状态信息-->
+    <update id="updateZt" parameterType="FzjcxxDto">
+        update igams_fzjcxx set
+        xgry = #{xgry},xgsj = LOCALTIMESTAMP
+        <if test="zt !=null and zt !=''">
+            ,zt = #{zt}
+        </if>
+        where fzjcid = #{fzjcid}
+    </update>
+
+    <select id="getPagedAuditIdList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.lrsj,fzjcxx.ybbh,jczxm_jcsj.csmc jczxmmc,fzjcxx.syh
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="zt !=null and zt !=''">
+                and fzjcxx.zt = #{zt}
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAuditListByIds" parameterType="List" resultType="FzjcxxDto">
+        select hzxx.xm, case hzxx.xb
+        WHEN '1' THEN
+        '男'
+        WHEN '2' THEN
+        '女' ELSE''
+        END xb,fzjcxx.bbzbh,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid,fzjcxx.jcxmmc,fzjcxx.hzid,fzjcxx.syh,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd') cjsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd') sysj, case when yblx_jcsj.cskz1='1' then fzjcxx.yblxmc else yblx_jcsj.csmc end yblx,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq, xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc, fzjcxx.zffs,
+        fzjcxx.jcxmmc,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shyj,jczxm_jcsj.csmc jczxmmc,jcsj_jcdx.csdm jcdxcsdm
+        from igams_fzjcxx fzjcxx
+        join
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.fzjcid} fzjcid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach>
+        tmp on tmp.fzjcid = fzjcxx.fzjcid
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+	left join igams_yyxx xx on xx.dwid = fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.fzjcid in
+            <foreach collection="list" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item.fzjcid}
+            </foreach>
+        </where>
+        order by tmp.rownum
+    </select>
+
+    <select id="generateReport" parameterType="FzjcxxDto" resultType="Map">
+	 	select fzjcxx.ybbh,hzxx.zjh,hzxx.xm as hzxm,case when jc_yblx.cskz1='1'then fzjcxx.yblxmc else jc_yblx.csmc end AS yblxmc,hzxx.xb,hzxx.nl,hzxx.sj as lxdh,to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+			to_char(fzjcxx.bgrq,'yyyy-mm-dd HH24:mi') bgrq,jc_jcdw.csmc as jcdwmc,fjcfb.wjlj,fzjcxx.fzjcid,fzjcxx.wxid,fzjcxx.bbzbh,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scd,fzjcxx.scpc, fzjcxx.ypmc, case when xx.cskz1 = '1' then fzjcxx.sjdwmc else xx.dwmc end as dwmc,fzjcxx.bz
+	 	from igams_fzjcxx fzjcxx
+			left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid and hzxx.scbj!='1'
+			left join matridx_jcsj jc_yblx on jc_yblx.csid=fzjcxx.yblx and jc_yblx.scbj!='1'
+			left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid=fzjcxx.fzjcid
+			left join matridx_jcsj jc_xm on jc_xm.csid=fzjcxm.fzjcxmid and jc_xm.scbj!='1'
+			left join matridx_fjcfb fjcfb on fjcfb.ywid=jc_xm.csid and fjcfb.ywlx=#{ywlx}
+			left join matridx_jcsj jc_jcdw on jc_jcdw.csid=fzjcxx.jcdw and jc_jcdw.scbj!='1'
+            left join igams_yyxx xx on xx.dwid = fzjcxx.sjdw and xx.scbj!='1'
+			<where>
+				fzjcxm.fzxmid=#{fzxmid}
+				<if test="fzjcid != null and fzjcid != ''">
+					and  fzjcxx.fzjcid=#{fzjcid}
+				</if>
+			</where>
+	 </select>
+	 <select id="generateReportList" parameterType="FzjcxxDto" resultType="Map">
+         select fzjcxx.ybbh,hzxx.zjh,CASE WHEN (jcsj_zjlx.cskz1 is not null and jcsj_zjlx.cskz1 !='') THEN jcsj_zjlx.cskz1 WHEN (jcsj_zjlx.csmc is not null and jcsj_zjlx.csmc !='') THEN jcsj_zjlx.csmc ELSE '证件号' END zjlx,hzxx.xm as xm,case when jc_yblx.cskz1='1'then fzjcxx.yblxmc else jc_yblx.csmc end AS yblxmc
+                ,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,hzxx.nl,hzxx.sj as lxdh,to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+                to_char(fzjcxx.bgrq,'yyyy-mm-dd HH24:mi') bgrq,jc_jcdw.csmc as jcdwmc,fjcfb.wjlj,fzjcxx.fzjcid,jc_xm.csmc as xmmc,jc_jg.csmc as jcjg,jc_xm.cskz1 as xmjc,
+                case dwxx.kzcs when '1' then fzjcxx.qtks else dwxx.dwmc end sjksmc,yyxx.dwmc as sjdwmc,jcsj_ybzt.csmc as bbztmc,fzjcxx.wxid,hzxx.xm,fzjcxx.cjsj,fzjcxx.bbzbh,
+                jc_xm.cskz3 xmmcyw,jc_jg.cskz2 jgmcyw,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scd,fzjcxx.scpc, fzjcxx.scrq,fzjcxx.bz
+         from igams_fzjcxx fzjcxx
+            left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid and hzxx.scbj!='1'
+            left join matridx_jcsj jc_yblx on jc_yblx.csid=fzjcxx.yblx and jc_yblx.scbj!='1'
+            left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid=fzjcxx.fzjcid
+            left join matridx_jcsj jc_xm on jc_xm.csid=fzjcxm.fzjcxmid and jc_xm.scbj!='1'
+            left join matridx_fjcfb fjcfb on fjcfb.ywid=jc_xm.csid and fjcfb.ywlx = #{ywlx}
+            left join matridx_jcsj jc_jcdw on jc_jcdw.csid=fzjcxx.jcdw and jc_jcdw.scbj!='1'
+            left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzxmid
+            left join matridx_jcsj jc_jg on jc_jg.csid=fzjcjg.jcjg
+            left join igams_sjdwxx dwxx on dwxx.dwid=fzjcxx.ks and dwxx.scbj!='1'
+            left join igams_yyxx yyxx on yyxx.dwid=fzjcxx.sjdw and yyxx.scbj!='1'
+            left join matridx_jcsj jcsj_ybzt on jcsj_ybzt.csid=fzjcxx.bbzt and jcsj_ybzt.scbj!='1'
+            left join matridx_jcsj jcsj_zjlx on jcsj_zjlx.csid=hzxx.zjlx and jcsj_zjlx.scbj != '1'
+         where fzjcxm.fzjcid=#{fzjcid}
+   	</select>
+	<select id="bgrqDetails" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+	        select fzjcxx.bgrq
+	        from igams_fzjcxx  fzjcxx
+	                 left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+	        where fzjcxx.scbj!='1'and fzjcxx.hzid=#{hzid}
+	</select>
+	
+	 <!--新增预约信息到分子检测信息表-->
+    <insert id="insertDetectionAppointmentFzjcxx" parameterType="FzjcxxDto">
+        insert into igams_fzjcxx(hzid
+        <if test="wxid !=null and wxid !=''">
+            ,wxid
+        </if>
+        <if test="fzjcid !=null and fzjcid !=''">
+            ,fzjcid
+        </if>
+        <if test="yyjcrq !=null and yyjcrq !=''">
+            ,yyjcrq
+        </if>
+        <if test="jcxmmc !=null and jcxmmc !=''">
+            ,jcxmmc
+        </if>
+        <if test="jcxmid !=null and jcxmid !=''">
+            ,jcxmid
+        </if>
+        <if test="cyd !=null and cyd !=''">
+            ,cyd
+        </if>
+        <if test="fkje !=null and fkje !=''">
+            ,fkje
+        </if>
+        <if test="sjdw != null and sjdw != ''">
+            ,sjdw
+        </if>
+        <if test="sjdwmc != null and sjdwmc != ''">
+            ,sjdwmc
+        </if>
+        <if test="pt != null and pt != ''">
+            ,pt
+        </if>
+        ,yyrq,lrry
+        <if test="jcdxlx != null and jcdxlx != ''">
+            ,jcdxlx
+        </if>,lrsj,scbj,zt,fkbj,kpbj)values(#{hzid}
+        <if test="wxid !=null and wxid !=''">
+            ,#{wxid}
+        </if>
+        <if test="fzjcid !=null and fzjcid !=''">
+            ,#{fzjcid}
+        </if>
+        <if test="yyjcrq !=null and yyjcrq !=''">
+            ,cast(#{yyjcrq} as TIMESTAMP)
+        </if>
+        <if test="jcxmmc !=null and jcxmmc !=''">
+            ,#{jcxmmc}
+        </if>
+        <if test="jcxmid !=null and jcxmid !=''">
+            ,#{jcxmid}
+        </if>
+        <if test="cyd !=null and cyd !=''">
+            ,#{cyd}
+        </if>
+        <if test="fkje !=null and fkje !=''">
+            ,cast(#{fkje} as numeric)
+        </if>
+        <if test="sjdw != null and sjdw != ''">
+            ,#{sjdw}
+        </if>
+        <if test="sjdwmc != null and sjdwmc != ''">
+            ,#{sjdwmc}
+        </if>
+        <if test="pt != null and pt != ''">
+            ,#{pt}
+        </if>
+        ,cast(#{lrsj} as TIMESTAMP)
+        <if test="lrry != null and lrry != ''">
+            ,#{lrry}
+        </if>
+        <if test="lrry == null or lrry == ''">
+            ,#{wxid}
+        </if>
+        <if test="jcdxlx != null and jcdxlx != ''">
+            ,#{jcdxlx}
+        </if>,cast(#{lrsj} as TIMESTAMP),'0','00','0','0')
+    </insert>
+    <!--修改预约信息-->
+    <update id="updateDetectionAppointmentFzjcxx" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+	    <set>
+            <if test="xgry !=null and xgry !=''">
+                ,xgry=#{xgry}
+            </if>
+            <if test="xgry == null or xgry == ''">
+                ,xgry=#{wxid}
+            </if>
+            <if test="wxid !=null and wxid !=''">
+                ,wxid=#{wxid}
+            </if>
+            <if test="hzid !=null and hzid !=''">
+                ,hzid=#{hzid}
+            </if>
+            <if test="yyjcrq !=null and yyjcrq !=''">
+                ,yyjcrq=cast(#{yyjcrq} as TIMESTAMP)
+            </if>
+            <if test="jcxmmc !=null and jcxmmc !=''">
+                ,jcxmmc=#{jcxmmc}
+            </if>
+            <if test="jcxmid !=null and jcxmid !=''">
+		        ,jcxmid=#{jcxmid}
+            </if>
+            <if test="cyd !=null and cyd !=''">
+		        ,cyd=#{cyd}
+            </if>
+            ,yyrq= cast(#{xgsj} as TIMESTAMP),
+            xgsj = cast(#{xgsj} as TIMESTAMP)
+        </set>
+        <where>
+            fzjcid = #{fzjcid}
+	</where>
+    </update>
+
+    <!--取消预约-->
+    <update id="cancelDetectionAppointment">
+        update igams_fzjcxx
+        <set>
+            scbj='2',
+            scry = #{wxid},
+            <if test="fkbj !=null and fkbj !=''">
+                fkbj=#{fkbj},
+            </if>
+            scsj = cast(#{scsj} as TIMESTAMP)
+        </set>
+        <where>
+            fzjcid = #{fzjcid}
+        </where>
+    </update>
+
+    <!-- 根据送检ids判断所选数据检测项目是否相同 -->
+    <select id="checkJcxm" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select jcxmmc
+        from igams_fzjcxx
+        <where>
+            scbj!='1'
+            and fzjcid in
+            <foreach collection="ids" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        group by jcxmmc
+	</select>
+    <!--更新实验状态-->
+    <update id="updateSyzt">
+        update igams_fzjcxx
+        <set>
+            sfsy=#{sfsy},
+            sysj = cast(#{sysj} as timestamp),
+            syry=#{syry}
+        </set>
+        <where>
+             fzjcid in
+	     <foreach collection="ids" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    
+    <update id="UpdateSfqrById" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            qrry=#{qrry},qrsj = cast( #{qrsj} as timestamp )
+        </set>
+        <where>
+             fzjcid = #{fzjcid}
+        </where>
+    </update>
+
+    <update id="UpdateSfqrByYbbh" parameterType="FzjcxxDto">
+        update igams_fzjcxx
+        <set>
+            qrry=#{qrry},qrsj = cast( #{qrsj} as timestamp )
+        </set>
+        <where>
+            ybbh like #{ybbh}
+            <if test="jclx !=null and jclx !=''">
+                and jclx=#{jclx}
+            </if>
+        </where>
+    </update>
+
+    <select id="getHistoryList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select  to_char(fzjcxx.sysj,'yyyy-mm-dd') sysj,jcjg_jcsj.csmc jcjg,jcsj.csmc jcxm,jcsj_jcdw.csmc jcdw,to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.bbzbh
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid=fzjcxx.fzjcid
+        left join igams_fzjcjg fzjcjg on fzjcxm.fzxmid=fzjcjg.fzxmid
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid=fzjcjg.jcjg
+        left join matridx_jcsj jcsj on fzjcxm.fzjcxmid=jcsj.csid
+        left join matridx_jcsj jcsj_jcdw on fzjcxx.jcdw=jcsj_jcdw.csid
+        <where>
+            fzjcxx.fzjcid!=#{fzjcid} and fzjcxx.scbj!='1' and fzjcxx.zt='80' and fzjcxx.bgrq is not null
+            <if test="hzid !=null and hzid !=''">
+                and fzjcxx.hzid=#{hzid}
+            </if>
+            <if test="xm !=null and xm !=''">
+                and hzxx.xm=#{xm}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and fzjcxm.fzjcxmid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jclx !=null and jclx !=''">
+                and fzjcxx.jclx=#{jclx}
+            </if>
+        </where>
+        order by fzjcxx.sysj DESC
+    </select>
+    
+    <select id="getSjdw" resultType="Map">
+		select 
+			i.dwid,i.xh,i.fdwid,i.dwdm,i.dwmc,i.dh,i.lrry,i.lrsj,i.xgry,i.xgsj,i.scry,i.scsj,i.scbj,COALESCE (i.kzcs,'')kzcs
+		from
+			igams_sjdwxx i
+		where 
+			i.scbj !='1'
+		</select>
+    <select id="getReport" parameterType="FjcfbDto" resultType="FjcfbDto">
+        select wjm,fjid
+        from matridx_fjcfb
+        <where>
+            scbj!='1' and ywid=#{ywid}
+            <if test="ywlx != null and ywlx != ''">
+                and ywlx=#{ywlx}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+       SELECT jc.fzjcid,jc.hzid,jc.tw,jc.ybbh,jc.nbbh,jc.yblx,jc.bbzt,to_char(jc.jssj,'yyyy-mm-dd HH24:mi:ss')jssj,
+	    to_char( jc.yyrq, 'yyyy-mm-dd')yyrq,jc.yyjcrq,
+        to_char( jc.cjsj, 'yyyy-mm-dd HH24:mi:ss')cjsj,jc.pdfurl, jc.jcdxlx, jc.ypmc, jc.sccj, jc.scpc, jc.scd,
+	    jc.jcxmid,jc.jcxmmc,jc.cyd,jc.jcdw,jc.ks,jc.sjdw,jc.sjdwmc,jc.qtks,xx.dwmc,jc.imgurl,jc.yblxmc,
+        case when yblx_jcsj.cskz1='1'then jc.yblxmc else yblx_jcsj.csmc end AS yblxmc,
+        xx.cskz1 yyxxcskz1,jc.bgrq,jc.zt,jc.syh,hz.xm,jc.bbzbh,jc.zffs,jc.sysj,jc.sfsy,jc.fkbj,jc.orderno,jc.fphm,hz.zjh,jc.pt,hz.sj,jcsj_zjlx.csdm zjlxdm,
+        jcsj_jcdxlx.csdm jcdxcsdm,jc.scrq, jc.bz,jc.jcjgmc
+        from igams_fzjcxx jc
+        left join igams_yyxx xx on xx.dwid=jc.sjdw
+        left join igams_hzxx hz on hz.hzid=jc.hzid and hz.scbj='0'
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=jc.yblx and yblx_jcsj.scbj='0'
+        left join matridx_jcsj jcsj_zjlx on jcsj_zjlx.csid = hz.zjlx and jcsj_zjlx.scbj='0'
+        left join matridx_jcsj jcsj_jcdxlx on jcsj_jcdxlx.csid=jc.jcdxlx and jcsj_jcdxlx.scbj='0'
+        <where>
+            jc.scbj!='1' and  jc.fzjcid=#{fzjcid}
+        </where>
+    </select>
+
+    <select id="getFzjcxxDto" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        SELECT jc.fzjcid,jc.hzid,jc.tw,jc.ybbh,jc.nbbh,jc.yblx,jc.bbzt,to_char(jc.jssj,'yyyy-mm-dd HH24:mi:ss')jssj,
+        to_char( jc.yyrq, 'yyyy-mm-dd')yyrq,jc.yyjcrq,
+        to_char( jc.cjsj, 'yyyy-mm-dd HH24:mi:ss')cjsj,jc.pdfurl, jc.jcdxlx, jc.ypmc, jc.sccj, jc.scpc, jc.scd,
+        jc.jcxmid,jc.jcxmmc,jc.cyd,jc.jcdw,jc.ks,jc.sjdw,jc.sjdwmc,jc.qtks,xx.dwmc,jc.imgurl,jc.yblxmc,
+        case when yblx_jcsj.cskz1='1'then jc.yblxmc else yblx_jcsj.csmc end AS yblxmc,
+        xx.cskz1 yyxxcskz1,jc.bgrq,jc.zt,jc.syh,hz.xm,jc.bbzbh,jc.zffs,jc.sysj,jc.sfsy,jc.fkbj,jc.orderno,jc.fphm,hz.zjh,jc.pt,hz.sj,jcsj_zjlx.csdm zjlxdm,
+        jcsj_jcdxlx.csdm jcdxcsdm,jc.scrq, jc.bz
+        from igams_fzjcxx jc
+        left join igams_yyxx xx on xx.dwid=jc.sjdw
+        left join igams_hzxx hz on hz.hzid=jc.hzid and hz.scbj='0'
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=jc.yblx and yblx_jcsj.scbj='0'
+        left join matridx_jcsj jcsj_zjlx on jcsj_zjlx.csid = hz.zjlx and jcsj_zjlx.scbj='0'
+        left join matridx_jcsj jcsj_jcdxlx on jcsj_jcdxlx.csid=jc.jcdxlx and jcsj_jcdxlx.scbj='0'
+        <where>
+            jc.scbj='0' and  jc.fzjcid=#{fzjcid} and jc.jclx=#{jclx}
+        </where>
+    </select>
+
+    <update id="updateBgrq" parameterType="FzjcxxDto">
+        update igams_fzjcxx set bgrq=cast(#{bgrq} as timestamp)
+        where fzjcid =#{fzjcid}
+    </update>
+
+    <!--显示接受最近两天内的需要进行实验的-->
+    <!--/*jcxx.sfsy = '1' and to_char(jcxx.jssj,'YYYY-MM-DD') >=#{jssj} and jcxx.sfjs = '1' and*/
+       1未接收 （是否接收字段为0或者null的）
+       2已接收未实验 （是否接收字段为1 and 是否实验字段为0或者null的 ）
+       3已实验未发送报告 （是否实验字段为1并且实验时间小于当前时间 and 报告日期为null的或者报告日期大于当前日期）
+       6已出报告未交付
+    -->
+    <select id="getPagedDetectlab" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select jcxx.syry, syry_xtyh.zsxm syrymc, hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, hzxx.hzid,
+            jcxx.sjdw, xx.cskz1, jcxx.sjdwmc, xx.dwmc || CASE WHEN xx.cskz1 = '1' THEN '--' || jcxx.sjdwmc ELSE '' END AS dwmc,
+            hzxx.xm, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE'' END xb,hzxx.nl,jcxx.tw,jcxx.ybbh,jcxx.fzjcid, jcxx.zffs,
+            to_char(jcxx.fssj,'yyyy-mm-dd HH24:mi') fssj, jcxx.fsbj, jcxx.yyjcrq ,jcxx.ypmc, jcxx.sccj, jcxx.scpc, jcxx.scd,
+            to_char(jcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+            to_char(jcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj, to_char(jcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+            to_char(jcxx.sysj,'yyyy-mm-dd HH24:mi') sysj, to_char(jcxx.bgrq,'yyyy-mm-dd') bgrq,jcxx.zt,
+            jcxx.jy,jcxx.bz,jcxx.jcxmmc,yblx_jcsj.csmc yblx,jcxx.nbbh,jcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc, sfjs,sfsy,
+            case jcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,   case jcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+            jcxx.syh, to_char(jcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,jcxx.bbzbh, jcxx.scbj,jczxm_jcsj.csmc jczxmmc,jcsj_jcdx.csdm jcdxcsdm,
+            cjry_xtyh.zsxm cjrymc,jcsj_cyd.csmc cydmc
+        from igams_fzjcxx jcxx
+        left join igams_hzxx hzxx on hzxx.hzid=jcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=jcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=jcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=jcxx.syry
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid=jcxx.cjry
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = jcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = jcxx.jcdxlx
+        left join matridx_jcsj jcsj_cyd on jcsj_cyd.csid = jcxx.cyd
+        LEFT JOIN igams_yyxx xx ON xx.dwid = jcxx.sjdw
+        <where>
+            jcxx.scbj!='1'
+            <if test="ybbh != null and ybbh != ''">
+                and jcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and jcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry_xtyh.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="syhstart != null and syhstart != ''">
+                and jcxx.syh  &gt;=#{syhstart}
+            </if>
+            <if test="syhend != null and syhend != ''">
+                and jcxx.syh  &lt;=#{syhend}
+            </if>
+            <if test="yyjcrqstart != null and yyjcrqstart != ''">
+                and to_char(jcxx.yyjcrq,'yyyy-mm-dd') &gt;= #{yyjcrqstart}
+            </if>
+            <if test="yyjcrqend != null and yyjcrqend != ''">
+                and to_char(jcxx.yyjcrq,'yyyy-mm-dd') &lt;= #{yyjcrqend}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and jcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="xm != null and xm != ''">
+                and hzxx.xm like '%'||#{xm}||'%'
+            </if>
+            <if test=" flag=='1'.toString() ">
+                and jcxx.yyjcrq &gt;= CURRENT_DATE and jcxx.cjsj is null and (jcxx.sfjs is null or jcxx.sfjs = '0') and jcxx.scbj='0'
+            </if>
+            <if test=" flag=='2'.toString() ">
+                and (  jcxx.sfjs = '1' and ( jcxx.sfsy is null or jcxx.sfsy = '0' )  and jcxx.scbj='0'  )
+            </if>
+            <if test=" flag=='3'.toString() ">
+                and ( jcxx.sfsy = '1' and jcxx.sysj &lt;LOCALTIMESTAMP and (jcxx.bgrq is null or jcxx.bgrq &gt;LOCALTIMESTAMP) and jcxx.scbj='0' )
+            </if>
+            <if test=" flag=='4'.toString() ">
+                and jcxx.cjsj is not null and (jcxx.sfjs is null or jcxx.sfjs ='0') and jcxx.scbj='0'
+            </if>
+            <if test=" flag=='5'.toString() ">
+                and ((jcxx.yyjcrq &lt; CURRENT_DATE and jcxx.cjsj is null) or jcxx.scbj='2')
+            </if>
+            <if test=" flag=='6'.toString() ">
+                and ( jcxx.bgrq is not null and (jcxx.sfjf ='0' or jcxx.sfjf is null) )
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and jcxx.jclx= #{jclx}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,fzjcxx.nbbh,fzjcxx.syh,
+               hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,to_char(fzjcxx.cjsj,'yyyy-MM-dd HH24:mi') cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc,fzjcxx.jy,fzjcxx.bbzbh,jcsj_jcdx.csdm jcdxcsdm
+        from igams_fzjcxx fzjcxx
+                 left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+                 left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+                 left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+                 left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1' and fzjcid in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx= #{jclx}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateJcjg" parameterType="FzjcxxDto">
+        update igams_fzjcxx set jcjgmc=#{jcjgmc} where fzjcid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+             #{item}
+        </foreach>
+    </update>
+    
+      <select id="greatReport" parameterType="FzjcxxDto" resultType="Map">
+         select fzjcxx.ybbh,fzjcxx.xm,fzjcxx.nl,fzjcxx.lxdh,fzjcxx.sjys,fzjcxx.ch,
+            case fzjcxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb,to_char(fzjcxx.cjsj,'YYYY-MM-DD') cjsj,
+            to_char(fzjcxx.jssj,'YYYY-MM-DD') jssj,to_char(fzjcxx.bgrq,'YYYY-MM-DD') bgrq,jc_jcdw.csmc as jcdwmc,fjcfb.wjlj,jc_xm.csmc as xmmc,
+            jc_xm.cskz1 as xmjc,case dwxx.kzcs when '1' then fzjcxx.qtks else dwxx.dwmc end sjksmc,jc_ybzt.csmc as ybztmc,
+            case when jc_yblx.cskz1='1'then fzjcxx.yblxmc else jc_yblx.csmc end AS yblxmc,
+            COALESCE(fzjcxx.mz,fzjcxx.zyh) as inpatient,fzjcxx.bbzbh
+            from igams_fzjcxx fzjcxx
+            left join matridx_jcsj jc_yblx on jc_yblx.csid=fzjcxx.yblx and jc_yblx.scbj!='1'
+            left join igams_fzjcxm fzjcxm on fzjcxm.fzjcid=fzjcxx.fzjcid
+            left join matridx_jcsj jc_xm on jc_xm.csid=fzjcxm.fzjcxmid and jc_xm.scbj!='1'
+            left join matridx_fjcfb fjcfb on fjcfb.ywid=jc_xm.csid
+            left join matridx_jcsj jc_jcdw on jc_jcdw.csid=fzjcxx.jcdw and jc_jcdw.scbj!='1'
+            left join matridx_jcsj jc_ybzt on jc_ybzt.csid = fzjcxx.bbzt
+            left join igams_sjdwxx dwxx on dwxx.dwid=fzjcxx.ks and dwxx.scbj!='1'
+            <where>
+                fzjcxm.fzxmid=#{fzxmid}
+                <if test="nl != null and nl != ''">
+                    and  fzjcxx.fzjcid=#{fzjcid}
+                </if> 
+            </where>
+     </select>
+     
+     <select id="greatReportList" parameterType="String" resultType="Map">
+         select jc_jcjg.csmc as xmjgmc,jc_jcjg.cskz1 as xmjgjc,jc_bgjg.csmc as bgjgmc
+            from igams_fzjcxm fzjcxm
+            left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzxmid
+            left join matridx_jcsj jc_jcjg on jc_jcjg.csid=fzjcjg.jcjg
+            left join matridx_jcsj jc_bgjg on jc_bgjg.csid=fzjcjg.bgjg
+            <where>
+                 fzjcxm.fzjcid=#{fzjcid}
+            </where>
+     </select>
+
+    <select id="getFzjcxxListByYwids" parameterType="ShgcDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid, fzjcxx.yblx, jcsj_yblx.csmc ybmc, to_char(fzjcxx.cjsj,'yyyyMMddHH24miss') cjsj, to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyyMMddHH24miss') sqdsj
+               , fzjcxx.cjry, xtyh_cjry.zsxm cjrymc
+               , fzjcxx.sfjs, to_char(fzjcxx.jssj,'yyyyMMddHH24miss') jssj, fzjcxx.jsry, xtyh_jsry.zsxm jsrymc, fzjcxx.syry
+               , to_char(fzjcxx.sysj,'yyyyMMddHH24miss') sysj, xtyh_syry.zsxm syrymc, fzjcxx.jcjgmc, fzjcxx.jcxmmc, fzjcxx.syh
+               , to_char(fzjcxx.bgrq,'yyyyMMddHH24miss') bgrq, hzxx.hzid, hzxx.xm, hzxx.nl, hzxx.zjh, hzxx.zjlx, jcsj_zjlx.csmc zjlxmc
+               , hzxx.xb, fzjcxx.ybbh ybbh, to_char(fzjcxx.qrsj,'yyyyMMddHH24miss') qrsj
+               , case when hzxx.xb='1' then '男性' when hzxx.xb='2' then '女性' when hzxx.xb='0' then '未知的性别' end xbmc
+               , case when fzjcxx.fssj is not null then to_char(fzjcxx.fssj, 'yyyyMMddHH24miss') when fzjcxx.fssj is null then to_char(LOCALTIMESTAMP, 'yyyyMMddHH24miss') end fssj
+               , fzjcxx.fsbj,fzjcxx.bbzbh,jcsj_jcdx.csdm jcdxcsdm
+        from matridx_shgc shgc
+        left join igams_fzjcxx fzjcxx on shgc.ywid = fzjcxx.fzjcid and fzjcxx.scbj='0'
+        left join igams_hzxx hzxx on fzjcxx.hzid = hzxx.hzid and hzxx.scbj='0'
+        left join matridx_jcsj jcsj_zjlx on jcsj_zjlx.csid = hzxx.zjlx and jcsj_zjlx.scbj='0'
+        left join matridx_jcsj jcsj_yblx on jcsj_yblx.csid = fzjcxx.yblx and jcsj_yblx.scbj='0'
+        left join matridx_xtyh xtyh_cjry on xtyh_cjry.yhid = fzjcxx.cjry and xtyh_cjry.scbj='0' and xtyh_cjry.sfsd ='0'
+        left join matridx_xtyh xtyh_jsry on xtyh_jsry.yhid = fzjcxx.jsry and xtyh_jsry.scbj='0' and xtyh_jsry.sfsd ='0'
+        left join matridx_xtyh xtyh_syry on xtyh_syry.yhid = fzjcxx.syry and xtyh_syry.scbj='0' and xtyh_syry.sfsd ='0'
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx and jcsj_jcdx.scbj = '0'
+        <where>
+            fzjcxx.dctaskid is null  and fzjcxx.fzjcid in
+            <foreach collection="list" separator="," index="index" item="item" open="(" close=")">
+                #{item.ywid}
+            </foreach>
+            and fzjcxx.cjsj is not null and fzjcxx.jssj is not null and fzjcxx.syry is not null and fzjcxx.sysj is not null and fzjcxx.jcjgmc is not null and fzjcxx.syh is not null and fzjcxx.bgrq is not null
+            and fzjcxx.bbzbh is not null
+        </where>
+    </select>
+
+    <select id="getListByIds" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,hzxx.hzid, hzxx.xm, hzxx.nl, hzxx.zjh, hzxx.zjlx
+        , hzxx.xb, fzjcxx.ybbh ybbh, to_char(fzjcxx.qrsj,'yyyyMMddHH24miss') qrsj
+        , case when hzxx.xb='1' then '男性' when hzxx.xb='2' then '女性' when hzxx.xb='0' then '未知的性别' end xbmc
+        ,fjcfb.fjid,fjcfb.wjm,jcsj_zjlx.csdm zjlxdm,hzxx.sj
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on fzjcxx.hzid = hzxx.hzid and hzxx.scbj='0'
+        left join matridx_jcsj jcsj_zjlx on jcsj_zjlx.csid = hzxx.zjlx and jcsj_zjlx.scbj='0'
+        left join matridx_fjcfb fjcfb on fjcfb.ywid=fzjcxx.fzjcid and fjcfb.scbj='0'
+        <where>
+            fzjcxx.scbj='0' and
+            fjcfb.ywlx=#{ywlx} and
+            fzjcxx.fzjcid in
+            <foreach collection="ids" separator="," index="index" item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <update id="updateFssjByYwids" parameterType="ShgcDto">
+        update igams_fzjcxx set fssj = LOCALTIMESTAMP, fsbj = '1'
+        <where>
+            scbj = '0' and fssj is null and
+            fzjcid in
+            <foreach collection="list" separator="," index="index" item="item" close=")" open="(">
+                #{item.ywid}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateFssjByIds" parameterType="FzjcxxDto">
+        update igams_fzjcxx set fssj = LOCALTIMESTAMP, fsbj = '1'
+        <where>
+            scbj = '0' and fssj is null and
+            fzjcid in
+            <foreach collection="list" separator="," index="index" item="item" close=")" open="(">
+                #{item.fzjcid}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="getFzjcxxListByIds" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        SELECT fzjcxx.fzjcid, fzjcxx.yblx, jcsj_yblx.csmc AS ybmc, to_char(fzjcxx.cjsj, 'yyyyMMddHH24miss') AS cjsj
+            , to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyyMMddHH24miss') sqdsj
+            , fzjcxx.cjry, xtyh_cjry.zsxm AS cjrymc, fzjcxx.sfjs
+            , case when fzjcxx.fssj is not null then to_char(fzjcxx.fssj, 'yyyyMMddHH24miss') when fzjcxx.fssj is null then to_char(LOCALTIMESTAMP, 'yyyyMMddHH24miss') end fssj
+            , to_char(fzjcxx.jssj, 'yyyyMMddHH24miss') AS jssj, fzjcxx.jsry
+            , xtyh_jsry.zsxm AS jsrymc, fzjcxx.syry, to_char(fzjcxx.sysj, 'yyyyMMddHH24miss') AS sysj
+            , xtyh_syry.zsxm AS syrymc, fzjcxx.jcjgmc, fzjcxx.jcxmmc, fzjcxx.syh
+            , to_char(fzjcxx.bgrq, 'yyyyMMddHH24miss') AS bgrq, hzxx.hzid
+            , hzxx.xm, hzxx.nl, hzxx.zjh, hzxx.zjlx, jcsj_zjlx.csmc AS zjlxmc
+            , hzxx.xb, fzjcxx.ybbh, to_char(fzjcxx.qrsj, 'yyyyMMddHH24miss') AS qrsj
+            , CASE WHEN hzxx.xb = '1' THEN '男性' WHEN hzxx.xb = '2' THEN '女性' WHEN hzxx.xb = '0' THEN '未知的性别' END AS xbmc
+            , fzjcxx.fsbj,fzjcxx.bbzbh
+        FROM igams_fzjcxx fzjcxx
+        LEFT JOIN igams_hzxx hzxx ON fzjcxx.hzid = hzxx.hzid             AND hzxx.scbj = '0'
+        LEFT JOIN matridx_jcsj jcsj_zjlx ON jcsj_zjlx.csid = hzxx.zjlx   AND jcsj_zjlx.scbj = '0'
+        LEFT JOIN matridx_jcsj jcsj_yblx ON jcsj_yblx.csid = fzjcxx.yblx AND jcsj_yblx.scbj = '0'
+        LEFT JOIN matridx_xtyh xtyh_cjry ON xtyh_cjry.yhid = fzjcxx.cjry AND xtyh_cjry.scbj = '0' AND xtyh_cjry.sfsd = '0'
+        LEFT JOIN matridx_xtyh xtyh_jsry ON xtyh_jsry.yhid = fzjcxx.jsry AND xtyh_jsry.scbj = '0' AND xtyh_jsry.sfsd = '0'
+        LEFT JOIN matridx_xtyh xtyh_syry ON xtyh_syry.yhid = fzjcxx.jsry AND xtyh_syry.scbj = '0' AND xtyh_syry.sfsd = '0'
+        <where>
+            fzjcxx.fzjcid in
+            <foreach collection="ids" separator="," index="index" item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <update id="updateFssjAndFsbj" parameterType="java.util.List">
+        <foreach collection="list" separator=";" index="index" item="item" open="" close="">
+            update igams_fzjcxx set fsbj='1'
+            <if test="item.fssj !=null and item.fssj !=''">
+                ,fssj= to_timestamp( #{item.fssj} , 'yyyyMMddHH24miss')
+            </if>
+            <where>
+                fzjcid = #{item.fzjcid}
+            </where>
+        </foreach>
+    </update>
+
+    <update id="updateTaskid" parameterType="java.util.Map">
+        <foreach collection="fzjcxxlist" separator=";" item="item" index="index" open="" close="">
+            update igams_fzjcxx set pctaskid = #{pctaskid} , dctaskid = #{dctaskid}
+            where fzjcid = #{item.fzjcid}
+        </foreach>
+    </update>
+
+    <update id="updateSbsj" parameterType="java.util.Map">
+        update igams_fzjcxx set sbsj = cast(#{sbsj} as TIMESTAMP)
+        <where>
+             fzjcid in
+            <foreach collection="fzjcxxlist" separator="," item="item" index="index" open="(" close=")">
+                #{item.fzjcid}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateScjg" parameterType="java.util.Map">
+        update igams_fzjcxx set scjg = cast( cast(coalesce(scjg,'0') as numeric)+#{addNum} as char(1))
+        where dctaskid like '%'||#{taskidcode}||'%'
+    </update>
+
+    <select id="getYbbhAndFzjcid" parameterType="String" resultType="java.util.Map">
+        select fzjcxx.ybbh, fzjcxx.fzjcid
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.ybbh in
+            <foreach collection="ybbhs" index="index" item="item" close=")" open="(" separator=",">
+               #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getYbbhList" parameterType="String" resultType="String">
+        select fzjcxx.ybbh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.ybbh in
+            <foreach collection="ybbhs" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getYbbhsBySyhExist" parameterType="String" resultType="String">
+        select fzjcxx.ybbh||','||fzjcxx.syh
+        from igams_fzjcxx fzjcxx
+        <where>
+            fzjcxx.ybbh in
+            <foreach collection="ybbhs" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+            and fzjcxx.syh is not null
+        </where>
+    </select>
+
+    <select id="getFzjcxxByIds" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcxx.fzjcid,fzjcxx.hzid,hzxx.xm,case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE '' END xb, fzjcxx.nbbh,fzjcxx.syh,fzjcxx.bbzbh, hzxx.zjh, zjlx_jcsj.csmc as zjlxmc, fzjcxx.cjxxsczt,
+        hzxx.sj,hzxx.nl,fzjcxx.jcxmmc,yblx_jcsj.csmc yblx,to_char(fzjcxx.cjsj,'yyyy-MM-dd HH24:mi:ss') cjsj,fzjcxx.sfjs,xtyh.zsxm cjryxm,fzjcxx.ybbh,fzjcxx.jcjgmc,jcdw.csmc jcdwmc,fzjcxx.jy
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid = fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh on xtyh.yhid=fzjcxx.cjry
+        left join matridx_jcsj jcdw on jcdw.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        <where>
+        fzjcxx.scbj!='1'
+        <if test="ids !=null and ids.size > 0">
+            and fzjcid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </select>
+
+    <select id="getUnpaidByPt" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fzjcid
+        from igams_fzjcxx
+        <where>
+            scbj='0' and fkbj='0' and pt=#{pt} and  yyrq>=current_date-1 and yyrq  &lt;= current_date
+            <if test="jclx != null and jclx != ''">
+                and jclx = #{jclx}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据选择查询下载报告 -->
+    <select id="selectDownloadReportByIds" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fjcfb.ywlx,fjcfb.wjm,fjcfb.wjlj,fjcfb.fjid,fzjcxx.fzjcid
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left outer join matridx_fjcfb fjcfb on fzjcxx.fzjcid = fjcfb.ywid and ( 1=2
+        <if test="bglxbj !=null and  bglxbj =='pdf'">
+            or fjcfb.ywlx in ( 'IMP_REPORT_COVID')
+        </if>
+        <if test="bglxbj !=null and  bglxbj =='word'">
+            or fjcfb.ywlx in ( 'IMP_REPORT_COVID_WORD')
+        </if>
+        )
+        <where>
+            fzjcxx.scbj != '1' and fjcfb.fjid is not null
+            and fzjcxx.fzjcid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 根据条件查询下载报告 -->
+    <select id="selectDownloadReport" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select fjcfb.ywlx,fjcfb.wjm,fjcfb.wjlj,fjcfb.fjid,fzjcxx.fzjcid
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left outer join matridx_fjcfb fjcfb on fzjcxx.fzjcid = fjcfb.ywid and ( 1=2
+        <if test="bglxbj !=null and  bglxbj =='pdf'">
+            or fjcfb.ywlx in ( 'IMP_REPORT_COVID')
+        </if>
+        <if test="bglxbj !=null and  bglxbj =='word'">
+            or fjcfb.ywlx in ( 'IMP_REPORT_COVID_WORD')
+        </if>
+        )
+        <where>
+               fzjcxx.scbj != '1' and fjcfb.fjid is not null
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="getPeopleCountData" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        SELECT fzjcid FROM igams_fzjcxx
+        where ybbh is not null and cjry = #{cjry} and cyd = #{cyd} and scbj = '0' and to_char(cjsj, 'yyyy-MM-DD')=to_char(LOCALTIMESTAMP, 'yyyy-MM-DD')
+    </select>
+    <select id="getCountData" parameterType="FzjcxxDto" resultType="Map">
+        select sum(zj) rs,count(ybbh) gs from (
+        SELECT count(ybbh) zj,ybbh
+        FROM igams_fzjcxx
+        <where> ybbh IS NOT NULL
+        <if test="cjry != null and cjry != ''">
+            and cjry = #{cjry}
+        </if>
+        <if test="cyd != null and cyd != ''">
+            and cyd = #{cyd}
+        </if>
+        <if test="sjdw != null and sjdw != ''">
+            and sjdw = #{sjdw}
+        </if>
+        <if test="jcdw != null and jcdw != ''">
+            and jcdw = #{jcdw}
+        </if>
+        <if test="jcdxlx != null and jcdxlx != ''">
+            and jcdxlx = #{jcdxlx}
+        </if>
+        <if test="yyjcrq != null and yyjcrq != ''">
+            and to_char(yyjcrq,'yyyy-mm-dd') = #{yyjcrq}
+        </if>
+        <if test="jclx != null and jclx != ''">
+            and jclx = #{jclx}
+        </if>
+        AND scbj = '0'
+        AND to_char(cjsj, 'yyyy-MM-DD') = to_char(LOCALTIMESTAMP, 'yyyy-MM-DD')
+        AND jclx=#{jclx}
+        </where>
+        group by ybbh
+        ) tmp
+    </select>
+
+    <update id="callbackFzjcxx" parameterType="FzjcxxDto">
+        update igams_fzjcxx set ybbh=null,bbzbh=null,cjsj=null,cjry=null,jcdw=null,sjdw=null,cyd=null,wybh=null
+        where fzjcid=#{fzjcid}
+    </update>
+    
+    <update id="updateBgwcsj" parameterType="FzjcxxDto">
+        update igams_fzjcxx set bgwcsj=cast(#{bgwcsj} as timestamp)
+        where fzjcid=#{fzjcid}
+    </update>
+
+    <!-- 锁定新冠标本 -->
+    <update id="lockSample" parameterType="FzjcxxDto">
+        update igams_fzjcxx set scbj='3'
+        where fzjcid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateSfjfFzjcxx" parameterType="FzjcxxDto">
+        update igams_fzjcxx set sfjf=#{sfjf}
+        where fzjcid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getFzjcxxList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select hzxx.hzid,hzxx.xm, hzxx.sj,hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE''
+        END xb,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid, fzjcxx.syry, syry_xtyh.zsxm syrymc, fzjcxx.fsbj ,fzjcxx.bbzbh,fzjcxx.zffs,fzjcxm.fzxmid,fzjcxm.fzjczxmid,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.fssj,'yyyy-mm-dd HH24:mi') fssj,
+        to_char(fzjcxx.sbsj,'yyyy-mm-dd HH24:mi') sbsj,
+        to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,
+        fzjcxx.yyjcrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd, fzjcxx.sfjf,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.zt,fzjcxx.jy,fzjcxx.bz,fzjcxx.jcxmmc,yblx_jcsj.csmc yblxmc,fzjcxx.nbbh,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,fzjcxx.sfjs,fzjcxx.sfsy,jczxm_jcsj.csmc jczxmmc,
+        case fzjcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,
+        case fzjcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+        case jcsj_jcdx.csdm WHEN 'W' THEN '物检' WHEN 'R' THEN '人检' end jcdxmc,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc, fzjcxx.jcdxlx, jcsj_jcdx.csdm jcdxcsdm,
+        xx.cskz1 yyxxcskz1,fzjcxx.fkbj,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,fzjcxx.kpbj,fzjcxx.fphm,fzjcxx.scbj,fzjcxx.orderno,fzjcxx.ptorderno,fzjcxx.sfje,fzjcxx.pt,
+        fzjcxx.cyd,cyd_jcsj.csmc cydmc,cjry.zsxm cjrymc
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                or cjry.zsxm like '%'||#{entire}||'%'
+                or hzxx.sj like '%'||#{entire}||'%'
+                or hzxx.zjh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj !=1 ">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj == 1">
+                and fzjcxx.ybbh = #{ybbh}
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='1'.toString">
+                and fzjcxx.sfjf ='1'
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='0'.toString">
+                and (fzjcxx.sfjf ='0' or fzjcxx.sfjf is null)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sj != null and sj != '' " >
+                and hzxx.sj = #{sj}
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test = "jclx != null and jclx != '' " >
+                and fzjcxx.jclx = #{jclx}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx= #{jclx}
+            </if>
+        </where>
+        order by fzjcxx.ybbh asc,fzjcxx.bbzbh asc
+    </select>
+
+    <!-- 存放信息履历   -->
+    <insert id="insertInfoResume" parameterType="FzjcxxDto">
+    INSERT INTO igams_fzjcll
+    (llid,fzjcid,hzid,tw,ybbh,nbbh,yblx,yyrq,yyjcrq,cjsj,cjry,sfjs,jssj,jsry,sfsy,syry,sysj,bgrq,jcxmid,jcxmmc,jcjgmc,cyd,jy,syh,jcdw,sjdw,sjdwmc,ks,qtks,bz,zt,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,wxid,qrry,qrsj,xm,bbzt,xb,sjys,nl,mz,zyh,lxdh,ch,fssj,fsbj,pctaskid,dctaskid,scjg,bbzbh,fkbj,fkje,fkrq,kpbj,fphm,zffs,ypmc,sccj,scpc,jcdxlx,orderno,ptorderno,sfje,pt,pdfurl,imgurl,refundno,scd,yblxmc,scrq,czbs,tkrq,tkcgrq,sbsj,bgwcsj,wybh,sfjf,jclx,wbcjry,ysdh,bbztmc,cjxxscsj,cjxxsczt
+    )
+    SELECT #{llid} as llid,fzjcid,hzid,tw,ybbh,nbbh,yblx,yyrq,yyjcrq,cjsj,cjry,sfjs,jssj,jsry,sfsy,syry,sysj,bgrq,jcxmid,jcxmmc,jcjgmc,cyd,jy,syh,jcdw,sjdw,sjdwmc,ks,qtks,bz,zt,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,wxid,qrry,qrsj,xm,bbzt,xb,sjys,nl,mz,zyh,lxdh,ch,fssj,fsbj,pctaskid,dctaskid,scjg,bbzbh,fkbj,fkje,fkrq,kpbj,fphm,zffs,ypmc,sccj,scpc,jcdxlx,orderno,ptorderno,sfje,pt,pdfurl,imgurl,refundno,scd,yblxmc,scrq,czbs,tkrq,tkcgrq,sbsj,bgwcsj,wybh,sfjf,jclx,wbcjry,ysdh,bbztmc,cjxxscsj,cjxxsczt
+    FROM
+    igams_fzjcxx
+    where fzjcid =  #{fzjcid}
+    </insert>
+
+
+    <!-- 存放信息履历   -->
+    <select id="getResumeList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+       select fzjcxx.llid,ks.dwmc as ksmc,hzxx.xm,fzjcxx.bbzbh,hzxx.nl,fzjcxx.hzid,fzjcxx.tw,fzjcxx.ybbh,hzxx.sj,xtyh_cjry.zsxm cjry,xtyh_syry.zsxm syry,xtyh_jsry.zsxm jsry,fzjcxx.nbbh,fzjcxm.fzxmid,fzjcxx.fzjcid,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,
+        to_char(fzjcxx.cjsj::timestamp,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.jssj::timestamp,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj::timestamp,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.bgrq::timestamp,'yyyy-mm-dd') bgrq,
+        fzjcxx.yyjcrq,
+        case fzjcxx.zt WHEN '00' THEN '未提交' WHEN '10' THEN '审核中' WHEN '15' THEN '审核未通过' WHEN '80' THEN '审核通过' END zt,
+        case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE'' END xb,
+        case fzjcxx.fkbj WHEN '1' THEN '已付款' WHEN '2' THEN '退款完成' WHEN '3' THEN '退款中' WHEN '0' THEN '未付款' END fkbj,
+        case fzjcxx.kpbj WHEN '1' THEN '已开票' ELSE'未开票' END kpbj,
+        case jcsj_jcdx.csdm WHEN 'W' THEN '物检' WHEN 'R' THEN '人检' end jcdxmc,
+        fzjcxx.jy,fzjcxx.bz,jcxm_jcsj.csmc jcxm,yblx_jcsj.csmc yblx,yblx_jcsj.cskz1 yblxcskz1,jcjg_jcsj.csmc jcjg,fzjcsj.fyk,fzjcsj.jymc,fzjcsj.bgjy,fzjcsj.ctz,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd,
+        xx.cskz1 yyxxcskz1, fzjcxx.zffs, zffs_jcsj.csmc zffsmc,fzjcxx.pt,fzjcxx.fkje,to_char(fzjcxx.fkrq::timestamp,'yyyy-mm-dd') fkrq,
+        fzjcxx.fphm,fzjcxx.orderno,fzjcxx.ptorderno,fzjcxx.sfje,fzjcxx.refundno,jcsj_jcdx.csdm jcdxcsdm,fzjcxx.jcjgmc,fzjcxx.jcxmmc,
+        fzjcxx.scrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd,fzjcxx.yblxmc,jczxm_jcsj.csmc jczxmmc,zjlx_jcsj.csmc zjlxmc,hzxx.zjh,cyd_jcsj.csmc cydmc,
+        to_char(fzjcxx.sbsj::timestamp,'yyyy-mm-dd HH24:mi') sbsj,to_char(fzjcxx.bgwcsj::timestamp,'yyyy-mm-dd HH24:mi') bgwcsj,to_char(fzjcxx.tkrq::timestamp,'yyyy-mm-dd HH24:mi') tkrq,
+        to_char(fzjcxx.tkcgrq::timestamp,'yyyy-mm-dd HH24:mi') tkcgrq,jcsj_ybzt.csmc ybztmc,jcjg_jcsj.csdm jcjgdm
+        from igams_fzjcll fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+         left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+         left join igams_sjdwxx ks on ks.dwid=fzjcxx.ks
+        left join igams_fzjcxm fzjcxm on fzjcxx.fzjcid=fzjcxm.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+		left join matridx_jcsj jcxm_jcsj on jcxm_jcsj.csid=fzjcxm.fzjcxmid
+		left join igams_fzjcsj fzjcsj on fzjcsj.fzxmid=fzjcxm.fzxmid
+		left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzxmid
+		left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid=fzjcjg.jcjg
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_xtyh xtyh_cjry on xtyh_cjry.yhid=fzjcxx.cjry
+        left join matridx_xtyh xtyh_jsry on xtyh_jsry.yhid=fzjcxx.jsry
+        left join matridx_xtyh xtyh_syry on xtyh_syry.yhid=fzjcxx.syry
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join matridx_jcsj zffs_jcsj on zffs_jcsj.csid=fzjcxx.zffs
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        left join matridx_jcsj jcsj_ybzt on jcsj_ybzt.csid=fzjcxx.bbzt
+        where fzjcxx.scbj!='1'and fzjcxx.fzjcid=#{fzjcid}
+    </select>
+
+    <select id="getCheckDtoList" parameterType="FzjcxxDto" resultType="FzjcxxDto">
+        select hzxx.hzid,hzxx.xm, hzxx.sj,hzxx.zjh , hzxx.zjlx,  zjlx_jcsj.csmc as zjlxmc, case hzxx.xb WHEN '1' THEN '男' WHEN '2' THEN '女' ELSE''
+        END xb,hzxx.nl,fzjcxx.tw,fzjcxx.ybbh,fzjcxx.fzjcid, fzjcxx.syry, syry_xtyh.zsxm syrymc, fzjcxx.fsbj ,fzjcxx.bbzbh,fzjcxx.zffs,fzjcxm.fzxmid,fzjcxm.fzjczxmid,
+        to_char(fzjcxx.cjsj,'yyyy-mm-dd HH24:mi') cjsj,
+        to_char(fzjcxx.fssj,'yyyy-mm-dd HH24:mi') fssj,
+        to_char(fzjcxx.sbsj,'yyyy-mm-dd HH24:mi') sbsj,
+        to_char(fzjcxx.cjsj::timestamp+'-1 hour','yyyy-mm-dd HH24:mi') sqdsj,
+        to_char(fzjcxx.jssj,'yyyy-mm-dd HH24:mi') jssj,
+        to_char(fzjcxx.sysj,'yyyy-mm-dd HH24:mi') sysj,
+        to_char(fzjcxx.qrsj,'yyyy-mm-dd HH24:mi') qrsj,
+        fzjcxx.yyjcrq,fzjcxx.ypmc,fzjcxx.sccj,fzjcxx.scpc,fzjcxx.scd, fzjcxx.sfjf,
+        to_char(fzjcxx.bgrq,'yyyy-mm-dd') bgrq,fzjcxx.zt,fzjcxx.jy,fzjcxx.bz,fzjcxx.jcxmmc,yblx_jcsj.csmc yblxmc,fzjcxx.nbbh,fzjcxx.jcjgmc,jcdw_jcsj.csmc jcdwmc,fzjcxx.syh,fzjcxx.sfjs,fzjcxx.sfsy,jczxm_jcsj.csmc jczxmmc,
+        case fzjcxx.sfjs WHEN '1' THEN '是' WHEN '0' THEN '否' end sfjsmc,
+        case fzjcxx.sfsy WHEN '1' THEN '是' WHEN '0' THEN '否' end sfsymc,
+        case jcsj_jcdx.csdm WHEN 'W' THEN '物检' WHEN 'R' THEN '人检' end jcdxmc,
+        fzjcxx.sjdw,fzjcxx.sjdwmc,xx.dwmc||case when xx.cskz1 ='1' then '--'||fzjcxx.sjdwmc else '' end as dwmc, fzjcxx.jcdxlx, jcsj_jcdx.csdm jcdxcsdm,
+        xx.cskz1 yyxxcskz1,fzjcxx.fkbj,fzjcxx.fkje,to_char(fzjcxx.fkrq,'yyyy-mm-dd') fkrq,fzjcxx.kpbj,fzjcxx.fphm,fzjcxx.scbj,fzjcxx.orderno,fzjcxx.ptorderno,fzjcxx.sfje,fzjcxx.pt,
+        fzjcxx.cyd,cyd_jcsj.csmc cydmc,cjry.zsxm cjrymc,fzjcxx.scrq
+        from igams_fzjcxx fzjcxx
+        left join igams_hzxx hzxx on hzxx.hzid=fzjcxx.hzid
+        left join matridx_jcsj yblx_jcsj on yblx_jcsj.csid=fzjcxx.yblx
+        left join matridx_jcsj jcdw_jcsj on jcdw_jcsj.csid=fzjcxx.jcdw
+        left join matridx_jcsj zjlx_jcsj on zjlx_jcsj.csid=hzxx.zjlx
+        left join matridx_jcsj cyd_jcsj on cyd_jcsj.csid=fzjcxx.cyd
+        left join matridx_xtyh syry_xtyh on syry_xtyh.yhid=fzjcxx.syry
+        left join matridx_xtyh cjry on cjry.yhid=fzjcxx.cjry
+        left join igams_yyxx xx on xx.dwid=fzjcxx.sjdw
+        left join igams_fzjcxm fzjcxm on  fzjcxm.fzjcid = fzjcxx.fzjcid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcsj_jcdx on jcsj_jcdx.csid = fzjcxx.jcdxlx
+        <where>
+            fzjcxx.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (hzxx.xm like '%'||#{entire}||'%'
+                or fzjcxx.ybbh like '%'||#{entire}||'%'
+                or hzxx.nl like '%'||#{entire}||'%'
+                or fzjcxx.syh like '%'||#{entire}||'%'
+                or yblx_jcsj.csmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.sjdwmc like '%'||#{entire}||'%'
+                or xx.dwmc like '%'||#{entire}||'%'
+                or fzjcxx.bbzbh like '%'||#{entire}||'%'
+                or fzjcxx.orderno like '%'||#{entire}||'%'
+                or fzjcxx.fphm like '%'||#{entire}||'%'
+                or fzjcxx.ptorderno like '%'||#{entire}||'%'
+                or fzjcxx.pt like '%'||#{entire}||'%'
+                or cjry.zsxm like '%'||#{entire}||'%'
+                or hzxx.sj like '%'||#{entire}||'%'
+                or hzxx.zjh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xm != null and xm != ''">
+                and (hzxx.xm like '%'||#{xm}||'%')
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj !=1 ">
+                and fzjcxx.ybbh like '%'||#{ybbh}||'%'
+            </if>
+            <if test="ybbh != null and ybbh != '' and ddbj == 1">
+                and fzjcxx.ybbh = #{ybbh}
+            </if>
+            <if test="bbzbh != null and bbzbh != ''">
+                and fzjcxx.bbzbh like '%'||#{bbzbh}||'%'
+            </if>
+            <if test="pt != null and pt != ''">
+                and fzjcxx.pt like '%'||#{pt}||'%'
+            </if>
+            <if test="nl != null and nl != ''">
+                and hzxx.nl like '%'||#{nl}||'%'
+            </if>
+            <if test="syh != null and syh != ''">
+                and fzjcxx.syh like '%'||#{syh}||'%'
+            </if>
+            <if test="cjrymc != null and cjrymc != ''">
+                and cjry.zsxm like '%'||#{cjrymc}||'%'
+            </if>
+            <if test="yblx != null and yblx != ''">
+                and yblx_jcsj.csmc like '%'||#{yblx}||'%'
+            </if>
+            <if test="dwmc != null and dwmc != ''">
+                and  (xx.dwmc like '%'||#{dwmc}||'%'
+                or fzjcxx.sjdwmc like '%'||#{dwmc}||'%'
+                or xx.dwmc like '%'||#{dwmc}||'%')
+            </if>
+            <if test="orderno != null and orderno != ''">
+                and fzjcxx.orderno like '%'||#{orderno}||'%'
+            </if>
+            <if test="ptorderno != null and ptorderno != ''">
+                and fzjcxx.ptorderno like '%'||#{ptorderno}||'%'
+            </if>
+            <if test="fphm != null and fphm != ''">
+                and fzjcxx.fphm like '%'||#{fphm}||'%'
+            </if>
+            <if test="jssjstart != null and jssjstart != ''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &gt;= #{jssjstart}
+            </if>
+            <if test="jssjend !=null and jssjend !=''">
+                and to_char(fzjcxx.jssj,'yyyy-mm-dd') &lt;= #{jssjend}
+            </if>
+            <if test="sysjstart != null and sysjstart != ''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &gt;= #{sysjstart}
+            </if>
+            <if test="sysjend !=null and sysjend !=''">
+                and to_char(fzjcxx.sysj,'yyyy-mm-dd') &lt;= #{sysjend}
+            </if>
+            <if test="cjsjstart != null and cjsjstart != ''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+            </if>
+            <if test="cjsjend !=null and cjsjend !=''">
+                and to_char(fzjcxx.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+            </if>
+            <if test="bgrqstart != null and bgrqstart != ''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &gt;= #{bgrqstart}
+            </if>
+            <if test="bgrqend !=null and bgrqend !=''">
+                and to_char(fzjcxx.bgrq,'yyyy-mm-dd') &lt;= #{bgrqend}
+            </if>
+            <if test="yyrqstart != null and yyrqstart != ''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &gt;= #{yyrqstart}
+            </if>
+            <if test="yyrqend !=null and yyrqend !=''">
+                and to_char(fzjcxx.yyrq,'yyyy-mm-dd') &lt;= #{yyrqend}
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend !=null and fkrqend !=''">
+                and to_char(fzjcxx.fkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='1'.toString">
+                and fzjcxx.sfsy ='1'
+            </if>
+            <if test="sfsy != null and sfsy != '' and sfsy=='0'.toString">
+                and (fzjcxx.sfjs ='0' or fzjcxx.sfjs is null)
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='1'.toString">
+                and fzjcxx.fkbj ='1'
+            </if>
+            <if test="fkbj != null and fkbj != '' and fkbj=='0'.toString">
+                and (fzjcxx.fkbj ='0' or fzjcxx.fkbj is null)
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='1'.toString">
+                and fzjcxx.kpbj ='1'
+            </if>
+            <if test="kpbj != null and kpbj != '' and kpbj=='0'.toString">
+                and (fzjcxx.kpbj ='0' or fzjcxx.kpbj is null)
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='1'.toString">
+                and fzjcxx.sfjf ='1'
+            </if>
+            <if test="sfjf != null and sfjf != '' and sfjf=='0'.toString">
+                and (fzjcxx.sfjf ='0' or fzjcxx.sfjf is null)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fzjcxx.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sj != null and sj != '' " >
+                and hzxx.sj = #{sj}
+            </if>
+            <if test = "zjh != null and zjh != '' " >
+                and hzxx.zjh = #{zjh}
+            </if>
+            <if test = "jcdxlxs != null and jcdxlxs.length > 0 "  >
+                and fzjcxx.jcdxlx in
+                <foreach collection="jcdxlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jczxms != null and jczxms.length > 0 "  >
+                and fzjcxm.fzjczxmid in
+                <foreach collection="jczxms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jclx != null and jclx != ''">
+                and fzjcxx.jclx = #{jclx}
+            </if>
+        </where>
+    </select>
+</mapper>

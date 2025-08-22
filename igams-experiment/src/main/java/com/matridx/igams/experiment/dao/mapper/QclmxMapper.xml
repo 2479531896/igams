@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IQclmxDao" >
+		<select id="getMaxXh" parameterType="String" resultType="int">
+			select  COALESCE(max(xh), 0) from igams_qclmx where scbj!='1' and qclid=#{qclid}
+		</select>
+		
+		<insert id="insert" parameterType="QclmxDto">
+			insert into igams_qclmx(qclid
+				<if test="xh !=null and xh !=''">
+					,xh
+				</if>
+				<if test="nbbh !=null and nbbh !=''">
+					,nbbh
+				</if>
+				<if test="sjid !=null and sjid !=''">
+					,sjid
+				</if>
+				<if test="xbjs !=null and xbjs !=''">
+					,xbjs
+				</if>
+				<if test="xbzs !=null and xbzs !=''">
+					,xbzs
+				</if>
+				,lrry,lrsj,scbj
+			)values(#{qclid}
+				<if test="xh !=null and xh !=''">
+					,cast(#{xh}  as numeric )
+				</if>
+				<if test="nbbh !=null and nbbh !=''">
+					,#{nbbh}
+				</if>
+				<if test="sjid !=null and sjid !=''">
+					,#{sjid}
+				</if>
+				<if test="xbjs !=null and xbjs !=''">
+					,cast(#{xbjs} as numeric)
+				</if>
+				<if test="xbzs !=null and xbzs !=''">
+					,cast(#{xbzs} as numeric)
+				</if>
+				,#{lrry},LOCALTIMESTAMP,0
+			)
+		</insert>
+		
+		<delete id="delete" parameterType="QclmxDto">
+			update igams_qclmx set scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+			<where>
+					qclid in 
+					<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+						#{item}
+					</foreach>
+			</where>
+		</delete>
+		
+		<select id="getDtoList" parameterType="QclmxDto" resultType="QclmxDto">
+			select qclmx.qclid,qclmx.xh,qclmx.nbbh,qclmx.sjid,qclmx.xbjs,qclmx.xbzs,qclmx.lrry,qclmx.lrsj,to_char(qclmx.xbjs,'99.99EEEE') as format_xbjs
+			from igams_qclmx qclmx
+			<where>
+				qclmx.scbj !='1'
+				<if test="qclid !=null and qclid !=''">
+					and qclmx.qclid=#{qclid}
+				</if>
+			</where>
+		</select>
+		
+		<select id="getSjidByNbbh" parameterType="String" resultType="String">
+			select sjid from igams_sjxx
+			<where>
+				scbj !='1' and  nbbm=#{nbbh}
+			</where>
+		</select>
+</mapper> 

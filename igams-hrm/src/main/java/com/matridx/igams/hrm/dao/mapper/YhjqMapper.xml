@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IYhjqDao">
+    <select id="getDtoList" parameterType="YhjqDto" resultType="YhjqDto">
+        select yhjq.yhjqid,yhjq.yhid,yhjq.jqze,yhjq.dw,yhjq.jqlx,yhjq.yyed,yhjq.syed,yhjq.nd,
+        yhjq.yxq,to_char(yhjq.yeqksj,'yyyy-mm-dd') yeqksj,yhjq.kssj,yhjq.ddze,yhjq.ddyyed,yhjq.ddsyed,jcsj.csmc jqlxmc,xtyh.zsxm,xtyh.ddid,
+        jcsj.cskz2 jqlxcskz2
+        from igams_yhjq yhjq
+        left join matridx_jcsj jcsj on jcsj.csid=yhjq.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=yhjq.yhid
+        <where>
+            yhjq.yhjqid is not null
+            <if test="clearAll!=null and clearAll!=''">
+                and to_char(yxq,'yyyy-mm-dd')&lt;to_char(LOCALTIMESTAMP,'yyyy-mm-dd')
+                and syed &gt;0
+            </if>
+            <if test="ids!=null and ids.size>0">
+                and yhjq.yhjqid in
+                <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yhid!=null and yhid!=''">
+                and yhjq.yhid=#{yhid}
+            </if>
+        </where>
+        order by yhjq.nd desc
+    </select>
+    <update id="update" parameterType="YhjqDto">
+        update igams_yhjq set
+        syed=cast (#{syed} as numeric )
+        <if test="yhid !=null and yhid!=''">
+        ,jqze=cast (#{jqze} as numeric )
+        </if>
+        <if test="yhid !=null and yhid!=''">
+            ,yhid=#{yhid}
+        </if>
+        <if test="dw !=null and dw!=''">
+            ,dw=#{dw}
+        </if>
+        <if test="jqlx !=null and jqlx!=''">
+            ,jqlx=#{jqlx}
+        </if>
+        <if test="yyed !=null and yyed!=''">
+            ,yyed=cast (#{yyed} as numeric )
+        </if>
+        <if test="nd !=null and nd!=''">
+            ,nd=#{nd}
+        </if>
+        <if test="yxq !=null and yxq!=''">
+            ,yxq=cast (#{yxq} as date )
+        </if>
+        <if test="clearAll !=null and clearAll!=''">
+            ,yeqksj=LOCALTIMESTAMP
+        </if>
+        <if test="kssj !=null and kssj!=''">
+            ,kssj=cast (#{kssj} as date )
+        </if>
+        <if test="ddze !=null and ddze!=''">
+            ,ddze=cast (#{ddze} as numeric )
+        </if>
+        <if test="ddyyed !=null and ddyyed!=''">
+            ,ddyyed=cast (#{ddyyed} as numeric )
+        </if>
+        <if test="ddsyed !=null and ddsyed!=''">
+            ,ddsyed=cast (#{ddsyed} as numeric )
+        </if>
+        <where>
+        <if test="yhjqid!=null and yhjqid!=''">
+            yhjqid=#{yhjqid}
+        </if>
+        <if test="ids !=null and ids.size>0">
+              yhjqid in
+             <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+             </foreach>
+        </if>
+        </where>
+    </update>
+    <select id="getAllUserIds"  resultType="String">
+        select string_agg (distinct xtyh.ddid,',')
+        from igams_yhjq yhjq
+        left join matridx_xtyh xtyh on xtyh.yhid=yhjq.yhid
+    </select>
+    <select id="selectDtoListByList" resultType="YhjqDto" parameterType="List">
+        select yhjq.yhjqid,tmp.ddze,tmp.ddyyed,tmp.ddsyed
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.ddid} ddid,#{item.jqlx} jqlx,#{item.ddze} ddze,#{item.ddyyed} ddyyed,#{item.ddsyed} ddsyed,#{item.nd} nd
+        </foreach>
+        tmp
+        left join matridx_xtyh xtyh on xtyh.ddid=tmp.ddid
+        left join igams_yhjq yhjq on yhjq.yhid=xtyh.yhid and tmp.jqlx=yhjq.jqlx and tmp.nd=yhjq.nd and (cast (tmp.ddze as numeric )!= yhjq.jqze or cast (tmp.ddyyed as numeric )!= yhjq.yyed
+        or cast (tmp.ddsyed as numeric )!= yhjq.syed)
+        where yhjq.yhjqid is not null
+    </select>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_yhjq yhjq
+            set ddze=cast (tmp.ddze as numeric )
+            ,ddyyed=cast (tmp.ddyyed as numeric )
+            ,ddsyed=cast (tmp.ddsyed as numeric )
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.yhjqid} yhjqid,#{item.ddze} ddze,#{item.ddyyed} ddyyed,#{item.ddsyed} ddsyed
+            </foreach>
+            )
+            tmp
+            where
+            yhjq.yhjqid=tmp.yhjqid
+        </if>
+    </update>
+    <insert id="insert" parameterType="YhjqDto">
+        insert into igams_yhjq(
+        yhjqid,yhid
+        <if test="jqze!=null and jqze!=''">
+            ,jqze
+        </if>
+        <if test="dw!=null and dw!=''">
+            ,dw
+        </if>
+        <if test="jqlx!=null and jqlx!=''">
+            ,jqlx
+        </if>
+        <if test="yyed!=null and yyed!=''">
+            ,yyed
+        </if>
+        <if test="syed!=null and syed!=''">
+            ,syed
+        </if>
+        <if test="nd!=null and nd!=''">
+            ,nd
+        </if>
+        <if test="yxq!=null and yxq!=''">
+            ,yxq
+        </if>
+        <if test="yeqksj!=null and yeqksj!=''">
+            ,yeqksj
+        </if>
+        <if test="kssj!=null and kssj!=''">
+            ,kssj
+        </if>
+        <if test="ddze!=null and ddze!=''">
+            ,ddze
+        </if>
+        <if test="ddyyed!=null and ddyyed!=''">
+            ,ddyyed
+        </if>
+        <if test="ddsyed!=null and ddsyed!=''">
+            ,ddsyed
+        </if>
+        ) values (
+        #{yhjqid},#{yhid}
+        <if test="jqze!=null and jqze!=''">
+            ,cast (#{jqze} as numeric )
+        </if>
+        <if test="dw!=null and dw!=''">
+            ,#{dw}
+        </if>
+        <if test="jqlx!=null and jqlx!=''">
+            ,#{jqlx}
+        </if>
+        <if test="yyed!=null and yyed!=''">
+            ,cast (#{yyed} as numeric )
+        </if>
+        <if test="syed!=null and syed!=''">
+            ,cast (#{syed} as numeric )
+        </if>
+        <if test="nd!=null and nd!=''">
+            ,#{nd}
+        </if>
+        <if test="yxq!=null and yxq!=''">
+            ,cast (#{yxq} as date )
+        </if>
+        <if test="yeqksj!=null and yeqksj!=''">
+            ,cast (#{yxq} as timestamp )
+        </if>
+        <if test="kssj!=null and kssj!=''">
+            ,cast (#{kssj} as date )
+        </if>
+        <if test="ddze!=null and ddze!=''">
+            ,cast (#{ddze} as numeric )
+        </if>
+        <if test="ddyyed!=null and ddyyed!=''">
+            ,cast (#{ddyyed} as numeric )
+        </if>
+        <if test="ddsyed!=null and ddsyed!=''">
+            ,cast (#{ddsyed} as numeric )
+        </if>
+        )
+    </insert>
+    <select id="selectDtosByJqlxAndYhid" parameterType="YhjqDto" resultType="YhjqDto">
+         select yhjq.yhjqid,yhjq.yhid,yhjq.jqze,yhjq.dw,yhjq.jqlx,yhjq.yyed,yhjq.syed,yhjq.nd,
+        yhjq.yxq,to_char(yhjq.yeqksj,'yyyy-mm-dd') yeqksj,yhjq.kssj,yhjq.ddze,yhjq.ddyyed,yhjq.ddsyed,jcsj.csmc jqlxmc,jcsj.cskz2 jqlxcskz2,xtyh.zsxm,xtyh.yhm,xtyh.ddid
+        from igams_yhjq yhjq
+        left join matridx_jcsj jcsj on jcsj.csid=yhjq.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=yhjq.yhid
+        <where>
+            yhjq.jqlx=#{jqlx} and yhjq.yhid=#{yhid} and to_char(yhjq.yxq,'yyyy-mm-dd') &gt;#{qjkssj} and yhjq.yeqksj is null
+        </where>
+        order by nd asc
+    </select>
+    <update id="updateListByList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_yhjq yhjq
+            set yyed=cast (tmp.yyed as numeric )
+            ,syed=cast (tmp.syed as numeric )
+            ,ddze=cast (tmp.ddze as numeric )
+            ,ddsyed=cast (tmp.ddsyed as numeric )
+            ,ddyyed=cast (tmp.ddyyed as numeric )
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.yhjqid} yhjqid,#{item.yyed} yyed,#{item.syed} syed,#{item.ddze} ddze,#{item.ddsyed} ddsyed,#{item.ddyyed} ddyyed
+            </foreach>
+            )
+            tmp
+            where
+            yhjq.yhjqid=tmp.yhjqid
+        </if>
+    </update>
+    <update id="updateDdyes" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_yhjq yhjq
+            set
+            ddze=cast (tmp.ddze as numeric )
+            ,ddsyed=cast (tmp.ddsyed as numeric )
+            ,ddyyed=cast (tmp.ddyyed as numeric )
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.yhjqid} yhjqid,#{item.ddze} ddze,#{item.ddsyed} ddsyed,#{item.ddyyed} ddyyed
+            </foreach>
+            )
+            tmp
+            where
+            yhjq.yhjqid=tmp.yhjqid
+        </if>
+    </update>
+    <update id="updateListSyed" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_yhjq yhjq
+            set syed=yhjq.syed + cast(tmp.syed as numeric)
+            ,yyed=yhjq.yyed-cast(tmp.yyed  as numeric)
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.yhjqid} yhjqid,#{item.syed} syed,#{item.yyed} yyed
+            </foreach>
+            )
+            tmp
+            where
+            yhjq.yhjqid=tmp.yhjqid
+        </if>
+    </update>
+    <select id="getPagedDtoList" parameterType="YhjqDto" resultType="YhjqDto">
+        select yhjq.yhjqid,yhjq.yhid,yhjq.jqze,yhjq.dw,yhjq.jqlx,yhjq.yyed,yhjq.syed,yhjq.nd,
+        yhjq.yxq,to_char(yhjq.yeqksj,'yyyy-mm-dd') yeqksj,yhjq.kssj,yhjq.ddze,yhjq.ddyyed,yhjq.ddsyed,jcsj.csmc jqlxmc,xtyh.zsxm,xtyh.yhm
+        from igams_yhjq yhjq
+        left join matridx_jcsj jcsj on jcsj.csid=yhjq.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=yhjq.yhid
+        <where>
+            yhjq.yhjqid is not null
+            <if test="ids!=null and ids.size>0">
+                and yhjq.yhjqid in
+                <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="entire != null and entire != ''">
+                and (
+                xtyh.yhm ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="diffentFlag != null and diffentFlag != ''">
+                and (yhjq.ddze!=yhjq.jqze or yhjq.syed != yhjq.ddsyed)
+            </if>
+            <if test = "jqlxs != null and jqlxs.size() > 0"  >
+                and yhjq.jqlx in
+                <foreach collection="jqlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDtoByDdcs" parameterType="YhjqDto" resultType="YhjqDto">
+        select yhjq.yhjqid,yhjq.yhid,yhjq.jqze,yhjq.dw,yhjq.jqlx,yhjq.yyed,yhjq.syed,yhjq.nd,yhjq.ddze,yhjq.ddyyed,yhjq.ddsyed,xtyh.zsxm
+        from igams_yhjq yhjq
+        left join matridx_jcsj jcsj on jcsj.csid=yhjq.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=yhjq.yhid
+        <where>
+            yhjq.nd = #{nd} and xtyh.ddid = #{ddid} and yhjq.jqlx = #{jqlx}
+        </where>
+    </select>
+    <!-- 批量新增 -->
+    <insert id="insertYhjqDtos" parameterType="List">
+        INSERT INTO igams_yhjq
+        (yhjqid, yhid, jqze, dw, jqlx, yyed, syed, nd, yxq, kssj, ddze, ddyyed, ddsyed)
+        VALUES
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.yhjqid},#{item.yhid},cast(#{item.jqze} as numeric ),#{item.dw},#{item.jqlx},cast(#{item.yyed} as numeric )
+                ,cast(#{item.syed} as numeric ),#{item.nd},cast(#{item.yxq} as date),cast(#{item.kssj} as date),cast(#{item.ddze} as numeric )
+                ,cast(#{item.ddyyed} as numeric ),cast(#{item.ddsyed} as numeric )
+                )
+            </foreach>
+        </if>
+    </insert>
+    <update id="updateYhjqDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                UPDATE igams_yhjq
+                <set>
+                    <if test="item.kssj != null and item.kssj != ''">
+                        kssj=cast(#{item.kssj} as date),
+                    </if>
+                    <if test="item.yxq != null and item.yxq != ''">
+                        yxq=cast(#{item.yxq} as date),
+                    </if>
+                    <if test="item.jqze != null and item.jqze != ''">
+                        jqze=cast(#{item.jqze} as numeric ),
+                    </if>
+                    <if test="item.syed != null and item.syed != ''">
+                        syed=cast(#{item.syed} as numeric),
+                    </if>
+                    <if test="item.ddze != null and item.ddze != ''">
+                        ddze=cast(#{item.ddze} as numeric),
+                    </if>
+                    <if test="item.ddsyed != null and item.ddsyed != ''">
+                        ddsyed=cast(#{item.ddsyed} as numeric),
+                    </if>
+                    <if test="item.ddyyed != null and item.ddyyed != ''">
+                        ddyyed=cast(#{item.ddyyed} as numeric),
+                    </if>
+                </set>
+                where yhjqid = #{item.yhjqid}
+            </foreach>
+        </if>
+    </update>
+</mapper>

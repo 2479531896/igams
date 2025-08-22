@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <script type="text/javascript" src="/js/detection/detectLab/detectLab_list.js"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+    <form id="detectlab_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" id="jclx" name="jclx" th:value="${jclx}" />
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="detectlab_select" id="detectlab_select" class="form-control chosen-select" style="height:34px;">
+                            <option value="0">标本编号</option>
+                            <option value="1">标本子编号</option>
+                            <option value="2">患者姓名</option>
+                            <option value="3">证件号</option>
+                            <option value="4">采集人员</option>
+                        </select>
+                        <input id="detectlab_input" name="detectlab_input" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {searchDetectlabResult(); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>预约检测日期</label>
+                        <input id="yyjcrqstart" name="yyjcrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="yyjcrqend" name="yyjcrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>实验号</label>
+                        <input id="syhstart" name="syhstart" class="form-control" placeholder="查询起始值" validate="{required:true}" />~
+                        <input id="syhend" name="syhend" class="form-control" placeholder="查询结束值" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit" style="color:black;">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:60px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="jcdxlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测对象类型">检测对象类型：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${jcdxlxlist!=null && jcdxlxlist.size() >0}" th:each="dto:${jcdxlxlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[jcdxlx]],[[${dto.csid}]],[[detectlab_formSearch]]);" th:id="'jcdxlx_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jczxm_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="单/混检">单/混检：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${zxmlist!=null && zxmlist.size() >0}" th:each="dto:${zxmlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[jczxm]],[[${dto.csid}]],[[detectlab_formSearch]]);" th:id="'jczxm_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-6" >
+                    <div class="btu_edit" >
+                        <button type="button" id="detectlab_one" class="btn btn-primary" onclick="clickFlag(1)">已预约未采集</button>
+                        <button type="button" id="detectlab_four" class="btn btn-primary" onclick="clickFlag(4)">已采集未接收</button>
+                        <button type="button" id="detectlab_two" class="btn btn-primary" onclick="clickFlag(2)">已接收未实验</button>
+                        <button type="button" id="detectlab_three" class="btn btn-primary" onclick="clickFlag(3)">已实验未发送报告</button>
+                        <button type="button" id="detectlab_six" class="btn btn-primary" onclick="clickFlag(6)">已出报告未交付</button>
+                        <button type="button" id="detectlab_five" class="btn btn-primary" onclick="clickFlag(5)">已过期</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <input type="hidden" id="jcdxlx_id_tj" name="jcdxlx_id_tj">
+        <input type="hidden" id="jczxm_id_tj" name="jczxm_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="detectlab_list" class="table table-hover table-bordered table-hidden"></table>
+    </form>
+</div>
+</body>
+</html>
+

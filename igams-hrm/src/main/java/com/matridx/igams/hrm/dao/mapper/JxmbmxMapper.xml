@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJxmbmxDao" >
+    <insert id="insert" parameterType="JxmbmxDto">
+        insert into igams_jxmbmx(jxmbmxid,jxmbid
+        <if test="khzb !=null and khzb !=''">
+            ,khzb
+        </if>
+        <if test="sm!=null and sm !='' ">
+            ,sm
+        </if>
+        <if test="fs!=null and fs !=''">
+            ,fs
+        </if>
+        <if test="xh!=null and xh !=''">
+            ,xh
+        </if>
+        <if test="zbdj!=null and zbdj !=''">
+            ,zbdj
+        </if>
+        <if test="zbsjid!=null and zbsjid !=''">
+            ,zbsjid
+        </if>
+        ,lrry,lrsj,scbj) values( #{jxmbmxid},#{jxmbid}
+        <if test="khzb !=null and khzb !=''">
+            ,#{khzb}
+        </if>
+        <if test="sm!=null and sm !='' ">
+            ,#{sm}
+        </if>
+        <if test="fs!=null and fs !=''">
+            ,cast(#{fs} as numeric )
+        </if>
+        <if test="xh!=null and xh !=''">
+            ,cast (#{xh} as numeric)
+        </if>
+        <if test="zbdj!=null and zbdj !=''">
+            ,#{zbdj}
+        </if>
+        <if test="zbsjid!=null and zbsjid !=''">
+            ,#{zbsjid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <update id="update" parameterType="JxmbmxDto">
+        update igams_jxmbmx
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="khzb!=null and khzb!=''">
+                ,khzb=#{khzb}
+            </if>
+            <if test="sm!=null and sm!=''">
+                ,sm=#{sm}
+            </if>
+            <if test="fs!=null and fs!=''">
+                ,fs=#{fs}
+            </if>
+            <if test="xh!=null and xh!=''">
+                ,xh=#{xh}
+            </if>
+            <if test="zbdj!=null and zbdj!=''">
+                ,zbdj=#{zbdj}
+            </if>
+            <if test="zbdjid!=null and zbdjid!=''">
+                ,zbdjid=#{zbdjid}
+            </if>
+        </set>
+        <where>
+            jxmbmxid=#{jxmbmxid}
+        </where>
+    </update>
+    <update id="delete" parameterType="JxmbmxDto">
+        update igams_jxmbmx set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jxmbid in
+            <if test="ids!=null and ids.size>0">
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <update id="deleteByJxmbid" parameterType="String">
+       delete from igams_jxmbmx
+        <where>
+            jxmbid=#{jxmbid}
+        </where>
+    </update>
+    <select id="getDtoList" resultType="JxmbmxDto" parameterType="JxmbmxDto">
+        SELECT
+	jxmbmx.khzb,
+	jxmbmx.sm,
+	jxmbmx.fs,
+	jxmbmx.xh,
+	jxmbmx.zbdj,
+	mbsz.mbid,
+	jxmb.mbmc,
+	mbsz.khzq,
+	mbsz.sxrq,
+	xtyh.zsxm lrry,
+	jgxx.jgmc bm,
+	jxmb.zf,
+	jxmbmx.zbsjid,
+	jxmbmx.jxmbid,
+	jxmbmx.jxmbmxid,
+    jxmb.lx,
+        mbsz.mbshid,
+        jxmb.xgxsm
+FROM
+	igams_jxmbmx jxmbmx
+	LEFT JOIN igams_jxmb jxmb on jxmb.jxmbid=jxmbmx.jxmbid
+	LEFT JOIN igams_mbsz mbsz ON mbsz.mbid = jxmb.jxmbid and mbsz.scbj ='0'
+	LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = jxmb.lrry
+	LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = jxmb.bm
+	<where>
+        jxmbmx.scbj='0'
+        <if test="jxmbid!=null and jxmbid!=''">
+            and jxmbmx.jxmbid=#{jxmbid}
+        </if>
+    </where>
+    order by jxmbmx.xh asc
+    </select>
+    <insert id="insertMbmxList" parameterType="List">
+        insert into igams_jxmbmx(
+        jxmbmxid,
+        jxmbid,
+        khzb,
+        sm,
+        fs,
+        xh,
+        zbdj,
+        zbsjid,
+        lrry,
+        lrsj,
+        scbj
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.jxmbmxid},#{item.jxmbid},#{item.khzb},#{item.sm},cast(#{item.fs} as numeric),cast(#{item.xh} as numeric),cast(#{item.zbdj} as numeric),#{item.zbsjid},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+</mapper>

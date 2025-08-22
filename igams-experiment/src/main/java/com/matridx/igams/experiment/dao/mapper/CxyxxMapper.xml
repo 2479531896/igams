@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.ICxyxxDao" >
+
+	<delete id="delete" parameterType="CxyxxDto">
+		delete from igams_cxyxx
+	</delete>
+	
+	<insert id="insertCxyFromOut" parameterType="List">
+		insert into igams_cxyxx(cxyid,cxybh,mc,czxt,xh,jt2bj,cs,cxxhsj,scbj)
+		values
+		<foreach collection="list" separator="," item="item" index="index">
+			(#{item.cxyid},#{item.cxybh},#{item.mc},#{item.czxt},#{item.xh},#{item.jt2bj},#{item.cs},#{item.cxxhsj},#{item.scbj})
+		</foreach>
+	</insert>
+
+	<update id="updateCxyJcsj" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update matridx_jcsj jscj
+			set scbj=tmp.scbj,xgsj=LOCALTIMESTAMP,
+			fcsid= (case when tmp.fcsid is null then jscj.fcsid else tmp.fcsid end )
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.mc} cxymc,#{item.cxybh} cxybh,#{item.scbj} scbj,#{item.fcsid} fcsid
+			</foreach>
+			)
+			tmp
+			where
+			jscj.csdm=tmp.cxybh
+			and jscj.jclb='SEQUENCER_CODE'
+			and jscj.csmc=tmp.cxymc
+		</if>
+	</update>
+	<select id="getDto" parameterType="CxyxxDto" resultType="CxyxxDto">
+		select cxyxx.cxyid,cxyxx.cxybh,cxyxx.mc,cxyxx.czxt,cxyxx.xh,cxyxx.jt2bj,cxyxx.cs,cxyxx.cxxhsj,jc_cxy.cskz3 cxycskz3
+		from igams_cxyxx cxyxx
+		left join matridx_jcsj jc_cxy on jc_cxy.csdm=cxyxx.cxybh and jc_cxy.scbj='0' and jc_cxy.jclb ='SEQUENCER_CODE'
+		<where>
+		    <if test="cxyid != null and cxyid!= ''">
+				cxyxx.cxyid=#{cxyid}
+			</if>
+			<if test="mc != null and mc!= ''">
+				cxyxx.mc=#{mc}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="CxyxxDto" resultType="CxyxxDto">
+		select cxyid,mc,sm,czxt,xh,jt2bj,cs,cxxhsj,cxybh from igams_cxyxx where scbj ='0'
+	</select>
+
+	<select id="getDtoByMcOrCxybh" parameterType="CxyxxDto" resultType="CxyxxDto">
+		select cxyxx.cxyid,cxyxx.mc,cxyxx.sm,cxyxx.czxt,cxyxx.xh,cxyxx.jt2bj,cxyxx.cs,cxyxx.cxxhsj,cxyxx.cxybh,jc_cxy.fcsid jcdw
+		from igams_cxyxx cxyxx
+		left join matridx_jcsj jc_cxy on jc_cxy.csdm=cxyxx.cxybh and jc_cxy.jclb ='SEQUENCER_CODE'
+		where cxyxx.mc ilike '%'||#{cxybh}||'%' or cxyxx.cxybh ilike '%'||#{cxybh}||'%'
+	</select>
+</mapper>

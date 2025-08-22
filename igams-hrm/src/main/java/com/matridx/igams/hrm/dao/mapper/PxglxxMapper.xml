@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IPxglxxDao" >
+    <insert id="insertPxglxxDtos" parameterType="List">
+        insert into igams_pxglxx(pxglid,gllx,glid,pxid
+        )
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.pxglid}, #{item.gllx},
+            #{item.glid},
+            #{item.pxid})
+        </foreach>
+    </insert>
+    <delete id="delete" parameterType="PxglxxDto">
+        delete from igams_pxglxx where pxid = #{pxid}
+    </delete>
+    <select id="getDtoList" parameterType="PxglxxDto" resultType="PxglxxDto">
+        select pxglid,gllx,glid,pxid
+        from igams_pxglxx
+        <where>
+        pxid = #{pxid}
+            <if test="gllx != null and gllx != ''">
+                and gllx = #{gllx}
+            </if>
+        </where>
+    </select>
+    <select id="getTrainByWj" parameterType="PxglxxDto" resultType="PxglxxDto">
+        select pxgl.pxid,pxgl.pxbt,lb.csmc pxlbmc,zlb.csmc pxzlbmc,to_char(pxgl.gqsj,'YYYY-MM-dd') gqsj
+        from igams_pxglxx pxglxx
+        left join igams_pxgl pxgl on pxgl.pxid = pxglxx.pxid
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+        <where>
+            pxglxx.gllx ='0' and pxglxx.glid = #{glid}
+        </where>
+    </select>
+</mapper>

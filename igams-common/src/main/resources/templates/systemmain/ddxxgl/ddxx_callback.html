@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form id="dingtalkCallbackForm"  th:action ="@{${urlPrefix}+'/common/dingtalk/registercallbackSavePage'}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+	<input type="hidden" name="access_token"/>
+	<div class="body-content tab-content">
+		<div role="tabpanel" class="tab-pane fade active in" id="partnerInfoTab" aria-labelledby="profile-tab">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+							<div class="form-group">
+								<label for="" class="col-xs-2 col-sm-2 col-md-2  col-lg-2 control-label">
+									<span style="color:red;">*</span>公司：
+								</label>
+								<div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+									<select id="wbcxid" name="wbcxid"  class="form-control chosen-select" validate="{required:true}" >
+										<option  value="">--请选择--</option>
+										<option  th:if="${maps!=null && maps.size() > 0}"  th:each="map:${maps}"  th:text="${map['wbcxmc']}"   th:value="${map['wbcxid']}"  th:token="${map['token']}" th:aeskey="${map['aeskey']}" th:selected="${wbcxid eq map['wbcxid']}"></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+							<div class="form-group">
+								<label for="" class="col-xs-2 col-sm-2 col-md-2  col-lg-2 control-label">
+									<span style="color:red;">*</span>回调地址：
+								</label>
+								<div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+									<input type="text" id="url" name="url" th:value="${url}" data-clear="true" validate="{required:true,stringMaxLength:256}" class="form-control" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+<script type="text/javascript">
+	//选择消息对应类型
+	$("#dingtalkCallbackForm #wbcxid").on('change',function(){
+		var wbcxid =$("#dingtalkCallbackForm #wbcxid").val();
+		if (wbcxid){
+			$.ajax({
+				url : "/common/dingtalk/pagedataGetUrl",
+				type : "post",
+				data : {wbcxid:wbcxid,"access_token":$("#ac_tk").val()},
+				dataType : "json",
+				success:function(data) {
+					$("#dingtalkCallbackForm #url").val(data.url)
+				}
+			});
+		}
+
+	})
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IRwrqDao" >
+	<!-- 根据条件查询信息 -->
+	<select id="getDtoList" parameterType="RwrqDto" resultType="RwrqDto">
+		select rwrq.rqid,rwrq.rwid,rwrq.jhksrq,rwrq.jhjsrq,rwrq.sjksrq,rwrq.sjjsrq,rwrq.lrry,rwrq.lrsj,
+			xmjdxx.jdmc,xmjdxx.xmjdid,xmrw.jdfs
+		from igams_xmjdrw xmrw
+		left outer join igams_xmjdxx xmjdxx on xmrw.xmid = xmjdxx.xmid 
+		left outer join igams_rwrq rwrq on xmrw.rwid = rwrq.rwid and rwrq.scbj = '0' and rwrq.xmjdid = xmjdxx.xmjdid
+		<where>
+			<if test="rwid !=null and rwid != ''">
+				xmrw.rwid = #{rwid}
+			</if>
+		</where>
+		order by xmjdxx.xh
+	</select>
+
+	<!-- 根据部门查询信息-->
+	<select id="getInfoListBySj" parameterType="String" resultType="RwrqDto">
+		select rwrq.rqid,gzgl.ywmc as rwmc,xmjdxx.jdmc,rwrq.rwid,gzgl.gzid,
+		case when rwrq.sjksrq is null then #{startTime} else to_char(rwrq.sjksrq,'YYYY-MM-DD')  end startTime,
+		case when rwrq.sjjsrq is null then #{endTime} else to_char(rwrq.sjjsrq,'YYYY-MM-DD')  end endTime,
+        yh.zsxm as clryxm from igams_rwrq rwrq
+		left join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid
+		left join igams_gzgl gzgl on rwrq.rwid=gzgl.rwid
+		left outer join matridx_xtyh yh on rwrq.clry = yh.yhid
+		where rwrq.scbj = '0' and xmjdxx.scbj = '0' and gzgl.scbj = '0' and yh.zsxm is not null and  yh.zsxm != ''
+		and gzgl.jgid = (select jgid from matridx_yhssjg where yhid = #{yhid})
+		and rwrq.clry is not null and  rwrq.clry != ''
+		and (
+		to_char(rwrq.jhksrq,'YYYY-MM-DD') &gt;=  #{startTime}
+		or to_char(rwrq.sjksrq,'YYYY-MM-DD') &gt;=  #{startTime}
+		)
+		and to_char(rwrq.jhksrq,'YYYY-MM-DD') &lt;= #{endTime}
+		order by rwrq.sjksrq
+	</select>
+
+	<!-- 根据部门查询信息-->
+	<select id="getInfoListByJh" parameterType="RwrqDto" resultType="RwrqDto">
+		select rwrq.rqid,gzgl.ywmc as rwmc,xmjdxx.jdmc,rwrq.rwid,gzgl.gzid,
+		case when rwrq.jhksrq is null then #{startTime} else to_char(rwrq.jhksrq,'YYYY-MM-DD') end startTime,
+		case when rwrq.jhjsrq is null then #{endTime} else to_char(rwrq.jhjsrq,'YYYY-MM-DD') end endTime,
+		yh.zsxm as clryxm from igams_rwrq rwrq
+		left join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid
+		left join igams_gzgl gzgl on rwrq.rwid=gzgl.rwid
+		left outer join matridx_xtyh yh on rwrq.clry = yh.yhid
+		where rwrq.scbj = '0' and xmjdxx.scbj = '0' and gzgl.scbj = '0' and yh.zsxm is not null and  yh.zsxm != ''
+		and gzgl.jgid = (select jgid from matridx_yhssjg where yhid = #{yhid})
+		and rwrq.clry is not null and  rwrq.clry != ''
+		and (
+		to_char(rwrq.jhksrq,'YYYY-MM-DD') &gt;=  #{startTime}
+		or to_char(rwrq.sjksrq,'YYYY-MM-DD') &gt;=  #{startTime}
+		)
+		and to_char(rwrq.jhksrq,'YYYY-MM-DD') &lt;= #{endTime}
+		order by rwrq.jhksrq
+	</select>
+	<!-- 新增任务日期信息 -->
+	<insert id="insert" parameterType="RwrqModel">
+		insert into igams_rwrq(rqid
+		<if test="rwid !=null and rwid != ''">
+			,rwid 
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,xmjdid
+		</if>
+		<if test="jhksrq !=null and jhksrq != ''">
+			,jhksrq
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+			,jhjsrq
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,sjksrq
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,sjjsrq
+		</if>
+		<if test="jdfs !=null and jdfs != ''">
+			,jdfs
+		</if>
+		,lrry,lrsj,scbj) values(#{rqid}
+		<if test="rwid !=null and rwid != ''">
+			,#{rwid}
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,#{xmjdid}
+		</if>
+		<if test="jhksrq !=null and jhksrq != ''">
+			,cast(#{jhksrq} as date)
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+			,cast(#{jhjsrq}as date)
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,current_date
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,current_date
+		</if>
+		<if test="jdfs !=null and jdfs != ''">
+			,cast(#{jdfs} as numeric )
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 根据任务ID以及项目阶段ID查询该任务的日期信息 -->
+	<select id="getRqxxByRwidAndXmjdid" parameterType="RwrqDto" resultType="RwrqDto">
+		select rqid,rwid,xmjdid,jhksrq,jhjsrq,sjksrq,sjjsrq
+		from igams_rwrq
+		<where>
+			scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+			and rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+			and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</select>
+	<!-- 根据任务ID以及项目阶段ID更新该任务的日期信息 -->
+	<update id="modRqxxByRwidAndXmjdid" parameterType="RwrqDto">
+		update igams_rwrq set
+		xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="jhksrq !=null and jhksrq != ''">
+		,jhksrq=cast(#{jhksrq} as date)
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+		,jhjsrq=cast(#{jhjsrq} as date)
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+		,sjksrq=cast(#{sjksrq} as date)
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+		,sjjsrq=cast(#{sjjsrq} as date)
+		</if>
+		<if test="jzrq !=null and jzrq != ''">
+		,jzrq=cast(#{jzrq} as date)
+		</if>
+		<where>
+			scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+			and rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+			and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</update>
+	<!-- 查询日期信息 -->
+	<select id="getDto" parameterType="RwrqDto" resultType="RwrqDto">
+		select rqid,rwid,xmjdid,jhksrq,jhjsrq,sjksrq,sjjsrq,jzrq
+		from igams_rwrq
+		<where>
+			scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+			and rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+			and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</select>
+	<!-- 根据日期ID更新或新增任务日期信息 -->
+	<update id="insertOrUpdateRwrq" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				insert into igams_rwrq
+					(rqid,rwid,xmjdid,jhksrq,sjksrq,jhjsrq,sjjsrq,jzrq,clry,jdfs,lrry,lrsj,scbj)
+				values
+					(#{item.rqid},#{item.rwid},#{item.xmjdid},cast(#{item.jhksrq} as date),cast(#{item.sjksrq} as date),cast(#{item.jhjsrq} as date),cast(#{item.sjjsrq} as date),cast(#{item.jzrq} as date),#{item.clry},cast(#{item.jdfs} as numeric ),#{item.lrry},LOCALTIMESTAMP,'0')
+				on conflict(rqid)
+				do update set
+					<if test="item.jhksrq !=null and item.jhksrq != ''">
+						jhksrq = cast(#{item.jhksrq} as date),
+					</if>
+					<if test="item.jhjsrq !=null and item.jhjsrq != ''">
+						jhjsrq = cast(#{item.jhjsrq} as date),
+					</if>
+					<if test="item.clry !=null and item.clry != ''">
+						clry = #{item.clry},
+					</if>
+					<choose>
+						<when test="item.jdfs !=null and item.jdfs != ''">
+							jdfs = cast(#{item.jdfs} as numeric ),
+						</when>
+						<otherwise>
+							jdfs = null,
+						</otherwise>
+					</choose>
+					sjksrq = cast(#{item.sjksrq} as date),sjjsrq = cast(#{item.sjjsrq} as date),xgry = #{item.xgry},xgsj = LOCALTIMESTAMP
+			</foreach>
+		</if>
+	</update>
+	<!-- 根据日期ID更新或新增任务日期信息 -->
+	<update id="insertOrUpdateJhrq" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				insert into igams_rwrq
+					(rqid,rwid,xmjdid,jhksrq,sjksrq,jhjsrq,sjjsrq,lrry,lrsj,scbj)
+				values
+					(#{item.rqid},#{item.rwid},#{item.xmjdid},cast(#{item.jhksrq} as date),cast(#{item.sjksrq} as date),cast(#{item.jhjsrq} as date),cast(#{item.sjjsrq} as date),#{item.lrry},LOCALTIMESTAMP,'0')
+				on conflict(rqid)
+				do update set
+					<if test="item.sjksrq !=null and item.sjksrq != ''">
+						sjksrq = cast(#{item.sjksrq} as date),
+					</if>
+					<if test="item.sjjsrq !=null and item.sjjsrq != ''">
+						sjjsrq = cast(#{item.sjjsrq} as date),
+					</if>
+					<choose>
+		                <when test="item.jhksrq !=null and item.jhksrq != ''">
+		                    jhksrq = cast(#{item.jhksrq} as date),
+		                </when>
+		                <otherwise>
+		                    jhksrq = null,
+		                </otherwise>
+		            </choose>
+					<choose>
+		                <when test="item.jhjsrq !=null and item.jhjsrq != ''">
+		               		jhjsrq = cast(#{item.jhjsrq} as date),
+		                </when>
+		                <otherwise>
+		                    jhjsrq = null,
+		                </otherwise>
+		            </choose>
+					xgry = #{item.xgry},xgsj = LOCALTIMESTAMP
+			</foreach>
+		</if>
+	</update>
+	<update id="updateJdfss" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_rwrq rwrq
+			set jdfs=case when tmp.jdfs !='' then cast (tmp.jdfs as numeric ) else null end
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.jdfs} jdfs,#{item.xmjdid} xmjdid,#{item.rwid} rwid
+			</foreach>
+			)
+			tmp
+			where
+			rwrq.rwid=tmp.rwid and rwrq.xmjdid = tmp.xmjdid
+		</if>
+	</update>
+</mapper>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IQzszDao" >
+    <delete id="delete" parameterType="QzszDto">
+        delete from igams_qzsz where csszid = #{csszid}
+    </delete>
+    <delete id="deleteByJxmbids" parameterType="QzszDto">
+        delete from igams_qzsz where jxmbid in
+        <foreach collection="jxmbids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="getDtoList" parameterType="QzszDto" resultType="QzszDto">
+        SELECT
+            qzsz.qzszid,qzsz.csszid,qzsz.jxmbid,qzsz.gwid,qzsz.qz,qzsz.mbszid,spgw.gwmc,qzsz.xh
+        FROM
+        igams_qzsz qzsz
+        left join matridx_spgw spgw on spgw.gwid = qzsz.gwid
+        <where>
+        1=1
+            <if test="csszid!=null and csszid!=''">
+                and qzsz.csszid = #{csszid}
+            </if>
+             <if test="jxmbid!=null and jxmbid!=''">
+                and qzsz.jxmbid = #{jxmbid}
+             </if>
+            <if test="mbszid!=null and mbszid!=''">
+                and qzsz.mbszid = #{mbszid}
+            </if>
+        </where>
+        ORDER BY qzsz.xh ASC
+    </select>
+    <select id="getDtoByJxmbidAndMbszidWithNull" parameterType="QzszDto" resultType="QzszDto">
+        SELECT
+            qzsz.qzszid,qzsz.csszid,qzsz.jxmbid,qzsz.gwid,qzsz.qz,qzsz.mbszid,qzsz.xh
+        FROM
+            igams_qzsz qzsz
+        WHERE qzsz.jxmbid = #{jxmbid} and qzsz.mbszid = #{mbszid} and (qzsz.gwid is null or qzsz.gwid = '')
+    </select>
+    <select id="getDtoListByMzbszid" parameterType="QzszDto" resultType="QzszDto">
+        SELECT
+            qzsz.qzszid,qzsz.csszid,qzsz.jxmbid,qzsz.gwid,qzsz.qz,qzsz.mbszid,spgw.gwmc,qzsz.xh
+        FROM
+        igams_qzsz qzsz
+        left join matridx_spgw spgw on spgw.gwid = qzsz.gwid
+        WHERE qzsz.mbszid = #{mbszid}
+        ORDER BY qzsz.xh ASC
+    </select>
+
+    <insert id="insertQzszDtos" parameterType="List">
+        insert into igams_qzsz(qzszid,csszid,jxmbid,gwid,qz,mbszid,xh)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.qzszid}, #{item.csszid},#{item.jxmbid},#{item.gwid},
+            cast (#{item.qz} as numeric),#{item.mbszid},cast (#{item.xh} as numeric))
+        </foreach>
+    </insert>
+
+    <delete id="deleteByJxmbds" parameterType="QzszDto">
+        delete from igams_qzsz where jxmbid in
+        <foreach collection="jxmbids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

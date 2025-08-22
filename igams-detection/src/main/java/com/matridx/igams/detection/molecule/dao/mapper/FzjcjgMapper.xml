@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IFzjcjgDao" >
+    <insert id="insert" parameterType="FzjcjgDto">
+        insert into igams_fzjcjg(fzjcjgid,fzxmid,jcjg,fzjcid)
+        values(#{fzjcjgid},#{fzxmid},#{jcjg},#{fzjcid})
+    </insert>
+
+    <insert id="addDtoList" parameterType="List">
+        insert into igams_fzjcjg(fzjcjgid,fzxmid,jcjg,fzjcid)
+        values
+               <foreach collection="list" item="item" separator=",">
+                   (#{item.fzjcjgid},#{item.fzxmid},#{item.jcjg},#{item.fzjcid})
+               </foreach>
+    </insert>
+
+    <delete id="delDtoListByIds" parameterType="FzjcjgDto">
+        delete from igams_fzjcjg
+        where
+        fzjcid in (
+        <foreach collection="ids" separator=","  item="item">
+            #{item}
+        </foreach>
+        )
+    </delete>
+
+    <select id="getDtosList" parameterType="List" resultType="FzjcjgDto">
+        select jcjg.fzjcid,jcjg.fzxmid,jcjg.jcjg,jc_jcjg.csmc jcjgmc,jcjg.fzjcjgid
+            from igams_fzjcjg jcjg
+            left join matridx_jcsj jc_jcjg on jc_jcjg.csid=jcjg.jcjg
+        where fzjcid in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getListByXmidAndJcid" parameterType="FzjcjgDto" resultType="FzjcjgDto">
+        select fzjcid,fzxmid,jcjg
+        from igams_fzjcjg
+        where fzjcid=#{fzjcid} and fzxmid=#{fzxmid}
+    </select>
+
+    <!--根据分子检测id查询结果信息-->
+    <select id="getFzjcjgListById" resultType="Map" parameterType="String">
+        select fzjcxm.fzxmid,
+               fzjcxm.fzjcxmid,
+               jcxm_jcsj.csmc jcxmmc,
+               jczxm_jcsj.csmc jczxmmc,
+               jczxm_jcsj.cskz3 jczxmjc,
+               jcjg_jcsj.csmc jcjgmc,
+               jcxm_jcsj.cskz2 gzlx
+        from igams_fzjcxm fzjcxm
+        left join matridx_jcsj jcxm_jcsj on jcxm_jcsj.csid = fzjcxm.fzjcxmid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid = fzjcxm.fzxmid
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = fzjcjg.jcjg
+        where fzjcxm.fzjcid=#{fzjcid}
+
+    </select>
+</mapper>

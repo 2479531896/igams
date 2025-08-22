@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IMbszDao">
+    <update id="updateMbszDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_mbsz set
+                mbszid=#{item.mbszid}
+                <if test="item.yffrq !=null and  item.yffrq !=''">
+                    ,yffrq=cast(#{item.yffrq} as date)
+                </if>
+                <where>
+                    mbszid=#{item.mbszid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <update id="update" parameterType="MbszDto">
+        update igams_mbsz set
+        <if test="jxshid != null and jxshid != ''">
+            jxshid = #{jxshid},
+        </if>
+        <if test="khlx != null and khlx != ''">
+            khlx = #{khlx},
+        </if>
+        <if test="khzq != null and khzq != ''">
+            khzq = #{khzq},
+        </if>
+        <if test="xffrq != null and xffrq != ''">
+            xffrq = cast (#{xffrq} as numeric ),
+        </if>
+        <if test="ffkhy != null and ffkhy != ''">
+            ffkhy = #{ffkhy},
+        </if>
+        <if test="xjzrq != null and xjzrq != ''">
+            xjzrq = cast (#{xjzrq} as numeric),
+        </if>
+        <if test="xjxtx != null and xjxtx != ''">
+            xjxtx = cast (#{xjxtx} as numeric),
+        </if>
+        <if test="zdtj != null and zdtj != ''">
+            zdtj = #{zdtj},
+        </if>
+        <if test="mbjb != null and mbjb != ''">
+            mbjb = #{mbjb},
+        </if>
+        <if test="sxrq != null and sxrq != ''">
+            sxrq = cast (#{sxrq} as date),
+        </if>
+        <if test="yxq != null and yxq != ''">
+            yxq =  cast (#{yxq} as date),
+        </if>
+        <if test="zp != null and zp != ''">
+            zp = #{zp},
+        </if>
+        <if test="yffrq != null and yffrq != ''">
+            yffrq = cast (#{yffrq} as date),
+        </if>
+        <if test="mbshid != null and mbshid != ''">
+            mbshid = #{mbshid},
+        </if>
+        <if test="jxtzsj != null and jxtzsj != ''">
+            jxtzsj = #{jxtzsj},
+        </if>
+        <if test="mbtzsj != null and mbtzsj != ''">
+            mbtzsj = #{mbtzsj},
+        </if>
+        <if test="scbj != null and scbj != ''">
+            scbj = #{scbj},
+        </if>
+        <if test="mblx != null and mblx != ''">
+            mblx = #{mblx},
+        </if>
+        <if test="mbzlx != null and mbzlx != ''">
+            mbzlx = #{mbzlx},
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where mbszid = #{mbszid}
+    </update>
+    <update id="updateSxrqAndYxq" parameterType="MbszDto">
+        update igams_mbsz set
+        <if test="sxrq != null and sxrq != ''">
+            sxrq = cast (#{sxrq} as date),
+        </if>
+        <if test="yxq != null and yxq != ''">
+            yxq =  cast (#{yxq} as date),
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where mbid = #{mbid} and scbj ='0'
+    </update>
+    <insert id="insert" parameterType="MbszDto">
+        insert into igams_mbsz(mbszid,mbid,jxshid,khlx,khzq,xffrq,ffkhy,xjzrq,xjxtx,zdtj,mbjb,sxrq,yxq,zp,yffrq,mbshid,jxtzsj,mbtzsj,lrry,lrsj,scbj,mblx,mbzlx,fsxz
+        ) values( #{mbszid} ,#{mbid} ,#{jxshid},#{khlx},#{khzq},cast (#{xffrq} as numeric ),#{ffkhy},cast (#{xjzrq} as numeric)
+                ,cast (#{xjxtx} as numeric),#{zdtj},#{mbjb},cast (#{sxrq} as date),cast (#{yxq} as date),#{zp},cast (#{yffrq} as date),#{mbshid},#{jxtzsj},#{mbtzsj},#{lrry},LOCALTIMESTAMP,'0'
+                ,#{mblx},#{mbzlx}
+                <if test="fsxz != null and fsxz != ''">
+                    ,cast (#{fsxz} as numeric)
+                </if>
+                <if test="fsxz == null or fsxz == ''">
+                    ,null
+                </if>)
+    </insert>
+    <select id="getDtoById" parameterType="String" resultType="MbszDto">
+        SELECT
+            mbsz.mbszid,mbsz.mbid,mbsz.jxshid,mbsz.khlx,mbsz.khzq,mbsz.xffrq,mbsz.ffkhy,mbsz.xjzrq,mbsz.jzkhy,mbsz.fsxz,
+            mbsz.xjxtx,mbsz.zdtj,mbsz.mbjb,mbsz.sxrq,mbsz.yxq,mbsz.zp,mbsz.yffrq,mbsz.mbshid,mbsz.jxtzsj,mbsz.mbtzsj,
+            khlx.csmc khlxmc,khzq.csmc khzqmc,khzq.cskz1 khzqcskz1,khzq.cskz2 khzqcskz2,mbsh.shmc mbshmc,jxsh.shmc jxshmc,mbjb.csmc mbjbmc,
+            case when mbsz.ffkhy='0' then '本'||khzq.csmc when mbsz.ffkhy='1' then '次'||khzq.csmc end ffkhymc,mbsz.mblx,mblx.csmc mblxmc,mbsz.mbzlx,mbzlx.csmc mbzlxmc
+        FROM
+            igams_mbsz mbsz
+                LEFT JOIN  matridx_jcsj khlx ON khlx.csid = mbsz.khlx  AND khlx.scbj ='0'
+                LEFT JOIN matridx_jcsj khzq ON khzq.csid = mbsz.khzq AND khzq.scbj ='0'
+                left join matridx_xtsh mbsh on mbsh.shid=mbsz.mbshid
+                left join matridx_xtsh jxsh on jxsh.shid=mbsz.jxshid
+                left join matridx_jcsj mbjb on mbjb.csid=mbsz.mbjb
+                LEFT JOIN matridx_jcsj mblx ON mblx.csid = mbsz.mblx
+                LEFT JOIN matridx_jcsj mbzlx ON mbzlx.csid = mbsz.mbzlx
+        WHERE mbsz.scbj='0' AND mbsz.mbid = #{mbid}
+    </select>
+    <update id="deleteBymbid" parameterType="MbszDto">
+        update igams_mbsz set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+          where  mbid in
+        <if test="ids!=null and ids.size>0">
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+</mapper>

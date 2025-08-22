@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IZdhJkcsDao" >
+    <insert id="insertJkcsList" parameterType="List">
+        insert into igams_zdh_jkcs(jkcsid,ybxxid,cs,lrsj)values
+        <if test="jkcsDtoList !=null and jkcsDtoList.size > 0">
+            <foreach collection="jkcsDtoList" separator="," item="item" index="index">
+                (
+                #{item.jkcsid},#{item.ybxxid},#{item.cs},LOCALTIMESTAMP
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <insert id="insertJkcsDtos" parameterType="List">
+        insert into igams_zdh_jkcs(jkcsid,ybxxid,cs,lrsj,yqid)
+        <if test="jkcsDtoList !=null and jkcsDtoList.size > 0">
+            <foreach collection="jkcsDtoList" separator="union all" item="item" index="index">
+                select #{item.jkcsid},(select ybxxid from igams_zdh_ybxx where scbj='0' and zt!='80' and bbbm=#{item.bbbm} and ybjbh= #{item.ybjbh}),
+                #{item.cs},LOCALTIMESTAMP,(select csid from matridx_jcsj where csdm=#{item.yqbm} and jclb='MACHINE_TYPE')
+            </foreach>
+        </if>
+    </insert>
+</mapper>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+    <meta charset="UTF-8">
+    <style>
+       li{
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        .dragsort{
+            margin:0;
+            padding:0;
+        }
+    </style>
+    <script src="/js/plugins/dragsort/jquery.dragsort.js"></script>
+    <script type="text/javascript" src="/js/detection/detectLab/kzb_edit.js"></script>
+</head>
+<body>
+<form id="ajaxForm" th:action="'/detectlab/kzbinfo/'+${kzbglDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+    <input type="hidden" id="ybbhs" name="ybbhs">
+    <input type="hidden" id="xhs" name="xhs">
+    <input type="hidden" id="hls" name="hls">
+    <input type="hidden" id="kzbid" name="kzbid" th:value="${kzbglDto.kzbid}">
+    <input type="hidden" id="formAction" name="formAction" th:value="${kzbglDto.formAction}">
+    <input type="hidden" id="sj1" name="sj1" th:value="${kzbglDto.kzsjph}">
+    <input type="hidden" id="sj2" name="sj2" th:value="${kzbglDto.tqsjph}">
+    <input type="hidden" name="access_token" />
+
+    <div class="body-content tab-content">
+        <div role="tabpanel" class="tab-pane fade active in" id="partnerInfoTab" aria-labelledby="profile-tab">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group" style="margin:0">
+
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="form-group">
+                                <label class="col-md-4 col-sm-4 col-xs-4 control-label"  ><span style="color:red;">*</span>扩增板号：</label>
+                                <div class="col-sm-8 col-md-8 col-xs-8"  >
+                                    <input type="text" id="kzbh" name="kzbh" th:value="${kzbglDto.kzbh}"  validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12   ">
+                            <div class="form-group">
+                                <label class="col-md-4 col-sm-4 col-xs-4 control-label" ><span style="color:red;">*</span>扩增试剂：</label>
+                                <div class="col-sm-8 col-md-8 col-xs-8" th:if="${sjxsbj1=='0'}">
+                                    <input type="text" id="kzsjph" name="kzsjph" th:value="${kzbglDto.kzsjph}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;"/>
+                                </div>
+                                <div class="col-sm-8 col-md-8 col-xs-8" th:if="${sjxsbj1=='1'}">
+                                    <input type="text" id="kzsjph" name="kzsjph" th:placeholder="${kzbglDto.kzsjph}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" onclick="kzb_sjphlr1()"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="form-group">
+                                <label class="col-md-4 col-sm-4 col-xs-4 control-label" ><span style="color:red;">*</span>提取试剂：</label>
+                                <div class="col-sm-8 col-md-8 col-xs-8" th:if="${sjxsbj2=='0'}">
+                                    <input type="text" id="tqsjph" name="tqsjph" th:value="${kzbglDto.tqsjph}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;"/>
+                                </div>
+                                <div class="col-sm-8 col-md-8 col-xs-8" th:if="${sjxsbj2=='1'}">
+                                    <input type="text" id="tqsjph" name="tqsjph" th:value="${kzbglDto.tqsjph}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" onclick="kzb_sjphlr2()"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="form-group">
+                                <label class="col-md-4 col-sm-4 col-xs-4 control-label"  ><span style="color:red;">*</span>实验日期：</label>
+                                <div class="col-sm-8 col-md-8 col-xs-8" >
+                                    <input type="text" id="syrq" name="syrq" th:value="${kzbglDto.syrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="form-group">
+                                <label for="" class="col-md-4 col-sm-4 col-xs-4 control-label" >
+                                    <span style="color: red;">*</span>检测单位：
+                                </label>
+                                <div class="col-sm-8 col-md-8 col-xs-8" >
+                                    <select id="jcdw" name="jcdw"   th:value="${{mrjcdw!=null?mrjcdw.csid:kzbglDto.jcdw }}" class="form-control chosen-select" validate="{required:true}" >
+                                        <option  value="">--请选择--</option>
+                                        <option  th:if="${jcdwList!=null && jcdwList.size() > 0}" th:each="list:${jcdwList}" th:value="${list.csid}"  th:text="${list.csmc}" th:selected="${{mrjcdw != null ? mrjcdw.csid eq list.csid:kzbglDto.jcdw eq list.csid}}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin:0;padding-top: 20px;">
+                        <div class="col-md-12 col-sm-12">
+                            <div class="form-group">
+                                <div class="col-md-1 col-sm-1" style="width: 10px" ></div>
+                                <div class="col-md-11 col-sm-11">
+                                    <div class="col-md-1 col-sm-1 text-center">1</div>
+                                    <div class="col-md-1 col-sm-1 text-center">2</div>
+                                    <div class="col-md-1 col-sm-1 text-center">3</div>
+                                    <div class="col-md-1 col-sm-1 text-center">4</div>
+                                    <div class="col-md-1 col-sm-1 text-center">5</div>
+                                    <div class="col-md-1 col-sm-1 text-center">6</div>
+                                    <div class="col-md-1 col-sm-1 text-center">7</div>
+                                    <div class="col-md-1 col-sm-1 text-center">8</div>
+                                    <div class="col-md-1 col-sm-1 text-center">9</div>
+                                    <div class="col-md-1 col-sm-1 text-center">10</div>
+                                    <div class="col-md-1 col-sm-1 text-center">11</div>
+                                    <div class="col-md-1 col-sm-1 text-center">12</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-1 col-sm-1" style="width: 10px" >
+                                    <div class="col-md-12 col-sm-12">
+
+                                            <div class="form-group" >
+                                                <ul style="padding: 0px;">
+                                                    <li style="line-height:30px;text-align: center;">A</li>
+                                                    <li style="line-height:30px;text-align: center;">B</li>
+                                                    <li style="line-height:30px;text-align: center;">C</li>
+                                                    <li style="line-height:30px;text-align: center;">D</li>
+                                                    <li style="line-height:30px;text-align: center;">E</li>
+                                                    <li style="line-height:30px;text-align: center;">F</li>
+                                                    <li style="line-height:30px;text-align: center;">G</li>
+                                                    <li style="line-height:30px;text-align: center;">H</li>
+                                                </ul>
+                                            </div>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-11 col-sm-11 sortable">
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;">
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>   <input type="text" id="ybbh1-1" name="ybbh" xh="1"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh2-1" name="ybbh" xh="2"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh3-1" name="ybbh" xh="3"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh4-1" name="ybbh" xh="4"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh5-1" name="ybbh" xh="5"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh6-1" name="ybbh" xh="6"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh7-1" name="ybbh" xh="7"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh8-1" name="ybbh" xh="8"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort" >
+                                                    <li>  <input type="text" id="ybbh1-2" name="ybbh" xh="9"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-2" name="ybbh" xh="10"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-2" name="ybbh" xh="11"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-2" name="ybbh" xh="12"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-2" name="ybbh" xh="13"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-2" name="ybbh" xh="14"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-2" name="ybbh" xh="15"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-2" name="ybbh" xh="16"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>   <input type="text" id="ybbh1-3" name="ybbh" xh="17"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh2-3" name="ybbh" xh="18"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh3-3" name="ybbh" xh="19"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh4-3" name="ybbh" xh="20"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh5-3" name="ybbh" xh="21"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh6-3" name="ybbh" xh="22"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh7-3" name="ybbh" xh="23"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>   <input type="text" id="ybbh8-3" name="ybbh" xh="24"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12"  >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-4" name="ybbh" xh="25"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-4" name="ybbh" xh="26"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-4" name="ybbh" xh="27"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-4" name="ybbh" xh="28"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-4" name="ybbh" xh="29"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-4" name="ybbh" xh="30"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-4" name="ybbh" xh="31"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-4" name="ybbh" xh="32"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-5" name="ybbh" xh="33"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-5" name="ybbh" xh="34"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-5" name="ybbh" xh="35"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-5" name="ybbh" xh="36"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-5" name="ybbh" xh="37"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-5" name="ybbh" xh="38"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-5" name="ybbh" xh="39"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-5" name="ybbh" xh="40"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-6" name="ybbh" xh="41"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-6" name="ybbh" xh="42"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-6" name="ybbh" xh="43"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-6" name="ybbh" xh="44"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-6" name="ybbh" xh="45"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-6" name="ybbh" xh="46"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-6" name="ybbh" xh="47"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-6" name="ybbh" xh="48"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-7" name="ybbh" xh="49"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-7" name="ybbh" xh="50"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-7" name="ybbh" xh="51"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-7" name="ybbh" xh="52"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-7" name="ybbh" xh="53"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-7" name="ybbh" xh="54"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-7" name="ybbh" xh="55"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-7" name="ybbh" xh="56"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-8" name="ybbh" xh="57"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-8" name="ybbh" xh="58"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-8" name="ybbh" xh="59"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-8" name="ybbh" xh="60"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-8" name="ybbh" xh="61"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-8" name="ybbh" xh="62"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-8" name="ybbh" xh="63"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-8" name="ybbh" xh="64"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-9" name="ybbh" xh="65"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-9" name="ybbh" xh="66"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-9" name="ybbh" xh="67"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-9" name="ybbh" xh="68"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-9" name="ybbh" xh="69"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-9" name="ybbh" xh="70"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-9" name="ybbh" xh="71"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-9" name="ybbh" xh="72"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-10" name="ybbh" xh="73"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-10" name="ybbh" xh="74"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-10" name="ybbh" xh="75"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-10" name="ybbh" xh="76"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-10" name="ybbh" xh="77"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-10" name="ybbh" xh="78"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-10" name="ybbh" xh="79"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-10" name="ybbh" xh="80"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-11" name="ybbh" xh="81"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-11" name="ybbh" xh="82"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-11" name="ybbh" xh="83"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-11" name="ybbh" xh="84"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-11" name="ybbh" xh="85"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-11" name="ybbh" xh="86"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-11" name="ybbh" xh="87"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-11" name="ybbh" xh="88"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1" style="padding-right: 5px;padding-left: 5px;" >
+                                        <div class="col-md-12 col-sm-12" >
+                                            <div class="form-group" >
+                                                <ul class="dragsort">
+                                                    <li>  <input type="text" id="ybbh1-12" name="ybbh" xh="89"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh2-12" name="ybbh" xh="90"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh3-12" name="ybbh" xh="91"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh4-12" name="ybbh" xh="92"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh5-12" name="ybbh" xh="93"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh6-12" name="ybbh" xh="94"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh7-12" name="ybbh" xh="95"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                    <li>  <input type="text" id="ybbh8-12" name="ybbh" xh="96"   validate="{ stringMaxLength:13}" class="form-control" style="height:30px;" autocomplete="off"/></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>

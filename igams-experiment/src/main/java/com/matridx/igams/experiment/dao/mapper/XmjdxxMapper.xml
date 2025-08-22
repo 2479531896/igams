@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IXmjdxxDao" >
+
+	<!-- 增加项目阶段 -->
+	<insert id="insert" parameterType="XmjdxxModel">
+		insert into igams_xmjdxx(xmjdid
+		<if test="xmid !=null and xmid != ''">
+			,xmid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="jdid !=null and jdid != ''">
+			,jdid
+		</if>
+		<if test="jdmc !=null and jdmc != ''">
+			,jdmc
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,sjksrq
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,sjjsrq
+		</if>
+		<if test="fsbl !=null and fsbl != ''">
+			,fsbl
+		</if>
+		,lrry,lrsj,scbj) values(#{xmjdid}
+		<if test="xmid !=null and xmid != ''">
+			,#{xmid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="jdid !=null and jdid != ''">
+			,#{jdid}
+		</if>
+		<if test="jdmc !=null and jdmc != ''">
+			,#{jdmc}
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,cast(#{sjksrq} as date)
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,cast(#{sjjsrq} as date)
+		</if>
+		<if test="fsbl !=null and fsbl != ''">
+			,cast(#{fsbl} as numeric)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+
+	<!-- 根据当前项目id查询所有阶段 -->
+	<select id="selectStageByXmid" parameterType="XmglDto"  resultType="XmjdxxDto">
+		select xmjdxx.xmjdid,xmjdxx.xmid,xmjdxx.xh,xmjdxx.jdid,xmjdxx.jdmc,xmjdxx.sjksrq,xmjdxx.sjjsrq,xmjdxx.jhksrq,xmjdxx.jhjsrq,jdmb.qx
+		from igams_xmjdxx xmjdxx
+		left join igams_jdmb jdmb on jdmb.jdid = xmjdxx.jdid
+		<where>
+			xmjdxx.scbj !='1'
+			<if test="xmid !=null and xmid != ''">
+				and xmjdxx.xmid=#{xmid}
+			</if>
+		</where>
+		order by xmjdxx.xh
+	</select>
+	
+
+	<select id="selectMinTimeByXmid" parameterType="XmjdxxDto"  resultType="String">
+		select to_char(jdrw.lrsj,'YYYY-MM-DD hh24:mi') AS mintime
+		from
+			igams_xmjdxx xmjdxx
+		left join igams_jdmb jdmb on jdmb.jdid = xmjdxx.jdid
+		left join igams_xmjdrw jdrw on jdrw.xmjdid = xmjdxx.xmjdid and jdrw.scbj!='1'
+		left join matridx_xtyh xtyh on xtyh.yhid= jdrw.fzr
+		WHERE
+		xmjdxx.scbj !='1' and jdrw.lrsj is not null
+		<if test="xmid !=null and xmid != ''">
+			and xmjdxx.xmid=#{xmid}
+		</if>
+		<if test="zt !=null and zt !=''">
+			and jdrw.zt=#{zt}
+		</if>
+		<if test="yhid !=null and yhid != ''">
+			and jdrw.fzr = #{yhid}
+		</if>
+		<if test="starttime != null and starttime != ''">
+			and to_char(jdrw.lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+		</if>
+		<if test="endtime != null and endtime != ''">
+			and to_char(jdrw.lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+		</if>
+		<if test="rwmc !=null and rwmc !=''">
+			and jdrw.rwmc like '%'||#{rwmc}||'%'
+		</if>
+		<if test="fzrmc !=null and fzrmc !=''">
+			and xtyh.zsxm like '%'||#{fzrmc}||'%'
+		</if>
+		order by
+		jdrw.lrsj asc
+	LIMIT 1 ;
+	</select>
+	<delete id="deleteById" parameterType="String">
+		delete from igams_xmjdxx 
+		<where>
+		xmjdid=#{xmjdid}
+		</where> 
+	</delete>
+	<!-- 修改项目阶段信息 -->
+	<update id="updateDto" parameterType="XmjdxxDto">
+		update igams_xmjdxx set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="xh!=null and xh!=''">
+			,xh=cast(#{item.xh} as numeric)
+		</if>
+		<if test="jdmc!=null and jdmc!=''">
+			,jdmc=#{jdmc}
+		</if>
+		<if test="sjksrq!=null and sjksrq!=''">
+			,sjksrq=cast(#{sjksrq} as date)
+		</if>
+		<if test="sjjsrq!=null and sjjsrq!=''">
+			,sjjsrq=cast(#{sjjsrq} as date)
+		</if>
+		<if test="fsbl!=null and fsbl!=''">
+			,fsbl=cast(#{fsbl} as numeric )
+		</if>
+		<where>
+			xmjdid=#{xmjdid}
+		</where>
+	</update>
+	<!-- 获取最大的XH -->
+	<select id="getXh" parameterType="XmjdxxDto" resultType="int">
+		select coalesce(max(xh),0) as xh from 
+		igams_xmjdxx
+		<where> 
+		scbj !='1' 
+			<if test="xmid !=null and xmid!=''">
+				and xmid=#{xmid}
+			</if>
+		</where>
+	</select>
+	<!-- 获取项目阶段信息 -->
+	<select id="getDto" parameterType="XmjdxxDto" resultType="XmjdxxDto">
+		select xmjdxx.xmjdid,xmjdxx.xmid,xmjdxx.xh,xmjdxx.jdid,xmjdxx.jdmc,xmjdxx.sjksrq,xmjdxx.sjjsrq,to_char(xmjdxx.sjksrq,'YYYY-MM') AS fsjksrq,to_char(xmjdxx.sjjsrq,'YYYY-MM') AS fsjjsrq,xmjdxx.fsbl
+		from igams_xmjdxx xmjdxx
+		<where> 
+			xmjdxx.scbj !='1' 
+			<if test="xmjdid !=null and xmjdid!=''">
+				and xmjdxx.xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</select>
+	<!-- 项目阶段排序 -->
+	<update id="stageSort" parameterType="list">
+		<if test="list != null and list.size > 0">
+			<foreach collection="list" index="index" open="" close="" separator=";" item="item">
+				update igams_xmjdxx 
+				<set>
+					xh=cast(#{item.xh} as numeric),
+					xgry=#{item.xgry},
+					xgsj=LOCALTIMESTAMP
+					<if test="item.sjksrq!=null and item.sjksrq!=''">
+						,sjksrq=cast(#{item.sjksrq} as date)
+					</if>
+					<if test="item.sjjsrq!=null and item.sjjsrq!=''">
+						,sjjsrq=cast(#{item.sjjsrq} as date)
+					</if>
+				</set>
+				where xmjdid=#{item.xmjdid}
+			</foreach>
+		</if>
+	</update>
+	
+	<!-- 获取项目阶段信息 -->
+	<select id="getDtoList" parameterType="XmjdxxDto" resultType="XmjdxxDto">
+		select xmjdxx.xmjdid,xmjdxx.xmid,xmjdxx.xh,xmjdxx.jdid,xmjdxx.jdmc
+		from igams_xmjdxx xmjdxx
+		<where> 
+			xmjdxx.scbj !='1' 
+			<if test="xmjdid !=null and xmjdid != ''">
+				and xmjdxx.xmjdid=#{xmjdid}
+			</if>
+			<if test="xmid !=null and xmid != ''">
+				and xmjdxx.xmid=#{xmid}
+			</if>
+		</where>
+		order by xh
+	</select>
+	<!-- 根据Frwid查询子任务所在的阶段 -->
+	<select id="getJdsByFrwid" parameterType="XmjdrwDto" resultType="XmjdxxDto">
+		select xmjdxx.xmjdid,xmjdxx.jdmc 
+		from igams_xmjdxx xmjdxx
+		left join igams_xmjdrw jdrw on xmjdxx.xmjdid=jdrw.xmjdid
+		<where>
+			jdrw.frwid=#{frwid}
+		</where>
+		group by xmjdxx.xmjdid,xmjdxx.jdmc
+	</select>
+	<!-- 批量新增阶段 -->
+	<insert  id="insertByDtos" parameterType="list">
+		insert into igams_xmjdxx (xmjdid,xmid, xh, jdid,jdmc,jhksrq,jhjsrq,sjksrq,sjjsrq,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.xmjdid},#{item.xmid},cast(#{item.xh} as numeric),#{item.jdid},#{item.jdmc},cast(#{item.jhksrq} as date),cast(#{item.jhjsrq} as date),cast(#{item.sjksrq} as date),cast(#{item.sjjsrq} as date),#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	<!-- 查询序号后面的阶段 -->
+	<select id="selectStageByXh" parameterType="XmjdxxDto" resultType="XmjdxxDto">
+		select  xmjdxx.xmjdid,xmjdxx.xmid,xmjdxx.xh,xmjdxx.jdid,xmjdxx.jdmc,xmjdxx.sjksrq,xmjdxx.sjjsrq,to_char(xmjdxx.sjksrq,'YYYY-MM') AS fsjksrq,to_char(xmjdxx.sjjsrq,'YYYY-MM') AS fsjjsrq 
+		from igams_xmjdxx xmjdxx
+		<where>
+			xmjdxx.scbj != '1'
+			<if test="xh !=null and xh != ''">
+				and xmjdxx.xh > cast(#{xh} as numeric)
+			</if>
+			and xmjdxx.xmid = #{xmid}
+		</where>
+		order by xmjdxx.xh
+	</select>
+	<!-- 批量修改阶段日期 -->
+	<update id="updateByDtos" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" index="index" open="" close="" separator=";" item="item">
+				update igams_xmjdxx
+				<set>
+					xgry=#{item.xgry},
+					xgsj=LOCALTIMESTAMP
+					<if test="item.sjksrq!=null and item.sjksrq!=''">
+						,sjksrq=cast(#{item.sjksrq} as date)
+					</if>
+					<if test="item.sjjsrq!=null and item.sjjsrq!=''">
+						,sjjsrq=cast(#{item.sjjsrq} as date)
+					</if>
+				</set>
+				where xmjdid=#{item.xmjdid}
+			</foreach>
+		</if>
+	</update>
+</mapper>

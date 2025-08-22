@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IPxqxszDao" >
+    <!-- 查询机构列表(除已选择的) -->
+    <select id="getPagedUnSelectJgList" parameterType="PxqxszDto" resultType="PxqxszDto">
+        select jg.jgid,jg.jgmc,jg.jgdm
+        from matridx_jgxx jg
+        <where>
+            scbj!='1'
+            and jgid not in	(select jgid from igams_pxqxsz where pxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+            )
+            <if test="jgmc !=null and jgmc !=''">
+                and jg.jgmc like '%'||#{jgmc}||'%'
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询已选机构列表 -->
+    <select id="getPagedSelectedJgList" parameterType="PxqxszDto" resultType="PxqxszDto">
+        select jg.jgid,jg.jgmc,jg.jgdm
+        from igams_pxqxsz pxqxsz
+        left outer join matridx_jgxx jg on jg.jgid=pxqxsz.jgid
+        <where>
+            scbj!='1'and
+            pxqxsz.pxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="PxqxszDto" resultType="PxqxszDto">
+        select jg.jgid,jg.jgmc,jg.jgdm
+        from igams_pxqxsz pxqxsz
+        left outer join matridx_jgxx jg on jg.jgid=pxqxsz.jgid
+        <where>
+            scbj!='1'and
+            pxqxsz.pxid =#{pxid}
+        </where>
+    </select>
+
+
+    <insert id="insertList" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            insert into igams_pxqxsz(pxqxid,jgid,pxid
+            ) values
+            (
+                #{item.pxqxid}
+                ,#{item.jgid}
+                ,#{item.pxid}
+            )
+        </foreach>
+    </insert>
+
+
+    <delete id="delete" parameterType="PxqxszDto">
+        delete from igams_pxqxsz
+        where pxid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        <if test="jgids != null and jgids.size >0">
+            and jgid in
+            <foreach collection="jgids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jgid !=null and jgid !=''">
+            and jgid=#{jgid}
+        </if>
+    </delete>
+
+
+    <select id="getBeforeDayList" parameterType="String" resultType="PxqxszDto">
+        select yh.yhid,yh.ddid,ssjg.jgid,pxgl.pxid,pxgl.pxbt,pxgl,lb.csmc pxlbmc,yh.yhm
+        from matridx_xtyh yh
+        left join matridx_yhssjg ssjg on yh.yhid=ssjg.yhid
+        left join igams_pxqxsz pxqxsz on pxqxsz.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=pxqxsz.pxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.fzr=yh.yhid and gzgl.ywid=pxqxsz.pxid and gzgl.scbj='0'
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+        <where>
+            yh.scbj='0'and gzgl.gzid is null and
+            to_char( yh.lrsj, 'YYYY-MM-dd' ) &gt;=  #{day}
+            and to_char( yh.lrsj, 'YYYY-MM-dd' )  &lt;=to_char( now(), 'YYYY-MM-dd' )
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" th:src="@{${urlprefix}+'/js/systemmain/task/task_confirm.js'}" charset="utf-8"></script>
+		<style type="text/css">
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+		</style>
+	</head>
+	<body>
+	<div id="taskconfirm">
+		<form id="ajaxForm" th:action="${urlprefix}+'/systemmain/task/confirmSaveTask'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+			<input type="hidden" name="gzid" id="gzid" th:value="${gzglDto.gzid}"/>
+			<input type="hidden" name="ywid" id="ywid" th:value="${gzglDto.ywid}"/>
+			<input type="hidden" name="fzr" id="fzr" th:value="${gzglDto.fzr}"/>
+			<input type="hidden" name="rwid" id="rwid" th:value="${gzglDto.rwid}"/>
+			<input type="hidden" name="ywdz" id="ywdz" th:value="${gzglDto.ywdz}"/>
+			<input type="hidden" name="access_token"/>
+			<input type="hidden" id ="gzzt" name="gzzt" th:value="${gzglDto.zt}">
+			<input type="hidden" id ="gr_szz" name="gr_szz" th:value="${grszDto.szz}">
+			<input type="hidden" id ="gr_zsxm" name="gr_zsxm" th:value="${grszDto.zsxm}">
+			<input type="hidden" id ="gr_yhm" name="gr_yhm" th:value="${grszDto.yhm}">
+			<input type="hidden" name="ywlx" id ="ywlx" th:value="${ywlx}">
+			<input type="hidden" id ="gr_ddid" name="gr_ddid" th:value="${grszDto.ddid}">
+			<input type="hidden" id="fjids" name="fjids"/>
+			<input type="hidden" name="urlprefix" id ="urlprefix" th:value="${urlprefix}">
+			<input type="hidden" name="old_xmjdid" id ="old_xmjdid" th:value="${gzglDto.xmjdid}">
+			<input type="hidden" name="newJzrq" id ="newJzrq" th:value="${newJzrq}">
+			<div class="body-content">
+				<div class="panel-body">
+					<div class="row" >
+						<div class="col-md-12 col-sm-12">
+							<div class="form-group">
+								<label for="" class="col-sm-2 col-xs-12 control-label">
+									<span style="color: red;">*</span>确认结果
+								</label>
+								<div class="col-sm-9 col-xs-12"> 
+									<select id="sftg" name="sftg" validate="{required:true}" class="form-control chosen-select">
+										<option value="">--请选择--</option>
+	                        			<option value="1" >通过</option>
+	                        			<option value="0" >不通过</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div id="qr" class="col-md-12 col-sm-12">
+							<div class="form-group">
+								<label for="" class="col-sm-2 col-xs-12 control-label"></label>
+								<div class="col-sm-9 col-xs-12">
+				         			<div class="input-group">
+											<input id="zsxm" name="zsxm" type="text" data-provide="typeahead" data-items="5" class="form-control" onblur="checkNull()"/>
+											<input id="qrry" name="qrry" type="hidden" class="form-control" />
+										<input id="qrryyhm" name="qrryyhm" type="hidden" class="form-control" />
+											<input type="hidden" name="ddid" id="ddid" class="form-control"/>
+										<span class="input-group-btn">
+											<button type="button"  onclick="chooseFzr()" class="btn btn-primary">选择</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="extend_work_div" th:url="${gzpzModel.ymlj}">
+						</div>
+						<div class="col-md-12 col-sm-12">
+				        	<div class="form-group">
+				          		<label for="" class="col-sm-2 control-label">意见</label>
+								<div class="col-sm-9">
+									<textarea id="shyj" name="shyj" rows="5"
+											  validate="{stringMaxLength:2000}" class="form-control" ></textarea>
+			        		   </div>
+			        		</div>
+				       	</div>
+				       	<div class="col-md-12 col-sm-12 nopadding">
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">
+									附件上传
+								</label>
+								<div class="col-sm-9" style="line-height:28px;">
+									<a href="javascript:void(0);" onclick="editfile()" id="file_btn" style="display:inline-block;width:100%;;border:1px solid #CCCCCC;border-radius:3px;">
+				            			<span  id="fileclick" title="点击上传"  style="display:inline-block;width:100%;color:#A6A6A6;font-size:12px;padding-left:10px;">点击展开上传文件</span>
+				            		</a>
+				            		<div id="fileDiv" style="display:none;">
+										<input id="confirm_file" name="confirm_file" type="file">
+										<button class="btn btn-default" type="button" style="margin-left:77%;width:23%;margin-top:10px;" onclick="cancelfile()">隐藏</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default" id="jdDiv">
+					<div class="panel-heading">项目进度</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-md-6 control-label"><span style="color: red;">*</span>本阶段开始日期</label>
+									<div class="col-md-6">
+										<input type="text" id="jhksrq" name="jhksrq" th:value="${rwrqDto.jhksrq}"  validate="{required:true}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-md-6 control-label"><span style="color: red;">*</span>本阶段结束日期</label>
+									<div class="col-sm-6">
+										<input type="text" id="jhjsrq" name="jhjsrq"  th:value="${rwrqDto.jhjsrq}"  validate="{required:true}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-4" id="jzrqDiv">
+								<div class="form-group">
+									<label for="" class="col-md-6 control-label"><span style="color: red;">*</span>下阶段截止日期</label>
+									<div class="col-sm-6">
+										<input type="text" id="jzrq" name="jzrq"  th:value="${rwrqDto.jzrq}"  validate="{required:true}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading" th:text="${gzglDto.rwmc}"></div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					         		<label for="" class="col-sm-3 control-label">业务名称</label>
+					         		<div class="col-sm-9 padding_t7">
+					         			<a style="cursor:pointer;" th:@click.prevent="'viewtask(\''+${gzglDto.ywdz}+'\',\''+${gzglDto.urlqz}+'\');'">
+					    					<span th:text="${gzglDto.ywmc}"></span>
+					    				</a>
+					         		</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					         		<label for="" class="col-sm-3 control-label">任务名称</label>
+					    			<div class="col-sm-9 padding_t7" th:text="${gzglDto.rwmc}">&nbsp;</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					         		<label for="" class="col-sm-3 control-label">期望完成日期</label>
+					    			<div class="col-sm-9 padding_t7" th:text="${gzglDto.fqwwcsj}">&nbsp;</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					         		<label for="" class="col-sm-3 control-label">状态</label>
+					    			<div class="col-sm-9 padding_t7">
+					    				<a th:@click="'qrzt(\''+${gzglDto.gzid}+'\');'" th:if="${gzglDto.zt=='00'}" th:text="未完成"/>
+					    				<a th:@click="'qrzt(\''+${gzglDto.gzid}+'\');'" th:if="${gzglDto.zt=='10'}" th:text="确认中"/>
+					    				<a th:@click="'qrzt(\''+${gzglDto.gzid}+'\');'" th:if="${gzglDto.zt=='15'}" th:text="无需完成"/>
+										<a th:@click="'qrzt(\''+${gzglDto.gzid}+'\');'" th:if="${gzglDto.zt=='80'}" th:text="完成"/>
+				        		   	</div>
+					   			</div>
+							</div>
+							<div id="jd" class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					         		<label for="" class="col-sm-3 control-label">进度</label>
+					         		<div class="col-sm-9 padding_t7" th:text="${gzglDto.dqjd}">&nbsp;</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+						         		<label for="" class="col-sm-3 control-label">备注</label>
+						         		<div id="bz_div" class="col-sm-5 padding_t7" th:text="${gzglDto.bz}">&nbsp;</div></a>
+						         		<button  type="button" class="col-sm-1 btn btn-default" id="edit">编辑</button>
+						         		<div class="row" id="edit_div" style="display:none;">
+						         			<div class="col-md-8 col-md-offset-3">
+						         				<textarea id="bz_text" name="bz_text" style="border:1px solid #DDDDDD;width:75%;height:150px;border-radius: 4px;margin-top:-15px;padding:10px;"></textarea>
+						         			</div>
+						         			<div class="col-md-8 col-md-offset-3">
+						         				<button  type="button" class="col-sm-2 btn btn-success" id="save">保存</button>
+						         				<button  type="button" class="col-sm-2 btn btn-default" id="cancel">取消</button>
+						         			</div>
+						         		</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+					        	<div class="form-group">
+					    			<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+					    				<div th:id="${fjcfbDto.fjid}" >
+					    					<label for="" class="col-sm-3 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件"></label>
+					    					<label for="" class="col-sm-3 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+						    				<div class="col-sm-9 padding_t7">
+						    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+						    					<a title="下载" th:@click.prevent="'xz(\''+${fjcfbDto.wjlj}+'\',\''+${fjcfbDto.wjm}+'\',\''+${fjcfbDto.fjid}+'\');'" >
+							    					<span th:text="${fjcfbDto.wjm}"></span>
+							    					<span class="glyphicon glyphicon glyphicon-save"></span>
+						    					</a>&nbsp;&nbsp;
+						    					<button title="预览" class="f_button" type="button">
+													<span  class="glyphicon glyphicon-eye-open" th:@click.prevent="'yl(\''+${fjcfbDto.fjid}+'\',\''+${fjcfbDto.wjm}+'\');'"></span>
+						    					</button>
+						    				</div>
+						    			</div>
+					    			</div>
+					   			</div>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IXmjdrwDao" >
+	<!-- 增加项目阶段 -->
+	<insert id="insert" parameterType="XmjdrwModel">
+		insert into igams_xmjdrw(rwid
+		<if test="frwid !=null and frwid != ''">
+			,frwid
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,xmjdid
+		</if>
+		<if test="xmid !=null and xmid != ''">
+			,xmid
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			,rwmc
+		</if>
+		<if test="fzr !=null and fzr != ''">
+			,fzr
+		</if>
+		<if test="ksrq !=null and ksrq != ''">
+			,ksrq
+		</if>
+		<if test="jsrq !=null and jsrq != ''">
+			,jsrq
+		</if>
+		<if test="rwjb !=null and rwjb != ''">
+			,rwjb
+		</if>
+		<if test="rwbq !=null and rwbq != ''">
+			,rwbq
+		</if>
+		<if test="rwms !=null and rwms != ''">
+			,rwms
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="yjgzl !=null and yjgzl != ''">
+			,yjgzl
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			,sjgzl
+		</if>
+		<if test="rwmbid !=null and rwmbid != ''">
+			,rwmbid
+		</if>
+		<if test="jdtime !=null and jdtime != ''">
+			,jdtime
+		</if>
+		<if test="jssj !=null and jssj != ''">
+			,jssj
+		</if>
+		<if test="fs !=null and fs != ''">
+			,fs
+		</if>
+		,lrry,lrsj,scbj) values(#{rwid}
+		<if test="frwid !=null and frwid != ''">
+			,#{frwid}
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,#{xmjdid}
+		</if>
+		<if test="xmid !=null and xmid != ''">
+			,#{xmid}
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			,#{rwmc}
+		</if>
+		<if test="fzr !=null and fzr != ''">
+			,#{fzr}
+		</if>
+		<if test="ksrq !=null and ksrq != ''">
+			,cast(#{ksrq} as date)
+		</if>
+		<if test="jsrq !=null and jsrq != ''">
+			,cast(#{jsrq} as date)
+		</if>
+		<if test="rwjb !=null and rwjb != ''">
+			,#{rwjb}
+		</if>
+		<if test="rwbq !=null and rwbq != ''">
+			,#{rwbq}
+		</if>
+		<if test="rwms !=null and rwms != ''">
+			,#{rwms}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="yjgzl !=null and yjgzl != ''">
+			,#{yjgzl}
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			,#{sjgzl}
+		</if>
+		<if test="rwmbid !=null and rwmbid != ''">
+			,#{rwmbid}
+		</if>
+		<if test="jdtime !=null and jdtime != ''">
+			,#{jdtime}
+		</if>
+		<if test="jssj !=null and jssj != ''">
+			,#{jssj}
+		</if>
+		<if test="fs !=null and fs != ''">
+			,cast( #{fs} as numeric)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 根据模板ID查询任务模板信息 -->
+	<select id="selectRwmbByMbid" parameterType="MbglDto" resultType="RwmbDto">
+		select rwmbid,jdid,mbid,frwmbid,xh,rwmc,mrfzr,qx,rwjb,rwbq,rwms,kzcs
+		from igams_rwmb
+		<where>
+			scbj!='1'
+			and mbid=#{mbid}
+		</where>
+	</select>
+	
+	<!-- 根据项目阶段ID查询项目阶段任务信息 -->
+	<select id="selectTaskByXmjdid" parameterType="String" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,fzr.zsxm as fzrmc,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,xmrw.xh,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,yjgzl,sjgzl
+		from igams_xmjdrw xmrw
+		left join matridx_jcsj rwjb on rwjb.csid= xmrw.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= xmrw.rwbq
+		left join matridx_xtyh fzr  on fzr.yhid=xmrw.fzr
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.frwid is null 
+			and xmrw.xmjdid=#{xmjdid}
+		</where>
+		order by xmrw.xh
+	</select>
+	<!-- 根据项目阶段ID查询全部项目阶段任务信息 -->
+	<select id="selectAllTaskByXmjdid" parameterType="String" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,xmrw.xh
+		from igams_xmjdrw xmrw
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.xmjdid=#{xmjdid}
+		</where>
+	</select>
+	<!-- 根据项目阶段ID查询项目阶段任务信息 -->
+	<select id="selectTaskByXmjdxx" parameterType="XmjdxxDto" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,fzr.zsxm as fzrmc,fzr.yhm,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,rwjb.cskz1 as cskz1
+		from igams_xmjdrw xmrw
+		left join matridx_jcsj rwjb on rwjb.csid= xmrw.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= xmrw.rwbq
+		left join matridx_xtyh fzr  on fzr.yhid=xmrw.fzr
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.frwid is null
+			<if test="zt !=null and zt != ''">
+				and xmrw.zt = #{zt}
+			</if>
+			<if test="xmjdid!=null and xmjdid!=''">
+				and xmrw.xmjdid=#{xmjdid}
+			</if>
+			<if test="entire != null and entire != ''">
+				and (
+				xmrw.rwmc like '%'||#{entire}||'%'
+				or xmrw.rwms like '%'||#{entire}||'%'
+				)
+			</if>
+		</where>
+		order by xmrw.fzr,xmrw.xh
+	</select>
+	<!-- 根据项目阶段ID查询登录用户任务信息 -->
+	<select id="selectMyTaskByXmjdxx" parameterType="XmjdxxDto" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,fzr.zsxm as fzrmc,fzr.yhm,xmrw.ksrq,xmrw.jsrq, xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,rwjb.cspx as rwjbxh,rwjb.cskz1 as cskz1
+		from igams_xmjdrw xmrw
+		left join matridx_jcsj rwjb on rwjb.csid= xmrw.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= xmrw.rwbq
+		left join matridx_xtyh fzr  on fzr.yhid=xmrw.fzr
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.frwid is null 
+			<if test="yhid !=null and yhid != '' and MySign!='1'.toString()">
+				and xmrw.fzr = #{yhid}
+			</if>
+			<if test="yhid !=null and yhid != '' and MySign=='1'.toString()">
+				and xmrw.lrry = #{yhid}
+			</if>
+			<if test="zt !=null and zt != ''">
+				and xmrw.zt = #{zt}
+			</if>
+			<if test="xmjdid!=null and xmjdid!=''">
+				and xmrw.xmjdid=#{xmjdid}
+			</if>
+			<if test="entire != null and entire != ''">
+				and (
+				xmrw.rwmc like '%'||#{entire}||'%'
+				or xmrw.rwms like '%'||#{entire}||'%'
+				)
+			</if>
+		</where>
+		order by rwjbxh,xmrw.jsrq
+	</select>
+	<!-- 通过任务id查询当前任务信息 -->
+	<select id="getDtoById" parameterType="String" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmgl.xmmc,xmrw.rwmc,xmrw.fzr,fzr.zsxm as fzrmc,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,yjgzl,sjgzl,xmrw.rwmbid,xmgl.bz xmjj,jdxx.jdmc,xmrw.jdtime,jdxx.xh as jdxh,to_char(xmrw.lrsj,'yyyy-mm-dd') lrsj,xmrw.jssj,xmrw.fs
+		,cjr.zsxm as cjrmc
+		from igams_xmjdrw xmrw
+		left join matridx_jcsj rwjb on rwjb.csid= xmrw.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= xmrw.rwbq
+		left join matridx_xtyh fzr on fzr.yhid=xmrw.fzr
+		left join matridx_xtyh cjr on cjr.yhid=xmrw.lrry
+		left join igams_xmgl xmgl on xmgl.xmid=xmrw.xmid
+		left join igams_xmjdxx jdxx on xmrw.xmjdid=jdxx.xmjdid
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.rwid=#{rwid}
+		</where>
+	</select>
+	
+	<!-- 通过任务id查询子任务信息 -->
+	<select id="getDtoListById" parameterType="String" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,fzr.zsxm as fzrmc,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,
+		rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc,yjgzl,sjgzl
+		from igams_xmjdrw xmrw
+		left join matridx_jcsj rwjb on rwjb.csid= xmrw.rwjb
+		left join matridx_jcsj rwbq on rwbq.csid= xmrw.rwbq
+		left join matridx_xtyh fzr  on fzr.yhid=xmrw.fzr
+		left join igams_xmjdxx jdxx on jdxx.xmjdid=xmrw.xmjdid
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.frwid=#{frwid}
+		</where>
+	</select>
+	<!-- 修改项目任务信息 -->
+	<update id="updateDto" parameterType="XmjdrwDto">
+		update igams_xmjdrw set xgsj=LOCALTIMESTAMP
+		<if test="xgry!=null and xgry!=''">
+			,xgry=#{xgry}
+		</if>
+		<if test="rwms!=null and rwms!=''">
+			,rwms=#{rwms}
+		</if>
+		<if test="rwmc!=null and rwmc!=''">
+			,rwmc=#{rwmc}
+		</if>
+		<if test="fzr!=null and fzr!=''">
+			,fzr=#{fzr}
+		</if>
+		<if test="ksrq!=null and ksrq!=''">
+			,ksrq=cast(#{ksrq} as date)
+		</if>
+		<if test="jsrq!=null and jsrq!=''">
+			,jsrq=cast(#{jsrq}as date)
+		</if>
+		<if test="rwjb!=null and rwjb!=''">
+			,rwjb=#{rwjb}
+		</if>
+		<if test="rwbq!=null and rwbq!=''">
+			,rwbq=#{rwbq}
+		</if>
+		<if test="zt!=null and zt!=''">
+			,zt=#{zt}
+		</if>
+		<if test="yjgzl !=null and yjgzl != ''">
+			,yjgzl=#{yjgzl}
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			,sjgzl=#{sjgzl}
+		</if>
+		<if test="jdtime !=null and jdtime != ''">
+			,jdtime=#{jdtime}
+		</if>
+		<if test="jssj !=null and jssj != ''">
+			,jssj=#{jssj}
+		</if>
+		<if test="fs !=null and fs != ''">
+			,fs=cast( #{fs} as numeric)
+		</if>
+		<where>
+			rwid=#{rwid}
+		</where>
+	</update>
+	<!-- 查询子任务条数 -->
+	<select id="selectsum" parameterType="XmjdrwDto" resultType="Map">
+		select count(*) as num,COUNT(case when xmrw.zt ='80' then xmrw.rwid else null end) as compnum, xmrw.frwid
+		    from igams_xmjdrw xmrw
+		    <where>
+		      xmrw.scbj!='1'
+		      <if test="rwids!=null and rwids.size>0">
+		        and xmrw.frwid in
+		             <foreach collection="rwids" open="(" close=")" separator="," item="item">
+		                #{item}
+		             </foreach>
+		      </if>
+		      group by xmrw.frwid
+		    </where>
+	</select>
+	<!-- 项目任务排序 -->
+	<update id="taskSort" parameterType="XmjdrwDto">
+		<if test="ids !=null and ids.size > 0">
+			<foreach collection="ids" index="index" open="" close="" separator=";" item="item">
+				update igams_xmjdrw
+				<set>
+					xh=cast(#{index} as numeric)+1,
+					xgry=#{xgry},
+					xgsj=LOCALTIMESTAMP
+				</set>
+				where rwid=#{item}
+			</foreach>
+		</if>
+	</update>
+
+	<!-- 项目任务排序 -->
+	<update id="updateXmjdxx" parameterType="list">
+		<if test="list !=null and list.size > 0">
+		    <foreach collection="list" separator=";" item="item" index="index">
+				update igams_xmjdrw
+				<set>
+					jdtime = #{item.jdtime}
+				</set>
+				where rwid=#{item.rwid}
+			</foreach>
+		</if>
+	</update>
+	<!-- 修改项目任务阶段 -->
+	<update id="updateXmjdByRwid" parameterType="XmjdrwDto"> 
+		update igams_xmjdrw 
+		set xgry=#{xgry},xgsj=LOCALTIMESTAMP,xmjdid=#{xmjdid}
+		where 
+			rwid=#{rwid}
+	</update>
+	<update id="updateZt" parameterType="XmjdrwDto">
+		with recursive r (rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj,depth)as(
+	           	 select jdrw.rwid,jdrw.frwid,jdrw.xmjdid,jdrw.xmid,jdrw.rwmc,jdrw.fzr,jdrw.ksrq,jdrw.jsrq,jdrw.rwjb,jdrw.rwbq,jdrw.rwms,jdrw.zt,jdrw.scbj,1 as depth
+	        	 from igams_xmjdrw jdrw
+	         		where jdrw.frwid is null and jdrw.scbj !='1' and jdrw.rwid=#{rwid}
+	          	 union all
+	           	 select t.rwid,t.frwid,t.xmjdid,t.xmid,t.rwmc,t.fzr,t.ksrq,t.jsrq,t.rwjb,t.rwbq,t.rwms,t.zt,t.scbj,r.depth + 1 as depth
+	         		from  igams_xmjdrw t
+	          	 join r on t.frwid =r.rwid 
+		    		 where t.scbj !='1' 
+	        	 ) 
+				update igams_xmjdrw  set zt= #{zt},xgsj=LOCALTIMESTAMP,xgry=#{xgry}
+				where rwid in (select rwid from r) and  scbj != '1'
+	</update>
+	<update id="updateGzglZt" parameterType="XmjdrwDto" >
+    	with recursive r (rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj,depth)as(
+	           	 select jdrw.rwid,jdrw.frwid,jdrw.xmjdid,jdrw.xmid,jdrw.rwmc,jdrw.fzr,jdrw.ksrq,jdrw.jsrq,jdrw.rwjb,jdrw.rwbq,jdrw.rwms,jdrw.zt,jdrw.scbj,1 as depth
+	        	 from igams_xmjdrw jdrw
+	         		where jdrw.frwid is null and jdrw.scbj !='1' and jdrw.rwid=#{rwid}
+	          	 union all
+	           	 select t.rwid,t.frwid,t.xmjdid,t.xmid,t.rwmc,t.fzr,t.ksrq,t.jsrq,t.rwjb,t.rwbq,t.rwms,t.zt,t.scbj,r.depth + 1 as depth
+	         		from  igams_xmjdrw t
+	          	 join r on t.frwid =r.rwid 
+		    		 where t.scbj !='1' 
+	        	 ) 
+				update igams_gzgl  set zt= #{zt},dqjd=#{dqjd},xgsj=LOCALTIMESTAMP,xgry=#{xgry}
+				where ywid in (select rwid from r)
+    </update>
+    <select id="getYhmByFzr" parameterType="String" resultType="XmjdrwDto">
+    	select ddid,yhid,yhm,zsxm from matridx_xtyh
+    	where yhid=#{yhid}
+    </select>
+    <!-- 通过项目id查询各阶段下任务信息 -->
+    <select id="selectjdrwxx" parameterType="XmglDto" resultType="XmjdrwDto">
+		select xmjd.xmjdid,jdmc,xmjd.xmid,jdrw.rwmc,jdrw.rwid,jdrw.fzr,jdrw.rwms,jdrw.ksrq,jdrw.jsrq,jdrw.rwbq,jdrw.rwjb,jdrw.sjgzl as sjgzl,jdrw.yjgzl as yjgzl,
+		jcsjrwbq.csmc as rwbq,jcsjrwjb.csmc as rwjb
+		from(
+		<foreach collection="xmjdxxDtos" separator="union" item="item" index="index">
+			select #{item.xmjdid} xmjdid,#{item.jdmc} jdmc,#{item.xmid} xmid from igams_xmjdxx where scbj!='1'
+		</foreach>
+		) xmjd
+		left join igams_xmjdrw jdrw on jdrw.xmjdid=xmjd.xmjdid 
+		left join matridx_jcsj jcsjrwbq on jcsjrwbq.csid=jdrw.rwbq
+		left join matridx_jcsj jcsjrwjb on jcsjrwjb.csid=jdrw.rwjb
+		<where>
+		 jdrw.scbj!='1' and jdrw.fzr=#{yhid} and jdrw.xmid=#{xmid}
+		 </where>
+	</select>
+	<update id="updateJdid" parameterType="XmjdrwDto">
+		update igams_xmjdrw set xgry=#{xgry},xgsj=LOCALTIMESTAMP,jdtime = #{jdtime},
+		<if test="zt !=null and zt !=''">
+			zt=#{zt},
+		</if>
+		xmjdid=#{xmjdid},xh=(select COALESCE(max(xh),0) from igams_xmjdrw where xmid=#{xmid} and xmjdid=#{xmjdid} and scbj !='1')+1
+		<where>
+			rwid=#{rwid}
+		</where>
+	</update>
+	<!-- 查询个人项目研发列表 -->
+	<select id="getPagedSearchTaskList" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		select  xm.xmid,xm.xmmc,xm.xmlb,xm.mbid,mbgl.mbmc,xm.xmgkx,xm.xmfz,xmjdxx.jdmc,xmjdrw.rwmc,xmjdrw.fzr,xtyh.zsxm as fzrmc,xmjdrw.frwid,
+		xmjdrw.ksrq,xmjdrw.jsrq,xmjdrw.rwms,xmjdxx.xmjdid,xmjdxx.jdmc,xmjdrw.rwid,xmjdrw.yjgzl,xmjdrw.sjgzl,xmjdrw.rwjb,xmjdrw.rwjb,xmjdxx.xh
+		from igams_xmjdrw xmjdrw
+		left join matridx_xtyh xtyh on xtyh.yhid=xmjdrw.fzr
+		left join igams_xmjdxx xmjdxx on xmjdrw.xmjdid=xmjdxx.xmjdid
+		left join igams_xmgl xm on xm.xmid=xmjdxx.xmid
+		left join igams_mbgl mbgl on mbgl.mbid=xm.mbid
+		<where>
+			xmjdrw.scbj!='1'
+			and xmjdrw.frwid is null
+			<if test="yhid !=null and yhid !=''">
+			and xmjdrw.fzr=#{yhid}
+			</if>
+			<if test="rwid !=null and rwid !=''">
+			and xmjdrw.rwid=#{rwid}
+			</if>
+			<if test="rwmc !=null and rwmc !=''">
+			and rwmc like '%'||#{rwmc}||'%'
+			</if>
+			<if test="xmmc !=null and xmmc !=''">
+			and xmmc like '%'||#{xmmc}||'%'
+			</if>
+			<if test="mbmc !=null and mbmc !=''">
+			and mbmc like '%'||#{mbmc}||'%'
+			</if>
+			<if test="jdmc !=null and jdmc !=''">
+			and jdmc like '%'||#{jdmc}||'%'
+			</if>
+			<if test="xmgkx !=null and xmgkx !=''">
+			and xmgkx like '%'||#{xmgkx}||'%'
+			</if>
+			<if test="xmlb !=null and xmlb !=''">
+			and xmlbs like '%'||#{xmlbs}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 通过项目查询当前任务所在阶段的序号是否为此项目中最后一个阶段 -->
+	<select id="getXhIsLastJdXh" parameterType="List" resultType="XmjdrwDto">
+		select  tp.rwid,ordernum,xmjdxx.xmjdid,xmjdxx.jdmc
+		from 
+		 (
+		select jdrw.rwid,jdxx.xmjdid,jdxx.xmid,jdxx.xh+1 xh,ordernum from 
+		 (
+		<foreach item="item" index="index" collection="list" separator=" union all ">  
+		   select #{item.rwid,jdbcType=VARCHAR} rwid,#{index} ordernum
+		</foreach>
+		) tmp  
+		left outer join igams_xmjdrw jdrw  on jdrw.rwid =tmp.rwid
+		left outer join igams_xmjdxx jdxx on jdrw.xmjdid =jdxx.xmjdid
+		) tp
+		left outer join igams_xmjdxx xmjdxx on tp.xmid = xmjdxx.xmid and tp.xh = xmjdxx.xh
+		where tp.rwid is not null and xmjdxx.xmid is not null
+		order by ordernum
+	</select>
+	
+	<!-- 删除项目研发任务 -->
+	<update id="deleteXmyfrws" parameterType="xmjdrwDto">
+		update igams_xmjdrw set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="rwid !=null and rwid !=''">
+	 			or rwid = #{rwid}
+	 		</if>
+	 	  	<if test="ids !=null and ids.size>0">
+	 	  	  	or rwid in
+	 	  	  		<foreach collection="ids" open="(" close=")" separator="," item="item">
+	 	  	  			 #{item}
+	 	  	  		</foreach>
+	 	  	</if>
+		</where>
+	</update>
+	<!-- 项目研发列表根据任务ID删除子任务信息 -->
+	<update id="deleteXmyfzrws" parameterType="xmjdrwDto">
+		update igams_xmjdrw set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="rwid !=null and rwid !=''">
+	 			or frwid = #{rwid}
+	 		</if>
+	 	  	<if test="ids !=null and ids.size>0">
+	 	  	  	or frwid in
+	 	  	  		<foreach collection="ids" open="(" close=")" separator="," item="item">
+	 	  	  			 #{item}
+	 	  	  		</foreach>
+	 	  	</if>
+		</where>
+	</update>
+	<!-- 根据项目id查询项目任务信息 -->
+	<select id="selectXmrwxxs" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		select xmjdrw.rwid,xmjdrw.xmid,xmjdrw.xmjdid,xmjdrw.fzr ,xtyh.zsxm fzrmc ,xmjdrw.rwmc,xmjdrw.ksrq,xmjdrw.jsrq,xmjdrw.rwjb,xmjdrw.rwbq,xmjdrw.rwms,coalesce(xmjdrw.jdtime,'-,-,-,-,-,-') jdtime
+		from igams_xmjdrw xmjdrw
+		left join matridx_xtyh xtyh on xtyh.yhid= xmjdrw.fzr
+		<where>
+			xmjdrw.scbj!='1'
+		<if test="zt !=null and zt !=''">
+			and zt=#{zt}
+		</if>
+		<if test="yhid !=null and yhid != ''">
+			and fzr = #{yhid}
+		</if>
+		<if test="xmid !=null and xmid !=''">
+			and xmid=#{xmid}
+		</if>
+		<if test="rwmc !=null and rwmc !=''">
+			and rwmc like '%'||#{rwmc}||'%'
+		</if>
+		<if test="fzrmc !=null and fzrmc !=''">
+			and xtyh.zsxm like '%'||#{fzrmc}||'%'
+		</if>
+		<if test="starttime != null and starttime != ''">
+			and to_char(xmjdrw.lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+		</if>
+		<if test="endtime != null and endtime != ''">
+			and to_char(xmjdrw.lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+		</if>
+		order by xmjdrw.lrsj desc
+		limit 100
+		</where>
+	</select>
+	<!-- 根据项目id查询项目任务信息 -->
+	<select id="getXmrwxxs" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		select xmjdrw.rwid,xmjdrw.xmid,xmjdrw.xmjdid,xtyh.zsxm fzrmc,xmjdrw.fzr,xmjdrw.rwmc,xmjdrw.ksrq,xmjdrw.jsrq,xmjdrw.rwjb,xmjdrw.rwbq,xmjdrw.rwms,coalesce(xmjdrw.jdtime,'-,-,-,-,-,-') jdtime
+		from igams_xmjdrw xmjdrw
+		left join matridx_xtyh xtyh on xtyh.yhid= xmjdrw.fzr
+		<where>
+			xmjdrw.scbj!='1'
+			<if test="zt !=null and zt !=''">
+				and zt=#{zt}
+			</if>
+			<if test="yhid !=null and yhid != ''">
+				and xmjdrw.lrry = #{yhid}
+			</if>
+			<if test="xmid !=null and xmid !=''">
+				and xmid=#{xmid}
+			</if>
+			<if test="rwmc !=null and rwmc !=''">
+				and rwmc like '%'||#{rwmc}||'%'
+			</if>
+			<if test="fzrmc !=null and fzrmc !=''">
+				and xtyh.zsxm like '%'||#{fzrmc}||'%'
+			</if>
+			<if test="starttime != null and starttime != ''">
+				and to_char(xmjdrw.lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+			</if>
+			<if test="endtime != null and endtime != ''">
+				and to_char(xmjdrw.lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+			</if>
+			order by xmjdrw.lrsj desc
+			limit 100
+		</where>
+	</select>
+	<!-- 项目研发列表转阶段时任务序号更新为阶段下已有任务的最大序号值加1 -->
+	<update id="updateMaxxh" parameterType="XmjdrwDto">
+				update igams_xmjdrw 
+				<set>
+					xh=cast(#{xh} as numeric)+1,
+					xmjdid=#{xmjdid},
+					xgry=#{xgry},
+					xgsj=LOCALTIMESTAMP
+				</set>
+				where rwid=#{rwid}
+	</update>
+	<!-- 根据父任务ID删除相应的子任务 -->
+	<update id="deleteZrw" parameterType="XmjdrwDto">
+	update igams_xmjdrw set scry=#{scry},scbj='1',scsj=LOCALTIMESTAMP
+	<where>
+		frwid=#{frwid}
+	</where>
+	</update>
+
+	<!-- 根据父任务ID删除相应的子任务 -->
+	<update id="addNewJdxx" parameterType="XmjdrwDto">
+		update igams_xmjdrw set jdtime = jdtime||',-'  where xmid= #{xmid} and scbj != '1'
+	</update>
+
+
+	<select	 id="getjdxxByrwid" parameterType="XmjdrwDto" resultType="XmjdxxDto">
+		select jdxx.xmjdid,jdxx.xh,jdxx.jdmc
+			from igams_xmjdxx jdxx     
+		<where>
+			jdxx.scbj!='1'
+			and jdxx.xmjdid=(select rw.xmjdid from igams_xmjdrw rw where rw.scbj!='1' and rw.rwid=#{rwid})
+		</where>
+	</select>	
+	    <select id="getListzrwbyjd" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+        with recursive r (rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj,depth)as(
+                select jdrw.rwid,jdrw.frwid,jdrw.xmjdid,jdrw.xmid,jdrw.rwmc,jdrw.fzr,jdrw.ksrq,jdrw.jsrq,jdrw.rwjb,jdrw.rwbq,jdrw.rwms,jdrw.zt,jdrw.scbj,1 as depth
+             from igams_xmjdrw jdrw
+                 where jdrw.frwid is null and jdrw.scbj !='1' and jdrw.rwid=#{rwid}
+               union all
+                select t.rwid,t.frwid,t.xmjdid,t.xmid,t.rwmc,t.fzr,t.ksrq,t.jsrq,t.rwjb,t.rwbq,t.rwms,t.zt,t.scbj,r.depth + 1 as depth
+                 from  igams_xmjdrw t
+               join r on t.frwid =r.rwid 
+                 where t.scbj !='1' 
+             ) 
+             
+            select rw.rwid,rw.frwid,rw.xmjdid,rw.xmid,rw.rwmc,rw.fzr,rw.ksrq,rw.jsrq,rw.rwjb,rw.rwbq,rw.rwms,rw.scbj,rw.depth,
+            rwjb.csmc as rwjbmc,rwbq.csmc as rwbqmc, fzr.zsxm as fzrmc,case when rw.zt='00' then '进行中' when rw.zt ='80' then '已完成' end zt
+            from r rw
+            left join igams_xmjdxx jd on jd.xmjdid=rw.xmjdid
+            left join matridx_jcsj rwjb on rwjb.csid= rw.rwjb
+            left join matridx_jcsj rwbq on rwbq.csid= rw.rwbq
+            left join matridx_xtyh fzr  on fzr.yhid=rw.fzr
+            where jd.xmjdid=#{xmjdid} and rw.frwid is not null
+                   order by depth
+    </select>
+    	<!-- 根据rwid查询项目研发列表任务信息 -->
+	<select id="getSearchTaskRwDto" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		select  xm.xmid,xm.xmmc,xm.xmlb,xm.mbid,mbgl.mbmc,xm.xmgkx,xm.xmfz,xmjdxx.jdmc,xmjdrw.rwmc,xmjdrw.fzr,xtyh.zsxm as fzrmc,xmjdrw.frwid,
+		xmjdrw.ksrq,xmjdrw.jsrq,xmjdrw.rwms,xmjdxx.xmjdid,xmjdxx.jdmc,xmjdrw.rwid,xmjdrw.yjgzl,xmjdrw.sjgzl,xmjdrw.rwjb,xmjdrw.rwjb,xmjdxx.xh,xmjdxx.jdid
+		from igams_xmjdrw xmjdrw
+		left join matridx_xtyh xtyh on xtyh.yhid=xmjdrw.fzr
+		left join igams_xmjdxx xmjdxx on xmjdrw.xmjdid=xmjdxx.xmjdid
+		left join igams_xmgl xm on xm.xmid=xmjdxx.xmid
+		left join igams_mbgl mbgl on mbgl.mbid=xm.mbid
+		<where>
+			xmjdrw.scbj!='1'
+			and xmjdrw.frwid is null
+			and xmjdrw.rwid=#{rwid}
+		</where>
+	</select>
+	<!-- 查询任务模板不为空的子任务 -->
+	<select id="selectSubTaskByRwid" parameterType="XmjdrwDto" resultType="String">
+		select rwmbid
+		from igams_xmjdrw
+		<where>
+			scbj!='1'
+			and rwmbid is not null
+			and rwmbid != ''
+			and frwid = #{rwid}
+		</where>
+	</select>
+	<!-- 查询当前任务以及该任务下的所有子任务 -->
+	<select id="getDqrwAndZrw" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+			with recursive r(rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj) as (
+       		select jdrw.rwid,jdrw.frwid,jdrw.xmjdid,jdrw.xmid,jdrw.rwmc,jdrw.fzr,jdrw.ksrq,jdrw.jsrq,jdrw.rwjb,jdrw.rwbq,jdrw.rwms,jdrw.zt,jdrw.scbj
+            from igams_xmjdrw jdrw
+                 where jdrw.scbj !='1' and jdrw.rwid=#{rwid}
+     		union   all
+       		select t.rwid,t.frwid,t.xmjdid,t.xmid,t.rwmc,t.fzr,t.ksrq,t.jsrq,t.rwjb,t.rwbq,t.rwms,t.zt,t.scbj
+                 from  igams_xmjdrw t
+            join r on t.frwid =r.rwid 
+                 where t.scbj !='1' 
+    		 )
+			select rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj from r ;
+	</select>
+	<!-- 项目研发列表查询所选任务以及所有子任务 -->
+	<select id="getXzrwsAndZrws" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		<foreach collection="ids" open="" close="" separator="" item="item">
+			with recursive r(rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj) as (
+       		select jdrw.rwid,jdrw.frwid,jdrw.xmjdid,jdrw.xmid,jdrw.rwmc,jdrw.fzr,jdrw.ksrq,jdrw.jsrq,jdrw.rwjb,jdrw.rwbq,jdrw.rwms,jdrw.zt,jdrw.scbj
+            from igams_xmjdrw jdrw
+                 where jdrw.scbj !='1' and jdrw.rwid=#{item}
+     		union   all
+       		select t.rwid,t.frwid,t.xmjdid,t.xmid,t.rwmc,t.fzr,t.ksrq,t.jsrq,t.rwjb,t.rwbq,t.rwms,t.zt,t.scbj
+                 from  igams_xmjdrw t
+            join r on t.frwid =r.rwid 
+                 where t.scbj !='1' 
+    		 )
+			select rwid,frwid,xmjdid,xmid,rwmc,fzr,ksrq,jsrq,rwjb,rwbq,rwms,zt,scbj from r ;
+		</foreach>
+	</select>
+	<!-- 删除当前任务以及该任务下的所有任务 -->
+	<update id="deleterwByRwid" parameterType="XmjdrwDto">
+		update igams_xmjdrw set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			scbj!='1'
+	 	  	  	and rwid in
+	 	  	  		<foreach collection="rwids" open="(" close=")" separator="," item="item">
+	 	  	  			 #{item}
+	 	  	  		</foreach>
+		</where>
+	</update>
+	<!-- 获取任务所在项目的所有阶段 -->
+	<select id="selectStageByRwid" parameterType="XmjdrwDto" resultType="XmjdrwDto">
+		select xmrw.rwid,xmrw.frwid,xmrw.xmjdid,xmrw.xmid,xmrw.rwmc,xmrw.fzr,xmrw.ksrq,xmrw.jsrq,xmrw.rwjb,xmrw.rwbq,xmrw.rwms,xmrw.zt,xmrw.xh,
+			xmjd.xmjdid,xmjd.xh as jdxh,xmjd.xmjdid as jdxmjdid,xmjd.fsbl,xmjd.jdmc,rwrq.jdfs
+		from igams_xmjdrw xmrw
+		left join igams_xmjdxx xmjd on xmjd.xmid = xmrw.xmid
+		left join igams_rwrq rwrq on rwrq.rwid=xmrw.rwid and rwrq.xmjdid=xmjd.xmjdid and rwrq.scbj ='0'
+		<where>
+			xmrw.scbj!='1'
+			and xmrw.rwid = #{rwid}
+		</where>
+		order by xmjd.xh
+	</select>
+	<!-- 根据项目ID查询全部任务 -->
+	<select id="getAllXmjdrwByXmid" parameterType="String" resultType="XmjdrwDto">
+			with recursive r(xmid,xmmc) as (
+       		select xmgl.xmid,xmgl.xmmc
+            from igams_xmgl xmgl
+                 where xmgl.scbj !='1' and xmgl.xmid=#{xmid}
+     		union all
+       		select t.xmid,t.xmmc
+                 from  igams_xmgl t
+            join r on t.fxmid =r.xmid 
+                 where t.scbj !='1' 
+    		 )
+			select r.xmmc,rw.rwid,rw.frwid,rw.xmjdid,rw.xmid,rw.rwmc,rw.fzr,rw.ksrq,rw.jsrq,rw.rwjb,rw.rwbq,rw.rwms,rw.zt,rw.scbj  from r 
+			left outer join igams_xmjdrw rw on rw.xmid = r.xmid
+			where rw.scbj != '1'
+	</select>
+</mapper>

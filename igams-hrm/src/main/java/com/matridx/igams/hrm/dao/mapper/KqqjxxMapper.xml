@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IKqqjxxDao" >
+
+    <select id="viewLeaveNews" parameterType="KqqjxxDto" resultType="KqqjxxDto">
+        select qj.yhid,qj.qjkssj,qj.qjjssj,qj.qjsc,qj.qjlx,xtyh.zsxm yhmc,jcsj.csmc qjlxmc
+        from igams_kqqjxx qj
+         left join matridx_xtyh xtyh on xtyh.yhid=qj.yhid
+         left join matridx_jcsj jcsj on jcsj.csid=qj.qjlx
+         where qj.yhid=#{yhid}
+        <if test="rq != null and rq !=''">
+            and to_char(qj.rq,'YYYY-MM-dd')=#{rq}
+        </if>
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(qj.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(qj.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+    </select>
+    <select id="getDtoList" parameterType="KqqjxxDto" resultType="KqqjxxDto">
+        select qj.yhid,qj.qjkssj,qj.qjjssj,qj.qjsc,qj.qjlx,qj.spid
+        from igams_kqqjxx qj
+         where 1=1
+        <if test="rq != null and rq !=''">
+            and to_char(qj.rq,'YYYY-MM-dd')=#{rq}
+        </if>
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(qj.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(qj.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+    </select>
+    <select id="getDtoListForKsAndJs" parameterType="KqqjxxDto" resultType="KqqjxxDto">
+        SELECT
+        kqqjxx.yhid||to_char(kqqjxx.rq, 'yyyy-MM-dd') yhrq,
+        CAST(COALESCE(SUM(round(cast(EXTRACT(EPOCH FROM kqqjxx.qjjssj - kqqjxx.qjkssj) as numeric)/(60*60),1)),'0') AS VARCHAR) qjzsc
+        FROM
+        igams_kqqjxx kqqjxx
+        LEFT JOIN igams_yhkqxx yhkqxx ON yhkqxx.rq = kqqjxx.rq AND kqqjxx.yhid = yhkqxx.yhid AND yhkqxx.scbj ='0'
+        WHERE yhkqxx.cqsj &lt;= kqqjxx.qjkssj  AND yhkqxx.tqsj &gt;= kqqjxx.qjjssj
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(kqqjxx.rq, 'yyyy-MM-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(kqqjxx.rq, 'yyyy-MM-dd') &lt;= #{rqend}
+        </if>
+        GROUP BY to_char(kqqjxx.rq, 'yyyy-MM-dd'),kqqjxx.yhid
+    </select>
+    <!-- 新增用户出勤信息 -->
+    <insert id="insert" parameterType="KqqjxxDto">
+        insert into igams_kqqjxx(spid,yhid,rq
+        <if test="qjkssj != null and qjkssj != ''">
+            ,qjkssj
+        </if>
+        <if test="qjjssj != null and qjjssj != ''">
+            ,qjjssj
+        </if>
+        <if test="qjsc != null and qjsc != ''">
+            ,qjsc
+        </if>
+        <if test="qjcs != null and qjcs != ''">
+            ,qjcs
+        </if>
+        <if test="qjlx != null and qjlx != ''">
+            ,qjlx
+        </if>
+        <if test="wbcxid != null and wbcxid != ''">
+            ,wbcxid
+        </if>
+        )
+        values(#{spid},#{yhid},cast(#{rq} as date)
+        <if test="qjkssj != null and qjkssj != ''">
+            ,cast(#{qjkssj} as timestamp)
+        </if>
+        <if test="qjjssj != null and qjjssj != ''">
+            ,cast(#{qjjssj} as timestamp)
+        </if>
+        <if test="qjsc != null and qjsc != ''">
+            ,#{qjsc}
+        </if>
+        <if test="qjcs != null and qjcs != ''">
+            ,#{qjcs}
+        </if>
+        <if test="qjlx != null and qjlx != ''">
+            ,#{qjlx}
+        </if>
+        <if test="wbcxid != null and wbcxid != ''">
+            ,#{wbcxid}
+        </if>
+        )
+    </insert>
+
+    <!-- 更新出勤退勤时间 -->
+    <update id="updateSj" parameterType="KqqjxxDto">
+        update igams_kqqjxx
+        <set>
+            yhid=#{yhid}
+            <if test="qjkssj != null and qjkssj != ''">
+                ,qjkssj=cast (#{qjkssj} as timestamp)
+            </if>
+            <if test="qjsc != null and qjsc != ''">
+                ,qjsc=#{qjsc}
+            </if>
+            <if test="qjcs != null and qjcs != ''">
+                ,qjcs=#{qjcs}
+            </if>
+            <if test="qjlx != null and qjlx != ''">
+                ,qjlx=#{qjlx}
+            </if>
+            <if test="qjjssj != null and qjjssj != ''">
+                ,qjjssj=cast (#{qjjssj} as timestamp)
+            </if>
+        </set>
+        <where>
+            spid=#{spid}
+        </where>
+    </update>
+
+    <!-- 删除 -->
+    <update id="delQjxx" parameterType="KqqjxxDto">
+        delete from igams_kqqjxx
+       where yhid=#{yhid}  and  to_char(rq,'YYYY-MM-dd')=#{rq}
+    </update>
+
+
+    <select id="getSpid" parameterType="KqqjxxDto" resultType="KqqjxxDto">
+		select spid,to_char(qjkssj,'YYYY-MM-dd HH24:mi')qjkssj
+		from igams_kqqjxx
+		where spid=#{spid}
+	</select>
+</mapper>

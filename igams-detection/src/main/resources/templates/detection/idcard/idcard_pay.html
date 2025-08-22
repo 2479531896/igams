@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+	<style type="text/css">
+		.img_wrap{
+			width:600px;
+			height:300px;
+			border:1px dashed #ccc;
+			display: table-cell;
+			vertical-align: middle;
+			text-align: center;
+			/*margin:auto;*/
+		}
+	</style>
+</head>
+<body>
+<div id="payOrderInfo">
+	<input id="fzjcid" type="hidden" name="fzjcid"  th:value="${fzjcid}"/>
+	<input id="payUtl" type="hidden" name="payUtl"  th:value="${payUtl}"/>
+	<div id="qrCodePage" class="box">
+	<div id="qrcode" style="margin: 10px"></div>
+	</div>
+<!--	<div class="img_wrap"><img style="width: 300px;height: 300px;margin: auto" th:src="${payUtl}" ></div>-->
+
+</div>
+<script type="text/javascript">
+	$(function () {
+		$("#qrcode").qrcode({
+			render: 'div',
+			size: 200,
+			text: $("#payUtl").val().toUpperCase().toString()
+		})
+	})
+	var timer = window.setInterval("timelyFun()",5000);
+	function timelyFun(){
+		let fzjcid = $("#payOrderInfo #fzjcid").val();
+		$.ajax({
+			type: "post",
+			url: "/detection/detection/minidataPayInfo",
+			dataType: 'json',
+			data: { "fzjcid": fzjcid, "access_token": $("#ac_tk").val() },
+			success: function (result) {
+				if ("success" == result.status) {
+					clearTimeout(timer);
+					closePayModal("payModal");
+				}
+			}
+		})
+		// 诺诺支付
+		// $.ajax({
+		// 	type: "post",
+		// 	url: "/detection/detection/nuonuoOrderInfo",
+		// 	dataType: 'json',
+		// 	data: { "fzjcid": fzjcid, "access_token": $("#ac_tk").val() },
+		// 	success: function (result) {
+		// 		if ("success" == result.status) {
+		// 			var orderInfo = JSON.parse(result.orderInfo);
+		// 			if ("JH200" == orderInfo.code) {
+		// 				let payStatus = orderInfo.result.payStatus;
+		// 				if (payStatus == "1"){
+		// 					$.ajax({
+		// 						type: "post",
+		// 						url: "/detection/detection/nuonuoPay",
+		// 						dataType: 'json',
+		// 						data: { "fzjcid": fzjcid, "access_token": $("#ac_tk").val() },
+		// 						success: function (data) {
+		// 							if ("success" == data.status) {
+		// 								clearTimeout(timer);
+		// 								closePayModal("payModal");
+		// 								readCardQ();
+		// 							}
+		// 						}
+		// 					})
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// })
+	};
+</script>
+</body>
+</html>

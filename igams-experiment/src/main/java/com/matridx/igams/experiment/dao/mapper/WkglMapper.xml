@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IWkglDao" >
+	<!-- 获取文库列表 -->
+	<select id="getPagedWkglDtoList" parameterType="WkglDto" resultType="WkglDto">
+		select wkgl.wkid,wkgl.lrry,to_char(wkgl.lrsj,'YYYY-MM-DD HH24:MI:SS') lrsj,wkgl.xgry,to_char(wkgl.xgsj,'YYYY-MM-DD HH24:MI:SS') xgsj,wkgl.wkmc,wkgl.sjph3,
+		xtyhlr.zsxm lrrymc,xtyhxg.zsxm xgrymc,wkgl.scbj,case when wkgl.zt ='00' then '未通过' when wkgl.zt='80' then '通过' end zt,jc.csmc jcdwmc,wkgl.wkrq,wkgl.sjph1,wkgl.sjph2,wkgl.sjscsj
+		from igams_wkgl wkgl
+		 left join matridx_xtyh xtyhlr on wkgl.lrry=xtyhlr.yhid
+		 left join matridx_xtyh xtyhxg on wkgl.xgry=xtyhxg.yhid
+		 left join matridx_jcsj jc on wkgl.jcdw=jc.csid
+		<where>
+		 wkgl.scbj='0'
+		 <if test="lrrymc != null and lrrymc != ''">
+		 	and xtyhlr.zsxm like '%'||#{lrrymc}||'%'
+		 </if>
+		 <if test="xgrymc != null and xgrymc != ''">
+		 	and xtyhxg.zsxm like '%'||#{xgrymc}||'%'
+		 </if>
+		 <if test="jcdwxz !=null and jcdwxz.size()>0">
+				and wkgl.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="wkmc != null and wkmc != ''">
+		 	and wkgl.wkmc like '%'||#{wkmc}||'%'
+		</if>
+		<if test="jcdwmc != null and jcdwmc != ''">
+		 	and jc.csmc like '%'||#{jcdwmc}||'%'
+		</if>
+		<if test="sjph1 != null and sjph1 != ''">
+		 	and wkgl.sjph1 like '%'||#{sjph1}||'%'
+		</if>
+		<if test="sjph2 != null and sjph2 != ''">
+		 	and wkgl.sjph2 like '%'||#{sjph2}||'%'
+		</if>
+		<if test="sjph3 != null and sjph3 != ''">
+		 	and wkgl.sjph3 like '%'||#{sjph3}||'%'
+		</if>
+		<if test="sjph3 != null and sjph3 != ''">
+		 	and wkgl.sjph3 like '%'||#{sjph3}||'%'
+		</if>
+		<if test="cjsjstart != null and cjsjstart != ''">
+		 	and to_char(wkgl.lrsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+		</if>
+		<if test="cjsjend != null and cjsjend != ''">
+		 	and to_char(wkgl.lrsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+		</if>
+		<if test="nbbh != null and nbbh != ''">
+			and wkgl.wkid in(
+			select wkid
+			from igams_wkmx wkmx
+			where wkmx.nbbh like '%'||#{nbbh}||'%')
+		</if>
+	   </where>
+	</select>
+	<!-- 新增文库信息 -->
+	<insert id="insert" parameterType="WkglModel">
+		insert into igams_wkgl(wkid
+		<if test="zt != null and zt!= ''">
+			,zt
+		</if>
+		<if test="jcdw != null and jcdw!= ''">
+			,jcdw
+		</if>
+		<if test="xh != null and xh!= ''">
+			,xh
+		</if>
+		<if test="wkmc != null and wkmc!= ''">
+			,wkmc
+		</if>
+		<if test="sjph1 != null and sjph1!= ''">
+			,sjph1
+		</if>
+		<if test="sjph2 != null and sjph2!= ''">
+			,sjph2
+		</if>
+		<if test="sjph3 != null and sjph3!= ''">
+			,sjph3
+		</if>
+		<if test="ywkid != null and ywkid!= ''">
+			,ywkid
+		</if>
+		<if test="yqlx != null and yqlx!= ''">
+			,yqlx
+		</if>
+		<if test="sjxz != null and sjxz!= ''">
+			,sjxz
+		</if>
+		<if test="wksj != null and wksj!= ''">
+			,wksj
+		</if>
+		,lrry,lrsj,scbj,wkrq) values(#{wkid}
+		<if test="zt != null and zt!= ''">
+			,#{zt}
+		</if>
+		<if test="jcdw != null and jcdw!= ''">
+			,#{jcdw}
+		</if>
+		<if test="xh != null and xh!= ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="wkmc != null and wkmc!= ''">
+			,#{wkmc}
+		</if>
+		<if test="sjph1 != null and sjph1!= ''">
+			,#{sjph1}
+		</if>
+		<if test="sjph2 != null and sjph2!= ''">
+			,#{sjph2}
+		</if>
+		<if test="sjph3 != null and sjph3!= ''">
+			,#{sjph3}
+		</if>
+		<if test="ywkid != null and ywkid!= ''">
+			,#{ywkid}
+		</if>
+		<if test="yqlx != null and yqlx!= ''">
+			,#{yqlx}
+		</if>
+		<if test="sjxz != null and sjxz!= ''">
+			,#{sjxz}
+		</if>
+		<if test="wksj != null and wksj != ''">
+			,CAST( #{wksj} AS json)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0',cast(#{wkrq} as date))
+	</insert>
+	
+	<!-- 删除文库信息 -->
+	<update id="deleteWkglxx" parameterType="WkglDto">
+		update igams_wkgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			scbj!='1'
+			and wkid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!-- 合并（删除标记为2）文库信息 -->
+	<update id="delMergeWkgl" parameterType="WkglDto">
+		update igams_wkgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='2'
+		<where>
+			scbj!='1'
+			and wkid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!-- 撤销合并（删除标记2改为0）文库信息 -->
+	<update id="cancelMergeWkgl" parameterType="WkglDto">
+		update igams_wkgl set scbj='0'
+		<where>
+			scbj='2' and wkid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	
+	<!-- 更新文库信息 -->
+	<update id="updateWkxxByWkid" parameterType="WkglDto">
+		update igams_wkgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP,xh=cast(#{xh} as numeric),jcdw=#{jcdw},wkrq=cast(#{wkrq} as date)
+		<if test="zt != null and zt != ''">
+		,zt=#{zt}
+		</if>
+		<if test="wkmc != null and wkmc != ''">
+		,wkmc=#{wkmc}
+		</if>
+		<if test="sjph1 != null and sjph1 != ''">
+		,sjph1=#{sjph1}
+		</if>
+		<if test="sjph2 != null and sjph2 != ''">
+		,sjph2=#{sjph2}
+		</if>
+		<if test="sjph3 != null and sjph3 != ''">
+			,sjph3=#{sjph3}
+		</if>
+		<if test="yqlx != null and yqlx != ''">
+		,yqlx=#{yqlx}
+		</if>
+		<if test="sjxz != null and sjxz != ''">
+		,sjxz=#{sjxz}
+		</if>
+		<if test="wksj != null and wksj != ''">
+			,wksj=CAST( #{wksj} AS json)
+		</if>
+
+
+		<where>
+			scbj!='1'
+			and wkid=#{wkid}
+		</where>
+	</update>
+	
+	<!-- 根据检测单位和创建日期查询文库信息 -->
+	<select id="getWkglByJcdwAndLrsj" parameterType="WkglDto" resultType="WkglDto">
+		select wkid,zt,jcdw,xh,lrsj,wkrq,wksj
+		from igams_wkgl
+		<where>
+			scbj!='1'
+			and to_char(wkrq,'YYYY-MM-DD')=#{wkrq}
+			and jcdw=#{jcdw}
+		</where>
+		order by xh
+	</select>
+	
+	<!-- 根据文库ID查看文库管理信息 -->
+	<select id="getDtoById" parameterType="String" resultType="WkglDto">
+		select wkgl.wkid,wkgl.zt,wkgl.jcdw,wkgl.yqlx,wkgl.sjxz,wkgl.xh,wkgl.lrsj,jc.csmc jcdwmc,jc.csdm jcdwdm,wkgl.wkmc,wkgl.wkrq,wkgl.sjph1,wkgl.sjph2,wkgl.sjph3
+		,wksjgl.xpmc,to_char(wksjgl.sjsj,'yyyy-MM-dd HH24:mi:ss') sjsj, to_char(wksjgl.xjsj,'yyyy-MM-dd HH24:mi:ss') xjsj, wksjgl.cxy,wksjgl.sssys sys,wkgl.wksj,
+		to_char( wksjgl.yjxjsj,'yyyy-MM-dd HH24:mi:ss') yjxjsj ,wksjgl.fwq, wkgl.ywkid
+		from igams_wkgl wkgl
+		left join matridx_jcsj jc on jc.csid=wkgl.jcdw
+		left join igams_wksjgl wksjgl on wksjgl.wkid=wkgl.wkid and wksjgl.scbj != '1'
+		<where>
+			wkgl.scbj!='1'
+			and wkgl.wkid=#{wkid}
+		</where>
+	</select>
+	<select id="getDto" parameterType="WkglDto" resultType="WkglDto">
+		select wkgl.wkid,wkgl.zt,wkgl.lrry,wkgl.lrsj,wkgl.xgry,wkgl.xgsj,to_char(wkgl.lrsj,'yyyy-MM-dd') as format_lrsj,wkgl.wkrq,wkgl.sjph3, wkgl.ywkid,wkgl.wksj
+		from igams_wkgl  wkgl
+		<where>
+			wkgl.scbj !='1'
+			<if test="wkid != null and wkid !=''">
+				and wkgl.wkid=#{wkid}
+			</if>
+			<if test="wkmc != null and wkmc != ''">
+				and wkgl.wkmc=#{wkmc}
+			</if>
+		</where>
+	</select>
+	<select id="getDtoList" parameterType="WkglDto" resultType="WkglDto">
+		select wkgl.wkid,wkgl.zt,wkgl.jcdw,wkgl.xh,wkgl.lrsj,jc.csmc jcdwmc,jc.csdm jcdwdm,wkgl.wkmc,wkgl.wkrq,wkgl.sjph1,wkgl.sjph2,wkgl.sjph3
+		,wksjgl.xpmc,to_char(wksjgl.sjsj,'yyyy-MM-dd HH24:mi:ss') sjsj, to_char(wksjgl.xjsj,'yyyy-MM-dd HH24:mi:ss') xjsj, wksjgl.cxy,wksjgl.sssys sys,wkgl.wksj,
+		to_char( wksjgl.yjxjsj,'yyyy-MM-dd HH24:mi:ss') yjxjsj ,wksjgl.fwq
+		from igams_wkgl wkgl
+		left join matridx_jcsj jc on jc.csid=wkgl.jcdw
+		left join igams_wksjgl wksjgl on wksjgl.wkid=wkgl.wkid and wksjgl.scbj != '1'
+		<where>
+			wkgl.scbj !='1'
+			<choose>
+				<when test="ids != null and ids.size() >0 ">
+					and wkgl.wkid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</when>
+				<otherwise>
+					<if test="wkid != null and wkid !=''">
+						and wkgl.wkid=#{wkid}
+					</if>
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	<!-- 查询当天已建立的文库数量 -->
+	<select id="getCountByDay" parameterType="WkglDto" resultType="WkglDto">
+		select count(wkid)
+		from igams_wkgl
+		<where>
+			scbj!='1'
+			and to_char(lrsj,'YYYY-MM-DD')=#{lrsj}
+		</where>
+	</select>
+	<!-- 校验文库名称是否重复 -->
+	<select id="getDtoByWkmc" parameterType="WkglDto" resultType="WkglDto">
+		select wkgl.wkid,wkgl.zt,wkgl.lrry,wkgl.lrsj,wkgl.xgry,wkgl.xgsj,to_char(wkgl.lrsj,'yyyy-MM-dd') as format_lrsj
+			from igams_wkgl  wkgl
+		<where>
+			wkgl.scbj !='1'
+			<if test="wkmc != null and wkmc != ''">
+				and wkgl.wkmc=#{wkmc}
+			</if>
+			<if test="wkid != null and wkid != ''">
+				and wkgl.wkid!=#{wkid}
+			</if>
+		</where>
+	</select>
+	<select id="getPoolingTemplatePath" parameterType="WkglDto" resultType="map">
+		SELECT wkgl.wkid,wkgl.wkmc,wkgl.jcdw,cxy.cskz1 as cxycskz1,to_char(wkgl.lrsj,'yyyy-MM-dd') AS format_lrsj,fjcfb.wjlj,pooltemp.csdm jcsjcsdm,pooltemp.cskz1 jcsjcskz1,pooltemp.cskz2 jcsjcskz2,pooltemp.cskz3 jcsjcskz3,
+		jcdw.csdm jcdwmc,jcdw.csmc jcdwdwmc,jcdwkz.csid,jcdwkz.csmc,jcdwkz.csdm,jcdwkz.cskz1,jcdwkz.cskz2,jcdwkz.cskz3,jcdwkz.cskz4,wkgl.sjxz,qcnt,tcnt
+		FROM igams_wkgl wkgl
+		LEFT JOIN matridx_jcsj jcdw on jcdw.csid = wkgl.jcdw
+		LEFT JOIN matridx_jcsj jcdwkz on jcdwkz.fcsid = wkgl.jcdw and jcdwkz.jclb = 'DETECTION_UNIT_EXTEND' AND jcdwkz.scbj = '0'
+		LEFT JOIN (
+		SELECT CASE WHEN sum(tcnt)>0 AND sum(qcnt)>0 THEN '02' ELSE '01' END csdm,tmp.wkid,sum(qcnt) qcnt,sum(tcnt) tcnt
+		FROM (
+		SELECT CASE WHEN wkbm LIKE '%-tNGS%' OR wkbm LIKE '%-TBtNGS-%' OR wkbm LIKE '%-HS-%' THEN 1 ELSE 0 END tcnt,
+		CASE WHEN wkbm LIKE '%-DNA-%' OR wkbm LIKE '%-Onco-%' OR wkbm LIKE '%-RNA-%' THEN  1 ELSE 0 END qcnt,wksjgl.wkid
+		FROM  igams_wksjmx wksjmx
+		LEFT JOIN igams_wksjgl wksjgl ON wksjgl.wksjid = wksjmx.wksjid
+		<where>
+			wksjgl.wkid = #{wkid}
+		</where>
+		) tmp GROUP BY tmp.wkid
+		) tt ON tt.wkid = wkgl.wkid
+		<if test="mbid != null and mbid != ''">
+			LEFT JOIN matridx_jcsj pooltemp ON pooltemp.csid = #{mbid}
+		</if>
+		<if test="mbid == null or mbid == ''">
+			LEFT JOIN matridx_jcsj pooltemp ON pooltemp.csdm = tt.csdm AND pooltemp.jclb = 'POOLING_TEMPLATE' AND pooltemp.scbj = '0'
+		</if>
+		LEFT JOIN matridx_fjcfb fjcfb ON fjcfb.ywid = pooltemp.csid
+		LEFT JOIN matridx_jcsj cxy ON cxy.csid = wkgl.yqlx AND cxy.scbj = '0'
+		<where>
+			wkgl.wkid = #{wkid}
+		</where>
+		LIMIT 1
+	</select>
+
+	<select id="getPoolingLibraryCount" parameterType="String" resultType="map">
+		select sum(tcnt) tsum,sum(qcnt) qsum
+		from (
+		SELECT CASE WHEN wkbm LIKE '%-tNGS%' OR wkbm LIKE '%-TBtNGS-%' OR wkbm LIKE '%-HS-%' THEN 1 ELSE 0 END tcnt,
+		CASE WHEN wkbm LIKE '%-DNA-%' OR wkbm LIKE '%-Onco-%' OR wkbm LIKE '%-RNA-%' THEN  1 ELSE 0 END qcnt,wksjgl.wkid
+		FROM  igams_wksjmx wksjmx
+		LEFT JOIN igams_wksjgl wksjgl ON wksjgl.wksjid = wksjmx.wksjid
+		<where>
+			wksjgl.wkid = #{wkid}
+		</where>
+		) tmp
+	</select>
+	
+		<!-- 更新文库信息 -->
+	<update id="updatesjph" parameterType="WkglDto">
+		update igams_wkgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="sjph3 != null and sjph3 != ''">
+		,sjph3=#{sjph3}
+		</if>
+		<where>
+			wkid=#{wkid}
+		</where>
+	</update>
+		<!-- 更新测序仪 -->
+	<update id="updateYqlx" parameterType="WkglDto">
+		update igams_wkgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="yqlx != null and yqlx != ''">
+		,yqlx=#{yqlx}
+		</if>
+		<where>
+			wkid=#{wkid}
+		</where>
+	</update>
+
+	<update id="updateSjscsj" parameterType="WkglDto">
+		update igams_wkgl set sjscsj=LOCALTIMESTAMP
+		where wkid=#{wkid}
+	</update>
+
+	<select id="getDetectionInfo" parameterType="Map" resultType="Map">
+		select xxdy.kzcs1,xxdy.kzcs2, xxdy.kzcs3,sjsygl.nbzbm,sjsygl.syglid,jcxm.cskz1 as jcxmcskz1
+		from igams_sjsygl  sjsygl
+		left join igams_xmsygl xmsygl on sjsygl.syglid = xmsygl.syglid and xmsygl.scbj ='0'
+		left join igams_sjxx sjxx on sjxx.sjid = sjsygl.sjid and sjxx.scbj='0'
+		left join igams_xxdy xxdy on xxdy.dyid = xmsygl.dyid
+		left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid and jcxm.scbj='0'
+		where sjsygl.scbj='0' and sjxx.nbbm = #{nbbm}  and sjsygl.sfjs='1'
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and sjsygl.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	<select id="getPoolingInfo" parameterType="WkglDto" resultType="Map">
+		SELECT wkgl.jcdw,jc_jcdwkz.csid,jc_jcdwkz.csmc,jc_jcdwkz.csdm,jc_jcdwkz.cskz1,jc_jcdwkz.cskz2,jc_jcdwkz.cskz3,jc_jcdwkz.cskz4,wkgl.wksj,wkgl.sjxz
+		FROM igams_wkgl wkgl
+		LEFT JOIN matridx_jcsj jc_jcdwkz ON jc_jcdwkz.fcsid = wkgl.jcdw AND jc_jcdwkz.jclb = 'DETECTION_UNIT_EXTEND' AND jc_jcdwkz.scbj = '0'
+		WHERE wkid = #{wkid}
+	</select>
+</mapper>

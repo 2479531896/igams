@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.matridx.igams.experiment.dao.post.INgsglDao">
+	<sql id="SEARCH_TERMS">
+		ngs.scbj!='1'
+		<if test="entire != null and entire != ''">
+			and (
+			ngs.jcdwmc ILIKE '%'||#{entire}||'%'
+			or ngs.nbbm ILIKE '%'||#{entire}||'%'
+			or ngs.zbf ILIKE '%'||#{entire}||'%'
+			or ngs.tcsjph ILIKE '%'||#{entire}||'%'
+			or ngs.jksjph ILIKE '%'||#{entire}||'%'
+			or ngs.jth ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="jcdwmc !=null and jcdwmc !=''">
+			and ngs.jcdwmc ILIKE '%'||#{jcdwmc}||'%'
+		</if>
+		<if test="nbbm !=null and nbbm !=''">
+			and ngs.nbbm ILIKE '%'||#{nbbm}||'%'
+		</if>
+		<if test="zbf !=null and zbf !=''">
+			and ngs.zbf ILIKE '%'||#{zbf}||'%'
+		</if>
+		<if test="tcsjph !=null and tcsjph !=''">
+			and ngs.tcsjph ILIKE '%'||#{tcsjph}||'%'
+		</if>
+		<if test="jksjph !=null and jksjph !=''">
+			and ngs.jksjph ILIKE '%'||#{jksjph}||'%'
+		</if>
+		<if test="jth !=null and jth !=''">
+			and ngs.jth ILIKE '%'||#{jth}||'%'
+		</if>
+	
+		<if test="sxrqstart != null and sxrqstart != ''">
+			and to_char(ngs.cjsj,'YYYY-MM-dd') &gt;= #{sxrqstart}
+		</if>
+		<if test="sxrqend != null and sxrqend != ''">
+			and to_char(ngs.cjsj,'YYYY-MM-dd') &lt;= #{sxrqend}
+		</if>
+
+		<if test="jcdws != null and jcdws.length > 0 ">
+			and ngs.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+				item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="zbbms != null and zbbms.length >0 ">
+			and ngs.zbbm in
+			<foreach collection="zbbms" separator="," open="(" close=")"
+				item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+
+		<if test="sfcgs != null and sfcgs.length > 0 ">
+			and ngs.sfcg in
+			<foreach collection="sfcgs" separator="," open="(" close=")"
+				item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sbid !=null and sbid !=''">
+			and ngs.sbid ILIKE '%'||#{sbid}||'%'
+		</if>
+	</sql>
+
+
+	<!-- ngs信息录入 -->
+	<insert id="addSaveNgsDtos" parameterType="List">
+		insert into
+		igams_ngsgl(ngsid,jcdw,jcdwmc,sbid,czqx,cjsj,jcid,sjh,zbf,zbbm,nbbm,tcsjph,jksjph,jth,kssj,
+		jssj,sfcg,bz,lrry,lrsj,scbj,wgdz,rz,sylx)
+		values
+		<foreach collection="list" item="item" open="" close=""
+			index="index" separator=",">
+			(#{item.ngsid},#{item.jcdw},#{item.jcdwmc},#{item.sbid},#{item.czqx},cast(#{item.cjsj}
+			as timestamp),
+			#{item.jcid},#{item.sjh},#{item.zbf},#{item.zbbm},#{item.nbbm},#{item.tcsjph},#{item.jksjph},#{item.jth},
+			cast(#{item.kssj} as timestamp),cast(#{item.jssj} as
+			timestamp),#{item.sfcg},#{item.bz},#{item.lrry},LOCALTIMESTAMP,'0',#{item.wgdz},#{item.rz},#{item.sylx})
+		</foreach>
+	</insert>
+
+	<!-- 根据制备编码和内部编码获取相应信息 -->
+	<select id="getDtoByZbbmAndNbbm" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select
+		ngsid,jcdw,jcdwmc,sbid,czqx,cjsj,jcid,sjh,zbf,zbbm,nbbm,tcsjph,jksjph,jth,kssj,
+		jssj,sfcg,bz,lrry,lrsj,scbj,wgdz,rz,sylx
+		from igams_ngsgl
+		<where>
+			scbj!='1'
+			and zbbm=#{zbbm}
+			and nbbm=#{nbbm}
+			and jcdw = #{jcdw}
+			and
+			to_char(lrsj,'yyyy-mm-dd')=#{lrsj}
+			order by sfcg desc,cjsj desc
+		</where>
+	</select>
+
+	<!-- 根据检测ID获取ngs信息 -->
+	<select id="getDtoByJcid" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select
+		ngsid,jcdw,jcdwmc,sbid,czqx,cjsj,jcid,sjh,zbf,zbbm,nbbm,tcsjph,jksjph,jth,kssj,
+		jssj,sfcg,bz,lrry,lrsj,scbj,wgdz,rz,sylx
+		from igams_ngsgl
+		<where>
+			scbj!='1'
+			and jcid=#{jcid}
+			<if test="jcdw != null and jcdw != ''">
+				and jcdw=#{jcdw}
+			</if>
+			<if test="cjsj != null and cjsj != ''">
+				and to_char(cjsj,'yyyy-mm-dd hh24:mi:ss')=to_char(cast(#{cjsj} as
+				timestamp),'yyyy-mm-dd hh24:mi:ss')
+			</if>
+			<if test="wgdz != null and wgdz != ''">
+				and wgdz=#{wgdz}
+			</if>
+		</where>
+	</select>
+
+	<!-- 更新结束时间和是否成功 -->
+	<update id="update" parameterType="NgsglDto">
+		update igams_ngsgl
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="jssj != null and jssj != ''">
+				,jssj=cast(#{jssj} as timestamp)
+			</if>
+			<if test="sfcg != null and sfcg != ''">
+				,sfcg=#{sfcg}
+			</if>
+			<if test="rz != null and rz != ''">
+				,rz=#{rz}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			and ngsid=#{ngsid}
+		</where>
+	</update>
+
+	<!-- 查询所有ngs信息 -->
+	<select id="getPageNgsglDto" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select
+		ngs.ngsid,ngs.jcdw,ngs.jcdwmc,ngs.sbid,ngs.czqx,ngs.cjsj,ngs.jcid,ngs.sjh,ngs.zbf,ngs.zbbm,ngs.nbbm,ngs.tcsjph,ngs.jksjph,ngs.jth,ngs.kssj,
+		ngs.jssj,ngs.sfcg,ngs.bz,ngs.lrry,ngs.lrsj,ngs.scbj,ngs.wgdz,ngs.rz,ngs.sylx
+		from igams_ngsgl ngs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<!-- 根据ngsId查询ngs详细信息 -->
+	<select id="getDtoByngsid" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select
+		ngsid,jcdw,jcdwmc,sbid,czqx,cjsj,jcid,sjh,zbf,zbbm,nbbm,tcsjph,jksjph,jth,kssj,
+		jssj,sfcg,bz,lrry,lrsj,scbj,wgdz,rz,sylx
+		from igams_ngsgl
+		<where>
+			scbj!='1' And ngsid=#{ngsid}
+		</where>
+	</select>
+
+
+	<!-- 查询帅选条件信息 -->
+	<select id="queryBySfcg" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select sfcg
+		from igams_ngsgl
+		group by sfcg
+	</select>
+
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="NgsglDto"
+		resultType="java.lang.Integer">
+		select count(ngs.ngsid) from igams_ngsgl ngs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select ngs.ngsid ${sqlParam} from (
+		select ngs.ngsid
+		from igams_ngsgl ngs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+		) t_ngs
+		left
+		outer join igams_ngsgl ngs on t_ngs.ngsid = ngs.ngsid
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select>
+
+	<select id="getListForSelectExp" parameterType="NgsglDto"
+		resultType="NgsglDto">
+		select ngs.ngsid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} ngsid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_ngsgl ngs on tmp.ngsid = ngs.ngsid
+		order by tmp.ordernum
+	</select>
+
+	<select id="getSjxxByLikeNbbm" parameterType="String" resultType="String">
+		select nbbm
+		from igams_sjxx
+		where nbbm ILIKE '%'||#{nbbm}||'%'
+	</select>
+</mapper>

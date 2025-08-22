@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IHbszDao" >
+    <sql id="SELECTSQL" >
+        <if test="entire != null and entire != ''">
+            and (
+            hbsz.hbmc ILIKE '%' ||#{entire}||'%'
+            or tzq.csmc ILIKE '%' ||#{entire}||'%'
+            )
+        </if>
+        <if test="hbmc != null and hbmc != ''">
+            and hbsz.hbmc ILIKE '%' ||#{hbmc}||'%'
+        </if>
+        <if test="tzqmc != null and tzqmc != ''">
+            and tzq.csmc ILIKE '%' ||#{tzqmc}||'%'
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="HbszDto" resultType="HbszDto">
+        SELECT
+            hbsz.hbszid,hbsz.hbmc,hbsz.tzq,tzq.csmc tzqmc,hbsz.fssj,hbsz.tzxx,hbsz.lrry,xtyh.zsxm lrrymc,hbsz.rwid,hbsz.ys,ys.csmc ysmc
+        FROM
+            igams_hbsz hbsz
+            LEFT JOIN matridx_jcsj tzq ON tzq.csid = hbsz.tzq
+            LEFT JOIN matridx_jcsj ys ON ys.csid = hbsz.ys
+            LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = hbsz.lrry
+        WHERE
+        hbsz.scbj!='1'
+        <include refid="SELECTSQL"></include>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="HbszDto">
+        SELECT
+            hbsz.hbszid,hbsz.hbmc,hbsz.tzq,tzq.csmc tzqmc,hbsz.fssj,hbsz.tzxx,hbsz.lrry,xtyh.zsxm lrrymc,hbsz.rwid,tzq.cskz3 Webhook,hbsz.ys,ys.csmc ysmc,ys.cskz4 tpfm,hbsz.xh
+        FROM
+            igams_hbsz hbsz
+            LEFT JOIN matridx_jcsj tzq ON tzq.csid = hbsz.tzq
+            LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = hbsz.lrry
+            LEFT JOIN matridx_jcsj ys ON ys.csid = hbsz.ys
+        WHERE hbsz.hbszid=#{hbszid} AND hbsz.scbj !='1'
+    </select>
+    <insert id="insert" parameterType="HbszDto">
+        insert into igams_hbsz(hbszid,hbmc,tzq,fssj,tzxx,rwid,ys,lrry,lrsj,scbj
+        <if test="xh != null and xh != ''">
+           ,xh
+        </if>
+        ) values( #{hbszid} ,#{hbmc} ,#{tzq},cast(#{fssj} as timestamp) ,#{tzxx} ,#{rwid},#{ys}
+                ,#{lrry}
+                ,LOCALTIMESTAMP,'0'
+        <if test="xh != null and xh != ''">
+            ,cast(#{xh} as numeric)
+        </if>
+                )
+    </insert>
+    <update id="update" parameterType="HbszDto">
+        update igams_hbsz set
+        <if test="hbmc != null and hbmc != ''">
+            hbmc = #{hbmc},
+        </if>
+        <if test="tzq != null and tzq != ''">
+            tzq = #{tzq},
+        </if>
+        <if test="fssj != null and fssj != ''">
+            fssj = cast(#{fssj} as timestamp),
+        </if>
+        <if test="tzxx != null and tzxx != ''">
+            tzxx=#{tzxx},
+        </if>
+        <if test="rwid != null and rwid != ''">
+            rwid=#{rwid},
+        </if>
+        <if test="ys != null and ys != ''">
+            ys=#{ys},
+        </if>
+        <if test="xh != null and xh != ''">
+            xh=cast(#{xh} as numeric),
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where hbszid = #{hbszid}
+    </update>
+    <delete id="delete" parameterType="HbszDto">
+        update igams_hbsz set scbj ='1' , scry = #{scry} ,scsj = LOCALTIMESTAMP
+        where hbszid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="getDtoListWithPx" parameterType="HbszDto" resultType="HbszDto">
+        select hbsz.hbszid,hbsz.hbmc,pxgl.pxid
+        from igams_hbsz hbsz
+        left join igams_pxgl pxgl on hbsz.hbszid = pxgl.hbszid
+        <where>
+            hbsz.scbj !='1' and pxgl.scbj!='1'
+            <if test="ids !=null and ids.size >0" >
+                and hbsz.hbszid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="HbszDto" resultType="HbszDto">
+        select hbszid,hbmc
+        from igams_hbsz
+        <where>
+        scbj !='1'
+            and hbszid not in (select hbszid from igams_pxgl where scbj is not null and hbszid is not null) or hbszid=#{hbszid}
+        </where>
+    </select>
+</mapper>

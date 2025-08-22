@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.INdpxDao" >
+
+    <select id="getPagedDtoList" parameterType="NdpxDto" resultType="NdpxDto">
+        select tb.sjpxsj,tb.ycjrs,tb.qqrs,tb.cprs,tb.pxjlbh,ndpx.ndpxid,ndpx.nd,ndpx.pxmc,ndpx.jhpxsj,ndpx.cpbmry,ndpx.ssbm,jgxx.jgmc as ssbmmc,ndpx.js,xtyh.zsxm as jsxm,ndpx.ks,ndpx.pxfs,pxfs.csmc as pxfsmc,ndpx.bz,xtyh_lr.zsxm as lrrymc,
+        to_char(ndpx.lrsj,'yyyy-mm-dd') as lrsj,ndpx.lb
+        from igams_ndpx ndpx
+        left join
+        (select tab.ndpxid,max(tab.qwwcsj) as sjpxsj,count(tab.gzid) as ycjrs,sum(tab.cprs) as cprs,(count(tab.gzid)-sum(tab.cprs)) as qqrs
+        ,max(tab.jlbh) as pxjlbh from ((select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then 1 else 0 end cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null and gzgl.gzid is not null)
+
+        union all
+
+        (select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj, 1 as  cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        where ndpx.scbj='0' and gzgl.gzid is not null )) tab group by tab.ndpxid) tb on tb.ndpxid=ndpx.ndpxid
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = ndpx.lrry and xtyh_lr.scbj='0'
+        <where>
+            ndpx.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (ndpx.pxmc like '%'||#{entire}||'%'
+                or ndpx.cpbmry like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or jgxx.jgmc like '%'||#{entire}||'%'
+                or tb.pxjlbh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="pxmc !=null and pxmc != ''">
+                and ndpx.pxmc like '%'||#{pxmc}||'%'
+            </if>
+            <if test="cpbmry !=null and cpbmry != ''">
+                and ndpx.cpbmry like '%'||#{cpbmry}||'%'
+            </if>
+            <if test="jsxm !=null and jsxm != ''">
+                and xtyh.zsxm like '%'||#{jsxm}||'%'
+            </if>
+            <if test="ssbmmc !=null and ssbmmc != ''">
+                and jgxx.jgmc like '%'||#{ssbmmc}||'%'
+            </if>
+            <if test="pxjlbh !=null and pxjlbh != ''">
+                and tb.pxjlbh like '%'||#{pxjlbh}||'%'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='1'.toString()">
+                and ndpx.lb = '1'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='0'.toString()">
+                and (ndpx.lb ='0' or ndpx.lb is null or ndpx.lb='')
+            </if>
+            <if test = "pxfss != null and pxfss.length > 0 "  >
+                and ndpx.pxfs in
+                <foreach collection="pxfss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "nds != null and nds.length > 0 "  >
+                and ndpx.nd in
+                <foreach collection="nds" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jhpxsjstart != null and jhpxsjstart != ''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &gt;= #{jhpxsjstart}
+            </if>
+            <if test="jhpxsjend !=null and jhpxsjend !=''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &lt;= #{jhpxsjend}
+            </if>
+            <if test="sjpxsjstart != null and sjpxsjstart != ''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &gt;= #{sjpxsjstart}
+            </if>
+            <if test="sjpxsjend !=null and sjpxsjend !=''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &lt;= #{sjpxsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFilterData" resultType="String">
+        select nd
+        from igams_ndpx
+        where scbj='0' and nd is not null group by nd
+    </select>
+
+    <select id="getDto" parameterType="NdpxDto" resultType="NdpxDto">
+        select tb.sjpxsj,tb.ycjrs,tb.qqrs,tb.cprs,tb.pxjlbh,ndpx.ndpxid,ndpx.nd,ndpx.pxmc,ndpx.jhpxsj,ndpx.cpbmry,ndpx.ssbm,jgxx.jgmc as ssbmmc,ndpx.js,xtyh.zsxm as jsxm,ndpx.ks,ndpx.pxfs,pxfs.csmc as pxfsmc,ndpx.bz,xtyh_lr.zsxm as lrrymc,
+        to_char(ndpx.lrsj,'yyyy-mm-dd') as lrsj,ndpx.lb
+        from igams_ndpx ndpx
+        left join
+        (select tab.ndpxid,max(tab.qwwcsj) as sjpxsj,count(tab.gzid) as ycjrs,sum(tab.cprs) as cprs,(count(tab.gzid)-sum(tab.cprs)) as qqrs
+        ,max(tab.jlbh) as pxjlbh from ((select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then 1 else 0 end cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null and gzgl.gzid is not null)
+
+        union all
+
+        (select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj, 1 as  cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        where ndpx.scbj='0' and gzgl.gzid is not null )) tab group by tab.ndpxid) tb on tb.ndpxid=ndpx.ndpxid
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = ndpx.lrry and xtyh_lr.scbj='0'
+        <where>
+            ndpx.scbj='0' and ndpx.ndpxid=#{ndpxid}
+        </where>
+    </select>
+    <select id="getRemindAnnualTraining" parameterType="NdpxDto" resultType="NdpxDto">
+        select ndpx.ndpxid,ndpx.nd,ndpx.pxmc,ndpx.jhpxsj,ndpx.js,ndpx.cpbmry,ndpx.ssbm,jgxx.jgmc as ssbmmc,ndpx.pxmc,pxfs,pxfs.csmc as pxfsmc,ndpx.bz,jgxx.bmzgs,xtyh.email jsyx
+        from igams_ndpx ndpx
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        <where>
+            ndpx.scbj='0' and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &lt;= #{jhpxsj} and (ndpx.sffs is null or ndpx.sffs ='0')
+        </where>
+    </select>
+
+    <select id="getTaskInfo" parameterType="NdpxDto" resultType="NdpxDto">
+        (select gzgl.ywmc as pxmc,to_char(gzgl.qwwcsj,'YYYY-MM-dd') sjpxsj,gzgl.jlbh  as pxjlbh
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then '1' else '0' end sfcj,gzgl.tgbj,gz_ssgs.csmc as ssgsmc,yh.zsxm as fzrmc
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        left join matridx_xtyh yh on gzgl.fzr = yh.yhid and yh.scbj='0'
+        left join matridx_jcsj gz_ssgs ON gz_ssgs.csid = gzgl.ssgs and gz_ssgs.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null  and ndpx.ndpxid=#{ndpxid} and gzgl.gzid is not null )
+
+        union all
+
+        (select gzgl.ywmc as pxmc,to_char(gzgl.qwwcsj,'YYYY-MM-dd') sjpxsj,gzgl.jlbh as pxjlbh,'1' as sfcj,gzgl.tgbj,gz_ssgs.csmc as ssgsmc,yh.zsxm as fzrmc
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        left join matridx_xtyh yh on gzgl.fzr = yh.yhid and yh.scbj='0'
+        left join matridx_jcsj gz_ssgs ON gz_ssgs.csid = gzgl.ssgs and gz_ssgs.scbj='0'
+        where ndpx.scbj='0'  and ndpx.ndpxid=#{ndpxid} and gzgl.gzid is not null)
+    </select>
+
+    <!-- 选中导出  -->
+    <select id="getListForSelectExp" parameterType="NdpxDto" resultType="NdpxDto">
+        SELECT  ndpx.ndpxid ${sqlParam}
+        FROM (
+        <foreach collection="ids" separator=" union all "  index="index" item="item">
+            select #{item, jdbcType=VARCHAR} ndpxid, #{index} ordernum
+        </foreach>
+        ) tmp
+        left outer join ( select tb.sjpxsj,tb.ycjrs,tb.qqrs,tb.cprs,tb.pxjlbh,ndpx.ndpxid,ndpx.nd,ndpx.pxmc,ndpx.jhpxsj,ndpx.cpbmry,ndpx.ssbm,jgxx.jgmc as ssbmmc,ndpx.js,xtyh.zsxm as jsxm,ndpx.ks,ndpx.pxfs,pxfs.csmc as pxfsmc,ndpx.bz,xtyh_lr.zsxm as lrrymc,
+        to_char(ndpx.lrsj,'yyyy-mm-dd') as lrsj,ndpx.lb
+        from igams_ndpx ndpx
+        left join
+        (select tab.ndpxid,max(tab.qwwcsj) as sjpxsj,count(tab.gzid) as ycjrs,sum(tab.cprs) as cprs,(count(tab.gzid)-sum(tab.cprs)) as qqrs
+        ,max(tab.jlbh) as pxjlbh from ((select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then 1 else 0 end cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null and gzgl.gzid is not null)
+
+        union all
+
+        (select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj, 1 as  cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        where ndpx.scbj='0' and gzgl.gzid is not null )) tab group by tab.ndpxid) tb on tb.ndpxid=ndpx.ndpxid
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = ndpx.lrry and xtyh_lr.scbj='0'
+        where ndpx.scbj='0'
+        ) ndpx on ndpx.ndpxid=tmp.ndpxid
+
+        ORDER BY tmp.ordernum
+    </select>
+
+    <!-- 获取搜索导出的条数 -->
+    <select id="getCountForSearchExp"  parameterType="NdpxDto" resultType="java.lang.Integer">
+        select  count(ndpx.ndpxid)
+        from igams_ndpx ndpx
+        left join
+        (select tab.ndpxid,max(tab.qwwcsj) as sjpxsj,count(tab.gzid) as ycjrs,sum(tab.cprs) as cprs,(count(tab.gzid)-sum(tab.cprs)) as qqrs
+        ,max(tab.jlbh) as pxjlbh from ((select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then 1 else 0 end cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null and gzgl.gzid is not null)
+
+        union all
+
+        (select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj, 1 as  cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        where ndpx.scbj='0' and gzgl.gzid is not null )) tab group by tab.ndpxid) tb on tb.ndpxid=ndpx.ndpxid
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = ndpx.lrry and xtyh_lr.scbj='0'
+        <where>
+            ndpx.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (ndpx.pxmc like '%'||#{entire}||'%'
+                or ndpx.cpbmry like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or jgxx.jgmc like '%'||#{entire}||'%'
+                or tb.pxjlbh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="pxmc !=null and pxmc != ''">
+                and ndpx.pxmc like '%'||#{pxmc}||'%'
+            </if>
+            <if test="cpbmry !=null and cpbmry != ''">
+                and ndpx.cpbmry like '%'||#{cpbmry}||'%'
+            </if>
+            <if test="jsxm !=null and jsxm != ''">
+                and xtyh.zsxm like '%'||#{jsxm}||'%'
+            </if>
+            <if test="ssbmmc !=null and ssbmmc != ''">
+                and jgxx.jgmc like '%'||#{ssbmmc}||'%'
+            </if>
+            <if test="pxjlbh !=null and pxjlbh != ''">
+                and tb.pxjlbh like '%'||#{pxjlbh}||'%'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='1'.toString()">
+                and ndpx.lb ='1'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='0'.toString()">
+                and (ndpx.lb ='0' or ndpx.lb is null or ndpx.lb='')
+            </if>
+            <if test = "pxfss != null and pxfss.length > 0 "  >
+                and ndpx.pxfs in
+                <foreach collection="pxfss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "nds != null and nds.length > 0 "  >
+                and ndpx.nd in
+                <foreach collection="nds" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jhpxsjstart != null and jhpxsjstart != ''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &gt;= #{jhpxsjstart}
+            </if>
+            <if test="jhpxsjend !=null and jhpxsjend !=''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &lt;= #{jhpxsjend}
+            </if>
+            <if test="sjpxsjstart != null and sjpxsjstart != ''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &gt;= #{sjpxsjstart}
+            </if>
+            <if test="sjpxsjend !=null and sjpxsjend !=''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &lt;= #{sjpxsjend}
+            </if>
+        </where>
+    </select>
+
+    <!-- 搜索导出 -->
+    <select id="getListForSearchExp" parameterType="NdpxDto" resultType="NdpxDto">
+        SELECT  ndpx.ndpxid  ${sqlParam}
+        from(select tb.sjpxsj,tb.ycjrs,tb.qqrs,tb.cprs,tb.pxjlbh,ndpx.ndpxid,ndpx.nd,ndpx.pxmc,ndpx.jhpxsj,ndpx.cpbmry,ndpx.ssbm,jgxx.jgmc as ssbmmc,ndpx.js,xtyh.zsxm as jsxm,ndpx.ks,ndpx.pxfs,pxfs.csmc as pxfsmc,ndpx.bz,xtyh_lr.zsxm as lrrymc,
+        to_char(ndpx.lrsj,'yyyy-mm-dd') as lrsj,ndpx.lb
+        from igams_ndpx ndpx
+        left join
+        (select tab.ndpxid,max(tab.qwwcsj) as sjpxsj,count(tab.gzid) as ycjrs,sum(tab.cprs) as cprs,(count(tab.gzid)-sum(tab.cprs)) as qqrs
+        ,max(tab.jlbh) as pxjlbh from ((select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj
+        ,case when ((gzgl.sfqd is not null and gzgl.sfqd='1') or (gzgl.sfqd is null and (gzgl.zt='10' or gzgl.zt='80'))) then 1 else 0 end cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_pxgl pxgl on pxgl.ndpxid =ndpx.ndpxid and pxgl.scbj='0'
+        left join igams_gzgl gzgl on gzgl.ywid =pxgl.pxid and gzgl.scbj='0'
+        where ndpx.scbj='0' and pxgl.pxid is not null and gzgl.gzid is not null)
+
+        union all
+
+        (select ndpx.ndpxid,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj, 1 as  cprs,gzgl.gzid,gzgl.jlbh
+        from igams_ndpx ndpx
+        left join igams_gzgl gzgl on gzgl.ywmc =ndpx.pxmc  and  to_char(gzgl.qwwcsj,'yyyy')=ndpx.nd and gzgl.scbj='0' and gzgl.ywid is null
+        where ndpx.scbj='0' and gzgl.gzid is not null )) tab group by tab.ndpxid) tb on tb.ndpxid=ndpx.ndpxid
+        left join matridx_jgxx jgxx on jgxx.jgid = ndpx.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh xtyh on xtyh.yhid = ndpx.js and xtyh.scbj='0'
+        left join matridx_jcsj pxfs on pxfs.csid = ndpx.pxfs and pxfs.scbj='0'
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = ndpx.lrry and xtyh_lr.scbj='0'
+        <where>
+            ndpx.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (ndpx.pxmc like '%'||#{entire}||'%'
+                or ndpx.cpbmry like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or jgxx.jgmc like '%'||#{entire}||'%'
+                or tb.pxjlbh like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="pxmc !=null and pxmc != ''">
+                and ndpx.pxmc like '%'||#{pxmc}||'%'
+            </if>
+            <if test="cpbmry !=null and cpbmry != ''">
+                and ndpx.cpbmry like '%'||#{cpbmry}||'%'
+            </if>
+            <if test="jsxm !=null and jsxm != ''">
+                and xtyh.zsxm like '%'||#{jsxm}||'%'
+            </if>
+            <if test="ssbmmc !=null and ssbmmc != ''">
+                and jgxx.jgmc like '%'||#{ssbmmc}||'%'
+            </if>
+            <if test="pxjlbh !=null and pxjlbh != ''">
+                and tb.pxjlbh like '%'||#{pxjlbh}||'%'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='1'.toString()">
+                and ndpx.lb ='1'
+            </if>
+            <if test="lb !=null and lb != '' and lb=='0'.toString()">
+                and (ndpx.lb ='0' or ndpx.lb is null or ndpx.lb='')
+            </if>
+            <if test = "pxfss != null and pxfss.length > 0 "  >
+                and ndpx.pxfs in
+                <foreach collection="pxfss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "nds != null and nds.length > 0 "  >
+                and ndpx.nd in
+                <foreach collection="nds" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jhpxsjstart != null and jhpxsjstart != ''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &gt;= #{jhpxsjstart}
+            </if>
+            <if test="jhpxsjend !=null and jhpxsjend !=''">
+                and to_char(ndpx.jhpxsj,'yyyy-mm-dd') &lt;= #{jhpxsjend}
+            </if>
+            <if test="sjpxsjstart != null and sjpxsjstart != ''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &gt;= #{sjpxsjstart}
+            </if>
+            <if test="sjpxsjend !=null and sjpxsjend !=''">
+                and to_char(tb.sjpxsj,'yyyy-mm-dd') &lt;= #{sjpxsjend}
+            </if>
+        </where>
+        )ndpx
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="NdpxDto">
+        insert into igams_ndpx(ndpxid
+        <if test="nd !=null and nd != ''">
+            ,nd
+        </if>
+        <if test="pxmc !=null and pxmc != ''">
+            ,pxmc
+        </if>
+        <if test="jhpxsj !=null and jhpxsj != ''">
+            ,jhpxsj
+        </if>
+        <if test="cpbmry !=null and cpbmry != ''">
+            ,cpbmry
+        </if>
+        <if test="ssbm !=null and ssbm != ''">
+            ,ssbm
+        </if>
+        <if test="js !=null and js != ''">
+            ,js
+        </if>
+        <if test="ks !=null and ks != ''">
+            ,ks
+        </if>
+        <if test="pxfs !=null and pxfs != ''">
+            ,pxfs
+        </if>
+        <if test="bz !=null and bz != ''">
+            ,bz
+        </if>
+        <if test="lb !=null and lb != ''">
+            ,lb
+        </if>
+        ,lrry,lrsj,scbj
+        ) values(#{ndpxid}
+        <if test="nd !=null and nd != ''">
+            ,#{nd}
+        </if>
+        <if test="pxmc !=null and pxmc != ''">
+            ,#{pxmc}
+        </if>
+        <if test="jhpxsj !=null and jhpxsj != ''">
+            ,cast(#{jhpxsj} as date)
+        </if>
+        <if test="cpbmry !=null and cpbmry != ''">
+            ,#{cpbmry}
+        </if>
+        <if test="ssbm !=null and ssbm != ''">
+            ,#{ssbm}
+        </if>
+        <if test="js !=null and js != ''">
+            ,#{js}
+        </if>
+        <if test="ks !=null and ks != ''">
+            ,#{ks}
+        </if>
+        <if test="pxfs !=null and pxfs != ''">
+            ,#{pxfs}
+        </if>
+        <if test="bz !=null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="lb !=null and lb != ''">
+            ,#{lb}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="NdpxDto">
+        update igams_ndpx
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="nd !=null and nd != ''">
+                ,nd=#{nd}
+            </if>
+            <if test="pxmc !=null and pxmc != ''">
+                ,pxmc=#{pxmc}
+            </if>
+            <if test="jhpxsj !=null and jhpxsj != ''">
+                ,jhpxsj=cast(#{jhpxsj} as date)
+            </if>
+            <if test="cpbmry !=null and cpbmry != ''">
+                ,cpbmry=#{cpbmry}
+            </if>
+            <if test="ssbm !=null and ssbm != ''">
+                ,ssbm=#{ssbm}
+            </if>
+            <if test="js !=null and js != ''">
+                ,js=#{js}
+            </if>
+            <if test="ks !=null and ks != ''">
+                ,ks=#{ks}
+            </if>
+            <if test="pxfs !=null and pxfs != ''">
+                ,pxfs=#{pxfs}
+            </if>
+            <if test="bz !=null and bz != ''">
+                ,bz=#{bz}
+            </if>
+            <if test="lb !=null and lb != ''">
+                ,lb=#{lb}
+            </if>
+        </set>
+        <where>
+            ndpxid = #{ndpxid}
+        </where>
+    </update>
+
+    <update id="delete" parameterType="NdpxDto">
+        update igams_ndpx set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            ndpxid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <update id="updateSffs" parameterType="NdpxDto">
+        update igams_ndpx set sffs=#{sffs},xgsj=LOCALTIMESTAMP
+        <where>
+            ndpxid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IXmscxxDao" >
+	<!-- 增加阶段模板 -->
+	<insert id="insert" parameterType="XmscxxModel">
+		insert into igams_xmscxx(xmid
+		<if test="fxmid !=null and fxmid != ''">
+			,fxmid
+		</if>
+		<if test="scry !=null and scry != ''">
+			,scry
+		</if>
+		,scsj) values(#{xmid}
+		<if test="fxmid !=null and fxmid != ''">
+			,#{fxmid}
+		</if>
+		<if test="scry !=null and scry != ''">
+			,#{scry}
+		</if>
+		,LOCALTIMESTAMP)
+	</insert>
+	<!-- 查询删除项目列表 -->
+	<select id="getRecoverDtoList" parameterType="XmglDto" resultType="XmglDto">
+		select  xm.xmid,xm.fxmid,xm.xmmc,xm.xmlb,xm.xmtb,xm.xmys
+		from igams_xmscxx xmsc
+		left outer join igams_xmgl xm on xm.xmid = xmsc.xmid
+		<where>
+			xm.scbj = '2'
+			<if test="yhid != null and yhid != ''">
+				and (exists (select xmcy.yhid from igams_xmcy xmcy where xmcy.yhid = #{yhid} and xm.xmid = xmcy.xmid))
+			</if>
+		</where>
+	</select>
+	<!--根据文件ID删除权限信息-->
+	<delete id="deleteByXmglDto" parameterType="XmglDto">
+		with recursive t(xmid) as (
+		select firstxm.xmid
+			from igams_xmgl firstxm where firstxm.xmid=#{xmid} and firstxm.scbj = '2' 
+		  union all
+			select xmgl.xmid
+			from igams_xmgl xmgl
+			inner join t on xmgl.fxmid = t.xmid
+			 where xmgl.scbj = '2'
+			)
+		delete from igams_xmscxx
+		where xmid in (select xmid from t)
+	</delete>
+</mapper>

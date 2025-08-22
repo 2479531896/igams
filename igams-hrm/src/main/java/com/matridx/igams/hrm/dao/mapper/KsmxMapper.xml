@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IKsmxDao" >
+
+    <select id="getDtoList" resultType="KsmxDto" parameterType="KsmxDto">
+        select ksid,xxdm,xxnr,ksmxid
+        from igams_ksmx
+        where scbj!='1'
+        <if test="ksid !=null and ksid != ''">
+            and ksid=#{ksid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            and ksid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY ksid asc ,xxdm asc
+    </select>
+
+    <insert id="insert" parameterType="KsmxDto">
+        insert into igams_ksmx(ksmxid,ksid
+        <if test="xxdm !=null and xxdm != ''">
+            ,xxdm
+        </if>
+        <if test="xxnr !=null and xxnr != ''">
+            ,xxnr
+        </if>
+        ,lrry,lrsj,scbj) values(#{ksmxid},#{ksid}
+        <if test="xxdm !=null and xxdm != ''">
+            ,#{xxdm}
+        </if>
+        <if test="xxnr !=null and xxnr != ''">
+            ,#{xxnr}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_ksmx(ksmxid, ksid, xxdm, xxnr,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ksmxid},#{item.ksid},#{item.xxdm},#{item.xxnr},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="update" parameterType="KsmxDto">
+        update igams_ksmx
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="xxdm !=null and xxdm != ''">
+                ,xxdm=#{xxdm}
+            </if>
+            <if test="xxnr !=null and xxnr != ''">
+                ,xxnr=#{xxnr}
+            </if>
+        </set>
+        <where>
+           ksid=#{ksid} and xxdm=#{xxdm}
+        </where>
+    </update>
+
+    <select id="getXxnrByXxdm" resultType="KsmxDto" parameterType="KsmxDto">
+        select ksid,xxdm,xxnr,ksmxid
+        from igams_ksmx
+        where scbj!='1'and ksid=#{ksid} and xxdm=#{xxdm}
+    </select>
+
+    <update id="delete" parameterType="KsmxDto">
+        update igams_ksmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="ksid !=null and ksid != ''">
+                ksid=#{ksid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                or ksmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <delete id="deleteByTkid" parameterType="KsglDto">
+        delete from igams_ksmx
+        <where>
+                ksid in(
+            select ksid from igams_ksgl where tkid=#{tkid}
+            )
+        </where>
+    </delete>
+</mapper>

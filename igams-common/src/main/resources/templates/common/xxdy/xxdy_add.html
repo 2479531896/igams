@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+	<meta charset="UTF-8">
+	<script type="text/javascript" th:src="@{${urlPrefix}+'/js/common/xxdy/xxdy_add.js?v2024v3'}" charset="utf-8"></script>
+</head>
+<body>
+	<form id="ajaxForm" th:action="${urlPrefix}+'/xxdy/xxdy/'+${xxdyDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token" /> 
+		<input type="hidden" id="dyid" name="dyid" th:value="${xxdyDto.dyid}"/>
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" id="cskz" name="cskz"/>
+		<input type="hidden" id="dtoList" name="dtoList" th:value="${dtoList}"/>
+		<input type="hidden" id="list" name="list" th:value="${list}"/>
+		<input type="hidden" id="zxx" name="zxx"/>
+		<input type="hidden" id="zidKey" name="zidKey" th:value="${xxdyDto.zid}"/>
+		<input type="hidden" id="cskz1" name="cskz1" th:value="${xxdyDto.cskz1}"/>
+		<div class="body-content tab-content">
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							<span style="color: red;">*</span> 对应类型：
+						</label>
+						<div class="col-sm-8 col-xs-12 dylxdiv">
+							<select id="dylx" name="dylx" th:value="${xxdyDto.dylx}"  class="form-control chosen-select" style="height:34px">
+							    <option value="">--请选择--</option>
+                        		<option th:each="list:${xxdyTypelist}" th:value="${list.csid}" th:text="${list.csmc}" th:csdm="${list.csdm}" th:cskz1="${list.cskz1}" th:cskz2="${list.cskz2}" th:selected="${xxdyDto.dylx eq list.csid}" ></option>
+ 						    </select> 
+						</div>
+					</div>
+				</div> 								
+							
+				<div id="yxxInput" class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							<span style="color: red;">*</span>&nbsp;&nbsp;原信息：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="yxx" name="yxx" th:value="${xxdyDto.yxx}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div id="yxxSelect" style="display: none" class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							<span style="color: red;">*</span>&nbsp;&nbsp;原信息：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<select id="yxxid" name="yxxid" th:value="${xxdyDto.yxxid}"  onchange="changeYxxid()" class="form-control chosen-select" style="height:34px">
+								<option value="">--请选择--</option>
+								<option th:each="list:${list}" th:value="${list.csid}" th:text="${list.csmc}" th:csmc="${list.csmc}"  th:selected="${xxdyDto.yxxid eq list.csid}" ></option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div id="zidSelect" style="display: none" class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							<span style="color: red;">*</span>&nbsp;&nbsp;子信息：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<select id="zid" name="zid" th:value="${xxdyDto.zid}"   class="form-control chosen-select" style="height:34px">
+								<option value="">--请选择--</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label"> 
+							<span style="color: red;">*</span>&nbsp;&nbsp;对应信息：
+						</label>
+						<div class="col-sm-8 col-xs-12" id="dyxxSelect"> 
+							<select id="dyxx" name="dyxx" th:switch="${xxdyDto.cskz1}" validate="{required:true}" th:value="${xxdyDto.dylx}"  class="form-control chosen-select" style="height:34px" >
+								<option  value="">--请选择--</option> 
+							    <th:block th:case="RY" ><option th:each="list:${resultList}" th:value="${list.yhid}" th:text="${list.zsxm}" th:selected="${xxdyDto.dyxx eq list.yhid}" ></option></th:block>
+							    <th:block th:case="JS" ><option th:each="list:${resultList}" th:value="${list.jsid}" th:text="${list.jsmc}" th:selected="${xxdyDto.dyxx eq list.jsid}" ></option></th:block>
+							    <th:block th:case="JCSJ"><option th:each="list:${resultList}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${xxdyDto.dyxx eq list.csid}" ></option></th:block>
+							    <th:block th:case="XM" ><option th:each="list:${resultList}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${xxdyDto.dyxx eq list.csid}" ></option></th:block>
+								<th:block th:case="LS" ><option th:each="list:${resultList}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${xxdyDto.dyxx eq list.csid}" ></option></th:block>
+								<th:block th:case="BM" ><option th:each="list:${resultList}" th:value="${list.jgid}" th:text="${list.jgmc}+'--'+${list.wbcxmc}" th:selected="${xxdyDto.dyxx eq list.jgid}" ></option></th:block>
+								<th:block th:case="YJ" ><option th:each="list:${resultList}" th:value="${list.wzid}" th:text="${list.wzywm}+'--'+${list.wzzwm}" th:selected="${xxdyDto.dyxx eq list.wzid}" ></option></th:block>
+ 							</select>
+						</div>
+						<div class="col-sm-8 col-xs-12" id="dyxxInput">
+							<input type="text" id="dyxx_input" name="dyxx_input" th:value="${xxdyDto.dyxx}" validate="{required:true}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;&nbsp;对应代码：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="dydm" name="dydm" placeholder="文库码" th:value="${xxdyDto.dydm}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;排序：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="number" id="px" name="px" placeholder="排序" th:value="${xxdyDto.px}"  class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数1：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs1" name="kzcs1" placeholder="文库后缀" th:value="${xxdyDto.kzcs1}" validate="{stringMaxLength:1024}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数2：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs2" name="kzcs2" placeholder="提取码" th:value="${xxdyDto.kzcs2}" validate="{stringMaxLength:256}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数3：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs3" name="kzcs3" placeholder="提取码后缀" th:value="${xxdyDto.kzcs3}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数4：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs4" name="kzcs4" placeholder="标本类型代码" th:value="${xxdyDto.kzcs4}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数5：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs5" name="kzcs5" placeholder="检测单位名称" th:value="${xxdyDto.kzcs5}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数6：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs6" name="kzcs6" placeholder="X限制" th:value="${xxdyDto.kzcs6}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数7：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs7" name="kzcs7" placeholder="项目分类+整体文库+当前文库+TNGS用来区分(预留)+第五位IT内部定义+样本类型代码" th:value="${xxdyDto.kzcs7}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数8：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs8" name="kzcs8" placeholder="文库对应模板代码，对应检测项目的参数扩展3" th:value="${xxdyDto.kzcs8}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+				<div  class="col-md-12 col-sm-12">
+					<div class="form-group">
+						<label for="" class="col-sm-4 control-label">
+							&nbsp;扩展参数9：
+						</label>
+						<div class="col-sm-8 col-xs-12">
+							<input type="text" id="kzcs9" name="kzcs9" th:value="${xxdyDto.kzcs9}" validate="{stringMaxLength:32}" class="form-control" style="height: 30px;"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>
+<script type="text/javascript">
+   $(function(){
+	   jQuery('#ajaxForm .chosen-select').chosen({width: '100%'});
+   })
+</script>
+</html>

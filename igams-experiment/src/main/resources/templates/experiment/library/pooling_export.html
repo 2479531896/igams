@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>pooling导出</title>
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+    <script type="text/javascript" src="/js/experiment/library/pooling_export.js?v=20240823" charset="utf-8"></script>
+    <style type="text/css">
+        input[type="radio"] {
+            display: none;
+        }
+
+        input[type="radio"] + label {
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        input[id^="radio_2-"] + label {
+            background-color: #57BEDD;
+            padding:10px 0px 0px 20px;
+            box-shadow: inset 0 50px 37px -30px rgba(255, 222, 197, 0.3), 0 0 13px rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            display: inline-block;
+            position: relative;
+            border-top: 1px solid #57BEDD;
+            margin-right: 30px;
+            color: #FFF;
+            font-size: 14px;
+            width: 170px;
+            height:45px;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid #57BEDD;
+            text-align:left;
+        }
+
+        [id^="radio_2-"] + label:hover  {
+            border-top: 1px solid #57BEDD;
+            background: #57BEDD;
+            box-shadow: inset 0 -50px 37px -30px rgba(255, 222, 197, 0.07), 0 0 13px rgba(0, 0, 0, 0.6);
+        }
+
+        [id^="radio_2"] + label:active  {
+            border-top: none;
+            background: #57BEDD;
+            padding:10px 0px 0px 20px;
+            box-shadow: inset 0 3px 8px rgba(129, 69, 13, 0.3), inset 0 -50px 37px -30px rgba(255, 222, 197, 0.07), 0 0 13px rgba(0, 0, 0, 0.6);
+        }
+
+        [id^="radio_2-"] + label:after {
+            content: ' ';
+            border-radius: 100px;
+            width: 20px;
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            box-shadow: inset 0px 16px 40px rgba(0, 0, 0, 0.4);
+            height: 20px;
+        }
+
+        [id^="radio_2-"] + label:before {
+            content: ' ';
+            border-radius: 100px;
+            width: 20px;
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            z-index: 999;
+            box-shadow: inset 0px 16px 40px #FFF;
+            height: 20px;
+            display: none;
+        }
+
+        [id^="radio_2-"]:checked + label:before {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<form id="pooling_formSearch" action="/experiment/library/pagedataDealPooling" class="form-horizontal sl_all_form" method="post" data-bs-toggle="validation">
+    <input type="hidden" id="wkid" name="wkid" th:value="${wkid}"/>
+    <input type="hidden" id="mbid" name="mbid" th:value="${mbid}"/>
+    <input type="hidden" id="tsum" name="tsum" th:value="${tsum}"/>
+    <input type="hidden" id="qsum" name="qsum" th:value="${qsum}"/>
+    <input type="hidden" id="yqlx" name="yqlx" th:value="${yqlx}"/>
+    <input type="hidden" id="settingStr" name="settingStr" th:value="${settingStr}"/>
+    <input type="hidden" id="isHaveTpool" name="isHaveTpool" th:value="${isHaveTpool}"/>
+    <input type="hidden" id="coefficient" name="coefficient" th:value="${coefficient}"/>
+    <input type="hidden" id="detectionExtend" name="detectionExtend" th:value="${detectionExtend}"/>
+    <input type="hidden" id="sjxz" name="sjxz" th:value="${sjxz}"/>
+    <input type="hidden" id="ywlx" name="ywlx" th:value="${ywlx}"/>
+    <input type="hidden" id="fjids" name="fjids" />
+    <input type="hidden" id="ac_tk" name="access_token"/>
+    <div class="body-content tab-content" style="height:300px;">
+        <div class="col-sm-12 col-md-12 col-xs-12 panel panel-default" style="border:1px dashed #B0CDE0;">
+            <div class="row">
+                <div class="col-md-12 col-sm-12">
+                    <div class="form-group">
+                        <h4 style="background-color:#F3F5F8;height:50px;line-height: 50px;text-align: center;color:#1767AD;margin-bottom: 15px;">pooling导出
+                            <button type="button" id="save_pooling" class="btn btn-primary" style="position: absolute;right: 10px;top: 10px;">设置保存</button>
+                        </h4>
+                        <!--“设置保存”按钮-->
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center" style="padding-left: 0;">
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 col-xs-3 control-label" style="padding: 0;"><span style="color: red;">*</span>文库总pooling系数：</label>
+                                <div class="col-sm-9 col-md-9 col-xs-9">
+                                    <input type="text" id="poolingFactor" name="poolingFactor" disabled th:value="${poolingFactor}" class="form-control" style="height:30px;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center" style="padding-left: 0;" th:if="${sjzl!=null and sjzl!=''}">
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 col-xs-3 control-label" style="padding: 0;color: red;">预计每run下机数据总量(M read)：</label>
+                                <div class="col-sm-1 col-md-1 col-xs-1" style="padding-right: 0">
+                                    <input type="text" id="sjzl" name="sjzl" th:value="${sjzl}" placeholder="不填则按照默认值进行导出" class="form-control" style="height:30px;"/>
+                                </div>
+                                <div class="col-sm-8 col-md-8 col-xs-8" style="padding-left: 0">
+                                    <input type="text" id="sjzltitle" name="sjzltitle" disabled th:value="${'数据总量（'+realSjzl+'） = 【文库总pooling系数】 * 【数据量/pooling 系数（M reads）】'}" placeholder="不填则按照默认值进行导出" class="form-control" style="height:30px;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center" style="padding-left: 0;">
+                            <div class="form-group">
+								<label for="" class="col-md-3 col-sm-3 col-xs-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>pooling模板：
+								</label>
+								<div class="col-sm-9 col-md-9 col-xs-9">
+									<select id="showmbid" name="showmbid" class="form-control chosen-select">
+										<option value="">--请选择--</option>
+                                        <option th:if="${poolingList!=null && poolingList.size() > 0}" th:each="list:${poolingList}" th:value="${list.csid}"  th:text="${list.csmc}" th:csdm="${list.csdm}" th:selected="${list.csid eq mbid}"></option>
+                                    </select>
+								</div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12 text-center" style="padding-left: 0;">
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 col-xs-3 control-label" style="padding: 0;"><span style="color: red;">*最小上机次数：</span></label>
+                                <div class="col-sm-9 col-md-9 col-xs-9">
+                                    <input type="text" id="TheMinimum" name="TheMinimum" th:value="${setting != null && setting.TheMinimum != null && setting.TheMinimum != '' ? setting.TheMinimum : '1.5'}" class="form-control" validate="{required:true}" style="height:30px;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="settingForm" class="col-md-12 col-sm-12 col-xs-12 text-center"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>

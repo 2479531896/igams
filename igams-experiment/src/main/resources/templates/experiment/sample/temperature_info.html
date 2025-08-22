@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>建库温度</title>
+    <script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+    <script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+
+</head>
+<html>
+<body style="height: 100%; margin: 0">
+<div id="container" style="height: 100%"></div>
+<input type="hidden" id="ybxxid" th:value="${ybxxDto.ybxxid}"/>
+<script type="text/javascript">
+    $.ajax({
+        url: "/ws/mobile/sample/temperatureinfoData",
+        type: "post",
+        dataType: 'json',
+        data: {"ybxxid":$("#ybxxid").val()},
+        success: function(data) {
+            if(data.title && data.dateList && data.temperatureList){
+                var titleStr = data.title;
+                var dateList = data.dateList;
+                var temperatureList = data.temperatureList;
+                var dom = document.getElementById('container');
+                var myChart = echarts.init(dom, null, {
+                    renderer: 'canvas',
+                    useDirtyRect: false
+                });
+                var option;
+                option = {
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            formatter: '{value} °C',
+                            rotate: -90 // 旋转角度，正值为顺时针旋转
+                        }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        axisLabel: {
+                            rotate: -45 // 旋转角度，正值为顺时针旋转
+                        },
+                        data: dateList
+                    },
+                    series: [
+                        {
+                            label: {
+                                show: true,
+                                position: 'top',
+                                rotate: -90, // 将 x 轴标签旋转90度
+                                alignTo: 'left' // 将标签旋转与轴线对齐
+                            },
+                            type: 'line',
+                            symbolSize: 1,
+                            symbol: 'circle',
+                            smooth: true,
+                            lineStyle: {
+                                width: 3,
+                                color: '#93e0e1',
+                            },
+                            scale: true,
+                            data: temperatureList
+                        }
+                    ],
+                    graphic: [
+                        {
+                            type: 'group',
+                            rotation: -Math.PI / 2,
+                            right: 50,
+                            bottom: 'center',
+                            children: [
+                                {
+                                    type: 'rect',
+                                    left: 'center',
+                                    top: 'center',
+                                    z: 100,
+                                    shape: {
+                                        width: 400,
+                                        height: 50
+                                    },
+                                    style: {
+                                        fill: 'rgba(0,0,0,0.3)'
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    left: 'center',
+                                    top: 'center',
+                                    z: 100,
+                                    style: {
+                                        fill: '#fff',
+                                        text: titleStr,
+                                        font: 'bold 26px sans-serif'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                if (option && typeof option === 'object') {
+                    myChart.setOption(option);
+                }
+                window.addEventListener('resize', myChart.resize);
+            }
+        }
+    })
+
+</script>
+</body>
+</html>
+

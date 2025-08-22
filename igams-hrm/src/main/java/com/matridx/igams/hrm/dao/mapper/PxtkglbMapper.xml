@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IPxtkglbDao" >
+    <select id="getPagedDtoList" parameterType="PxtkglbDto" resultType="PxtkglbDto">
+        select pxtkgl.pxid,pxtkgl.tkid,pxtkgl.sl,pxtkgl.fz,tkgl.tkmc,pxtkgl.tmlx
+        from igams_pxtkglb pxtkgl
+        left join igams_tkgl tkgl on tkgl.tkid=pxtkgl.tkid
+        <where>
+            pxtkgl.scbj='0'
+            and pxid=#{pxid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="PxtkglbDto" resultType="PxtkglbDto">
+        select pxtkgl.pxid,pxtkgl.tkid,pxtkgl.sl,pxtkgl.fz,tkgl.tkmc,pxtkgl.tmlx
+        ,case when pxtkgl.tmlx ='SELECT' then '单选题' when pxtkgl.tmlx ='MULTIPLE' then '多选题' when pxtkgl.tmlx ='EXPLAIN' then '简答题'when pxtkgl.tmlx ='GAP' then '填空题'when pxtkgl.tmlx ='JUDGE' then '判断题' end tmlxmc
+        from igams_pxtkglb pxtkgl
+        left join igams_tkgl tkgl on tkgl.tkid=pxtkgl.tkid
+        <where>
+            pxtkgl.scbj='0'
+            and pxid=#{pxid}
+        </where>
+        order by pxtkgl.tmlx desc
+    </select>
+
+    <select id="getDto" parameterType="PxtkglbDto" resultType="PxtkglbDto">
+        select pxtkgl.pxid,pxtkgl.tkid,pxtkgl.sl,pxtkgl.fz,tkgl.tkmc,pxtkgl.tmlx
+        ,case when pxtkgl.tmlx ='SELECT' then '单选题' when pxtkgl.tmlx ='MULTIPLE' then '多选题' when pxtkgl.tmlx ='EXPLAIN' then '简答题' end tmlxmc
+        from igams_pxtkglb pxtkgl
+        left join igams_tkgl tkgl on tkgl.tkid=pxtkgl.tkid
+        <where>
+            pxtkgl.scbj='0'
+            and   pxtkgl.pxid=#{pxid} and   pxtkgl.tkid=#{tkid} and  pxtkgl.tmlx=#{tmlx}
+        </where>
+        order by pxtkgl.tmlx desc
+    </select>
+
+
+    <select id="getListByPxid" parameterType="PxtkglbDto" resultType="PxtkglbDto">
+        SELECT
+            pxtkgl.pxid,
+            pxtkgl.tkid,
+            pxtkgl.sl,
+            pxtkgl.fz,
+            tkgl.tkmc,
+            ksgl.tmlx,
+        CASE
+
+                WHEN ksgl.tmlx = 'SELECT' THEN
+                '单选题'
+                WHEN ksgl.tmlx = 'MULTIPLE' THEN
+                '多选题'
+                WHEN ksgl.tmlx = 'EXPLAIN' THEN
+                '简答题'
+                when ksgl.tmlx ='GAP' then '填空题'when ksgl.tmlx ='JUDGE' then '判断题'
+            END tmlxmc,
+            ksgl.ksid,
+            ksgl.tmnr,
+            ksmx.xxdm,
+            ksmx.xxnr,
+            ksmx.ksmxid,
+            ksgl.da
+        FROM
+            igams_pxtkglb pxtkgl
+            LEFT JOIN igams_tkgl tkgl ON tkgl.tkid = pxtkgl.tkid
+            LEFT JOIN igams_ksgl ksgl ON ksgl.tkid = tkgl.tkid and pxtkgl.tmlx=ksgl.tmlx
+            LEFT JOIN igams_ksmx ksmx ON ksmx.ksid = ksgl.ksid
+        WHERE
+            pxtkgl.pxid = #{pxid}
+        ORDER BY
+            pxtkgl.tkid ASC,
+            pxtkgl.tmlx desc,
+             ksgl.ksid ASC,
+            ksmx.xxdm ASC
+    </select>
+
+    <insert id="insert" parameterType="PxtkglbDto">
+        insert into igams_pxtkglb(pxid,tkid
+        <if test="tmlx !=null and tmlx != ''">
+            ,tmlx
+        </if>
+        <if test="sl !=null and sl != ''">
+            ,sl
+        </if>
+        <if test="fz !=null and fz != ''">
+            ,fz
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,xh
+        </if>
+        ,lrry,lrsj,scbj) values(#{pxid},#{tkid}
+        <if test="tmlx !=null and tmlx != ''">
+            ,#{tmlx}
+        </if>
+        <if test="sl !=null and sl != ''">
+            ,#{sl}
+        </if>
+        <if test="fz !=null and fz != ''">
+            ,#{fz}
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,#{xh}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="PxtkglbDto">
+         update igams_pxtkglb set
+        xgry = #{xgry},xgsj = LOCALTIMESTAMP
+        <if test="tmlx !=null and tmlx != ''">
+            ,tmlx=#{tmlx}
+        </if>
+        <if test="sl !=null and sl != ''">
+            ,sl=#{sl}
+        </if>
+        <if test="fz !=null and fz != ''">
+            ,fz=#{fz}
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,xh=#{xh}
+        </if>
+        <where>
+           scbj='0'
+            and  pxid=#{pxid} and   tkid=#{tkid} and tmlx=#{tmlx}
+        </where>
+    </update>
+
+
+    <delete id="deleteByPxid" parameterType="PxtkglbDto">
+        delete from igams_pxtkglb
+        where pxid=#{pxid}
+    </delete>
+
+    <update id="delete" parameterType="PxtkglbDto">
+        update igams_pxtkglb set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                or pxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+</mapper>

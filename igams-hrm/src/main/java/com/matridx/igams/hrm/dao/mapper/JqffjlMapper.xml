@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJqffjlDao">
+    <sql id="selectWhere">
+        <if test="entire != null and entire != ''">
+            and (
+            xtyh.yhm ILIKE '%'||#{entire}||'%'
+            or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="yhm != null and yhm != ''">
+            and xtyh.yhm ILIKE '%'||#{yhm}||'%'
+        </if>
+        <if test="zsxm != null and zsxm != ''">
+            and xtyh.zsxm ILIKE '%'||#{zsxm}||'%'
+        </if>
+        <if test="lrrymc != null and lrrymc != ''">
+            and lrry.zsxm ILIKE '%'||#{lrrymc}||'%'
+        </if>
+        <if test = "jqlxs != null and jqlxs.length > 0 "  >
+            and jqffjl.jqlx in
+            <foreach collection="jqlxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "nds != null and nds.length > 0 "  >
+            and jqffjl.nd in
+            <foreach collection="nds" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="fffs !=null and fffs!=''">
+            and jqffjl.fffs=#{fffs}
+        </if>
+        <if test="kssjstart != null and kssjstart != ''">
+            and to_char(jqffjl.kssj,'yyyy-mm-dd') &gt;= #{kssjstart}
+        </if>
+        <if test="kssjend != null and kssjend != ''">
+            and to_char(jqffjl.kssj,'yyyy-mm-dd') &lt;= #{kssjend}
+        </if>
+        <if test="yxqstart != null and yxqstart != ''">
+            and to_char(jqffjl.yxq,'yyyy-mm-dd') &gt;= #{yxqstart}
+        </if>
+        <if test="yxqend != null and yxqend != ''">
+            and to_char(jqffjl.yxq,'yyyy-mm-dd') &lt;= #{yxqend}
+        </if>
+    </sql>
+    <select id="getPagedDtoList" resultType="JqffjlDto" parameterType="JqffjlDto">
+     select jqffjl.ffjlid,jqffjl.jqlx,jqlx.csmc jqlxmc,jqffjl.kssj,jqffjl.yxq,
+    jqffjl.nd,jqffjl.fffs,jqffjl.ffszid,jqffjl.dw,jqffjl.yhid,jqffjl.lrry,
+    to_char(jqffjl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,jqffjl.scbj,jqffjl.jeze,jqffjl.yyed,
+    jqffjl.syed,jqffjl.ddze,jqffjl.ddyyed,jqffjl.ddsyed,jqffjl.yhjqid,xtyh.yhm,xtyh.zsxm,jqffjl.sc,
+    lrry.zsxm lrrymc
+    from igams_jqffjl jqffjl
+    left join matridx_jcsj jqlx on jqlx.csid=jqffjl.jqlx
+    left join matridx_xtyh xtyh on xtyh.yhid=jqffjl.yhid
+    left join matridx_xtyh lrry on lrry.yhid=jqffjl.lrry
+    <where>
+        jqffjl.scbj !='1'
+        <if test="ffszid !=null and ffszid!=''">
+          and   jqffjl.ffszid=#{ffszid}
+        </if>
+        <include refid="selectWhere"></include>
+    </where>
+    </select>
+    <select id="getDtoList" resultType="JqffjlDto" parameterType="JqffjlDto">
+        select jqffjl.ffjlid,jqffjl.jqlx,jqlx.csmc jqlxmc,jqffjl.kssj,jqffjl.yxq,
+        jqffjl.nd,jqffjl.fffs,jqffjl.ffszid,jqffjl.dw,jqffjl.yhid,jqffjl.lrry,
+        to_char(jqffjl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,jqffjl.scbj,jqffjl.jeze,jqffjl.yyed,
+        jqffjl.syed,jqffjl.ddze,jqffjl.ddyyed,jqffjl.ddsyed,jqffjl.yhjqid,xtyh.yhm,xtyh.zsxm,jqffjl.sc,
+        lrry.zsxm lrrymc
+        from igams_jqffjl jqffjl
+        left join igams_jqffsz jqffsz on jqffsz.ffszid=jqffjl.ffszid
+        left join matridx_jcsj jqlx on jqlx.csid=jqffjl.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=jqffjl.yhid
+        left join matridx_xtyh lrry on lrry.yhid=jqffjl.lrry
+        <where>
+            jqffjl.scbj !='1'
+            <if test = "ffszids != null and ffszids.length > 0 "  >
+                and jqffjl.ffszid in
+                <foreach collection="ffszids" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDtoListByKsAndYxqAndYhAndJqlx" resultType="JqffjlDto" parameterType="JqffjlDto">
+        select jqffjl.ffjlid,jqffjl.jqlx,jqlx.csmc jqlxmc,jqffjl.kssj,jqffjl.yxq,xtyh.zsxm
+        from igams_jqffjl jqffjl
+        left join matridx_jcsj jqlx on jqlx.csid=jqffjl.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=jqffjl.yhid
+        <where>
+            jqffjl.scbj !='1'
+            AND jqffjl.jqlx =#{jqlx}
+            AND to_char(jqffjl.lrsj,'yyyy-MM-dd') &gt;= #{kssj}
+            AND to_char(jqffjl.lrsj,'yyyy-MM-dd') &lt;= #{yxq}
+            AND jqffjl.yhid in
+            <foreach collection="yhids" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <insert id="insertJqffjlDtos" parameterType="List">
+        INSERT INTO igams_jqffjl
+        (ffjlid, jqlx, kssj, yxq, fffs, nd, ffszid, sc, dw, yhid, lrry, lrsj,scbj, jeze, yyed, syed, ddze, ddyyed, ddsyed, yhjqid)
+        VALUES
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ffjlid},#{item.jqlx},cast(#{item.kssj} as date),cast(#{item.yxq} as date),#{item.fffs},#{item.nd},#{item.ffszid},cast(#{item.sc} as numeric )
+                ,#{item.dw},#{item.yhid},#{item.lrry},LOCALTIMESTAMP,'0',cast(#{item.jeze} as numeric ),cast(#{item.yyed} as numeric ),cast(#{item.syed} as numeric )
+                ,cast(#{item.ddze} as numeric ),cast(#{item.ddyyed} as numeric ),cast(#{item.ddsyed} as numeric ),#{item.yhjqid}
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getAllNd" resultType="String">
+        SELECT nd
+        from igams_jqffjl
+        where scbj='0' and nd is not null
+        group by nd
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="JqffjlDto">
+        select jqffjl.ffjlid,jqffjl.jqlx,jqlx.csmc jqlxmc,jqffjl.kssj,jqffjl.yxq,
+        jqffjl.nd,jqffjl.fffs,jqffjl.ffszid,jqffjl.dw,jqffjl.yhid,jqffjl.lrry,
+        to_char(jqffjl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,jqffjl.scbj,jqffjl.jeze,jqffjl.yyed,
+        jqffjl.syed,jqffjl.ddze,jqffjl.ddyyed,jqffjl.ddsyed,jqffjl.yhjqid,xtyh.yhm,xtyh.zsxm,jqffjl.sc,
+        lrry.zsxm lrrymc
+        from igams_jqffjl jqffjl
+        left join matridx_jcsj jqlx on jqlx.csid=jqffjl.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=jqffjl.yhid
+        left join matridx_xtyh lrry on lrry.yhid=jqffjl.lrry
+        <where>
+            jqffjl.ffjlid=#{ffjlid}
+        </where>
+    </select>
+    <select id="getJqffjlDtosGroupByYhjq" resultType="JqffjlDto" parameterType="JqffjlDto">
+        select jqffjl.jqlx,jqlx.csmc jqlxmc,jqlx.cskz2 jqlxcskz2,jqffjl.nd,jqffjl.dw,jqffjl.yhid,jqffjl.yhjqid,xtyh.yhm,xtyh.zsxm,SUM(coalesce(jqffjl.sc,0)) sc
+        ,coalesce(yhjq.jqze,0) yhjqze,coalesce(yhjq.yyed,0) yhyyed,coalesce(yhjq.syed,0) yhsyed,coalesce(yhjq.ddze,0) yhddze,coalesce(yhjq.ddsyed,0) yhddsyed,xtyh.ddid
+        ,yhjq.kssj yhjqkssj,yhjq.yxq yhjqjssj
+        from igams_jqffjl jqffjl
+        left join igams_yhjq yhjq on yhjq.yhjqid=jqffjl.yhjqid
+        left join matridx_jcsj jqlx on jqlx.csid=jqffjl.jqlx
+        left join matridx_xtyh xtyh on xtyh.yhid=jqffjl.yhid
+        <where>
+            jqffjl.scbj !='1'
+            and jqffjl.ffjlid in
+            <foreach collection="ids" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+        GROUP BY jqffjl.jqlx,jqlx.csmc,jqlx.cskz2,jqffjl.nd,jqffjl.dw,jqffjl.yhid,jqffjl.yhjqid,xtyh.yhm,xtyh.zsxm,yhjq.jqze,yhjq.yyed,yhjq.syed,yhjq.ddze,yhjq.ddsyed,xtyh.ddid
+                ,yhjq.kssj,yhjq.yxq
+    </select>
+    <delete id="delete" parameterType="JqffjlDto">
+        update igams_jqffjl set scbj ='1' , scry = #{scry}, scsj = LOCALTIMESTAMP
+        where ffjlid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

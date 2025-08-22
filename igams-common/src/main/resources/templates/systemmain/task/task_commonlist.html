@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" th:src="@{${urlprefix}+'/js/systemmain/task/task_commonlist.js'}" charset="utf-8"></script>
+		<style  type="text/css">
+			.div1{
+				margin-right: 10px;
+				border:0;
+				height:100% !important;
+				background-color:#00a0e9;
+				cursor: pointer;
+			}
+			.divText{
+				margin-left: 0px;
+				margin-top: 5px;
+				font-size:8px;
+				cursor: pointer;
+				color: #FFFFFF;
+			}
+			.divNum{
+				font-size:25px;
+				cursor: pointer;
+				color: #FFFFFF;
+			}
+
+		</style>
+	</head>
+	<body>
+	<div class="panel-body body-content" style="padding-bottom:0px;" >
+		<div class="panel panel-default">
+			<div class="panel-body" id="commonTask_btns">
+				<div id="all" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1" onclick="selectListInfo('0')">
+					<div class="divText" >所有任务</div>
+					<div class="divNum" ><span id="zs" /></div>
+				</div>
+				<div id="overtime" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1" onclick="selectListInfo('1')">
+					<div class="divText">超时任务</div>
+					<div class="divNum"><span id="cssl" /></div>
+				</div>
+				<div id="near" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1" onclick="selectListInfo('2')">
+					<div class="divText">临近任务</div>
+					<div class="divNum"><span id="ljsl" /></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="commontask">
+			<div class="panel-body body-content" style="padding-bottom:0px;">
+		        <form id="commonTask_formSearch" class="form-horizontal form-inline">
+					<input type="hidden" name="urlprefix" id ="urlprefix" th:value="${urlprefix}">
+					<input type="hidden" name="listFlag" id ="listFlag">
+		        	<div class="panel panel-default">
+			            <div class="panel-heading">查询条件</div>
+			            <div class="panel-body">
+			            	<div class="">
+			                    <div class="form-group padding_l10">
+			                        <select name="cxtj" class="form-control chosen-select" id="cxtj">
+	                            		<option value="1">业务名称</option>
+	                            		<option value="0">任务名称</option>
+	                            		<option value="2">负责人</option>
+	                            		<option value="3">确认人</option>
+										<option value="4">部门名称</option>
+										<option value="5">创建人员</option>
+									</select>
+		                        	<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+		                               @keyup.enter="enter"/>
+								</div>
+								<button v-on:click="search" type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">检索</button>
+								<span v-on:click="searchMore" class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+							</div>
+							<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+				                <span class="tit">已选条件：</span>
+				                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+				                    <ul id="sl_add_ul"></ul>
+				                </div>
+				            </div>
+				            <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+				            	<div class="tab-content sl_sel_con row" style="min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px; padding-bottom:10px;" id="sl_sel_con">
+				                    <div class="tab-pane active" id="tab06">
+					                    <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+					                        <div class="form-group width100">
+					                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="状态">状态：</label>
+					                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+					                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+					                                    <li>
+					                                        <a style='text-decoration:none;cursor:pointer;'
+					                                           onclick="addTj('zt','00','commonTask_formSearch');"
+					                                           id="zt_id_00"><span>未完成</span></a>
+					                                    </li>
+					                                    <li>
+					                                        <a style='text-decoration:none;cursor:pointer;'
+					                                           onclick="addTj('zt','10','commonTask_formSearch');"
+					                                           id="zt_id_10"><span>确认中</span></a>
+					                                    </li>
+					                                    <li>
+					                                        <a style='text-decoration:none;cursor:pointer;'
+					                                           onclick="addTj('zt','15','commonTask_formSearch');"
+					                                           id="zt_id_15"><span>无需完成</span></a>
+					                                    </li>
+					                                    <li>
+					                                        <a style='text-decoration:none;cursor:pointer;'
+					                                           onclick="addTj('zt','80','commonTask_formSearch');"
+					                                           id="zt_id_80"><span>已完成</span></a>
+					                                    </li>
+					                            	</ul>
+					                    		</div>
+					                    	</div>
+					                    </div>
+						               <div id="qwwcsj_id" class="col-xs-12 col-sm-6 col-lg-6">
+					                        <div class="form-group width100">
+					                            <label class="col-xs-12 col-sm-4 col-md-4 col-lg-2 control-label" title="期望完成时间">期望时间：</label>
+					                            <div class="col-xs-12 col-sm-8  col-md-8 col-lg-10 sl_sel_list" >
+					                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+					                                    <li>
+						                                    <input id="qwwcsjstart" name="qwwcsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+				                    						<input id="qwwcsjend" name="qwwcsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+					                                    </li>
+					                            	</ul>
+					                    		</div>
+					                    	</div>
+					                    </div>
+					                    <div id="wcsj_id" class="col-xs-12 col-sm-6 col-lg-6">
+					                        <div class="form-group width100">
+					                            <label class="col-xs-12 col-sm-4 col-md-4 col-lg-2 control-label" title="完成时间">完成时间：</label>
+					                            <div class="col-xs-12 col-sm-8  col-md-8 col-lg-10 sl_sel_list" >
+					                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+					                                    <li>
+						                                    <input id="wcsjstart" name="wcsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+				                    						<input id="wcsjend" name="wcsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+					                                    </li>
+					                            	</ul>
+					                    		</div>
+					                    	</div>
+					                    </div>
+										<div id="qrsj_id" class="col-xs-12 col-sm-6 col-lg-6">
+											<div class="form-group width100">
+												<label class="col-xs-12 col-sm-4 col-md-4 col-lg-2 control-label" title="确认时间">确认时间：</label>
+												<div class="col-xs-12 col-sm-8  col-md-8 col-lg-10 sl_sel_list" >
+													<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+														<li>
+															<input id="qrsjstart" name="qrsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+															<input id="qrsjend" name="qrsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+														</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div id="rwmc_id" class="col-xs-12 col-sm-12 col-lg-12">
+											<div class="form-group width100">
+												<label
+														class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+														title="任务名称">任务名称：</label>
+												<div
+														class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+													<ul
+															class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+														<li th:if="${taskNames!=null && taskNames.size() >0}"
+															th:each="t_rwmc:${taskNames}"><a
+																style='text-decoration: none; cursor: pointer;'
+																th:onclick="addTj('rwmc',[[${t_rwmc.rwmc}]],'commonTask_formSearch');"
+																th:id="'rwmc_id_'+${t_rwmc.rwmc}">
+															<span th:text="${t_rwmc.rwmc}"></span></a>
+														</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div id="jg_id" class="col-xs-12 col-sm-12 col-lg-12">
+											<div class="form-group width100">
+												<label
+														class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+														title="机构名称">机构名称：</label>
+												<div
+														class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+													<ul
+															class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+														<li th:if="${institutions!=null && institutions.size() >0}"
+															th:each="t_jg:${institutions}"><a
+																style='text-decoration: none; cursor: pointer;'
+																th:onclick="addTj('jg',[[${t_jg.jgid}]],'commonTask_formSearch');"
+																th:id="'jg_id_'+${t_jg.jgid}">
+																<span th:text="${t_jg.jgmc}"></span></a>
+														</li>
+													</ul>
+													<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+				            </div>
+			            </div>
+			        </div>
+	            	<input type="hidden" id="zt_id_tj" name="zt_id_tj">
+	            	<input type="hidden" id="rwmc_id_tj" name="rwmc_id_tj">
+	            	<input type="hidden" id="jg_id_tj" name="jg_id_tj">
+					<div th:include="common/btn/ancz.html"></div>
+			        <table id="tb_list" class="table table-hover table-bordered table-hidden"></table>
+		        </form>
+		    </div>
+	    </div>
+	</body>
+</html>

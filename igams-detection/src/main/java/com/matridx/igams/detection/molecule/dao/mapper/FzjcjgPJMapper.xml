@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IFzjcjgPJDao" >
+    <insert id="insert" parameterType="FzjcjgDto">
+        insert into igams_fzjcjg(fzjcjgid,fzxmid,jcjg,fzjcid)
+        values(#{fzjcjgid},#{fzxmid},#{jcjg},#{fzjcid})
+    </insert>
+
+    <insert id="addDtoList" parameterType="List">
+        insert into igams_fzjcjg(fzjcjgid,fzxmid,jcjg,fzjcid)
+        values
+               <foreach collection="list" item="item" separator=",">
+                   (#{item.fzjcjgid},#{item.fzxmid},#{item.jcjg},#{item.fzjcid})
+               </foreach>
+    </insert>
+
+    <delete id="delDtoListByFzxmid" parameterType="FzjcjgDto">
+        delete from igams_fzjcjg
+        where
+        fzxmid = #{fzxmid}
+    </delete>
+
+    <delete id="delete" parameterType="FzjcjgDto">
+        delete from igams_fzjcjg
+        where
+        fzjcid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item" >
+            #{item}
+        </foreach>
+    </delete>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_fzjcjg
+                <set>
+                    <trim prefixOverrides=",">
+                        <if test="item.jcjg !=null and item.jcjg !=''">
+                            ,jcjg=#{item.jcjg}
+                        </if>
+                        <if test="item.ctz !=null and item.ctz !=''">
+                            ,ctz=#{item.ctz}
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    fzjcjgid=#{item.fzjcjgid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <!--根据分子检测id查询结果信息-->
+    <select id="getFzjcjgListById" resultType="Map" parameterType="String">
+        select fzjcxm.fzxmid,
+               fzjcxm.fzjcxmid,
+               jcxm_jcsj.csmc jcxmmc,
+               jczxm_jcsj.csmc jczxmmc,
+               case when jcjg_jcsj.csmc = '阳性' then '*阳性' else jcjg_jcsj.csmc end jcjgmc,
+               gzlx_jcsj.cskz1 gzlx,
+               pjjg_jcsj.csmc pjjgmc,
+               case when (pjjg_jcsj.cskz1 is not null and pjjg_jcsj.cskz1 != '') then pjjg_jcsj.cskz1 else pjjg_jcsj.csmc end pjjgjc
+        from igams_fzjcxm fzjcxm
+        left join matridx_jcsj jcxm_jcsj on jcxm_jcsj.csid = fzjcxm.fzjcxmid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid = fzjcxm.fzxmid
+        left join matridx_jcsj pjjg_jcsj on pjjg_jcsj.csid = fzjcjg.jgid
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = fzjcjg.jcjg
+        left join matridx_jcsj gzlx_jcsj on gzlx_jcsj.csid = jcxm_jcsj.cskz2
+        where fzjcxm.fzxmid=#{fzxmid}
+        ORDER BY pjjg_jcsj.cspx
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_fzjcjg(fzjcjgid,
+        fzxmid,
+        jcjg,
+        fzjcid,
+        jgid,
+        ctz,
+        glid
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.fzjcjgid},#{item.fzxmid},#{item.jcjg},#{item.fzjcid},#{item.jgid},#{item.ctz},#{item.glid})
+        </foreach>
+    </insert>
+
+    <select id="getDtoList" parameterType="FzjcjgDto" resultType="FzjcjgDto">
+         select
+               jcxm_jcsj.csmc fzjcxmmc,
+               jczxm_jcsj.csmc fzjczxmmc,
+               jcjg_jcsj.csmc jcjgmc,
+               fzjcjg.ctz,
+               jcjg_jg.csmc jgmc,
+               fzjcxx.xm,
+               fzjcxx.bbzbh,fzjcjg.glid,fzjcjg.jgid
+        from igams_fzjcjg fzjcjg
+        left join igams_fzjcxm fzjcxm on fzjcjg.fzxmid = fzjcxm.fzxmid
+        left join matridx_jcsj jcxm_jcsj on jcxm_jcsj.csid = fzjcxm.fzjcxmid
+        left join matridx_jcsj jczxm_jcsj on jczxm_jcsj.csid = fzjcxm.fzjczxmid
+        left join matridx_jcsj jcjg_jcsj on jcjg_jcsj.csid = fzjcjg.jcjg
+        left join matridx_jcsj jcjg_jg on jcjg_jg.csid = fzjcjg.jgid
+        left join igams_fzjcxx fzjcxx on fzjcxx.fzjcid = fzjcjg.fzjcid
+        where fzjcjg.fzjcid=#{fzjcid} order by jcxm_jcsj.cspx asc ,jczxm_jcsj.cspx asc,jcjg_jg.cspx asc
+    </select>
+</mapper>

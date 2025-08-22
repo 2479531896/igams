@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/common/exception/exception_list.js?v=20230828v8'}" charset="utf-8"></script>
+	<style  type="text/css">
+		.div1{
+			margin-right: 10px;
+			border:0;
+			height:100% !important;
+			background-color:#00a0e9;
+		}
+		.divText{
+			margin-left: 0px;
+			margin-top: 5px;
+			font-size:8px;
+			color: #FFFFFF;
+		}
+		.divNum{
+			font-size:25px;
+			color: #FFFFFF;
+		}
+		#showDiv{
+			background-color:#fafafa;
+			left: 120px;
+			top: 138px;
+			width: 480px;
+			height: 160px;
+		}
+
+	</style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;"  id="statisticDiv">
+	<div class="panel panel-default">
+		<div class="panel-body">
+			<div id="unreadDiv" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1" style="cursor: pointer;" onclick="viewInfo(event)">
+				<div class="divText" >未读反馈数(未结束)</div>
+				<div class="divNum" ><span id="unreadNum"  th:text="${unreadNum}"/></div>
+			</div>
+
+			<div id="finreadDiv" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1">
+				<div class="divText" >未读反馈数(已结束)</div>
+				<div class="divNum" ><span id="finreadNum"  th:text="${finreadNum}"/></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container" id="showDiv" style="display:none; position: absolute; z-index:9999;">
+	<span>只显示前5条</span>
+	<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="closeDiv()">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<table class="table" id="tbody">
+	</table>
+</div>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+ 	<form id="exception_formSearch" class="form-horizontal form-inline">
+		<input type="hidden" name="personal_flg" id="personal_flg" th:value="${sjycDto.personal_flg}">
+		<input type="hidden" name="ryid" id="ryid" th:value="${ryid}">
+		<input type="hidden" name="sfjs" id="sfjs" th:value="${sjycDto.sfjs}">
+		<input type="hidden" id="key" name="key" th:value="${key}">
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="ycqfdm" id="ycqfdm" th:value="${sjycDto.ycqfdm}">
+		<input type="hidden" name="ycqf_flg" id="ycqf_flg" th:value="${ycqf_flg}">
+		<input type="hidden" name="ycqfs" id="ycqfs" th:value="${ycqfs}">
+ 		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+			 	<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+		                	<option value="0">标题</option>
+		                	<option value="1">标本编号</option>
+		                	<option value="2">患者姓名</option>
+		                	<option value="3">标本类型</option>
+		                	<option value="4">提问人</option>
+		                	<option value="5">确认人</option>
+		                	<option value="6">异常信息</option>
+		         		</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+			       		onkeydown="if(event.keyCode==13) {searchExceptionResult(); return false;}"/>
+					</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+					<span class="tit">已选条件：</span>
+					<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+						<ul id="sl_add_ul"></ul>
+					</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;" >
+					<div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:80px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+						<div class="tab-pane active" id="tab06">
+							<div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否结束">是否结束：</label>
+									<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfjs','1','exception_formSearch');"
+												   id="sfjs_id_1"><span>是</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfjs','0','exception_formSearch');"
+												   id="sfjs_id_0"><span>否</span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="ycqf_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="异常区分" >异常区分：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${ycqfList!=null && ycqfList.size() >0}" th:each="list:${ycqfList}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[ycqf]],[[${list.csid}]],[[exception_formSearch]]);" th:id="'ycqf_id_'+${list.csid}">
+
+
+													<span th:text="${list.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+
+
+									</div>
+								</div>
+							</div>
+							<div id="jcwd_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测单位" >检测单位：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${detectionList!=null && detectionList.size() >0}" th:each="list:${detectionList}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[jcdw]],[[${list.csid}]],[[exception_formSearch]]);" th:id="'jcdw_id_'+${list.csid}">
+													<span th:text="${list.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a
+												name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div id="yclx_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="异常类型" >异常类型：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_yclx">
+											<li th:if="${exceptionlist!=null && exceptionlist.size() >0}" th:each="list:${exceptionlist}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yclx]],[[${list.csid}]],[[exception_formSearch]]);" th:id="'yclx_id_'+${list.csid}">
+
+
+													<span th:text="${list.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+
+									</div>
+								</div>
+							</div>
+							<div id="cjsj" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+								<div class="form-group width100">
+									<label class="col-sm-2 col-md-2 col-lg-2 control-label" title="审核通过时间" >录入时间：</label>
+									<div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+										<input id="cjsjstart" name="cjsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+										<input id="cjsjend" name="cjsjend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+									</div>
+								</div>
+							</div>
+							<div id="zhhfsj" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+								<div class="form-group width100">
+									<label class="col-sm-2 col-md-2 col-lg-2 control-label" title="最后回复时间" >最后回复时间：</label>
+									<div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+										<input id="zhhfsjstart" name="zhhfsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" style="height:28px;"/>~
+										<input id="zhhfsjend" name="zhhfsjend" class="form-control" placeholder="结束日期" validate="{required:true}"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div th:include="common/btn/ancz.html"></div>
+		<input  type="hidden"  id="sfjs_id_tj" name="sfjs_id_tj">
+		<input  type="hidden" id="jcdw_id_tj" name="jcdw_id_tj">
+		<input  type="hidden" id="yclx_id_tj" name="yclx_id_tj">
+		<input  type="hidden" id="ycqf_id_tj" name="ycqf_id_tj">
+
+		<table id="exception_list" class="table table-hover table-bordered table-hidden"></table>
+ 	</form>
+</div>
+<script th:inline="javascript">
+	var list=[[${exceptioncopylist}]]
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.finance.dao.financesql.IFinanceDao" >
+    <select id="selectFinanceSaleCost" resultType="Map" parameterType="Map">
+		select  ${sqlParam}
+		from (
+				 select ${sqlParamThree} AS fylb,
+						(CASE WHEN per.cPersonName is null THEN de.cDepName
+							  ELSE per.cPersonName END ) AS cPersonName,de.cDepName,md
+				 from ${databaseName}GL_accvouch gl
+						  left join ${databaseName}Person per on per.cPersonCode=gl.cperson_id
+						  left join ${databaseName}Department de on de.cDepCode=gl.cdept_id
+				 where gl.dbill_date &gt;= #{rqstart} and gl.dbill_date  &lt; #{rqend}
+				   and ccode like #{ccode}+'%'
+			 ) s PIVOT (
+			SUM(md)
+			FOR fylb IN
+			<foreach collection="bbzkms" separator="," open="(" close=")"
+					 item="item" index="index">
+				${item.csmc}
+			</foreach>
+	   ) AS newtemp
+		GROUP BY newtemp.cDepName,newtemp.cPersonName
+    </select>
+	<!--获取成本费用-->
+	<select id="getCost" resultType="Map" parameterType="String">
+		${sql}
+	</select>
+	<!--获取部门费用-->
+	<select id="getDepartmentCost" resultType="Map" parameterType="String">
+		${sql}
+	</select>
+	<!--获取有费用的部门-->
+	<select id="getHaveCostDepartment" resultType="String" parameterType="String">
+		${haveDepSql}
+	</select>
+	<select id="getYearByCcode" parameterType="Map" resultType="String">
+		select  iyear from ${databaseName}GL_accvouch
+		<where>
+			<foreach collection="ccodes" separator="or"
+					 item="item" index="index">
+				ccode like #{item.csdm} + '%'
+			</foreach>
+		</where>
+		 group by iyear order by iyear
+	</select>
+	<select id="getDbCost" resultType="Map" parameterType="Map">
+		select gl.cDefine2 as 销售类型,cu.cCusName as 客户名称,
+		sum(case when #{lastyear}+'12' = gl.iYPeriod  THEN gl.mc else 0 END ) as '去年12月',
+		sum(case when #{year}+'01' = gl.iYPeriod  THEN gl.mc else 0 END ) as '1月',
+		sum(case when #{year}+'01' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{lastyear}+'12' = gl.iYPeriod  THEN gl.mc else 0 END ) as '1月增长',
+		sum(case when #{year}+'02' = gl.iYPeriod  THEN gl.mc else 0 END ) as '2月',
+		sum(case when #{year}+'02' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'01' = gl.iYPeriod  THEN gl.mc else 0 END ) as '2月增长',
+		sum(case when #{year}+'03' = gl.iYPeriod  THEN gl.mc else 0 END ) as '3月',
+		sum(case when #{year}+'03' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'02' = gl.iYPeriod  THEN gl.mc else 0 END ) as '3月增长',
+		sum(case when #{year}+'04' = gl.iYPeriod  THEN gl.mc else 0 END ) as '4月',
+		sum(case when #{year}+'04' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'03' = gl.iYPeriod  THEN gl.mc else 0 END ) as '4月增长',
+		sum(case when #{year}+'05' = gl.iYPeriod  THEN gl.mc else 0 END ) as '5月',
+		sum(case when #{year}+'05' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'04' = gl.iYPeriod  THEN gl.mc else 0 END ) as '5月增长',
+		sum(case when #{year}+'06' = gl.iYPeriod  THEN gl.mc else 0 END ) as '6月',
+		sum(case when #{year}+'06' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'05' = gl.iYPeriod  THEN gl.mc else 0 END ) as '6月增长',
+		sum(case when #{year}+'07' = gl.iYPeriod  THEN gl.mc else 0 END ) as '7月',
+		sum(case when #{year}+'07' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'06' = gl.iYPeriod  THEN gl.mc else 0 END ) as '7月增长',
+		sum(case when #{year}+'08' = gl.iYPeriod  THEN gl.mc else 0 END ) as '8月',
+		sum(case when #{year}+'08' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'07' = gl.iYPeriod  THEN gl.mc else 0 END ) as '8月增长',
+		sum(case when #{year}+'09' = gl.iYPeriod  THEN gl.mc else 0 END ) as '9月',
+		sum(case when #{year}+'09' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'08' = gl.iYPeriod  THEN gl.mc else 0 END ) as '9月增长',
+		sum(case when #{year}+'10' = gl.iYPeriod  THEN gl.mc else 0 END ) as '10月',
+		sum(case when #{year}+'10' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'09' = gl.iYPeriod  THEN gl.mc else 0 END ) as '10月增长',
+		sum(case when #{year}+'11' = gl.iYPeriod  THEN gl.mc else 0 END ) as '11月',
+		sum(case when #{year}+'11' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'10' = gl.iYPeriod  THEN gl.mc else 0 END ) as '11月增长',
+		sum(case when #{year}+'12' = gl.iYPeriod  THEN gl.mc else 0 END ) as '12月',
+		sum(case when #{year}+'12' = gl.iYPeriod  THEN gl.mc else 0 END )-sum(case when #{year}+'11' = gl.iYPeriod  THEN gl.mc else 0 END ) as '12月增长',
+		sum(case when #{year}+'01' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'02' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'03' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'04' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'05' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'06' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'07' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'08' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'09' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'10' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'11' = gl.iYPeriod  THEN gl.mc else 0 END )+
+		sum(case when #{year}+'12' = gl.iYPeriod  THEN gl.mc else 0 END ) as '总计'
+
+		from ${databaseName}GL_accvouch gl
+		left join ${databaseName}Customer cu on gl.ccus_id=cu.cCusCode
+		<where>
+			<foreach collection="ccodes" separator="or"
+					 item="item" index="index">
+				gl.ccode like #{item} + '%'
+			</foreach>
+		</where>
+		group by gl.cDefine2,cu.cCusName
+		HAVing
+		sum(case when #{year}+'01' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'02' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'03' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'04' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'05' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'06' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'07' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'08' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'09' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'10' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'11' = gl.iYPeriod  THEN gl.mc else 0 END )!=0 or
+		sum(case when #{year}+'12' = gl.iYPeriod  THEN gl.mc else 0 END )!=0
+
+		order by cu.cCusName
+
+
+	</select>
+
+	<select id="getRevenueCost" resultType="Map" parameterType="Map">
+		select dl.cCusName,cast(FORMAT(SUM(COALESCE(dls.iSum,0)),'N2') as varchar) zcb,
+		cast(FORMAT(SUM(COALESCE(rds.iPrice,0)),'N2') as varchar) zsr,'' cInvName,'' cDLCode,'' iSum,'' iPrice,MONTH(dl.dDate) yf
+		from  ${databaseName}rdrecords32 rds
+		left join ${databaseName}rdrecord32 rd on rd.ID=rds.ID
+		left join ${databaseName}DispatchLists dls on dls.iDLsID=rds.iDLsID
+		left join ${databaseName}DispatchList dl on dl.DLID=dls.DLID
+		left join ${databaseName}Inventory bp on bp.cInvCode=rds.cinvcode
+		where   FORMAT(dl.dDate,'yyyy') = #{year} and dl.cCusName is not null and bp.cInvName is not null
+		group by dl.cCusName,MONTH(dl.dDate)
+		UNION ALL
+		select dl.cCusName,'' zcb,'' zsr,bp.cInvName,dl.cDLCode,cast(FORMAT(SUM(COALESCE(dls.iSum,0)),'N2') as varchar) iSum,
+		cast(FORMAT(SUM(COALESCE(rds.iPrice,0)),'N2')as varchar) iPrice,MONTH(dl.dDate) yf
+		from  ${databaseName}rdrecords32 rds
+		left join ${databaseName}rdrecord32 rd on rd.ID=rds.ID
+		left join ${databaseName}DispatchLists dls on dls.iDLsID=rds.iDLsID
+		left join ${databaseName}DispatchList dl on dl.DLID=dls.DLID
+		left join ${databaseName}Inventory bp on bp.cInvCode=rds.cinvcode
+		where FORMAT(dl.dDate,'yyyy') = #{year} and dl.cCusName is not null and bp.cInvName is not null
+		group by dl.cCusName,dl.cDLCode,bp.cInvName,MONTH(dl.dDate)
+		order by dl.cCusName,MONTH(dl.dDate),zcb desc
+	</select>
+</mapper>

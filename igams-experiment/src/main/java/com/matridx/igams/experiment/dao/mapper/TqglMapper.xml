@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.ITqglDao" >
+	<!-- 获取提取列表 -->
+	<select id="getPagedTqglDtoList" parameterType="TqglDto" resultType="TqglDto">
+		select tqgl.mc,tqgl.tqid,tqgl.lrry,to_char(tqgl.lrsj,'YYYY-MM-DD HH24:MI:SS') lrsj,tqgl.xgry,to_char(tqgl.xgsj,'YYYY-MM-DD HH24:MI:SS') xgsj,
+		xtyhlr.zsxm lrrymc,xtyhxg.zsxm xgrymc,tqgl.scbj,case when tqgl.zt ='00' then '未通过' when tqgl.zt='80' then '通过' end zt,jc_jcdw.csmc as jcdwmc,
+		tqgl.tqrq,tqgl.sjph,yhhdr.zsxm hdrmc,yhczr.zsxm czrmc,tqgl.tqsj
+		from igams_tqgl tqgl
+		 left join matridx_xtyh xtyhlr on tqgl.lrry=xtyhlr.yhid
+		 left join matridx_xtyh xtyhxg on tqgl.xgry=xtyhxg.yhid
+		 left join matridx_jcsj jc_jcdw on tqgl.jcdw=jc_jcdw.csid
+		 left join matridx_xtyh yhczr on yhczr.yhid=tqgl.czr
+		 left join matridx_xtyh yhhdr on yhhdr.yhid=tqgl.hdr
+		<where>
+			tqgl.scbj!='1'
+		<if test="lrrymc != null and lrrymc != ''">
+		 	and xtyhlr.zsxm like '%'||#{lrrymc}||'%'
+		</if>
+		<if test="xgrymc != null and xgrymc != ''">
+		 	and xtyhxg.zsxm like '%'||#{xgrymc}||'%'
+		</if>
+		<if test="mc != null and mc != ''">
+		 	and tqgl.mc like '%'||#{mc}||'%'
+		</if>
+		<if test="czrmc != null and czrmc != ''">
+			and yhczr.zsxm like '%'||#{czrmc}||'%'
+		</if>
+		<if test="hdrmc != null and hdrmc != ''">
+			and yhhdr.zsxm like '%'||#{hdrmc}||'%'
+		</if>
+		<if test="jcdwxz !=null and jcdwxz.size()>0">
+			and tqgl.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="nbbh != null and nbbh != ''">
+			and tqgl.tqid in( select tqid from igams_tqmx tqmx where tqmx.nbbh like '%'||#{nbbh}||'%')
+		</if>
+		 </where>
+	</select>
+	<!-- 新增 -->
+	<insert id="insert" parameterType="TqglDto">
+		insert into igams_tqgl(tqid
+		<if test="mc !=null and mc != ''">
+			,mc
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="jcdw !=null and jcdw !=''">
+			,jcdw
+		</if>
+		<if test="xh !=null and xh !=''">
+			,xh
+		</if>
+		<if test="sjph !=null and sjph !=''">
+			,sjph
+		</if>
+		<if test="czr !=null and czr !=''">
+			,czr
+		</if>
+		<if test="hdr !=null and hdr !=''">
+			,hdr
+		</if>
+		<if test="tqsj !=null and tqsj !=''">
+			,tqsj
+		</if>
+		,lrry,lrsj,scbj,tqrq)
+		values(#{tqid}
+		<if test="mc !=null and mc != ''">
+			,#{mc}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="jcdw !=null and jcdw !=''">
+			,#{jcdw}
+		</if>
+		<if test="xh !=null and xh !=''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="sjph !=null and sjph !=''">
+			,#{sjph}
+		</if>
+		<if test="czr !=null and czr !=''">
+			,#{czr}
+		</if>
+		<if test="hdr !=null and hdr !=''">
+			,#{hdr}
+		</if>
+		<if test="tqsj !=null and tqsj !=''">
+			,CAST( #{tqsj} AS json)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0',cast(#{tqrq} as date))
+	</insert>
+	<!-- 删除提取管理信息 -->
+	<update id="deleteTqgl" parameterType="TqglDto">
+		update igams_tqgl
+		<set>
+			scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		</set>
+		<where>
+			scbj!='1'
+			and tqid in 
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<!-- 修改提取管理信息 -->
+	<update id="updateTqgl" parameterType="TqglDto">
+		update igams_tqgl
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,mc=#{mc},jcdw=#{jcdw},zt=#{zt},tqrq=cast(#{tqrq} as date),sjph=#{sjph},
+			<if test="tqsj !=null and tqsj !=''">
+				tqsj=CAST( #{tqsj} AS json)
+			</if>
+			<if test="tqsj == null or tqsj == ''">
+				tqsj= null
+			</if>
+			,czr=#{czr},hdr=#{hdr}
+		</set>
+		<where>
+			tqid=#{tqid}
+		</where>
+	</update>
+	<!-- 根据名称查询提取管理信息，用于校验名称是否重复 -->
+	<select id="getTqglByMc" parameterType="TqglDto" resultType="TqglDto">
+		select tqid,mc,lrry,lrsj,tqrq,sjph
+		from igams_tqgl
+		<where>
+			scbj!='1' and
+			mc=#{mc}
+			<if test="tqid !=null and tqid !=''">
+				and tqid!=#{tqid}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getXh" parameterType="TqglDto" resultType="int">
+		select  cast(coalesce(max(xh),'0') as numeric) +1 as xh from igams_tqgl 
+		<where>
+			scbj !='1' 
+			and to_char(lrsj,'yyyy-mm-dd') = #{lrsj}
+			and jcdw= #{jcdw}
+		</where>
+	</select>
+	
+	<select id="getDtoById" parameterType="String" resultType="TqglDto">
+		select tqgl.tqid,tqgl.mc,tqgl.zt,tqgl.jcdw,tqgl.xh,tqgl.lrry,tqgl.lrsj,jc_jcdw.csmc as jcdwmc,tqgl.tqrq,tqgl.sjph,tqgl.tqsj
+		,yhczr.zsxm as czrmc,tqgl.czr,yhhdr.zsxm as hdrmc,tqgl.hdr,yhczr.yhm as czryhm,yhhdr.yhm as hdryhm
+		from igams_tqgl tqgl
+		left join matridx_jcsj jc_jcdw on tqgl.jcdw=jc_jcdw.csid
+		left join matridx_xtyh yhczr on yhczr.yhid=tqgl.czr
+		left join matridx_xtyh yhhdr on yhhdr.yhid=tqgl.hdr
+		<where>
+			tqgl.scbj !='1'
+			and tqgl.tqid=#{tqid}
+		</where>
+	</select>
+	
+	<select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+		select xtjs.dwxdbj,jsjcdw.jcdw from matridx_xtjs  xtjs
+		left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid 
+		<where>
+		 	xtjs.jsid=#{jsid}
+		</where> 
+	</select>
+	
+	<!-- 删除临时保存的数据 -->
+	<delete id="deleteLs" parameterType="String">
+		delete from igams_tqgl
+		<where>
+			scbj!='1' and
+			tqid=#{tqid}
+		</where>
+	</delete>
+</mapper>

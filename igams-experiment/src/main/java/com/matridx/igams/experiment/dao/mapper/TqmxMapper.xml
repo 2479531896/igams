@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.ITqmxDao" >
+	<insert id="insertTqmx" parameterType="List">
+		insert into igams_tqmx(tqmxid,tqid,xh,nbbh,sjid,tqdm,syglid,hsnd,cdna,jkyl,hcyyl,xsnd,lrry,lrsj,scbj,jcdw,tqrq,hzbj,jcxmdm,tqykw,tqybm,spike,xsbs)
+		values
+		<foreach collection="list" open="" close="" separator="," item="item" index="index">
+		(#{item.tqmxid},#{item.tqid},cast(#{item.xh} as numeric)
+		,#{item.nbbh}
+		,#{item.sjid}
+		<if test="item.tqdm !=null and item.tqdm !=''">
+			,#{item.tqdm}
+		</if>
+		<if test="item.tqdm ==null or item.tqdm ==''">
+			,null
+		</if>
+		,#{item.syglid}
+		<if test="item.hsnd !=null and item.hsnd !=''">
+		,cast(#{item.hsnd} as numeric)
+		</if>
+		<if test="item.hsnd ==null or item.hsnd ==''">
+		,null
+		</if>
+		<if test="item.cdna !=null and item.cdna !=''">
+		,cast(#{item.cdna} as numeric)
+		</if>
+		<if test="item.cdna ==null or item.cdna ==''">
+		,null
+		</if>
+		<if test="item.jkyl !=null and item.jkyl !=''">
+		,cast(#{item.jkyl} as numeric)
+		</if>
+		<if test="item.jkyl ==null or item.jkyl ==''">
+		,null
+		</if>
+		<if test="item.hcyyl !=null and item.hcyyl !=''">
+		,cast(#{item.hcyyl} as numeric)
+		</if>
+		<if test="item.hcyyl ==null or item.hcyyl ==''">
+		,null
+		</if>
+		<if test="item.xsnd !=null and item.xsnd !=''">
+		,cast(#{item.xsnd} as numeric)
+		</if>
+		<if test="item.xsnd ==null or item.xsnd ==''">
+		,null
+		</if>
+		,#{item.lrry},LOCALTIMESTAMP,'0',#{item.jcdw},cast(#{item.tqrq} as date),#{item.hzbj},#{item.jcxmdm},#{item.tqykw},#{item.tqybm},#{item.spike},#{item.xsbs})
+		</foreach>
+	</insert>
+	<!-- 根据内部编号查询送检信息表中的数据 -->
+	<select id="getSjxxByNbbh" parameterType="TqmxDto" resultType="TqmxDto">
+		select sj.sjid,A.nbbm as nbbh
+		from igams_sjxx sj
+		right outer join 
+		(
+		<foreach collection="nbbms" separator="union all" open="" close="" item="item" index="index">
+			select #{item} As nbbm 
+			</foreach>
+			)  A on A.nbbm=sj.nbbm and sj.scbj!='1'
+	</select>
+
+	<select id="getSjxxByNbbms" parameterType="TqmxDto" resultType="TqmxDto">
+		select sj.sjid,sj.nbbm as nbbh,sj.dsyrq,sj.syrq,sj.qtsyrq
+		from igams_sjxx sj
+		where sj.scbj='0' and sj.sfjs='1'
+		and sj.nbbm in
+		<foreach collection="nbbms" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getFjxxByNbbms" parameterType="TqmxDto" resultType="TqmxDto">
+		select fj.fjid,sj.nbbm as nbbh,jc_jcxm.cskz1 as jcxmdm,fj.dsyrq,fj.rsyrq,fj.qtsyrq
+		from igams_fjsq fj
+		left join igams_sjxx sj on sj.sjid=fj.sjid and sj.scbj='0'
+		left join matridx_jcsj jc_jcxm on jc_jcxm.csid = fj.jcxm
+		where fj.scbj='0'
+		and sj.nbbm in
+		<foreach collection="nbbms" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getDtoList" parameterType="TqmxDto" resultType="TqmxDto">
+		select tqmx.tqmxid,tqmx.tqid,tqmx.xh,tqmx.nbbh,tqmx.hsnd,tqmx.hsnd,tqmx.sjid,tqmx.cdna,tqmx.jkyl,tqmx.hcyyl,tqmx.xsnd,tqmx.tqrq,tqmx.tqykw,tqmx.tqybm,tqmx.spike,tqmx.syglid
+		from igams_tqmx tqmx
+		left join igams_tqgl tqgl on tqmx.tqid = tqgl.tqid
+		where tqmx.scbj='0'
+		and tqmx.sjid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		<if test="syrq !=null and syrq !=''">
+		    and tqgl.tqrq &gt;= to_date(#{syrq},'YYYY-MM-DD') - interval '1 day' 
+		    and tqgl.tqrq &lt;= to_date(#{syrq},'YYYY-MM-DD')
+		</if>
+		<if test="jcdw !=null and jcdw !=''">
+		    and tqgl.jcdw = #{jcdw}
+		</if>
+		order by tqmx.lrsj desc,tqmx.xh desc
+	</select>
+	<!-- 根据内部编号查询提取表中信息 -->
+	<select id="gettqmxByNbbh" parameterType="TqmxDto" resultType="TqmxDto">
+		select tqid,xh,nbbh,hsnd,hsnd,sjid,jkyl,hcyyl,xsnd,tqrq
+		from igams_tqmx
+		<where>
+			scbj!='1'
+			and nbbh=#{nbbh}
+			and tqid!=#{tqid}
+		</where>
+	</select>
+	<!-- 根据tqid获取提取明细信息 -->
+	<select id="getTqmxByTqid" parameterType="TqmxDto" resultType="TqmxDto">
+		select tqmx.tqmxid,tqmx.tqid,tqmx.xh,tqmx.nbbh,tqmx.hsnd,tqmx.hsnd,tqmx.sjid,tqmx.cdna,tqgl.mc,tqmx.jkyl,tqmx.hcyyl,tqmx.xsnd,tqmx.tqrq,tqmx.tqykw,tqmx.tqybm,tqmx.spike,tqmx.syglid,
+		case when tqmx.tqdm is null or tqmx.tqdm = '' then 'XX/XX' else tqmx.tqdm end,tqmx.xsbs
+		from igams_tqmx tqmx
+		left join igams_tqgl tqgl on tqgl.tqid=tqmx.tqid
+		<where>
+			tqmx.scbj!='1'
+			and tqmx.tqid=#{tqid}
+		</where>
+		order by  cast(tqmx.xh as numeric) asc
+	</select>
+	<!-- 根据tqid获取提取明细信息 -->
+	<select id="getTqmxByTqidByPrint" parameterType="TqmxDto" resultType="TqmxDto">
+		select tqmx.tqid,tqmx.xh,tqmx.nbbh,tqmx.hsnd,tqmx.hsnd,tqmx.sjid,tqmx.cdna,tqgl.mc,round(tqmx.jkyl,1) jkyl,tqmx.hcyyl,tqmx.xsnd,tqmx.tqrq,tqmx.tqykw,tqmx.tqybm,tqmx.syglid,tqmx.xsbs,
+		case when tqmx.tqdm is null or tqmx.tqdm = '' then 'XX/XX' else tqmx.tqdm end
+		from igams_tqmx tqmx
+		left join igams_tqgl tqgl on tqgl.tqid=tqmx.tqid
+		<where>
+			tqmx.scbj!='1'
+			and tqmx.tqid=#{tqid}
+		</where>
+		order by  cast(tqmx.xh as numeric) asc
+	</select>
+	<!-- 删除提取明细数据 -->
+	<delete id="deleteByTqid" parameterType="TqmxDto">
+		delete from igams_tqmx 
+		<where>
+			tqid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</delete>
+	<!-- 通过scbj删除提取明细数据 -->
+	<update id="delByTqid" parameterType="TqmxDto">
+		update igams_tqmx
+		<set>
+			scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			tqid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach> 
+		</where>
+	</update>
+	<!-- 根据送检id查询提取信息 -->
+	<select id="getTqxxBySjid" parameterType="String" resultType="TqmxDto">
+		select tqmx.tqid,tqmx.xh,tqmx.nbbh,tqmx.hsnd,tqmx.hsnd,tqmx.sjid,tqmx.cdna,tqgl.mc,tqmx.jkyl,tqmx.hcyyl,tqmx.xsnd,to_char(tqmx.lrsj,'YYYY-MM-DD') lrsj,tqmx.tqrq,jcdw.csmc jcdwmc
+		from igams_tqmx tqmx
+		left join igams_tqgl tqgl on tqgl.tqid=tqmx.tqid
+		left join matridx_jcsj jcdw on jcdw.csid=tqmx.jcdw
+		<where>
+			tqmx.scbj!='1'
+			and tqmx.sjid=#{sjid}
+		</where>
+	</select>
+	
+	<insert id="temporarySave" parameterType="TqmxDto">
+		insert into igams_tqmx(tqmxid,tqid,xh,nbbh,hsnd,cdna,lrry,lrsj,scbj,jcdw,tqrq,tqdm,syglid,xsbs)
+		values(#{tqmxid},#{tqid},cast(#{xh} as numeric) ,#{nbbh}
+		<if test="hsnd != null and hsnd != ''">
+		,cast(#{hsnd} as numeric)
+		</if>
+		<if test="hsnd == null or hsnd == ''">
+		,null
+		</if>
+		<if test="cdna != null and cdna != ''">
+		,cast(#{cdna} as numeric)
+		</if>
+		<if test="cdna == null or cdna == ''">
+		,null
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0',#{jcdw},cast(#{tqrq} as date),#{tqdm},#{syglid},#{xsbs})
+	</insert>
+	
+	<select id="getDtoByIdAndXh" parameterType="TqmxDto" resultType="TqmxDto">
+		select tqmx.tqid,tqmx.xh,tqmx.nbbh,tqmx.hsnd,tqmx.hsnd,tqmx.sjid,tqmx.cdna,tqmx.jkyl,tqmx.hcyyl,tqmx.xsnd,to_char(tqmx.lrsj,'YYYY-MM-DD') lrsj,tqmx.tqrq,tqmx.syglid,tqmx.xsbs
+		from igams_tqmx tqmx
+		<where>
+			tqmx.scbj!='1' and tqid=#{tqid} and xh=cast(#{xh} as numeric)
+		</where>
+	</select>
+	
+	<update id="updateByIdAndXh" parameterType="TqmxDto">
+		update igams_tqmx
+		<set>
+			<if test="nbbh != null and nbbh != ''">
+				nbbh=#{nbbh}
+			</if>
+			<if test="hsnd != null and hsnd != ''">
+				,hsnd=cast(#{hsnd} as numeric)
+			</if>
+			<if test="cdna != null and cdna != ''">
+				,cdna=cast(#{cdna} as numeric)
+			</if>
+			<if test="tqdm != null and tqdm != ''">
+				,tqdm=#{tqdm}
+			</if>
+			<if test="xsbs != null and xsbs != ''">
+				,xsbs=#{xsbs}
+			</if>
+			<if test="syglid != null and syglid != ''">
+				,syglid=#{syglid}
+			</if>
+		</set>
+		<where>
+			tqid=#{tqid} and xh=cast(#{xh} as numeric)
+		</where>
+	</update>
+	
+	<delete id="delTqmxDto" parameterType="TqmxDto">
+		delete from igams_tqmx
+		<where>
+			scbj!='1' and tqid=#{tqid}
+		</where>
+	</delete>
+	
+	<!-- 根据内部编号获取送检检测项目信息 -->
+	<select id="getSjDtoByNbbh" parameterType="tqmxDto" resultType="tqmxDto">
+		select sj.sjid,sj.nbbm,sj.jcxmmc
+		from igams_sjxx sj
+		<where>
+			sj.scbj!='1' and sj.nbbm=#{nbbh}
+		</where>
+	</select>
+
+	<select id="getSjsyglByNbbms" parameterType="TqmxDto" resultType="TqmxDto">
+		select sjsy.syglid,case when xmsygl.ywid is null then sjsy.sjid else xmsygl.ywid end ywid,sj.sjid,sj.nbbm ,xxdy.kzcs2,xxdy.kzcs3,sjsy.syrq,sj.syrq rsyrq,sj.dsyrq,sj.qtsyrq,jclx.cskz1 jclxcskz1,xmsygl.ywlx,xmsygl.ywlx lx,jcxm.cskz1 jcxmcskz1
+		from igams_sjsygl sjsy
+		left join igams_sjxx sj on sjsy.sjid=sj.sjid and sj.scbj = '0'
+		left join igams_xmsygl xmsygl on xmsygl.syglid=sjsy.syglid and xmsygl.scbj='0'
+		left join igams_xxdy xxdy on xxdy.dyid=xmsygl.dyid and xxdy.scbj = '0'
+		left join matridx_jcsj jclx on jclx.csid=sjsy.jclxid
+		left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid
+		where sjsy.scbj='0' and sjsy.sfjs='1'
+		and substring(sj.nbbm,1,3) NOT IN ('NC-','PC-','DC-') AND substring(sj.nbbm,2,3) NOT IN ('NC-','PC-','DC-')
+		and sjsy.syglid in
+		<foreach collection="syglids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</select>
+	<select id="getInfoByNbbm" parameterType="TqmxDto" resultType="TqmxDto">
+		select sj.sjid,sj.nbbm as nbbh,xxdy.kzcs2,xxdy.kzcs3,sjsy.syglid,sjsy.syrq
+		from igams_sjxx sj
+		left join igams_sjsygl sjsy on sjsy.sjid=sj.sjid and sjsy.scbj = '0'
+		left join igams_xmsygl xmsygl on xmsygl.syglid=sjsy.syglid and xmsygl.scbj = '0'
+		left join igams_xxdy xxdy on xxdy.dyid=xmsygl.dyid and xxdy.scbj = '0'
+		left join igams_tqmx tqmx on tqmx.sjid = sj.sjid and tqmx.tqdm = xxdy.kzcs2||'/'||xxdy.kzcs3
+		<where>
+			sj.scbj='0'
+			<if test="nbbh != null and nbbh != ''">
+				and sj.nbbm =#{nbbh}
+			</if>
+			<if test="kzcs1 != null and kzcs1 != ''">
+				and xxdy.kzcs1 =#{kzcs1}
+			</if>
+			<if test="kzcs3 != null and kzcs3 != ''">
+				and xxdy.kzcs3 =#{kzcs3}
+			</if>
+			<if test="jcdw != null and jcdw != ''">
+				and sjsy.jcdw = #{jcdw}
+			</if>
+		</where>
+		group by sj.sjid,sj.nbbm,xxdy.kzcs2,xxdy.kzcs3,sjsy.syglid,sjsy.syrq,tqmx.tqdm
+		order by tqmx.tqdm desc
+	</select>
+
+	<select id="getInfoBySyglids" parameterType="TqmxDto" resultType="TqmxDto">
+		select sj.sjid,sj.nbbm as nbbh,xxdy.kzcs2,xxdy.kzcs3,sjsy.syglid,sjsy.syrq
+		from igams_sjxx sj
+		left join igams_sjsygl sjsy on sjsy.sjid=sj.sjid and sjsy.scbj = '0'
+		left join igams_xmsygl xmsygl on xmsygl.syglid=sjsy.syglid and xmsygl.scbj = '0'
+		left join igams_xxdy xxdy on xxdy.dyid=xmsygl.dyid and xxdy.scbj = '0'
+		<where>
+			sj.scbj='0'
+			and sjsy.syglid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	<update id="updateSyList" parameterType="list">
+		update igams_sjsygl sjsygl set  xgsj = LOCALTIMESTAMP,jcbj='1',syrq = cast (tmp.syrq as timestamp)
+		from
+		<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+			select #{item.syglid} syglid,#{item.syrq} syrq
+		</foreach> tmp
+		where sjsygl.syglid=tmp.syglid
+	</update>
+
+	<update id="updateSjList" parameterType="list">
+		update igams_sjxx sjxx set  xgsj = LOCALTIMESTAMP,
+		syrq = case when tmp.rsyrq !='' and tmp.rsyrq is not null and sjxx.syrq is null then cast (tmp.rsyrq as timestamp) else sjxx.syrq end,
+		jcbj = case when tmp.rsyrq !='' and tmp.rsyrq is not null and sjxx.syrq is null then '1' else jcbj end,
+		dsyrq = case when tmp.dsyrq !='' and tmp.dsyrq is not null and sjxx.dsyrq is null then cast (tmp.dsyrq as timestamp) else sjxx.dsyrq end,
+		djcbj = case when tmp.dsyrq !='' and tmp.dsyrq is not null and sjxx.dsyrq is null then '1' else djcbj end,
+		qtsyrq = case when tmp.qtsyrq !='' and tmp.qtsyrq is not null and sjxx.qtsyrq is null then cast (tmp.qtsyrq as timestamp) else sjxx.qtsyrq end,
+		qtjcbj = case when tmp.qtsyrq !='' and tmp.qtsyrq is not null and sjxx.qtsyrq is null then '1' else qtjcbj end
+		from
+		<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+			select #{item.ywid} ywid,#{item.rsyrq} rsyrq,#{item.dsyrq} dsyrq,#{item.qtsyrq} qtsyrq
+		</foreach> tmp
+		where sjxx.sjid=tmp.ywid
+	</update>
+
+	<update id="updateFjList" parameterType="list">
+		update igams_fjsq fjsq set xgsj = LOCALTIMESTAMP,
+		rsyrq = case when tmp.rsyrq !='' and tmp.rsyrq is not null and fjsq.rsyrq is null then cast (tmp.rsyrq as timestamp) else fjsq.rsyrq end,
+		rjcbj = case when tmp.rsyrq !='' and tmp.rsyrq is not null and fjsq.rsyrq is null then '1' else rjcbj end,
+		dsyrq = case when tmp.dsyrq !='' and tmp.dsyrq is not null and fjsq.dsyrq is null then cast (tmp.dsyrq as timestamp) else fjsq.dsyrq end,
+		djcbj = case when tmp.dsyrq !='' and tmp.dsyrq is not null and fjsq.dsyrq is null then '1' else djcbj end,
+		qtsyrq = case when tmp.qtsyrq !='' and tmp.qtsyrq is not null and fjsq.qtsyrq is null then cast (tmp.qtsyrq as timestamp) else fjsq.qtsyrq end,
+		qtjcbj = case when tmp.qtsyrq !='' and tmp.qtsyrq is not null and fjsq.qtsyrq is null then '1' else qtjcbj end
+		from
+		<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+			select #{item.ywid} ywid,#{item.rsyrq} rsyrq,#{item.dsyrq} dsyrq,#{item.qtsyrq} qtsyrq
+		</foreach> tmp
+		where fjsq.fjid=tmp.ywid
+	</update>
+
+	<select id="getInfoByZdpb" parameterType="TqmxDto" resultType="TqmxDto">
+		select * from(
+			select sjxx.sjid,
+			sjxx.nbbm as nbbh,
+			xxdy.kzcs2,
+			xxdy.kzcs3,
+			sjsy.syglid,
+			sjsy.syrq,
+			tqmx.tqdm,
+			row_number() over(partition by sjxx.sjid,sjxx.nbbm ,xxdy.kzcs2,xxdy.kzcs3 ) cn
+			from igams_sjxx sjxx
+			left join igams_sjsygl sjsy on
+			sjsy.sjid = sjxx.sjid
+			and sjsy.scbj = '0'
+			left join igams_xmsygl xmsygl on
+			xmsygl.syglid = sjsy.syglid
+			and xmsygl.scbj = '0'
+			left join igams_xxdy xxdy on
+			xxdy.dyid = xmsygl.dyid
+			and xxdy.scbj = '0'
+			left join igams_tqmx tqmx on
+			tqmx.sjid = sjxx.sjid
+			and tqmx.tqdm = xxdy.kzcs2 || '/' || xxdy.kzcs3
+
+			where sjxx.jsrq  is not null
+			and sjxx.jsrq >=(SELECT current_date - interval '1 day')
+			and sjxx.syrq is  null and sjxx.dsyrq  is  null and sjxx.qtsyrq  is  null
+			and sjsy.syrq is null
+			and sjsy.jcdw = #{jcdw}
+			and sjxx.sfjs ='1'  and sjxx.scbj = '0'
+			group by
+			sjxx.sjid,
+			sjxx.nbbm,
+			xxdy.kzcs2,
+			xxdy.kzcs3,
+			sjsy.syglid,
+			sjsy.syrq,
+			tqmx.tqdm
+			order by
+			xxdy.kzcs3,SUBSTRING(sjxx.nbbm, 10, 3)
+			limit 96
+		)tt
+		where cn ='1'
+	</select>
+	<select id="getCountByjcdw" parameterType="Map" resultType="Map">
+		select count(tqid)||''  as count from igams_tqmx tqmx
+		where tqmx.tqrq >= (SELECT current_date - interval '10 day') and  tqmx.scbj='0'
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and tqmx.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	<select id="getExtractInfoZdpb" parameterType="Map" resultType="TqmxDto">
+		select * from (
+		select tqmx.tqmxid,tqmx.syglid,tqmx.tqid,tqmx.xh,tqmx.nbbh,''||tqmx.hsnd as hsnd,tqmx.sjid,tqmx.cdna,tqmx.jkyl,
+		tqmx.hcyyl,tqmx.xsnd,tqmx.tqdm,to_char(tqmx.lrsj,'YYYY-MM-DD') lrsj,tqmx.tqrq,
+		case when WKMX.TQMXID is not null then '1' else '0' end BJ,
+		row_number() over(partition by tqmx.tqmxid order by wkgl.wkid) cn
+		from
+		(
+			select * from igams_tqmx
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				where 	 jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+				and tqdm != 'RF/'
+			</if>
+		)
+		 tqmx
+		left join igams_tqgl tqgl on tqmx.tqid = tqgl.tqid
+		left join igams_wkmx wkmx ON wkmx.tqmxid = tqmx.tqmxid and wkmx.scbj ='0'
+		left join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid
+		<where>
+			tqmx.scbj!='1'
+			<if test = "sjids != null and sjids.size() > 0 "  >
+				and tqmx.sjid in
+				<foreach collection="sjids" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+				and tqgl.tqrq >= to_date( #{rq},'YYYY-MM-DD') - INTERVAL '1 day'
+			</if>
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				and tqgl.jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+				and tqgl.tqrq >= to_date( #{rq},'YYYY-MM-DD') - INTERVAL '1 day'
+			</if>
+		</where>
+		) tmp where cn =1
+		order by lrsj desc,bj desc,xh desc
+	</select>
+
+	<select id="getWkInfoListZdpb" parameterType="Map" resultType="TqmxDto">
+		select * from (
+		select xxdy.kzcs1,xxdy.kzcs2, xxdy.kzcs3,sjsygl.nbzbm,sjsygl.syglid,wkmx.wkid,xxdy.dydm,tqmx.sjid,sjxx.nbbm as nbbh,tqmx.lrsj,ngsgl.jth,sjsygl.jsrq
+		<if test="qz != null and qz!= ''">
+			,yblx.csdm yblx
+			,jcxm.csmc jcxmmc,
+			yblx.csmc yblxmc,
+
+			case when xxdy.dydm ='TBtNGS'
+
+			then (case when  #{qz}='DEFAULT'  then wxbblx.cskz3::json->'TBT_VOLUMN' else wxbblx.cskz3::json->(#{qz}||'TBT_VOLUMN') end)
+			else
+			(case when  #{qz}='DEFAULT'  then wxbblx.cskz3::json->'DEFAULT_VOLUMN' else wxbblx.cskz3::json->(#{qz}||'VOLUMN') end)
+			end tj
+		</if>
+		from igams_tqmx tqmx
+		left join  (
+		select * from igams_sjsygl
+		where
+		 sfjs = '1'
+		and nbzbm !='RF'
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		) sjsygl on tqmx.syglid=sjsygl.syglid
+		left join igams_sjxx sjxx on sjxx.sjid=sjsygl.sjid
+		<if test="qz != null and qz!= ''">
+			left join matridx_jcsj yblx on
+			sjxx.yblx=yblx.csid
+			left join matridx_jcsj wxbblx on
+			yblx.csmc=wxbblx.csmc and wxbblx.jclb ='WECGATSAMPLE_TYPE' and wxbblx.cskz3 !=''
+		</if>
+		left join igams_xmsygl xmsygl on xmsygl.syglid = sjsygl.syglid and xmsygl.scbj = '0'
+		left join igams_fjsq fjsq on xmsygl.ywid = fjsq.fjid and xmsygl.ywlx ='DETECT_FJ'
+		left join igams_xxdy xxdy on xxdy.dyid = xmsygl.dyid and xxdy.scbj = '0'
+		left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid and jcxm.scbj='0'
+		left join igams_wkmx wkmx on wkmx.syglid = sjsygl.syglid and wkmx.scbj='0'
+		left join igams_ngsgl ngsgl on ngsgl.zbbm = jcxm.cskz1 and ngsgl.nbbm = sjxx.nbbm and ngsgl.scbj = '0'
+		<if test="jcdw != null and jcdw!= ''">
+			and ngsgl.jcdw = #{jcdw}
+		</if>
+		where sjsygl.scbj='0'
+		<choose>
+			<when test="wkrq!=null and wkrq!= ''">
+				and to_char(tqmx.tqrq, 'yyyy-MM-dd' ) = #{wkrq}
+			</when>
+			<otherwise>
+				and to_char(tqmx.tqrq, 'yyyy-MM-dd' ) = to_char((SELECT current_date), 'yyyy-MM-dd' )
+			</otherwise>
+		</choose>
+		and sjsygl.sfjs='1'
+		and case when xmsygl.ywlx='DETECT_FJ' then fjsq.scbj ='0' and fjsq.zt in ('10','80') else 1=1 end
+		and tqmx.lrsj is not null
+		and tqmx.scbj ='0'
+		and wkmx.wkid is null
+		<if test="kzcs2 != null and kzcs2!= ''">
+			and xxdy.kzcs2 = #{kzcs2}
+		</if>
+		<if test="kzcs3 != null and kzcs3!= ''">
+			and xxdy.kzcs3 = #{kzcs3}
+		</if>
+		<if test="xmlimit != null and xmlimit!= ''">
+			and jcxm.cskz1 = #{xmlimit}
+		</if>
+		<if test="noTq != null and noTq!= ''">
+			union all
+			select xxdy.kzcs1,xxdy.kzcs2, xxdy.kzcs3,sjsygl.nbzbm,sjsygl.syglid,wkmx.wkid,xxdy.dydm,sjxx.sjid,sjxx.nbbm as nbbh,sjxx.lrsj,ngsgl.jth,sjsygl.jsrq
+			<if test="qz != null and qz!= ''">
+				,yblx.csdm yblx
+				,jcxm.csmc jcxmmc,
+				yblx.csmc yblxmc,
+
+				case when xxdy.dydm ='TBtNGS'
+
+				then (case when  #{qz}='DEFAULT'  then wxbblx.cskz3::json->'TBT_VOLUMN' else wxbblx.cskz3::json->(#{qz}||'TBT_VOLUMN') end)
+				else
+				(case when  #{qz}='DEFAULT'  then wxbblx.cskz3::json->'DEFAULT_VOLUMN' else wxbblx.cskz3::json->(#{qz}||'VOLUMN') end)
+				end tj
+			</if>
+			from   (
+			select * from igams_sjsygl
+			where
+			sfjs = '1'
+			and syrq is null
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				and jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			) sjsygl
+			left join igams_sjxx sjxx on sjxx.sjid=sjsygl.sjid
+			<if test="qz != null and qz!= ''">
+				left join matridx_jcsj yblx on
+				sjxx.yblx=yblx.csid
+				left join matridx_jcsj wxbblx on
+				yblx.csmc=wxbblx.csmc and wxbblx.jclb ='WECGATSAMPLE_TYPE' and wxbblx.cskz3 !=''
+			</if>
+			left join igams_xmsygl xmsygl on xmsygl.syglid = sjsygl.syglid and xmsygl.scbj = '0'
+			left join igams_fjsq fjsq on xmsygl.ywid = fjsq.fjid and xmsygl.ywlx ='DETECT_FJ'
+			left join igams_xxdy xxdy on xxdy.dyid = xmsygl.dyid and xxdy.scbj = '0'
+			left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid and jcxm.scbj='0'
+			left join igams_wkmx wkmx on wkmx.syglid = sjsygl.syglid and wkmx.scbj='0'
+			left join igams_ngsgl ngsgl on ngsgl.zbbm = jcxm.cskz1 and ngsgl.nbbm = sjxx.nbbm and ngsgl.scbj = '0'
+			<if test="jcdw != null and jcdw!= ''">
+				and ngsgl.jcdw = #{jcdw}
+			</if>
+			where sjsygl.scbj='0'
+			and sjsygl.sfjs='1'
+			and case when xmsygl.ywlx='DETECT_FJ' then fjsq.scbj ='0' and fjsq.zt in ('10','80') else 1=1 end
+			and sjxx.jsrq is not null
+			and wkmx.wkid is null
+			<if test="kzcs2 != null and kzcs2!= ''">
+				and xxdy.kzcs2 = #{kzcs2}
+			</if>
+			<if test="kzcs3 != null and kzcs3!= ''">
+				and xxdy.kzcs3 = #{kzcs3}
+			</if>
+			<if test="xmlimit != null and xmlimit!= ''">
+				and jcxm.cskz1 = #{xmlimit}
+			</if>
+		</if>
+
+		) tab
+		order by
+		<if test = "jcxms != null and jcxms.length > 0 "  >
+			case tab.jcxmmc
+			<foreach collection="jcxms" separator=" "
+					 item="item" index="index">
+				when #{item} then #{index}
+			</foreach>
+			end,
+		</if>
+		<if test = "yblxmcs != null and yblxmcs.length > 0 "  >
+			case tab.yblxmc
+			<foreach collection="yblxmcs" separator=" "
+					 item="item" index="index">
+				when #{item} then #{index}
+			</foreach>
+			end,
+		</if>
+		<if test = "yblxs != null and yblxs.length > 0 "  >
+			case tab.yblx
+			<foreach collection="yblxs" separator=" "
+					 item="item" index="index">
+				when #{item} then #{index}
+			</foreach>
+			end,
+		</if>
+		<if test = "tj != null and tj!='' "  >
+				cast(tab.tj as varchar) ${tj},
+		</if>
+		tab.kzcs3,tab.jsrq
+		limit 192
+	</select>
+</mapper>

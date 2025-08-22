@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IQclglDao" >
+	<select id="getPagedDtoList" parameterType="QclglDto" resultType="QclglDto">
+		select qclgl.qclid,qclgl.mc,qclgl.zt,qclgl.lrry,qclgl.lrsj,qclgl.xgry,qclgl.xgsj, xtyh.zsxm lrrymc,
+		qclgl.jcdw,qclgl.xh,jc_jcdw.csmc as jcdwmc
+		from igams_qclgl qclgl 
+		left join matridx_xtyh xtyh on xtyh.yhid=qclgl.lrry 
+		left join matridx_jcsj jc_jcdw on qclgl.jcdw= jc_jcdw.csid
+		<where>
+			qclgl.scbj !='1'
+			<if test="mc != null and mc !=''">
+				and qclgl.mc like '%'||#{mc}||'%'
+			</if>	
+			<if test="lrrymc != null and lrrymc !=''">
+				and xtyh.zsxm like '%'||#{lrrymc}||'%'
+			</if>
+			<if test="allrow != null and allrow !=''">
+				and (qclgl.mc like '%'||#{allrow}||'%'
+				or qclgl.zt like '%'||#{allrow}||'%'
+				or xtyh.zsxm like '%'||#{allrow}||'%' )
+			</if>
+			<if test="zts !=null and zts.size()>0">	
+				and qclgl.zt in
+				<foreach collection="zts" close=")" open="(" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jcdwxz !=null and jcdwxz.size()>0">
+					and qclgl.jcdw in
+				<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="nbbh != null and nbbh !=''">
+				and EXISTS(
+					SELECT * FROM igams_qclmx qclmx
+					    WHERE qclmx.qclid=qclgl.qclid and qclmx.nbbh=#{nbbh} 
+				)
+			</if>
+		</where>
+	</select>
+	
+	<delete id="delete" parameterType="QclglDto">
+		update igams_qclgl set scbj ='1' , scry=#{scry} ,scsj=LOCALTIMESTAMP
+		<where>
+			<if test="ids != null and ids.size()>0">
+				qclid in 
+				<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<select id="getDto" parameterType="QclglDto" resultType="QclglDto">
+		select  qclgl.qclid,qclgl.mc,qclgl.zt,qclgl.lrry,qclgl.lrsj,qclgl.xgry,qclgl.xgsj,
+		qclgl.jcdw,qclgl.xh,jc_jcdw.csmc as jcdwmc
+		from igams_qclgl qclgl
+		left join matridx_jcsj jc_jcdw on qclgl.jcdw= jc_jcdw.csid
+		<where>
+			qclgl.scbj!='1'
+			<if test="mc !=null and mc !=''">
+				and qclgl.mc=#{mc}
+			</if>
+			<if test="qclid !=null and qclid!= ''" >
+				and qclgl.qclid=#{qclid}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="QclglDto">
+			insert into igams_qclgl(qclid
+				<if test="mc !=null and mc !=''">
+					,mc
+				</if>
+				<if test="zt !=null and zt !=''">
+					,zt
+				</if>
+				<if test="jcdw !=null and jcdw !=''">
+					,jcdw
+				</if>
+				<if test="xh !=null and xh !=''">
+					,xh
+				</if>
+				,lrry,lrsj,scbj
+			)values(#{qclid}
+				<if test="mc !=null and mc !=''">
+					,#{mc}
+				</if>
+				<if test="zt !=null and zt !=''">
+					,#{zt}
+				</if>
+				<if test="jcdw !=null and jcdw !=''">
+					,#{jcdw}
+				</if>
+				<if test="xh !=null and xh !=''">
+					,cast(#{xh} as numeric)
+				</if>
+				,#{lrry},LOCALTIMESTAMP,0
+			)
+		</insert>
+		<select id="getXh" parameterType="QclglDto" resultType="int">
+		select  cast(coalesce(max(xh),'0') as numeric) +1 as xh from igams_qclgl 
+		<where>
+			scbj !='1' 
+			and to_char(lrsj,'yyyy-mm-dd') = #{lrsj}
+			and jcdw= #{jcdw}
+		</where>
+	</select>
+</mapper>

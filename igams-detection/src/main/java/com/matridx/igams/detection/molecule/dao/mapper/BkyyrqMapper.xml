@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.detection.molecule.dao.post.IBkyyrqDao" >
+    <!-- 分页查询不可预约日期信息 -->
+    <select id="getPagedDtoList" parameterType="BkyyrqDto" resultType="BkyyrqDto">
+        select bkyyrqid,bkyyrq,bkyysjd,xtyh_lr.zsxm lrry,bkyyrq.lrsj,xtyh_xg.zsxm xgry,bkyyrq.xgsj,bkyyrq.bz
+        from igams_bkyyrq bkyyrq
+        left join matridx_xtyh xtyh_lr on xtyh_lr.yhid = bkyyrq.lrry
+        left join matridx_xtyh xtyh_xg on xtyh_xg.yhid = bkyyrq.xgry
+        <where>
+            bkyyrq.scbj ='0'
+            <if test="bkyyrqstart != null and bkyyrqstart !=''">
+                AND to_char(bkyyrq, 'yyyy-mm-dd') &gt;= #{bkyyrqstart}
+            </if>
+            <if test="bkyyrqend != null and bkyyrqend !=''">
+                AND to_char(bkyyrq, 'yyyy-mm-dd') &lt;= #{bkyyrqend}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据日期范围查询不可预约日期信息 -->
+    <select id="getUnAppDate" parameterType="BkyyrqDto" resultType="BkyyrqDto">
+        select bkyyrqid,bkyyrq,bkyysjd,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,bz
+        from igams_bkyyrq
+        <where>
+            scbj ='0'
+            <if test="bkyyrqstart != null and bkyyrqstart !=''">
+                AND to_char(bkyyrq, 'yyyy-mm-dd') &gt;= #{bkyyrqstart}
+            </if>
+            <if test="bkyyrqend != null and bkyyrqend !=''">
+                AND to_char(bkyyrq, 'yyyy-mm-dd') &lt;= #{bkyyrqend}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据id查询不可预约日期信息 -->
+    <select id="getBkyyrqDto" parameterType="BkyyrqDto" resultType="BkyyrqDto">
+        select bkyyrqid,bkyyrq,bkyysjd,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,bz
+        from igams_bkyyrq
+        where scbj ='0' and bkyyrqid = #{bkyyrqid}
+    </select>
+
+    <!-- 新增不可预约日期信息 -->
+    <insert id="insertBkyyrqDtoList" parameterType="List">
+        insert into igams_bkyyrq(bkyyrqid,bkyyrq,bkyysjd,bz,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" item="item" index="index" separator="," open="" close="">
+            (#{item.bkyyrqid},cast(#{item.bkyyrq} as TIMESTAMP),#{item.bkyysjd},#{item.bz},#{item.lrry},cast(#{item.lrsj} as TIMESTAMP),'0')
+        </foreach>
+    </insert>
+    <!-- 修改不可预约日期信息 -->
+    <update id="updateBkyyrqDto" parameterType="BkyyrqDto">
+        update igams_bkyyrq set xgry = #{xgry},xgsj=cast(#{xgsj} as TIMESTAMP),bz=#{bz}
+        <if test="bkyyrq != null and bkyyrq != ''">
+            ,bkyyrq=cast(#{bkyyrq} as TIMESTAMP)
+        </if>
+        <if test="bkyysjd != null and bkyysjd != ''">
+            ,bkyysjd=#{bkyysjd}
+        </if>
+        <if test="bkyysjd == null or bkyysjd == ''">
+            ,bkyysjd=#{bkyysjd}
+        </if>
+        where bkyyrqid = #{bkyyrqid}
+    </update>
+    <!--删除不可预约日期信息-->
+    <update id="delUnAppDateDetails" parameterType="BkyyrqDto">
+        update igams_bkyyrq set scry = #{scry},scsj=cast(#{scsj} as TIMESTAMP),scbj = '1'
+            <where>
+                1 = 1
+                <if test="ids != null and ids.size > 0">
+                    and bkyyrqid in
+                    <foreach collection="ids" open="(" close=")" separator="," item="item">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+    </update>
+
+</mapper>

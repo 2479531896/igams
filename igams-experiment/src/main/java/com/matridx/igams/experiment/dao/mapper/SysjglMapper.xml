@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.ISysjglDao" >
+    <select id="getPagedDtoList" parameterType="SysjglDto" resultType="SysjglDto">
+        <if test="jhxs != null and jhxs != ''">
+            select sysjgl.sysjid,sysjgl.ywid,sysjgl.jcdw,jcJcdw.csmc as jcdwmc,sysjgl.type,sysjgl.sjbm,sysjgl.sjmc,sysjgl.sjph,
+            to_char(sysjgl.sjrq,'yyyy-mm-dd') as sjrq,sysjgl.bz,sysjgl.lrsj
+            from
+            <if test="jhxs=='0'.toString()">
+                igams_sysjgl sysjgl
+                left join matridx_jcsj jcJcdw on jcJcdw.csid=sysjgl.jcdw
+                where sysjgl.scbj='0'
+            </if>
+            <if test="jhxs=='1'.toString()">
+                (select sysjid,ywid,jcdw,type,sjbm,sjmc,sjph,sjrq,bz,lrsj,
+                CASE WHEN LAG(sjph) OVER (partition by sjbm ORDER BY sjrq) IS NULL THEN 1
+                WHEN LAG(sjph) OVER (partition by sjbm ORDER BY sjrq) &lt;&gt; sjph THEN 1
+                ELSE 0 END AS change_flag
+                from igams_sysjgl
+                where scbj ='0'
+                )sysjgl
+                left join matridx_jcsj jcJcdw on jcJcdw.csid=sysjgl.jcdw
+                where sysjgl.change_flag =1
+            </if>
+            <if test="jcdw!= null and jcdw!= ''">
+                and sysjgl.jcdw=#{jcdw}
+            </if>
+            <if test="sjmc!= null and sjmc!= ''">
+                and sysjgl.sjmc ILIKE '%'||#{sjmc}||'%'
+            </if>
+            <if test="sjph!= null and sjph!= ''">
+                and sysjgl.sjph ILIKE '%'||#{sjph}||'%'
+            </if>
+            <if test="bz!= null and bz!= ''">
+                and sysjgl.bz ILIKE '%'||#{bz}||'%'
+            </if>
+            <if test="startRq != null and startRq != ''">
+                and to_char(sysjgl.sjrq,'yyyy-mm-dd') &gt;= #{startRq}
+            </if>
+            <if test="endRq != null and endRq != ''">
+                and to_char(sysjgl.sjrq,'yyyy-mm-dd') &lt;= #{endRq}
+            </if>
+        </if>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="SysjglDto">
+        select sysjgl.sysjid,sysjgl.ywid,sysjgl.jcdw,jcJcdw.csmc as jcdwmc,sysjgl.type,sysjgl.sjbm,sysjgl.sjmc,sysjgl.sjph,
+        sysjgl.sjrq,sysjgl.bz,sysjgl.lrsj,case when sysjgl.type='WK' then wkgl.wkmc
+        when sysjgl.type='TQ' then tqgl.mc end as ywmc
+        from igams_sysjgl sysjgl
+        left join matridx_jcsj jcJcdw on jcJcdw.csid=sysjgl.jcdw
+        left join igams_wkgl wkgl on wkgl.wkid=sysjgl.ywid and sysjgl.type ='WK'
+        left join igams_tqgl tqgl on tqgl.tqid=sysjgl.ywid and sysjgl.type ='TQ'
+        where sysjgl.scbj='0' and sysjgl.sysjid=#{sysjid}
+    </select>
+
+    <update id="update" parameterType="SysjglDto">
+        update igams_sysjgl set
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+        <if test="jcdw!= null and jcdw!= ''">
+            ,jcdw=#{jcdw}
+        </if>
+        <if test="type!= null and type!= ''">
+            ,type=#{type}
+        </if>
+        <if test="sjbm!= null and sjbm!= ''">
+            ,sjbm=#{sjbm}
+        </if>
+        <if test="sjmc!= null and sjmc!= ''">
+            ,sjmc=#{sjmc}
+        </if>
+        <if test="sjph!= null and sjph!= ''">
+            ,sjph=#{sjph}
+        </if>
+        <if test="sjrq!= null and sjrq!= ''">
+            ,sjrq=cast(#{sjrq} as timestamp)
+        </if>
+        <if test="bz!= null and bz!= ''">
+            ,bz=#{bz}
+        </if>
+        where sysjid=#{sysjid}
+    </update>
+    <update id="delete" parameterType="SysjglDto">
+        update igams_sysjgl set
+            scry=#{scry}
+           ,scsj=LOCALTIMESTAMP
+           ,scbj='1'
+        where ywid=#{ywid}
+    </update>
+
+    <delete id="deleteByIds" parameterType="TqmxDto">
+        update igams_sysjgl set
+        scry=#{scry}
+        ,scsj=LOCALTIMESTAMP
+        ,scbj=#{scbj}
+        <where>
+            ywid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+    <insert id="insertSysjglDtos" parameterType="List">
+        insert into igams_sysjgl(sysjid,ywid,jcdw,type,sjbm,sjmc,sjph,sjrq,bz,lrry,lrsj,scbj)values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.sysjid},#{item.ywid},#{item.jcdw},#{item.type},#{item.sjbm},#{item.sjmc},#{item.sjph},cast(#{item.sjrq} as timestamp),#{item.bz}
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="getSysjxxxMap" parameterType="SysjglDto" resultType="SysjglDto">
+        with recursive t (ywid,ywlx,sjid,jcdw,rq,nbbh,bm,wklx) as (select wkgl.wkid as ywid,'WK' ywlx,wkmx.sjid,wkmx.jcdw,wkgl.wkrq rq,wkmx.nbbh,wkmx.tqm bm,split_part(split_part(wkmx.nbbh,'--',1),'-', length(replace(split_part(wkmx.nbbh,'--',1), '-', '--')) - length(split_part(wkmx.nbbh,'--',1)) +1) wklx
+        from igams_wkmx wkmx
+        left join igams_wkgl wkgl on wkmx.wkid = wkgl.wkid
+        where sjid = #{sjid}
+        union all
+        select tqgl.tqid ywid,'TQ' ywlx,tqmx.sjid,tqgl.jcdw,tqgl.tqrq rq,tqmx.nbbh,tqmx.tqdm bm,split_part(split_part(tqmx.nbbh,'--',1),'-', length(replace(split_part(tqmx.nbbh,'--',1), '-', '--')) - length(split_part(tqmx.nbbh,'--',1)) +1) wklx
+        from igams_tqmx tqmx
+        left join igams_tqgl tqgl on tqmx.tqid = tqgl.tqid
+        where sjid = #{sjid})
+        select tt.nbbh,tt.ywlx as type,tt.rq as sjrq,tt.sjmc,tt.sjph,tt.ywid
+        from (
+        select dense_rank() over(partition by xxdy.yxx order by xxdy.kzcs1) as cn,
+        t.nbbh,t.ywlx,t.rq,sysjgl.sjmc,sysjgl.sjph,t.ywid,xxdy.kzcs1,jc_jcdw.csmc
+        from t
+        left join igams_sysjgl sysjgl on t.ywid = sysjgl.ywid
+        left join matridx_jcsj jc_jcdw on jc_jcdw.csid=t.jcdw
+        left join matridx_jcsj jc_dylx on jc_dylx.csdm='LIBRARY_REAGENT' and jc_dylx.scbj='0'
+        left join igams_xxdy xxdy on jc_dylx.csid = xxdy.dylx and (xxdy.kzcs1 is null or xxdy.kzcs1=jc_jcdw.csmc) and xxdy.scbj='0'
+        and xxdy.dyxx=sysjgl.sjmc and xxdy.yxx = t.wklx and t.ywlx ='WK'
+        where ((t.ywlx ='WK' and xxdy.dyxx is not null) or t.ywlx ='TQ') and sysjgl.scbj='0'
+        order by rq,ywlx,nbbh,sysjid
+        )tt where cn='1'
+        order by tt.rq desc,tt.ywlx desc,tt.nbbh desc,tt.sjmc
+    </select>
+</mapper>

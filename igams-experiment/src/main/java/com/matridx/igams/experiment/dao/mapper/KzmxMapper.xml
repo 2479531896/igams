@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IKzmxDao" >
+
+    <select id="verifySame" parameterType="KzmxDto" resultType="KzmxDto">
+        select syglid
+        from igams_kzmx
+        <where>
+            syglid=#{syglid} and scbj='0'
+            <if test="kzid !=null and kzid !=''">
+                and kzid!=#{kzid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getSjxxByNbbhs" parameterType="KzmxDto" resultType="KzmxDto">
+        select sj.sjid,A.nbbm as nbbh
+        from igams_sjxx sj
+        right outer join
+        (
+        <foreach collection="nbbhs" separator="union all" open="" close="" item="item" index="index">
+            select #{item} As nbbm
+        </foreach>
+        )  A on A.nbbm=sj.nbbm and sj.scbj!='1'
+        <where>
+            sj.sfjs='1'
+        </where>
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_kzmx(kzid,
+        xh,
+        nbbh,
+        sjid,
+        lrry,
+        lrsj,
+        scbj,
+        jcxmdm,
+        tqm,
+        syglid,
+        kzsj
+        )
+        values
+        <foreach collection="list" separator="," item="item" index="index">
+            (#{item.kzid},cast(#{item.xh} as numeric),#{item.nbbh},#{item.sjid},#{item.lrry},LOCALTIMESTAMP,'0'
+            ,#{item.jcxmdm},#{item.tqm},#{item.syglid},cast(#{item.kzsj} as timestamp))
+        </foreach>
+    </insert>
+
+
+    <select id="getDtoList" parameterType="KzmxDto" resultType="KzmxDto">
+        select kzid,
+        xh,
+        nbbh,
+        sjid,
+        lrry,
+        lrsj,
+        xgry,
+        xgsj,
+        scry,
+        scsj,
+        scbj,
+        jcxmdm,
+        referencedye,
+        qcresult,
+        well,
+        tqm,
+        syglid
+
+        from igams_kzmx
+        <where>
+            scbj !='1'
+            <if test="kzid != null and kzid != ''">
+                and kzid=#{kzid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+            and kzid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </select>
+
+
+    <delete id="deleteInfo" parameterType="KzmxDto">
+        delete from igams_kzmx
+        <where>
+            kzid =#{kzid}
+        </where>
+    </delete>
+
+    <update id="delete" parameterType="KzmxDto">
+        update igams_kzmx
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            kzid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateKzsjByIds" parameterType="KzmxDto">
+        update igams_sjsygl
+        <set>
+            kzsj=cast(#{kzsj} as timestamp)
+        </set>
+        <where>
+            syglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="removeKzsjByIds" parameterType="KzmxDto">
+        update igams_sjsygl
+        <set>
+            kzsj=null
+        </set>
+        <where>
+            syglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+
+</mapper>

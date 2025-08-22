@@ -1,0 +1,880 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IGrksglDao" >
+
+    <select id="getDto" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksgl.grksid,to_char(grksgl.kskssj,'YYYY-MM-dd HH24:mi:ss') kskssj,to_char(grksgl.ksjssj,'YYYY-MM-dd HH24:mi:ss') ksjssj,
+        grksgl.zf,yh.zsxm xm,pxgl.pxbt,case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '合格' else '不合格' end sfhg
+        ,pxgl.ckdabj
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        <where>
+            grksgl.scbj!='1'
+            and grksgl.grksid=#{grksid}
+        </where>
+    </select>
+    <select id="getDtoByIdAndGzid" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksgl.grksid,to_char(grksgl.kskssj,'YYYY-MM-dd HH24:mi:ss') kskssj,to_char(grksgl.ksjssj,'YYYY-MM-dd HH24:mi:ss') ksjssj,
+        grksgl.zf,yh.zsxm xm,pxgl.pxbt,case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '合格' else '不合格' end sfhg
+        ,pxgl.ckdabj,gzgl.gzid,gzgl.tgbj,pxgl.dcckbj,pxgl.kscs
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        <where>
+            grksgl.scbj!='1' and gzgl.scbj!='1'
+            and grksgl.grksid=#{grksid}  and gzgl.gzid=#{gzid}
+        </where>
+    </select>
+    <select id="getPagedDtoList" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksgl.grksid,to_char(grksgl.kskssj,'YYYY-MM-dd HH24:mi:ss') kskssj,to_char(grksgl.ksjssj,'YYYY-MM-dd HH24:mi:ss') ksjssj,
+        grksgl.zf,yh.zsxm xm,pxgl.pxbt,jgxx.jgmc,ssgs.csmc ssgsmc,case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '合格' else '不合格' end sfhg
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj ssgs on ssgs.csid=pxgl.ssgs
+        <where>
+            grksgl.scbj!='1'
+            <if test="xm !=null and xm != ''">
+                and yh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="pxbt !=null and pxbt != ''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="jgmc !=null and jgmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+            <if test="kssjstart !=null and kssjstart != ''">
+                and to_char(grksgl.kskssj,'yyyy-mm-dd') &gt;= #{kssjstart}
+            </if>
+            <if test="kssjend !=null and kssjend != ''">
+                and to_char(grksgl.ksjssj,'YYYY-mm-dd') &lt;= #{kssjend}
+            </if>
+            <if test="minscore !=null and minscore != ''">
+                and cast(grksgl.zf as numeric ) &gt;= cast (#{minscore} as numeric )
+            </if>
+            <if test="maxscore !=null and maxscore != ''">
+                and cast(grksgl.zf as numeric )&lt;= cast (#{maxscore} as numeric )
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and pxgl.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfhgs != null and sfhgs.length > 0 "  >
+                and (select case when cast(grksgl.zf as numeric )&gt;= cast ( pxgl.tgfs as numeric ) then '1' else '0' end sfhg) in
+                <foreach collection="sfhgs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getPersonalTests" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksid,zf,to_char(kskssj,'YYYY-MM-dd HH24:mi:ss') kskssj
+        from igams_grksgl
+        <where>
+            scbj!='1' and ksjssj is not null
+            <if test="gzid !=null and gzid != ''">
+                and gzid =#{gzid}
+            </if>
+        </where>
+        order by kskssj desc
+        <if test="pageSize !=null and pageSize !=''">
+            limit #{pageSize}
+        </if>
+        <if test="pageNumber !=null and pageNumber !=''">
+            OFFSET #{pageStart}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="GrksglDto">
+        insert into igams_grksgl(grksid
+        <if test="ryid !=null and ryid != ''">
+            ,ryid
+        </if>
+        <if test="gzid !=null and gzid != ''">
+            ,gzid
+        </if>
+        <if test="pxid !=null and pxid != ''">
+            ,pxid
+        </if>
+        <if test="kskssj !=null and kskssj != ''">
+            ,kskssj
+        </if>
+        <if test="ksjssj !=null and ksjssj != ''">
+            ,ksjssj
+        </if>
+        <if test="zf !=null and zf != ''">
+            ,zf
+        </if>
+        ,lrry,lrsj,scbj
+        )values(#{grksid}
+        <if test="ryid !=null and ryid != ''">
+            ,#{ryid}
+        </if>
+        <if test="gzid !=null and gzid != ''">
+            ,#{gzid}
+        </if>
+        <if test="pxid !=null and pxid != ''">
+            ,#{pxid}
+        </if>
+        <if test="kskssj !=null and kskssj != ''">
+            ,cast(#{kskssj} as timestamp)
+        </if>
+        <if test="ksjssj !=null and ksjssj != ''">
+            ,cast(#{ksjssj} as timestamp)
+        </if>
+        <if test="zf !=null and zf != ''">
+            ,#{zf}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+
+    <update id="update" parameterType="GrksglDto">
+        update igams_grksgl
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="ksjssj !=null and ksjssj != ''">
+                ,ksjssj=cast(#{ksjssj} as timestamp)
+            </if>
+            <if test="zf !=null and zf != ''">
+                ,zf=#{zf}
+            </if>
+            <if test="sfff !=null and sfff != ''">
+                ,sfff=#{sfff}
+            </if>
+            <if test="je !=null and je != ''">
+                ,je=cast (#{je} as numeric)
+            </if>
+        </set>
+        <where>
+            grksid=#{grksid}
+        </where>
+    </update>
+
+    <update id="delete" parameterType="GrksglDto">
+        update igams_grksgl set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                 grksid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <update id="updateGrksglDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_grksgl
+                <set>
+                    <if test="item.zf != null and item.zf != ''">
+                        ,zf=#{item.zf}
+                    </if>
+                </set>
+                <where>
+                    grksid=#{item.grksid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getPagedIncomplete" parameterType="GrksglDto" resultType="GrksglDto">
+        select tab.yhm,tab.pxid,tab.pxbt,tab.fzrmc,tab.sfcs,tab.qrrymc,tab.jgmc,tab.ssgsmc,tab.pxlbmc,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb,case when tab.sfcs='1' then '考试未通过' else '未培训' end sfcsmc from
+        ( select
+        xtyh.yhm,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by xtyh.yhm,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+        tmp.yhm,tmp.pxid,tmp.pxbt,tmp.fzrmc,tmp.sfcs ,tmp.qqrymc,tmp.jgmc,tmp.ssgsmc,tmp.pxlbmc,tmp.ddid,tmp.zjid,tmp.pxlb,tmp.ssgs,tmp.pxzlb
+        from (select
+        xtyh.yhm,max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by xtyh.yhm,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tmp
+        where cast(tmp.zf as DECIMAL)&lt;cast(tmp.tgfs as DECIMAL))tab
+        <where>
+           <if test="entire!=null and entire!=''">
+               and tab.fzrmc ILIKE '%'||#{entire}||'%'
+               or tab.jgmc ILIKE '%'||#{entire}||'%'
+               or tab.pxbt ILIKE '%'||#{entire}||'%'
+               or tab.qrrymc ILIKE '%'||#{entire}||'%'
+           </if>
+           <if test="xm!=null and xm!=''">
+                and tab.fzrmc ILIKE '%'||#{xm}||'%'
+           </if>
+           <if test="jgmc!=null and jgmc!=''">
+               and tab.jgmc ILIKE '%'||#{jgmc}||'%'
+           </if>
+           <if test="pxbt!=null and pxbt!=''">
+               and tab.pxbt ILIKE '%'||#{pxbt}||'%'
+           </if>
+           <if test="qrry!=null and qrry!=''">
+               and tab.qrrymc ILIKE '%'||#{qrry}||'%'
+           </if>
+           <if test = "pxlbs != null and pxlbs.length > 0 "  >
+               and tab.pxlb in
+               <foreach collection="pxlbs" separator="," open="(" close=") " item="item" index="index">
+                   #{item}
+               </foreach>
+           </if>
+           <if test = "pxzlbs != null and pxzlbs.length > 0 "  >
+               and tab.pxzlb in
+               <foreach collection="pxzlbs" separator="," open="(" close=") " item="item" index="index">
+                   #{item}
+               </foreach>
+           </if>
+           <if test = "ssgss != null and ssgss.length > 0 "  >
+               and tab.ssgs in
+               <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                   #{item}
+               </foreach>
+           </if>
+            <if test = "sfcss != null and sfcss.length > 0 "  >
+                and tab.sfcs in
+                <foreach collection="sfcss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "pxids != null and pxids.size > 0 "  >
+                and tab.pxid in
+                <foreach collection="pxids" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+       </where>
+    </select>
+
+
+    <select id="getIncompleteDtoList" parameterType="GrksglDto" resultType="GrksglDto">
+        select tab.yhm,tab.pxid,tab.pxbt,tab.fzrmc,tab.sfcs,tab.qrrymc,tab.jgmc,tab.ssgsmc,tab.pxlbmc,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb,case when tab.sfcs='1' then '考试未通过' else '未培训' end sfcsmc,tab.gzid,tab.spbj from
+        ( select
+        xtyh.yhm,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb,gzgl.gzid,pxgl.spbj
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where gzgl.zt='00'
+        group by xtyh.yhm,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid,gzgl.gzid,pxgl.spbj
+        union all
+        select
+        tmp.yhm,tmp.pxid,tmp.pxbt,tmp.fzrmc,tmp.sfcs ,tmp.qqrymc,tmp.jgmc,tmp.ssgsmc,tmp.pxlbmc,tmp.ddid,tmp.zjid,tmp.pxlb,tmp.ssgs,tmp.pxzlb,tmp.gzid,tmp.spbj
+        from (select
+        xtyh.yhm,max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb,grksgl.gzid,pxgl.spbj
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by xtyh.yhm,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid,grksgl.gzid,pxgl.spbj)tmp
+        where cast(tmp.zf as DECIMAL)&lt;cast(tmp.tgfs as DECIMAL))tab
+        <where>
+            <if test = "pxids != null and pxids.size > 0 "  >
+                and tab.pxid in
+                <foreach collection="pxids" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by tab.yhm,tab.pxid,tab.pxbt,tab.fzrmc,tab.sfcs,tab.qrrymc,tab.jgmc,tab.ssgsmc,tab.pxlbmc,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb,tab.sfcs,tab.gzid,tab.spbj
+    </select>
+
+    <select id="getDtoByPxidAndFzr" parameterType="GrksglDto" resultType="GrksglDto">
+        select tab.pxid,tab.pxbt,tab.fzrmc,tab.sfcs,tab.qrrymc,tab.jgmc,tab.ssgsmc,tab.pxlbmc,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb,case when tab.sfcs='1' then '考试未通过' else '未培训' end sfcsmc from
+        ( select
+        pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+        tmp.pxid,tmp.pxbt,tmp.qqrymc,tmp.sfcs ,tmp.fzrmc,tmp.jgmc,tmp.ssgsmc,tmp.pxlb,tmp.ddid,tmp.zjid,tmp.pxlb,tmp.ssgs,tmp.pxzlb
+        from (select
+        max(grksgl.zf) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tmp
+        where cast(tmp.zf as DECIMAL)&lt;cast(tmp.tgfs as DECIMAL))tab
+        <where>
+            tab.pxid=#{pxid} and tab.ddid=#{ddid}
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksgl.grksid,to_char(grksgl.kskssj,'YYYY-MM-dd HH24:mi:ss') kskssj,to_char(grksgl.ksjssj,'YYYY-MM-dd HH24:mi:ss') ksjssj,
+        grksgl.zf,yh.zsxm xm,pxgl.pxbt,jgxx.jgmc,jcsj.csmc ssgs
+        from igams_grksgl grksgl
+        left join matridx_xtyh yh on yh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=grksgl.ryid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join igams_pxgl pxgl on pxgl.pxid=grksgl.pxid
+        left join matridx_jcsj jcsj on jcsj.csid=pxgl.ssgs
+        <where>
+            grksgl.scbj!='1'
+            <if test="ryid !=null and ryid != ''">
+                and grksgl.ryid = #{ryid}
+            </if>
+            <if test="pxid !=null and pxid != ''">
+                and grksgl.pxid = #{pxid}
+            </if>
+            <if test="ddid !=null and ddid != ''">
+                and yh.ddid = #{ddid}
+            </if>
+        </where>
+    </select>
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="GrksglDto"
+            resultType="java.lang.Integer">
+    select count (tmp.zjid) from
+    (
+        select
+        pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+        tab.pxid,tab.pxbt,tab.qqrymc,tab.sfcs ,tab.fzrmc,tab.jgmc,tab.ssgsmc,tab.pxlb,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb
+        from (select
+        max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tab
+        where cast(tab.zf as DECIMAL)&lt;cast(tab.tgfs as DECIMAL))tmp
+        <where>
+            <if test="entire!=null and entire!=''">
+                and tmp.fzrmc ILIKE '%'||#{entire}||'%'
+                or tmp.jgmc ILIKE '%'||#{entire}||'%'
+                or tmp.pxbt ILIKE '%'||#{entire}||'%'
+                or tmp.qrrymc ILIKE '%'||#{entire}||'%'
+            </if>
+            <if test="xm!=null and xm!=''">
+                and tmp.fzrmc ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="jgmc!=null and jgmc!=''">
+                and tmp.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+            <if test="pxbt!=null and pxbt!=''">
+                and tmp.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="qrry!=null and qrry!=''">
+                and tmp.qrrymc ILIKE '%'||#{qrry}||'%'
+            </if>
+            <if test = "pxlbs != null and pxlbs.length > 0 "  >
+                and tmp.pxlb in
+                <foreach collection="pxlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "pxzlbs != null and pxzlbs.length > 0 "  >
+                and tmp.pxzlb in
+                <foreach collection="pxzlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and tmp.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfcss != null and sfcss.length > 0 "  >
+                and tmp.sfcs in
+                <foreach collection="sfcss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="GrksglDto" resultType="GrksglDto">
+        select tmp.zjid ${sqlParam}
+        from
+        (
+        select
+        pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+        tab.pxid,tab.pxbt,tab.qqrymc,tab.sfcs ,tab.fzrmc,tab.jgmc,tab.ssgsmc,tab.pxlb,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb
+        from (select
+        max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tab
+        where cast(tab.zf as DECIMAL)&lt;cast(tab.tgfs as DECIMAL))tmp
+        <where>
+            <if test="entire!=null and entire!=''">
+                and tmp.fzrmc ILIKE '%'||#{entire}||'%'
+                or tmp.jgmc ILIKE '%'||#{entire}||'%'
+                or tmp.pxbt ILIKE '%'||#{entire}||'%'
+                or tmp.qrrymc ILIKE '%'||#{entire}||'%'
+            </if>
+            <if test="xm!=null and xm!=''">
+                and tmp.fzrmc ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="jgmc!=null and jgmc!=''">
+                and tmp.jgmc ILIKE '%'||#{jgmc}||'%'
+            </if>
+            <if test="pxbt!=null and pxbt!=''">
+                and tmp.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="qrry!=null and qrry!=''">
+                and tmp.qrrymc ILIKE '%'||#{qrry}||'%'
+            </if>
+            <if test = "pxlbs != null and pxlbs.length > 0 "  >
+                and tmp.pxlb in
+                <foreach collection="pxlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "pxzlbs != null and pxzlbs.length > 0 "  >
+                and tmp.pxzlb in
+                <foreach collection="pxzlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "ssgss != null and ssgss.length > 0 "  >
+                and tmp.ssgs in
+                <foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "sfcss != null and sfcss.length > 0 "  >
+                and tmp.sfcs in
+                <foreach collection="sfcss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="GrksglDto" resultType="GrksglDto">
+        select tb.zjid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} zjid,#{index} ordernum
+        </foreach>
+        ) tmp_t
+        left outer join (
+        select
+        pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+        tab.pxid,tab.pxbt,tab.qqrymc,tab.sfcs ,tab.fzrmc,tab.jgmc,tab.ssgsmc,tab.pxlb,tab.ddid,tab.zjid,tab.pxlb,tab.ssgs,tab.pxzlb
+        from (select
+        max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tab
+        where cast(tab.zf as DECIMAL)&lt;cast(tab.tgfs as DECIMAL)
+            )tb on tb.zjid=tmp_t.zjid
+        order by tmp_t.ordernum
+    </select>
+    <select id="remindInComplete" parameterType="GrksglDto" resultType="GrksglDto">
+    select string_agg ( tab.pxbt, '@' ),
+    tab.ddid,tab.yhm
+    from
+        ( select
+        xtyh.yhm,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.sfcs,qrry.zsxm qrrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_gzgl gzgl on gzgl.ywid=pxgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='0' and gzgl.zt='00'
+        group by xtyh.yhm,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,xtyh.ddid
+        union all
+        select
+            tmp.yhm,tmp.pxid,tmp.pxbt,tmp.qqrymc,tmp.sfcs ,tmp.fzrmc,tmp.jgmc,tmp.ssgsmc,tmp.pxlb,tmp.ddid,tmp.zjid,tmp.pxlb,tmp.ssgs,tmp.pxzlb
+        from (select
+                  xtyh.yhm,max(cast(grksgl.zf as DECIMAL)) zf,pxgl.pxid,pxgl.pxbt,xtyh.zsxm fzrmc,pxgl.tgfs,pxgl.sfcs,qrry.zsxm qqrymc,jgxx.jgmc,gs.csmc ssgsmc,lb.csmc pxlbmc,xtyh.ddid,CONCAT(pxgl.pxid,xtyh.ddid) zjid,pxgl.pxlb,pxgl.ssgs,pxgl.pxzlb
+        from igams_pxgl pxgl
+        left join igams_grksgl grksgl  on pxgl.pxid=grksgl.pxid
+        left join matridx_xtyh xtyh on xtyh.yhid=grksgl.ryid
+        left join matridx_yhssjg ssjg on ssjg.yhid=xtyh.yhid
+        left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+        left join matridx_xtyh qrry on qrry.yhid=pxgl.qrry
+        left join matridx_jcsj lb on lb.csid=pxgl.pxlb and lb.jclb='TRAINCATEGORY'
+        left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb and zlb.jclb='SUBCLASSTRAINCATEGORY'
+        left join matridx_jcsj gs on gs.csid=pxgl.ssgs
+        where pxgl.sfcs='1'
+        group by xtyh.yhid,pxgl.pxid,pxgl.pxbt,lb.csmc,xtyh.zsxm,pxgl.tgfs,pxgl.sfcs,qrry.zsxm,jgxx.jgmc,gs.csmc,lb.csmc,xtyh.ddid)tmp
+        where cast(tmp.zf as DECIMAL)&lt;cast(tmp.tgfs as DECIMAL))tab
+        group by tab.ddid,tab.yhm
+    </select>
+    <select id="getPagedRedPacket" parameterType="GrksglDto" resultType="GrksglDto">
+            SELECT
+        grksgl.grksid,
+        xtyh.yhm,
+        xtyh.zsxm xm,
+        grksgl.je,
+        pxgl.pxbt,
+        hbsz.hbmc,
+        grksgl.ksjssj,
+        CASE
+
+        WHEN grksgl.sfff = '0' THEN
+        '未发放'
+        WHEN grksgl.sfff = '1' THEN
+        '已发放'
+        END sfff,xtyh.ddtxlj,xtyh.yhm
+    FROM
+        igams_grksgl grksgl
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+        <where>
+            grksgl.scbj='0' AND grksgl.je is not null
+            <if test="entire!=null and entire!=''">
+                and (xtyh.yhm ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or cast (grksgl.je as varchar ) ILIKE '%'||#{entire}||'%'
+                or pxgl.pxbt ILIKE '%'||#{entire}||'%'
+                or hbsz.hbmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="ryid!=null and ryid!=''">
+                and grksgl.ryid = #{ryid}
+            </if>
+            <if test="xm!=null and xm!=''">
+                and xtyh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="yhm!=null and yhm!=''">
+                and xtyh.yhm ILIKE '%'||#{yhm}||'%'
+            </if>
+            <if test="je!=null and je!=''">
+                and cast (grksgl.je as varchar ) ILIKE '%'||#{je}||'%'
+            </if>
+            <if test="pxbt!=null and pxbt!=''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="hbmc!=null and hbmc!=''">
+                and hbsz.hbmc ILIKE '%'||#{hbmc}||'%'
+            </if>
+            <if test = "sfffs != null and sfffs.length > 0 "  >
+                and grksgl.sfff in
+                <foreach collection="sfffs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDtoRedPacketById" parameterType="String" resultType="GrksglDto">
+        SELECT
+        grksgl.grksid,
+        xtyh.yhm,
+        xtyh.zsxm xm,
+        grksgl.je,
+        pxgl.pxbt,
+        hbsz.hbmc,
+        CASE
+
+        WHEN grksgl.sfff = '0'  THEN
+        '未发放'
+        WHEN grksgl.sfff = '1' THEN
+        '已发放'
+        END sfff
+        FROM
+        igams_grksgl grksgl
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+        <where>
+            grksgl.scbj='0' and grksgl.grksid=#{grksid}
+        </where>
+    </select>
+    <update id="updateRedPacket" parameterType="GrksglDto">
+        update igams_grksgl set
+        xgry = #{xgry},xgsj = LOCALTIMESTAMP,sfff='1'
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                grksid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <select id="getRedPacketGroup" parameterType="GrksglDto" resultType="GrksglDto">
+        SELECT * from (SELECT
+                           grksgl.ryid,
+                           xtyh.zsxm xm,
+                           xtyh.ddtxlj,
+                           xtyh.ddid,
+                           SUM(grksgl.je) je
+                       FROM
+                           igams_grksgl grksgl
+                               LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+                               LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+                               LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+                       WHERE
+                           grksgl.scbj='0' AND grksgl.je is not null AND xtyh.sfsd !='1' AND xtyh.scbj !='1'
+                            and grksgl.lrsj  &gt; cast(now() as date) -30
+                       GROUP BY grksgl.ryid,xtyh.zsxm,xtyh.ddtxlj,xtyh.ddid)tmp
+        ORDER BY tmp.je DESC
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <select id="getRedPacketGroupPm" parameterType="GrksglDto" resultType="GrksglDto">
+        SELECT * from (SELECT ROW_NUMBER () OVER (ORDER BY tmp.je DESC) AS pm,* from (SELECT
+                           grksgl.ryid,
+                           xtyh.zsxm xm,
+                           xtyh.ddtxlj,
+                           SUM(grksgl.je) je
+                       FROM
+                           igams_grksgl grksgl
+                               LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+                               LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+                               LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+                       WHERE
+                           grksgl.scbj='0' AND grksgl.je is not null AND xtyh.sfsd !='1' AND xtyh.scbj !='1'
+                            and grksgl.lrsj  &gt; cast(now() as date) -30
+                       GROUP BY grksgl.ryid,xtyh.zsxm,xtyh.ddtxlj)tmp
+        ORDER BY tmp.je DESC)tpp where tpp.ryid = #{ryid}
+    </select>
+    <select id="getRedPacketSum" parameterType="GrksglDto" resultType="double">
+        select
+        sum(coalesce(grksgl.je, 0))
+        from
+        igams_grksgl grksgl
+        where
+        grksgl.scbj = '0'
+        and grksgl.je is not null
+        and grksgl.ryid = #{ryid}
+    </select>
+    <select id="getSfHaveRedpacket" parameterType="GrksglDto" resultType="GrksglDto">
+        SELECT
+            pxid,grksid
+        FROM
+            igams_grksgl
+        WHERE
+            scbj = '0'
+          AND je IS NOT NULL
+          AND ryid = #{ryid}
+          AND pxid = #{pxid}
+        ORDER BY je
+        LIMIT 1
+    </select>
+    <select id="getSfHaveRedpacketNo" parameterType="GrksglDto" resultType="GrksglDto">
+        SELECT
+            pxid,grksid,zf,je
+        FROM
+            igams_grksgl
+        WHERE
+            scbj = '0'
+          AND je IS  NULL
+          AND ryid = #{ryid}
+          AND pxid = #{pxid}
+        ORDER BY zf DESC
+            LIMIT 1
+    </select>
+    <!-- 个人红包列表导出 -->
+    <select id="getCountForSearchExpHb" parameterType="GrksglDto"
+            resultType="java.lang.Integer">
+    select count (grksgl.grksid)
+        FROM
+        igams_grksgl grksgl
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+        <where>
+            grksgl.scbj='0' AND grksgl.je is not null
+            <if test="entire!=null and entire!=''">
+                and (xtyh.yhm ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or cast (grksgl.je as varchar ) ILIKE '%'||#{entire}||'%'
+                or pxgl.pxbt ILIKE '%'||#{entire}||'%'
+                or hbsz.hbmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="ryid!=null and ryid!=''">
+                and grksgl.ryid = #{ryid}
+            </if>
+            <if test="xm!=null and xm!=''">
+                and xtyh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="yhm!=null and yhm!=''">
+                and xtyh.yhm ILIKE '%'||#{yhm}||'%'
+            </if>
+            <if test="je!=null and je!=''">
+                and cast (grksgl.je as varchar ) ILIKE '%'||#{je}||'%'
+            </if>
+            <if test="pxbt!=null and pxbt!=''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="hbmc!=null and hbmc!=''">
+                and hbsz.hbmc ILIKE '%'||#{hbmc}||'%'
+            </if>
+            <if test = "sfffs != null and sfffs.length > 0 "  >
+                and grksgl.sfff in
+                <foreach collection="sfffs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getListForSearchExpHb" parameterType="GrksglDto" resultType="GrksglDto">
+    select grksgl.grksid ${sqlParam}
+        FROM
+        igams_grksgl grksgl
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+        <where>
+            grksgl.scbj='0' AND grksgl.je is not null
+            <if test="entire!=null and entire!=''">
+                and (xtyh.yhm ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or cast (grksgl.je as varchar ) ILIKE '%'||#{entire}||'%'
+                or pxgl.pxbt ILIKE '%'||#{entire}||'%'
+                or hbsz.hbmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="ryid!=null and ryid!=''">
+                and grksgl.ryid = #{ryid}
+            </if>
+            <if test="xm!=null and xm!=''">
+                and xtyh.zsxm ILIKE '%'||#{xm}||'%'
+            </if>
+            <if test="yhm!=null and yhm!=''">
+                and xtyh.yhm ILIKE '%'||#{yhm}||'%'
+            </if>
+            <if test="je!=null and je!=''">
+                and cast (grksgl.je as varchar ) ILIKE '%'||#{je}||'%'
+            </if>
+            <if test="pxbt!=null and pxbt!=''">
+                and pxgl.pxbt ILIKE '%'||#{pxbt}||'%'
+            </if>
+            <if test="hbmc!=null and hbmc!=''">
+                and hbsz.hbmc ILIKE '%'||#{hbmc}||'%'
+            </if>
+            <if test = "sfffs != null and sfffs.length > 0 "  >
+                and grksgl.sfff in
+                <foreach collection="sfffs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <select id="getListForSelectExpHb" parameterType="GrksglDto" resultType="GrksglDto">
+        select grksgl.grksid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} grksid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_grksgl grksgl on grksgl.grksid=tmp.grksid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grksgl.ryid
+        LEFT JOIN igams_pxgl pxgl ON pxgl.pxid = grksgl.pxid
+        LEFT JOIN igams_hbsz hbsz ON hbsz.hbszid = pxgl.hbszid
+        order by tmp.ordernum
+    </select>
+</mapper>

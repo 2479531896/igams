@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IWksjglDao" >
+
+	<select id="getDtoByWkid" parameterType="WksjglDto" resultType="WksjglDto">
+		select sjgl.wksjid,sjgl.wkid,sjgl.xpid,sjgl.cxy,sjgl.sjsj,sjgl.cxyid,jc_cxy.cskz3 cxycskz3
+		from igams_wksjgl sjgl
+		left join igams_cxyxx cxyxx on sjgl.cxyid=cxyxx.cxyid
+		left join matridx_jcsj jc_cxy on jc_cxy.csdm=cxyxx.cxybh and jc_cxy.scbj='0'
+		<where>
+			sjgl.scbj!='1' and sjgl.wkid=#{wkid}
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="WksjglDto">
+		insert into igams_wksjgl(wksjid,wkid,cxy,sjsj,xpid,xpmc,xjsj,yjxjsj,fwq,sssys,lrry,lrsj,scbj,cxyid)
+		values (#{wksjid},#{wkid},#{cxy},
+		        case when #{sjsj} = null or #{sjsj}='' then null else cast(#{sjsj} as timestamp) end,
+		        #{xpid},#{xpmc},
+				case when #{xjsj} = null or #{xjsj}='' then null else cast(#{xjsj} as timestamp) end,
+				case when #{yjxjsj} = null or #{yjxjsj}='' then null else cast(#{yjxjsj} as timestamp) end
+				,#{fwq},#{sssys},#{lrry},LOCALTIMESTAMP,'0',#{cxyid})
+	</insert>
+
+	<update id="update" parameterType="WksjglDto" >
+		update igams_wksjgl
+		    set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		    <if test="cxy != null and cxy != ''">
+				,cxy=#{cxy}
+			</if>
+			<if test="sjsj != null and sjsj != ''">
+				,sjsj=cast(#{sjsj} as timestamp)
+			</if>
+			<if test="xpid != null and xpid != ''">
+				,xpid=#{xpid}
+			</if>
+			<if test="xpmc != null and xpmc != ''">
+				,xpmc=#{xpmc}
+			</if>
+			<if test="xjsj != null and xjsj != ''">
+				,xjsj=cast(#{xjsj} as timestamp)
+			</if>
+			<if test="yjxjsj != null and yjxjsj != ''">
+				,yjxjsj=cast(#{yjxjsj} as timestamp)
+			</if>
+			<if test="fwq != null and fwq != ''">
+				,fwq=#{fwq}
+			</if>
+			<if test="sssys != null and sssys != ''">
+				,sssys=#{sssys}
+			</if>
+			<if test="cxyid != null and cxyid != ''">
+				,cxyid=#{cxyid}
+			</if>
+			<where>
+				wksjid=#{wksjid}
+			</where>
+	</update>
+
+	<select id="getWksjxxByWkid" parameterType="WksjglDto" resultType="WksjglDto">
+		select xpmc,cxy,to_char(sjsj,'yyyy-mm-dd hh24:mi:ss')sjsj, to_char(xjsj,'yyyy-mm-dd hh24:mi:ss')xjsj,
+		       to_char(yjxjsj,'yyyy-mm-dd hh24:mi:ss')yjxjsj,wkid,xpid,fwq,sssys,wksjid,chiptype
+		from igams_wksjgl
+		<where>
+			scbj!='1' and wkid=#{wkid}
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="WksjglDto" resultType="WksjglDto">
+		select xpmc,cxy,to_char(sjsj,'yyyy-mm-dd hh24:mi:ss')sjsj, to_char(xjsj,'yyyy-mm-dd hh24:mi:ss')xjsj,
+		to_char(yjxjsj,'yyyy-mm-dd hh24:mi:ss')yjxjsj,wkid,xpid,fwq,sssys,wksjid
+		from igams_wksjgl
+		<where>
+			scbj!='1'
+			<if test="ids !=null and ids.size > 0">
+				and wkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<delete id="delete" parameterType="WksjglDto">
+		delete from igams_wksjgl
+		<where>
+			wkid=#{wkid}
+		</where>
+	</delete>
+
+	<delete id="delList" parameterType="List">
+		delete from igams_wksjgl
+		<where>
+			wksjid in
+			<foreach collection="list" open="(" close=")" separator="," item="item">
+				#{item.wksjid}
+			</foreach>
+		</where>
+	</delete>
+
+	<update id="deleteDtoList" parameterType="List">
+		<foreach collection="list" separator=";" item="item" index="index">
+			update igams_wksjgl set scry=#{item.scry},scsj=LOCALTIMESTAMP,scbj='2'
+			<where>
+				wksjid=#{item.wksjid}
+			</where>
+		</foreach>
+	</update>
+
+	<update id="cancelWksjglDeleteByWkid" parameterType="WksjglDto">
+		<foreach collection="list" separator=";" item="item" index="index">
+			update igams_wksjgl set xgry=#{item.xgry},xgsj=LOCALTIMESTAMP,scbj='0'
+			<where>
+				wkid=#{item.wkid}
+			</where>
+		</foreach>
+	</update>
+
+	<update id="updateCxy" parameterType="WksjglDto" >
+		update igams_wksjgl
+		set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="cxy != null and cxy != ''">
+			,cxy=#{cxy}
+		</if>
+		<if test="cxyid != null and cxyid != ''">
+			,cxyid=#{cxyid}
+		</if>
+		<where>
+			wkid=#{wkid}
+		</where>
+	</update>
+
+	<select id="getChipByWkids"  parameterType="WksjglDto" resultType="Map">
+		SELECT xp.xpm,xp.qcjson,jcdw.csmc as jcdw FROM igams_wkgl wkgl
+		  LEFT JOIN matridx_jcsj jcdw on jcdw.csid = wkgl.jcdw and jcdw.scbj = '0'
+		  LEFT JOIN igams_wksjgl wksjgl on wksjgl.wkid = wkgl.wkid and wksjgl.scbj = '0'
+		  LEFT JOIN igams_xpxx xp on xp.xpm = wksjgl.xpmc
+		<where> xp.scbj = '0' and wkgl.scbj = '0'
+			<if test="ids !=null and ids.size > 0">
+				and wkgl.wkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+		</where>
+    </select>
+</mapper>

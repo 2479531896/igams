@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IYghtxxDao" >
+    <!-- 批量新增员工合同信息 -->
+    <insert id="insertYghtxxDtos" parameterType="List">
+        insert into matridx_yghtxx(yghmcid,yghtid,htqsr,htdqr,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.yghmcid},#{item.yghtid},cast(#{item.htqsr} as date),cast(#{item.htdqr} as date),#{item.lrry},LOCALTIMESTAMP
+                ,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getDtoList" parameterType="YghtxxDto" resultType="YghtxxDto">
+        select yghtxx.yghmcid,yghtxx.yghtid,yghtxx.htqsr,yghtxx.htdqr,case when fj.zywid is not null then '1' else '0' end fjbj
+        from
+        matridx_yghtxx yghtxx
+        left join matridx_fjcfb fj on fj.zywid=yghtxx.yghtid and fj.scbj='0'
+        where yghtxx.yghmcid = #{yghmcid} and yghtxx.scbj ='0'
+        group by yghtxx.yghmcid,yghtxx.yghtid,yghtxx.htqsr,yghtxx.htdqr,fj.zywid
+        order by yghtxx.htqsr
+    </select>
+    <delete id="delete" parameterType="YghtxxDto">
+        update matridx_yghtxx set scbj ='1',scry =#{scry} where
+        yghtid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

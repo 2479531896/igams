@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IWksjmxDao" >
+	<sql id="wksjSqlColumn">
+		wkmx.wkid,wkmx.jtxx jt1,CASE WHEN cxy.jt2bj = '1' THEN (wkmx.jtxx||'R') ELSE wkmx.jtxx END jt2,sjxx.ybbh,tqmx.cdna dnand,sjsygl.nbzbm,sjxx.nbbm,wksjmx.dlnd,wksjmx.tj,wksjmx.hbnd,wksjmx.nddw,
+		case
+		when length(sjxx.nbbm)=11 and (substring(wkmx.nbbh,3,1)='X' or substring(wkmx.nbbh,3,1)='Y') then 'MD'|| substring(wkmx.nbbh,3,4)|| '-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,2)='DX'  or substring(wkmx.nbbh,1,2)='DY' then 'M' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,3)='MDY' or substring(wkmx.nbbh,1,3)='MDX' then  wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when length(sjxx.nbbm)=11 and substring(wkmx.nbbh,7,2)='SP' then substring(wkmx.nbbh,7,4)|| '-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,2)='SP' then wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,10) in ('NC-A-tNGSA','PC-T-tNGSA') then 'MDL013-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,4) in ('NC-A','NC-B','NC-C','PC-T') then 'MDL004-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,4)='NC-X' and strpos(wkmx.nbbh,'-HS')>0  then 'MDL004-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when substring(wkmx.nbbh,1,4)='NC-X' and strpos(wkmx.nbbh,'-DNA')>0  then 'MDL001-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when POSITION ( '-REM' IN wkmx.nbbh ) != 0 then 'MDL001-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char( wkgl.lrsj, 'YYYYMMDD' )
+		when jcxm.cskz3 is not null and jcxm.cskz3 = 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' and jcxm.cskz1 = 'O' and xmsygl.ywlx != 'DETECT_SJ' and substring(sjxx.nbbm,length(sjxx.nbbm),1)!='B' then 'MDL004-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_C' and substring(sjxx.nbbm,length(sjxx.nbbm),1) in ('N','A')  then 'MDL007-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_C' and substring(sjxx.nbbm,length(sjxx.nbbm),1) in ('B')  then 'MDL008-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_C' then 'MDL006-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_D'  then 'MDL007-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_E'  then 'MDL009-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_G' and strpos(wkmx.nbbh,'-tNGS')>0 then 'MDL009-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_N'  then 'MDL010-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when strpos(wkmx.nbbh,'-TBtNGS')>0 then 'MDL010-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_Q'  then 'MDL011-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_S' or (jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_CUSTOMIZED' and jczxm.cskz3 = 'IMP_REPORT_TNGSA_TEMEPLATE' ) then 'MDL013-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_CUSTOMIZED' and jczxm.cskz1 = 'TNGS-HS-4' then 'MDL012-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_CUSTOMIZED' and jczxm.cskz1 = 'TNGSA'  then 'MDL013-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS'  then 'MDL005-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 like 'IMP_REPORT_SEQ_%'  then 'MDL004-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_TNGS_TEMEPLATE'  then 'MDL002-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' and substring(wkmx.nbbh,1,1)='X'
+		and (substring(wkmx.nbbh,15,3) ilike 'DNA' or substring(wkmx.nbbh,13,3) ilike 'DNA') and substring(sjxx.nbbm,length(sjxx.nbbm),1)!='B'
+		then 'MDL001-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		when jcxm.cskz3 = 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE' and substring(wkmx.nbbh,1,1)='X'
+		and (substring(wkmx.nbbh,15,2) ilike 'HS' or substring(wkmx.nbbh,13,2) ilike 'HS') and substring(sjxx.nbbm,length(sjxx.nbbm),1)!='B'
+		then 'MDL004-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD')
+		else 'MDL001-' || wkmx.nbbh || '-' || wkmx.jtxx || '-' || to_char(wkgl.lrsj,'YYYYMMDD') end wkbm
+		,wkmx.quantity wknd,tqmx.hsnd hsnd,wkmx.xh
+		,fj.bz,wkmx.jcxmdm wkjcxmdm,case when xmsygl.ywlx != 'DETECT_SJ' then  jcxm.cskz1  else null end fjjcxmdm,jc_lx.csdm as fcjcdm,wkmx.syglid,xxdy.kzcs7,tqmx.spike,
+		case when jcxm.cskz3 = 'IMP_REPORT_SEQ_TNGS_N' or strpos(wkmx.nbbh,'-TBtNGS')>0
+		then 'MTBDR' else 'mNGS' end project_type
+		,wkmx.xh wkmxxh,wkmx.nbbh,
+		row_number() over(partition by wkmx.wkid,wkmx.xh order by xxdy.px asc) cn
+	</sql>
+	<sql id="wksjSqlLeft">
+		LEFT JOIN igams_wkmx wkmx on tmp.wkid = wkmx.wkid
+		LEFT JOIN igams_wkgl wkgl on wkmx.wkid = wkgl.wkid
+		LEFT JOIN igams_sjsygl sjsygl on sjsygl.syglid= wkmx.syglid and sjsygl.scbj='0'
+		LEFT JOIN igams_xmsygl xmsygl on sjsygl.syglid= xmsygl.syglid and xmsygl.scbj='0'
+		LEFT JOIN igams_xxdy xxdy on xxdy.dyid= xmsygl.dyid  and xxdy.scbj = '0'
+		LEFT JOIN igams_fjsq fj on fj.fjid = xmsygl.ywid and fj.scbj='0'
+		LEFT JOIN matridx_jcsj jc_lx on fj.lx = jc_lx.csid
+		LEFT JOIN igams_sjxx sjxx on sjxx.sjid= wkmx.sjid and sjxx.scbj='0'
+		LEFT JOIN matridx_jcsj jcxm on jcxm.csid= xmsygl.jcxmid
+		LEFT JOIN matridx_jcsj jczxm on jczxm.csid= xmsygl.jczxmid
+		LEFT JOIN igams_wksjgl wksjgl ON wksjgl.wkid = wkmx.wkid AND wksjgl.scbj = '0'
+		LEFT JOIN matridx_jcsj jc_cxy ON jc_cxy.csid = wkgl.yqlx and jc_cxy.scbj = '0'
+		LEFT JOIN igams_cxyxx cxy ON cxy.mc = jc_cxy.csmc
+		LEFT JOIN igams_wksjmx wksjmx ON wksjmx.wksjid = wksjgl.wksjid AND wksjmx.syglid = xmsygl.syglid
+	</sql>
+		<!-- 文库上机获取文库导出信息 -->
+	<select id="getListForWksj" parameterType="WksjmxDto" resultType="WksjmxDto">
+		select * from (
+			select t_tmp.wkid,t_tmp.jt1,t_tmp.jt2,t_tmp.ybbh,t_tmp.dnand,t_tmp.wkbm,t_tmp.wknd,t_tmp.hsnd,t_tmp.bz yy,t_tmp.wkjcxmdm,t_tmp.fjjcxmdm,t_tmp.kzcs7 as xmdm,t_tmp.nbbm,t_tmp.dlnd,
+			case when strpos(t_tmp.wkbm,'NC-6-REM')>0 then '6' when strpos(t_tmp.wkbm,'-PC')>0 or strpos(t_tmp.wkbm,'-NC')>0 then '3' when strpos(t_tmp.wkbm,'-REM')>0 then '6' else '1' end xsbs,
+			t_tmp.fcjcdm,t_tmp.syglid,t_tmp.spike,t_tmp.project_type,t_tmp.cn,t_tmp.wkmxxh,t_tmp.tj,t_tmp.hbnd,t_tmp.nddw,t_tmp.nbbh
+			from (
+				select
+				<include refid="wksjSqlColumn"></include>
+				from ( select #{wkid} wkid ) tmp
+				<include refid="wksjSqlLeft"></include>
+				LEFT JOIN igams_tqmx tqmx  on tqmx.tqmxid=wkmx.tqmxid and tqmx.scbj='0'
+				LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid AND tqgl.scbj != '1' and tqgl.jcdw=wkgl.jcdw
+				WHERE (tqgl.tqid is null or (tqmx.tqid is not null and tqgl.tqid is not null)) AND wkmx.tqmxid is not null and wkmx.tqmxid !=''
+				UNION ALL
+				select
+				<include refid="wksjSqlColumn"></include>
+				from ( select #{wkid} wkid ) tmp
+				<include refid="wksjSqlLeft"></include>
+				LEFT JOIN igams_tqmx tqmx  on
+					case when (tqmx.tqdm is null or wkmx.tqm is null or wkmx.tqm='' or tqmx.tqdm ='') and ( substring(wkmx.nbbh,1,2) = 'NC' or substring(wkmx.nbbh,1,2) = 'PC') then wkmx.nbbh like tqmx.nbbh ||'%'
+					else split_part(tqmx.tqdm,'/',1) = xxdy.kzcs2 AND tqmx.sjid = wkmx.sjid end
+					and to_char(tqmx.tqrq, 'YYYY-MM-DD') = to_char(wkmx.wkrq, 'YYYY-MM-DD') AND (tqmx.hzbj = wkmx.hzbj or (tqmx.hzbj is null and wkmx.hzbj is null)) AND tqmx.jcdw = wkgl.jcdw
+				LEFT JOIN igams_tqgl tqgl ON tqgl.tqid = tqmx.tqid AND tqgl.scbj != '1' and tqgl.jcdw=wkgl.jcdw
+				WHERE (tqgl.tqid is null or (tqmx.tqid is not null and tqgl.tqid is not null)) AND (wkmx.tqmxid is null or wkmx.tqmxid ='')
+		)t_tmp
+		order by t_tmp.xh) tab where tab.cn=1
+	</select>
+
+	<select id="getWksjDtoListByTime" parameterType="WksjmxDto" resultType="WksjmxDto">
+		select wksjmx.wkbm
+		from igams_wksjgl wksjgl
+		left join igams_wksjmx wksjmx on wksjmx.wksjid=wksjgl.wksjid
+		where wksjmx.wknd = '-1'
+		and  wksjgl.lrsj &gt; (SELECT CURRENT_DATE - INTERVAL '3 days')
+	</select>
+
+	<update id="updateListFromSx" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			UPDATE igams_wksjmx wksjmx
+			SET
+			wknd = tmp.wknd
+			FROM
+			( VALUES
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.wkbh},#{item.wknd}
+				)
+			</foreach>
+			) AS tmp ( wkbh,wknd)
+			WHERE
+			wksjmx.wkbm = tmp.wkbh
+		</if>
+	</update>
+
+	<select id="getDtoList" parameterType="WksjmxDto" resultType="WksjmxDto">
+		select wksjmx.wksjmxid,wksjmx.xh,wksjmx.xm,wksjmx.wksjid,wksjmx.jt1,wksjmx.jt2,wksjmx.ybbh,wksjmx.wkbm,wksjmx.dnand,wksjmx.tj,wksjmx.hbnd,wksjmx.nddw,
+		wksjmx.hsnd,wksjmx.wknd,wksjmx.dlnd,wksjmx.yy,wksjmx.yjxjsjl, case when wksjmx.xsbs is null then '1' else wksjmx.xsbs end xsbs,wksjmx.xmdm,wksjmx.syglid,spike
+		,sj.nbbm,wksjmx.xm project_type,wksjmx.tj,wksjmx.hbnd,wksjmx.nddw
+		,case when wksjmx.hbnd is not null and wksjmx.hbnd!='' and wksjmx.nddw='ng/μL' then cast(round(cast(wksjmx.hbnd as numeric)*cast(#{xs} as numeric),2) as text) else '' end ndpm
+		from igams_wksjmx wksjmx
+		left join igams_sjxx sj on sj.ybbh=wksjmx.ybbh and sj.scbj ='0'
+		<where>
+			wksjid=#{wksjid}
+		</where>
+		order by xh
+	</select>
+	
+	<select id="getWksjDtoList" parameterType="WksjmxDto" resultType="WksjmxDto">
+		select wksjmx.wksjmxid,wksjmx.xh,wksjmx.xm,wksjmx.wksjid,wksjmx.jt1,wksjmx.jt2,wksjmx.ybbh,wksjmx.wkbm,wksjmx.dnand,
+		wksjmx.hsnd,wksjmx.wknd,wksjmx.dlnd,wksjmx.yy,wksjmx.yjxjsjl, case when wksjmx.xsbs is null then '1' else wksjmx.xsbs end xsbs,wksjmx.xmdm,wksjmx.syglid,spike
+		,sj.nbbm,wksjmx.xm project_type,wkmx.xh wkmxxh,wksjmx.tj,wksjmx.hbnd,wksjmx.nddw
+		from igams_wksjmx wksjmx
+		left join igams_sjxx sj on sj.ybbh=wksjmx.ybbh and sj.scbj ='0'
+		left join igams_wksjgl wksjgl on wksjmx.wksjid = wksjgl.wksjid
+		left join igams_wkgl wkgl on wkgl.wkid = wksjgl.wkid
+		left join igams_wkmx wkmx on wkgl.wkid = wkmx.wkid and wksjmx.jt1  = wkmx.jtxx
+		<where>
+			wksjmx.wksjid=#{wksjid}
+		</where>
+		order by xh
+	</select>
+
+	<delete id="deleteDtos" parameterType="WksjmxDto">
+		delete from igams_wksjmx
+		<where>
+			wksjid=#{wksjid}
+		</where>
+	</delete>
+
+	<delete id="deleteByWksjids" parameterType="WksjmxDto">
+		delete from igams_wksjmx
+		<where>
+			wksjid in
+			<foreach collection="ids" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+		</where>
+	</delete>
+
+	<insert id="insertDtos" parameterType="List">
+		insert into igams_wksjmx(wksjmxid,wksjid,xh,ybbh,wkbm,xm,jt1,jt2,dnand,dlnd,wknd,hsnd,yy,yjxjsjl,xsbs,xmdm,syglid,spike,tj,hbnd,nddw
+		)
+		values
+		<foreach collection="list" separator="," item="item" index="index">
+			(#{item.wksjmxid},#{item.wksjid},#{index},#{item.sample},#{item.uid},
+			 #{item.project_type},#{item.index},#{item.index2},#{item.dnand},#{item.dlnd},#{item.wknd},#{item.hsnd},#{item.comment}
+			 <if test="item.goal_reads != null and item.goal_reads != ''">
+				 ,cast(#{item.goal_reads} as numeric)
+			</if>
+			<if test="item.goal_reads == null or item.goal_reads == ''">
+				,null
+			</if>,#{item.xsbs},#{item.xmdm},#{item.syglid},#{item.spike},#{item.tj},#{item.hbnd},#{item.nddw})
+		</foreach>
+	</insert>
+
+	<insert id="insertDtoList" parameterType="List">
+		insert into igams_wksjmx( wksjmxid,wksjid,xh,ybbh,wkbm,xm,jt1,jt2,dnand,wknd,hsnd,yy,yjxjsjl,xsbs,spike,xmdm,syglid)
+		values
+		<foreach collection="list" separator="," item="item" index="index">
+			(#{item.wksjmxid},#{item.wksjid},#{index} ,#{item.ybbh},#{item.wkbm},
+			#{item.xm},#{item.jt1},#{item.jt2},#{item.dnand},#{item.wknd},#{item.hsnd},#{item.yy}
+			<if test="item.yjxjsjl != null and item.yjxjsjl != ''">
+				,cast(#{item.yjxjsjl} as numeric)
+			</if>
+			<if test="item.yjxjsjl == null or item.yjxjsjl == ''">
+				,null
+			</if>
+			,#{item.xsbs},#{item.spike},#{item.xmdm},#{item.syglid})
+		</foreach>
+	</insert>
+
+	<select id="getWkbmByXpm" parameterType="WksjmxDto" resultType="WksjmxDto">
+		select wkcx.wkbh as wkbm,wkcx.wkcxid
+		from igams_wkcx wkcx
+		left join igams_xpxx xpxx on xpxx.xpid=wkcx.xpid and xpxx.scbj='0'
+		<where>
+			wkcx.scbj='0'
+			and xpxx.xpm = #{xpm}
+		</where>
+	</select>
+
+	<update id="updateByWkcxids" parameterType="WksjmxDto">
+		update igams_wkcx set scbj='1'
+		<where>
+			wkcxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="updateComputerTime" parameterType="list">
+		update igams_sjsygl
+		set xgry=tmp.xgry,xgsj=tmp.xgsj,sjsj=tmp.sjsj
+		from (
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.xgry},LOCALTIMESTAMP,LOCALTIMESTAMP,#{item.syglid})
+		</foreach>
+		) as
+		tmp(xgry,xgsj,sjsj,syglid)
+		where
+		igams_sjsygl.syglid=tmp.syglid
+	</update>
+
+	<update id="updateWksjmxAfterPooling" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_wksjmx
+				<set>
+					yjxjsjl = cast(#{item.yjxjsjl} as numeric)
+				</set>
+				where wksjmxid = #{item.wksjmxid}
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateSyglByWksjid" parameterType="WksjmxDto" >
+		update igams_fjsq set wkbm=tmp.wkbm
+		from(
+		select wksjmx.syglid,wksjmx.wkbm,fjsq.fjid
+		from igams_wksjmx wksjmx
+		left join igams_sjsygl sjsygl on sjsygl.syglid =wksjmx.syglid and sjsygl.scbj = '0'
+		left join igams_xmsygl xmsygl on xmsygl.syglid = sjsygl.syglid and xmsygl.scbj='0' and xmsygl.ywlx ='DETECT_FJ'
+		left join igams_fjsq fjsq on xmsygl.ywid = fjsq.fjid
+		where
+		 fjsq.fjid is not null
+		and wksjmx.wksjid=#{wksjid}
+		)tmp
+		where igams_fjsq.fjid = tmp.fjid
+		and igams_fjsq.wkbm is null
+	</update>
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJpglDao" >
+
+    <select id="getPagedDtoList" parameterType="JpglDto" resultType="JpglDto">
+        select jpgl.jpglid ,jpgl.ksrq ,jpgl.bt ,jpgl.lrry ,to_char(jpgl.lrsj,'yyyy-mm-dd') as lrsj,jpgl.bz ,jpgl.jsrq ,jpgl.ssbm ,jpgl.jplx ,jpgl.sffs ,jpgl.tzq
+        ,jplx.csmc as jplxmc ,tzq.csmc as tzqmc,jgxx.jgmc as ssbmmc,lrry.zsxm as lrrymc
+        from igams_jpgl jpgl
+        left join matridx_jcsj jplx on jplx.csid=jpgl.jplx and jplx.scbj='0'
+        left join matridx_jcsj tzq on tzq.csid=jpgl.tzq and tzq.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = jpgl.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh lrry on lrry.yhid=jpgl.lrry and lrry.scbj='0'
+        <where>
+            jpgl.scbj='0'
+            <if test="bt !=null and bt != ''">
+                and jpgl.bt like '%'||#{bt}||'%'
+            </if>
+            <if test = "jplxs != null and jplxs.length > 0 "  >
+                and jpgl.jplx in
+                <foreach collection="jplxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "tzqs != null and tzqs.length > 0 "  >
+                and jpgl.tzq in
+                <foreach collection="tzqs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="delete" parameterType="JpglDto">
+        update igams_jpgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jpglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="getDto" parameterType="JpglDto" resultType="JpglDto">
+        select jpgl.jpglid ,jpgl.ksrq ,jpgl.bt ,jpgl.lrry ,to_char(jpgl.lrsj,'yyyy-mm-dd') as lrsj,jpgl.bz ,jpgl.jsrq ,jpgl.ssbm ,jpgl.jplx ,jpgl.sffs ,jpgl.tzq
+        ,jplx.csmc as jplxmc ,tzq.csmc as tzqmc,jgxx.jgmc as ssbmmc,lrry.zsxm as lrrymc
+        from igams_jpgl jpgl
+        left join matridx_jcsj jplx on jplx.csid=jpgl.jplx and jplx.scbj='0'
+        left join matridx_jcsj tzq on tzq.csid=jpgl.tzq and tzq.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = jpgl.ssbm and jgxx.scbj='0'
+        left join matridx_xtyh lrry on lrry.yhid=jpgl.lrry and lrry.scbj='0'
+        <where>
+            jpgl.scbj='0' and jpgl.jpglid=#{jpglid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="JpglDto">
+        insert into igams_jpgl(jpglid
+        <if test="bt !=null and bt != ''">
+            ,bt
+        </if>
+        <if test="ksrq !=null and ksrq != ''">
+            ,ksrq
+        </if>
+        <if test="jsrq !=null and jsrq != ''">
+            ,jsrq
+        </if>
+        <if test="ssbm !=null and ssbm != ''">
+            ,ssbm
+        </if>
+        <if test="jplx !=null and jplx != ''">
+            ,jplx
+        </if>
+        <if test="tzq !=null and tzq != ''">
+            ,tzq
+        </if>
+        <if test="bz !=null and bz != ''">
+            ,bz
+        </if>
+        ,sffs,lrry,lrsj,scbj
+        )values(#{jpglid}
+        <if test="bt !=null and bt != ''">
+            ,#{bt}
+        </if>
+        <if test="ksrq !=null and ksrq != ''">
+            ,cast(#{ksrq} as date)
+        </if>
+        <if test="jsrq !=null and jsrq != ''">
+            ,cast(#{jsrq} as date)
+        </if>
+        <if test="ssbm !=null and ssbm != ''">
+            ,#{ssbm}
+        </if>
+        <if test="jplx !=null and jplx != ''">
+            ,#{jplx}
+        </if>
+        <if test="tzq !=null and tzq != ''">
+            ,#{tzq}
+        </if>
+        <if test="bz !=null and bz != ''">
+            ,#{bz}
+        </if>
+        ,'0',#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+
+    <update id="update" parameterType="JpglDto">
+        update  igams_jpgl set
+        xgry=#{xgry},
+        xgsj=LOCALTIMESTAMP
+        <if test="bt !=null and bt != ''">
+            ,bt=#{bt}
+        </if>
+        <if test="ksrq !=null and ksrq != ''">
+            ,ksrq=cast(#{ksrq} as date)
+        </if>
+        <if test="jsrq !=null and jsrq != ''">
+            ,jsrq=cast(#{jsrq} as date)
+        </if>
+        <if test="ssbm !=null and ssbm != ''">
+            ,ssbm=#{ssbm}
+        </if>
+        <if test="ssbm ==null or ssbm == ''">
+            ,ssbm=null
+        </if>
+        <if test="jplx !=null and jplx != ''">
+            ,jplx=#{jplx}
+        </if>
+        <if test="tzq !=null and tzq != ''">
+            ,tzq=#{tzq}
+        </if>
+        <if test="bz !=null and bz != ''">
+            ,bz=#{bz}
+        </if>
+        <if test="bz ==null or bz == ''">
+            ,bz=null
+        </if>
+        <where>
+            jpglid=#{jpglid}
+        </where>
+    </update>
+    
+     <select id="getLotteryInfo" parameterType="String" resultType="JpglDto">
+        SELECT
+        jpgl.jpglid,jpgl.bt,jpgl.bz,tzq.csmc tzqmc,tzq.cskz3 Webhook,jplx.csmc jplxmc,jplx.cskz1 tpfm,jpgl.ksrq,jpgl.jsrq,coalesce(jpgl.jsrq-jpgl.ksrq,0)+1 rqc
+        FROM
+        igams_jpgl jpgl
+        LEFT JOIN matridx_jcsj tzq ON tzq.csid = jpgl.tzq
+        LEFT JOIN matridx_jcsj jplx ON jplx.csid = jpgl.jplx
+        WHERE jpgl.jpglid=#{jpglid}
+    </select>
+    
+    <update id="updateSffs" parameterType="JpglDto">
+        update igams_jpgl set
+        xgsj = LOCALTIMESTAMP,sffs = #{sffs}
+        where jpglid = #{jpglid}
+    </update>
+</mapper>

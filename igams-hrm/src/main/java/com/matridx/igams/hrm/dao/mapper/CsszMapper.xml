@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.ICsszDao" >
+    <select id="getDtoList" resultType="CsszDto" parameterType="CsszDto">
+        SELECT cssz.csszid,cssz.jxshid,cssz.mbjb,cssz.zp,cssz.mbshid,cssz.xffrq,cssz.fsxz,
+               cssz.ffkhy,cssz.xjzrq,cssz.jzkhy,cssz.xjxtx,cssz.zdtj,cssz.jxtzsj,cssz.mbtzsj,khlx.csmc khlxmc,khzq.csmc khzqmc,
+               khzq.cskz1 khzqcskz1,khzq.cskz2 khzqcskz2,khlx.csid khlx,khzq.csid khzq,cssz.mblx,mblx.csmc mblxmc,cssz.mbzlx,mbzlx.csmc mbzlxmc,cssz.yxzq
+        FROM
+            matridx_jcsj khlx
+            LEFT JOIN igams_cssz cssz ON khlx.csid = cssz.khlx AND cssz.scbj!='1'
+            LEFT JOIN matridx_jcsj khzq ON khzq.csid = cssz.khzq AND khzq.scbj ='0'
+            LEFT JOIN matridx_jcsj mblx ON mblx.csid = cssz.mblx
+            LEFT JOIN matridx_jcsj mbzlx ON mbzlx.csid = cssz.mbzlx
+        WHERE  khlx.scbj ='0' and khlx.jclb=#{khlxjclb}
+        <if test="sfsz != null and sfsz != '' and sfsz== '1'.toString()">
+            and cssz.csszid is not null
+        </if>
+        <if test="sfsz != null and sfsz != '' and sfsz== '0'.toString()">
+            and cssz.csszid is null
+        </if>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="CsszDto">
+        SELECT cssz.csszid,cssz.jxshid,cssz.khlx,cssz.khzq,cssz.mbjb,cssz.zp,cssz.mbshid,cssz.xffrq,cssz.fsxz,
+               cssz.ffkhy,cssz.xjzrq,cssz.jzkhy,cssz.xjxtx,cssz.zdtj,cssz.jxtzsj,cssz.mbtzsj,khlx.csmc khlxmc,khzq.csmc khzqmc,
+               khzq.cskz1 khzqcskz1,khzq.cskz2 khzqcskz2,cssz.mblx,mblx.csmc mblxmc,cssz.mbzlx,mbzlx.csmc mbzlxmc,cssz.yxzq
+        FROM
+            igams_cssz cssz
+            LEFT JOIN  matridx_jcsj khlx ON khlx.csid = cssz.khlx  AND khlx.scbj ='0'
+            LEFT JOIN matridx_jcsj khzq ON khzq.csid = cssz.khzq AND khzq.scbj ='0'
+            LEFT JOIN matridx_jcsj mblx ON mblx.csid = cssz.mblx
+            LEFT JOIN matridx_jcsj mbzlx ON mbzlx.csid = cssz.mbzlx
+        WHERE cssz.scbj!='1' AND cssz.csszid = #{csszid}
+    </select>
+    <select id="getDtoByKhlx" parameterType="String" resultType="CsszDto">
+        SELECT cssz.csszid,cssz.jxshid,cssz.khlx,cssz.khzq,cssz.mbjb,cssz.zp,cssz.mbshid,cssz.xffrq,cssz.fsxz,
+               cssz.ffkhy,cssz.xjzrq,cssz.jzkhy,cssz.xjxtx,cssz.zdtj,cssz.jxtzsj,cssz.mbtzsj,khlx.csmc khlxmc,khzq.csmc khzqmc,
+               khzq.cskz1 khzqcskz1,khzq.cskz2 khzqcskz2,cssz.mblx,mblx.csmc mblxmc,cssz.mbzlx,mbzlx.csmc mbzlxmc,cssz.yxzq
+        FROM
+            igams_cssz cssz
+            LEFT JOIN  matridx_jcsj khlx ON khlx.csid = cssz.khlx  AND khlx.scbj ='0'
+            LEFT JOIN matridx_jcsj khzq ON khzq.csid = cssz.khzq AND khzq.scbj ='0'
+            LEFT JOIN matridx_jcsj mblx ON mblx.csid = cssz.mblx
+            LEFT JOIN matridx_jcsj mbzlx ON mbzlx.csid = cssz.mbzlx
+        WHERE cssz.scbj!='1' AND cssz.khlx = #{khlx}
+    </select>
+    <insert id="insert" parameterType="CsszDto">
+        insert into igams_cssz(csszid,jxshid,khlx,khzq,mbjb,zp,mbshid,xffrq,ffkhy,xjzrq,jzkhy,xjxtx,zdtj
+                              ,jxtzsj,mbtzsj,lrry,lrsj,scbj,mblx,mbzlx,yxzq,fsxz
+        ) values( #{csszid} ,#{jxshid} ,#{khlx},#{khzq},#{mbjb},#{zp},#{mbshid},cast (#{xffrq} as numeric ),#{ffkhy}
+                ,cast (#{xjzrq} as numeric ),#{jzkhy},cast (#{xjxtx} as numeric ),#{zdtj},#{jxtzsj},#{mbtzsj},#{lrry},LOCALTIMESTAMP,'0',#{mblx},#{mbzlx},cast (#{yxzq} as numeric)
+                <if test="fsxz != null and fsxz != ''">
+                    ,cast (#{fsxz} as numeric)
+                </if>
+                <if test="fsxz == null or fsxz == ''">
+                    ,null
+                </if>
+        )
+    </insert>
+    <update id="update" parameterType="CsszDto">
+        update igams_cssz set
+        <if test="jxshid != null and jxshid != ''">
+            jxshid = #{jxshid},
+        </if>
+        <if test="khlx != null and khlx != ''">
+            khlx = #{khlx},
+        </if>
+        <if test="khzq != null and khzq != ''">
+            khzq = #{khzq},
+        </if>
+        <if test="mbjb != null and mbjb != ''">
+            mbjb = #{mbjb},
+        </if>
+        <if test="zp != null and zp != ''">
+            zp = #{zp},
+        </if>
+        <if test="mbshid != null and mbshid != ''">
+            mbshid = #{mbshid},
+        </if>
+        <if test="xffrq != null and xffrq != ''">
+            xffrq = cast (#{xffrq} as numeric),
+        </if>
+        <if test="ffkhy != null and ffkhy != ''">
+            ffkhy = #{ffkhy},
+        </if>
+        <if test="xjzrq != null and xjzrq != ''">
+            xjzrq = cast (#{xjzrq} as numeric),
+        </if>
+        <if test="jzkhy != null and jzkhy != ''">
+            jzkhy = #{jzkhy},
+        </if>
+        <if test="xjxtx != null and xjxtx != ''">
+            xjxtx = cast (#{xjxtx} as numeric),
+        </if>
+        <if test="zdtj != null and zdtj != ''">
+            zdtj = #{zdtj},
+        </if>
+        <if test="jxtzsj != null and jxtzsj != ''">
+            jxtzsj = #{jxtzsj},
+        </if>
+        <if test="mbtzsj != null and mbtzsj != ''">
+            mbtzsj = #{mbtzsj},
+        </if>
+        <if test="mblx != null and mblx != ''">
+            mblx = #{mblx},
+        </if>
+        <if test="mbzlx != null and mbzlx != ''">
+            mbzlx = #{mbzlx},
+        </if>
+        <if test="yxzq != null and yxzq != ''">
+            yxzq = cast (#{yxzq} as numeric),
+        </if>
+        <if test="fsxz != null and fsxz != ''">
+            fsxz = cast (#{fsxz} as numeric),
+         </if>
+        <if test="fsxz == null or fsxz == ''">
+            fsxz = null,
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where csszid = #{csszid}
+    </update>
+</mapper>

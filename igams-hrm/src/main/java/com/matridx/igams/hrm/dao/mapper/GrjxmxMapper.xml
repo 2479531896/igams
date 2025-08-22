@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IGrjxmxDao" >
+    <select id="getDtoList" parameterType="GrjxmxDto" resultType="GrjxmxDto">
+        SELECT
+        grjxmx.fs,
+        grjxmx.zj,
+        jxmb.mbmc,
+        grjx.xh,
+        concat_ws ( '~', grjx.zqkssj, grjx.zqjssj ) AS khsj,
+        grjx.zf,
+        grjx.khzf,
+        grjx.zt,
+        grjx.scbj,
+        date_part( 'day', grjx.zqkssj :: TIMESTAMP - grjx.zqjssj :: TIMESTAMP ) khzq,
+        xtyh.zsxm xm,
+        jgxx.jgmc bm,
+        jxmbmx.zbsjid,
+        jxmbmx.jxmbmxid,
+        grjxmx.fs jxfs,
+        jxmbmx.fs mbfs,
+        jxmbmx.khzb,
+        grjx.khzf,
+        grjx.jxzf,
+        jxmb.zf mbzf,jxmbmx.sm,
+        qzsz.qz
+    FROM
+        igams_grjxmx grjxmx
+        LEFT JOIN igams_grjx grjx ON grjx.grjxid = grjxmx.grjxid
+        LEFT JOIN igams_jxmbmx jxmbmx on jxmbmx.jxmbmxid = grjxmx.jxmbmxid
+        left join igams_qzsz qzsz on qzsz.jxmbid = grjxmx.jxmbid and grjx.gwid = qzsz.gwid
+        LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjx.jxmbid
+        LEFT JOIN matridx_yhssjg jg ON jg.yhid = grjx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = jg.jgid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grjx.yhid
+        <where>
+            grjxmx.scbj!='1'
+            <if test="grjxid!=null and grjxid!=''">
+                and grjxmx.grjxid=#{grjxid}
+            </if>
+        </where>
+    </select>
+    <insert id="insertGrjxmxDtos" parameterType="List">
+        insert into igams_grjxmx(grjxmxid,grjxid,fs,zj,qz,gwid,jxmbid,jxmbmxid,lrry,lrsj,scbj)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.grjxmxid}, #{item.grjxid},#{item.fs},#{item.zj},cast (#{item.qz} as numeric),#{item.gwid},#{item.jxmbid},#{item.jxmbmxid},#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+    <delete id="discard" parameterType="GrjxmxDto">
+        update igams_grjxmx set scbj = #{scbj}, xgry = #{xgry},xgsj= LOCALTIMESTAMP
+        where grjxid =#{grjxid}
+    </delete>
+    <delete id="delete" parameterType="GrjxmxDto">
+        update igams_grjxmx set scbj = '1', scry = #{scry},scsj= LOCALTIMESTAMP
+        where grjxid in
+        <if test="ids!=null and ids.size>0">
+            <foreach collection="ids" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+    <update id="updateGrjxmxDtosWithGwid" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_grjxmx set
+                grjxid=#{item.grjxid}
+                <if test="item.fs !=null and  item.fs !=''">
+                    ,fs = #{item.fs}
+                </if>
+                <if test="item.zj !=null and  item.zj !=''">
+                    ,zj = #{item.zj}
+                </if>
+                <if test="item.jxzf !=null and  item.jxzf !=''">
+                    ,jxzf = #{item.jxzf}
+                </if>
+                <if test="item.qz !=null and  item.qz !=''">
+                    ,qz = cast (#{item.qz} as numeric)
+                </if>
+                <if test="item.xgry !=null and  item.xgry !=''">
+                    ,xgry = #{item.xgry}
+                </if>
+                ,shr = #{item.shr}
+                ,xgsj = LOCALTIMESTAMP
+                <where>
+                    grjxid=#{item.grjxid} and jxmbmxid = #{item.jxmbmxid} and gwid = #{item.gwid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <update id="updateGrjxmxDtosWithNull" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_grjxmx set
+                grjxid=#{item.grjxid}
+                <if test="item.fs !=null and  item.fs !=''">
+                    ,fs = #{item.fs}
+                </if>
+                <if test="item.zj !=null and  item.zj !=''">
+                    ,zj = #{item.zj}
+                </if>
+                <if test="item.jxzf !=null and  item.jxzf !=''">
+                    ,jxzf = #{item.jxzf}
+                </if>
+                <if test="item.qz !=null and  item.qz !=''">
+                    ,qz = cast (#{item.qz} as numeric)
+                </if>
+                <if test="item.xgry !=null and  item.xgry !=''">
+                    ,xgry = #{item.xgry}
+                </if>
+                ,xgsj = LOCALTIMESTAMP
+                <where>
+                    grjxid=#{item.grjxid} and jxmbmxid = #{item.jxmbmxid} and gwid is null
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <select id="getDtoListWithScore" parameterType="GrjxmxDto" resultType="GrjxmxDto">
+        SELECT
+            grjxmx.fs jxfs,
+            grjxmx.jxzf jxzf,jxmbmx.sm,
+            grjxmx.zj,jxmb.mbmc,jxmbmx.zbsjid,jxmbmx.jxmbmxid,jxmbmx.fs mbfs,jxmbmx.khzb,jxmb.zf mbzf,grjxmx.gwid,spgw.gwmc,grjxmx.qz,grjxmx.shr,xtyh.zsxm shrmc
+        FROM
+            igams_grjxmx grjxmx
+                LEFT JOIN matridx_spgw spgw ON spgw.gwid = grjxmx.gwid
+                LEFT JOIN igams_jxmbmx jxmbmx ON jxmbmx.jxmbmxid = grjxmx.jxmbmxid
+                LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjxmx.jxmbid
+                LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grjxmx.shr and xtyh.scbj='0'
+        where
+            grjxmx.scbj!='1' and grjxmx.grjxid = #{grjxid}
+        ORDER BY jxmbmx.xh ASC
+    </select>
+    <select id="getDtoListWithNull" parameterType="GrjxmxDto" resultType="GrjxmxDto">
+        SELECT
+            grjxmx.fs jxfs,
+            grjxmx.jxzf jxzf,jxmbmx.sm,
+            grjxmx.zj,jxmb.mbmc,jxmbmx.zbsjid,jxmbmx.jxmbmxid,jxmbmx.fs mbfs,jxmbmx.khzb,jxmb.zf mbzf,grjxmx.gwid,spgw.gwmc,grjxmx.qz,grjxmx.shr,xtyh.zsxm shrmc
+        FROM
+            igams_grjxmx grjxmx
+                LEFT JOIN matridx_spgw spgw ON spgw.gwid = grjxmx.gwid
+                LEFT JOIN igams_jxmbmx jxmbmx ON jxmbmx.jxmbmxid = grjxmx.jxmbmxid
+                LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjxmx.jxmbid
+                LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grjxmx.shr and xtyh.scbj='0'
+        where
+            grjxmx.scbj!='1'  and grjxmx.grjxid = #{grjxid} and grjxmx.gwid is null
+        ORDER BY jxmbmx.xh ASC
+    </select>
+    <select id="getDtoListByGwid" parameterType="GrjxmxDto" resultType="GrjxmxDto">
+        SELECT
+            grjxmx.fs jxfs,
+            grjxmx.jxzf jxzf,jxmbmx.sm,
+            grjxmx.zj,jxmb.mbmc,jxmbmx.zbsjid,jxmbmx.jxmbmxid,jxmbmx.fs mbfs,jxmbmx.khzb,jxmb.zf mbzf,grjxmx.gwid,spgw.gwmc,grjxmx.qz,grjxmx.shr,xtyh.zsxm shrmc
+        FROM
+            igams_grjxmx grjxmx
+                LEFT JOIN matridx_spgw spgw ON spgw.gwid = grjxmx.gwid
+                LEFT JOIN igams_jxmbmx jxmbmx ON jxmbmx.jxmbmxid = grjxmx.jxmbmxid
+                LEFT JOIN igams_jxmb jxmb ON jxmb.jxmbid = grjxmx.jxmbid
+                LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = grjxmx.shr and xtyh.scbj='0'
+                left join matridx_shlc shlc on shlc.shid = #{jxshid} and shlc.gwid = grjxmx.gwid
+        where
+            grjxmx.scbj!='1' and grjxmx.grjxid = #{grjxid} and shlc.tysj is null and shlc.lcxh = cast(#{lcxh} as numeric)
+        ORDER BY jxmbmx.xh ASC
+    </select>
+    <select id="getSumScore" parameterType="GrjxmxDto" resultType="String">
+        SELECT
+            round( COALESCE ( SUM ( COALESCE (cast( fs as decimal), 0 ) * COALESCE ( qz, 0 ) ), '0' ), 2 ) zf
+        FROM
+            igams_grjxmx
+        WHERE
+            grjxid = #{grjxid}
+          AND scbj = '0'
+    </select>
+</mapper>

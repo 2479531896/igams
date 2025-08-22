@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJqxzDao">
+    <insert id="insertList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                insert into igams_jqxz(jqxzid
+                <if test="item.jqlx != null and item.jqlx != ''">
+                    ,jqlx
+                </if>
+                <if test="item.sc != null and item.sc != ''">
+                    ,sc
+                </if>
+                <if test="item.ffszid != null and item.ffszid != ''">
+                    ,ffszid
+                </if>
+                )values(#{item.jqxzid}
+                <if test="item.jqlx != null and item.jqlx != ''">
+                    ,#{item.jqlx}
+                </if>
+                <if test="item.sc != null and item.sc != ''">
+                    ,cast (#{item.sc} as numeric )
+                </if>
+                <if test="item.ffszid != null and item.ffszid != ''">
+                    ,#{item.ffszid}
+                </if>
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getPagedDtoList" resultType="JqxzDto" parameterType="JqxzDto">
+        select jqxz.jqxzid,jqxz.jqlx,jqlx.csmc jqlxmc,jqxz.sc
+        from igams_jqxz jqxz
+        left join  matridx_jcsj jqlx on jqlx.csid=jqxz.jqlx
+        <where>
+            ffszid=#{ffszid}
+        </where>
+    </select>
+    <select id="getDtoList" resultType="JqxzDto" parameterType="JqxzDto">
+        select jqxz.jqxzid,jqxz.jqlx,jqlx.csmc jqlxmc,jqxz.sc,jqxz.ffszid
+        from igams_jqxz jqxz
+        left join  matridx_jcsj jqlx on jqlx.csid=jqxz.jqlx
+        <where>
+            <if test = "ffszids != null and ffszids.size() > 0 "  >
+                and jqxz.ffszid in
+                <foreach collection="ffszids" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.experiment.dao.post.IKzglDao" >
+
+    <select id="getPagedDtoList" parameterType="KzglDto" resultType="KzglDto">
+        select kzgl.kzid,kzgl.lrry,to_char(kzgl.lrsj,'YYYY-MM-DD HH24:MI:SS') lrsj,kzgl.xgry,to_char(kzgl.xgsj,'YYYY-MM-DD HH24:MI:SS') xgsj,kzgl.kzmc,
+        xtyhlr.zsxm lrrymc,xtyhxg.zsxm xgrymc,kzgl.scbj,kzgl.zt,jc.csmc jcdwmc,kzgl.kzsj,kzgl.sjph1,kzgl.sjph2
+        from igams_kzgl kzgl
+        left join matridx_xtyh xtyhlr on kzgl.lrry=xtyhlr.yhid
+        left join matridx_xtyh xtyhxg on kzgl.xgry=xtyhxg.yhid
+        left join matridx_jcsj jc on kzgl.jcdw=jc.csid
+        <where>
+            kzgl.scbj='0'
+            <if test="lrrymc != null and lrrymc != ''">
+                and xtyhlr.zsxm like '%'||#{lrrymc}||'%'
+            </if>
+            <if test="xgrymc != null and xgrymc != ''">
+                and xtyhxg.zsxm like '%'||#{xgrymc}||'%'
+            </if>
+            <if test="jcdwxz !=null and jcdwxz.size()>0">
+                and kzgl.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="kzmc != null and kzmc != ''">
+                and kzgl.kzmc like '%'||#{kzmc}||'%'
+            </if>
+            <if test="jcdwmc != null and jcdwmc != ''">
+                and jc.csmc like '%'||#{jcdwmc}||'%'
+            </if>
+            <if test="sjph1 != null and sjph1 != ''">
+                and kzgl.sjph1 like '%'||#{sjph1}||'%'
+            </if>
+            <if test="sjph2 != null and sjph2 != ''">
+                and kzgl.sjph2 like '%'||#{sjph2}||'%'
+            </if>
+            <if test="nbbh != null and nbbh != ''">
+                and kzgl.kzid in(
+                select kzid
+                from igams_kzmx
+                where nbbh like '%'||#{nbbh}||'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+        select xtjs.dwxdbj,jsjcdw.jcdw
+        from matridx_xtjs  xtjs
+        left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid
+        <where>
+            xtjs.jsid=#{jsid}
+        </where>
+    </select>
+
+    <select id="getCountByDay" parameterType="KzglDto" resultType="KzglDto">
+        select count(kzid)
+        from igams_kzgl
+        <where>
+            scbj!='1'
+            and to_char(lrsj,'YYYY-MM-DD')=#{lrsj}
+        </where>
+    </select>
+
+    <select id="getDtoByKzmc" parameterType="KzglDto" resultType="KzglDto">
+        select kzmc
+        from igams_kzgl
+        <where>
+           scbj !='1'
+            <if test="kzmc != null and kzmc != ''">
+                and kzmc=#{kzmc}
+            </if>
+            <if test="kzid != null and kzid != ''">
+                and kzid!=#{kzid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="KzglDto" resultType="KzglDto">
+        select  kzgl.kzid,
+        kzgl.zt,
+        kzgl.lrry,
+        kzgl.lrsj,
+        kzgl.xgry,
+        kzgl.xgsj,
+        kzgl.scry,
+        kzgl.scsj,
+        kzgl.scbj,
+        kzgl.jcdw,
+        kzgl.xh,
+        kzgl.kzmc,
+        kzgl.kzsj,
+        kzgl.sjph1,
+        kzgl.sjph2,
+        jcdw.csmc as jcdwmc
+        from igams_kzgl kzgl
+        left join matridx_jcsj jcdw on jcdw.csid=kzgl.jcdw and jcdw.scbj='0'
+        <where>
+            kzgl.scbj !='1'
+            <if test="kzid != null and kzid != ''">
+                and  kzgl.kzid=#{kzid}
+            </if>
+        </where>
+    </select>
+
+
+    <!-- 根据检测单位和创建日期查询信息 -->
+    <select id="getListByJcdwAndLrsj" parameterType="KzglDto" resultType="KzglDto">
+        select kzid,zt,jcdw,xh,lrsj,kzsj
+        from igams_kzgl
+        <where>
+            scbj!='1'
+            and to_char(lrsj,'YYYY-MM-DD')=#{lrsj}
+            and jcdw=#{jcdw}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="KzglDto">
+        insert into igams_kzgl(kzid
+        <if test="zt != null and zt!= ''">
+            ,zt
+        </if>
+        <if test="jcdw != null and jcdw!= ''">
+            ,jcdw
+        </if>
+        <if test="xh != null and xh!= ''">
+            ,xh
+        </if>
+        <if test="kzmc != null and kzmc!= ''">
+            ,kzmc
+        </if>
+        <if test="sjph1 != null and sjph1!= ''">
+            ,sjph1
+        </if>
+        <if test="sjph2 != null and sjph2!= ''">
+            ,sjph2
+        </if>
+        <if test="kzsj != null and kzsj!= ''">
+            ,kzsj
+        </if>
+        ,lrry,lrsj,scbj) values(#{kzid}
+        <if test="zt != null and zt!= ''">
+            ,#{zt}
+        </if>
+        <if test="jcdw != null and jcdw!= ''">
+            ,#{jcdw}
+        </if>
+        <if test="xh != null and xh!= ''">
+            ,cast(#{xh} as numeric)
+        </if>
+        <if test="kzmc != null and kzmc!= ''">
+            ,#{kzmc}
+        </if>
+        <if test="sjph1 != null and sjph1!= ''">
+            ,#{sjph1}
+        </if>
+        <if test="sjph2 != null and sjph2!= ''">
+            ,#{sjph2}
+        </if>
+        <if test="kzsj != null and kzsj!= ''">
+            ,cast(#{kzsj} as timestamp)
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+
+    <update id="update" parameterType="KzglDto">
+        update igams_kzgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="zt != null and zt!= ''">
+            ,zt=#{zt}
+        </if>
+        <if test="jcdw != null and jcdw!= ''">
+            ,jcdw=#{jcdw}
+        </if>
+        <if test="xh != null and xh!= ''">
+            ,xh=cast(#{xh} as numeric)
+        </if>
+        <if test="kzmc != null and kzmc!= ''">
+            ,kzmc=#{kzmc}
+        </if>
+        <if test="sjph1 != null and sjph1!= ''">
+            ,sjph1=#{sjph1}
+        </if>
+        <if test="sjph2 != null and sjph2!= ''">
+            ,sjph2=#{sjph2}
+        </if>
+        <if test="kzsj != null and kzsj!= ''">
+            ,kzsj=cast(#{kzsj} as timestamp)
+        </if>
+        <where>
+            kzid=#{kzid}
+        </where>
+    </update>
+
+
+    <update id="delete" parameterType="KzglDto">
+        update igams_kzgl
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            kzid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

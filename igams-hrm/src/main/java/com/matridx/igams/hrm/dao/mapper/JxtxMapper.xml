@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IJxtxDao" >
+    <select id="getPagedDtoList" parameterType="JxtxDto" resultType="JxtxDto">
+        SELECT
+            jxtx.jxtxid,jxtx.txjb,jxtx.txy,jxtx.txrq,jxtx.lrsj,lrry.zsxm lrrymc,khzq.csmc khzqmc,jxtx.lrry
+        FROM
+            igams_jxtx jxtx
+        LEFT JOIN matridx_jcsj khzq ON khzq.csid = jxtx.khzq
+        LEFT JOIN igams_jxtxmx jxtxmx ON jxtx.jxtxid = jxtxmx.jxtxid AND jxtxmx.scbj ='0'
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jxtx.lrry
+        LEFT JOIN matridx_xtyh ry ON ry.yhid = jxtxmx.ryid
+        LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = ry.yhid
+        left outer join matridx_yhssjg ryssjg on ry.yhid = ryssjg.yhid
+        left outer join matridx_jgxx ryjg on ryjg.jgid=ryssjg.jgid
+        WHERE
+            jxtx.scbj ='0'
+        <if test="entire != null and entire != ''">
+            and (ry.yhm ILIKE '%'||#{entire}||'%'
+            or ry.zsxm ILIKE '%'||#{entire}||'%'
+            or ry.gwmc ILIKE '%'||#{entire}||'%'
+            or lrry.zsxm ILIKE '%'||#{entire}||'%'
+            or ryjg.jgmc ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="yhm!=null and yhm!=''">
+            and ry.yhm=#{yhm}
+        </if>
+        <if test="zsxm!=null and zsxm!=''">
+            and ry.zsxm = #{zsxm}
+        </if>
+        <if test="gwmc!=null and gwmc!=''">
+            and ry.gwmc = #{gwmc}
+        </if>
+        <if test="lrrymc!=null and lrrymc!=''">
+            and lrry.zsxm=#{lrrymc}
+        </if>
+        <if test="bmmc!=null and bmmc!=''">
+            and ryjg.jgmc=#{bmmc}
+        </if>
+        <if test="txy!=null and txy!=''">
+            and jxtx.txy=#{txy}
+        </if>
+        <if test="txjb!=null and txjb!=''">
+            and jxtx.txjb=#{txjb}
+        </if>
+        <if test="khzqs!=null and khzqs.size > 0 ">
+            and jxtx.khzq in
+            <foreach collection="khzqs" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="zjs!=null and zjs.size > 0 ">
+            and yhqtxx.zj in
+            <foreach collection="zjs" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY jxtx.jxtxid,jxtx.txjb,jxtx.txy,jxtx.txrq,jxtx.lrsj,lrry.zsxm,khzq.csmc,jxtx.lrry
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="JxtxDto">
+        SELECT
+        jxtx.jxtxid,jxtx.txjb,jxtx.txy,jxtx.txrq,jxtx.lrsj,lrry.zsxm lrrymc,khzq.csmc khzqmc,jxtx.lrry,jxtx.khzq
+        FROM
+        igams_jxtx jxtx
+        LEFT JOIN matridx_jcsj khzq ON khzq.csid = jxtx.khzq
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jxtx.lrry
+        WHERE
+        jxtx.scbj ='0' and  jxtx.jxtxid = #{jxtxid}
+    </select>
+    <insert id="insert" parameterType="JxtxDto">
+        insert into igams_jxtx(jxtxid,khzq,txjb,txy,txrq,lrry,lrsj,scbj)
+        VALUES
+            (#{jxtxid}, #{khzq},#{txjb},#{txy},cast (#{txrq} as numeric),#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <update id="update" parameterType="JxtxDto">
+        update igams_jxtx
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="khzq!=null and khzq!=''">
+                ,khzq=#{khzq}
+            </if>
+            <if test="txjb!=null and txjb!=''">
+                ,txjb=#{txjb}
+            </if>
+            <if test="txy!=null and txy!=''">
+                ,txy=#{txy}
+            </if>
+            <if test="txrq!=null and txrq!=''">
+                ,txrq=cast (#{txrq} as numeric)
+            </if>
+        </set>
+        <where>
+            jxtxid=#{jxtxid}
+        </where>
+    </update>
+    <update id="delete" parameterType="JxtxDto">
+        update igams_jxtx set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+            jxtxid in
+            <if test="ids!=null and ids.size>0">
+                <foreach collection="ids" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+</mapper>
