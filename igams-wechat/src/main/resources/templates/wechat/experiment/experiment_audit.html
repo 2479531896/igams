@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" src="/js/wechat/experiment/experiment_audit.js?20230720001" charset="utf-8"></script>
+		<style>
+			._bacg{
+				text-align: center;
+				padding: 0 5px 0 5px;
+				background: rgba(113,214,255,0.26)
+			}
+		</style>
+	</head>
+	<body>
+	<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+		<li  class="nav-item" >
+			<a  class="nav-link active" href="#materAuditInfoTab" role="tab" data-bs-toggle="tab">基本信息</a>
+		</li>
+		<li  class="nav-item" ><a  class="nav-link" href="#ncAuditInfoTab" role="tab" data-bs-toggle="tab">NC提示</a></li>
+	</ul>
+		<form id="auditAjaxForm" action ="/experimentS/experimentS/uploadSaveFile" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation" enctype="multipart/form-data">
+			<input type="hidden" name="access_token" th:value="${access_token}"/>
+			<input type="hidden" name="flg_qf" id ="flg_qf" th:value="${flg_qf}">
+			<input type="hidden" name="size_yin" id ="size_yin" th:value="${size_yin}">
+			<input type="hidden" name="size_yang" id ="size_yang" th:value="${size_yang}">
+			<input type="hidden" name="size_hui" id ="size_hui" th:value="${size_hui}">
+			<input type="hidden" id ="ywid" th:value="${sjxxDto.sjid}">
+			<input type="hidden" name="yjcdw" id ="yjcdw" th:value="${sjxxDto.jcdw}">
+			<input type="hidden" name="strings" id ="strings">
+			<div class="body-content tab-content">
+				<div role="tabpanel" class="tab-pane fade active in" id="materAuditInfoTab" aria-labelledby="profile-tab">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div class="row">
+								<div  th:if="${sjxxDto.hzxm != null}">
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label" >
+												内部编号:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<a href="javascript:void(0);" style='text-decoration:none;cursor:pointer;' th:onclick="showViewInfo([[${sjxxDto.sjid}]],[[${flg_qf}]])">
+													<span th:text="${sjxxDto.nbbm}"></span>
+												</a>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label" >
+												标本编号:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.ybbh}"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label">
+												患者姓名:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.hzxm}"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label">
+												年龄:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.nl}"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label" >
+												检测项目:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.jcxmmc}"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label">
+												医院名称:
+											</label>
+											<div id="showJcdw" class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.jcdwmc}"></span>
+											</div>
+											<div id="hiddenJcdw" class="col-sm-4 col-xs-6 padding_t7" style="display: none;">
+												<select id="jcdw" name="jcdw" class="form-control chosen-select">
+													<option  th:if="${detectionList!=null && detectionList.size() > 0}" th:each="list:${detectionList}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${sjxxDto.jcdw eq list.csid}" ></option>
+												</select>
+											</div>
+											<div id="hiddenButton" class="col-sm-4 col-xs-6 padding_t7" style="display: none;">
+												<button id="modifBtn" style="height: 28px !important;" type="button" class="btn btn-info" onclick="modfJcdw()">修改</button>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-xs-12 control-label">
+												类型区分:
+											</label>
+											<div class="col-sm-8 col-xs-12 padding_t7">
+												<span th:text="${sjxxDto.qf}"></span>
+											</div>
+										</div>
+									</div>
+
+									<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+										<div class="form-group">
+											<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+												<div th:id="${fjcfbDto.fjid}" >
+													<label for="" class="col-xs-4 col-sm-4 col-md-2  col-lg-2 control-label" th:if="${fjcfbDtoStat.index == 0}">ResFirst附件:</label>
+													<label for="" class="col-xs-4 col-sm-4 col-md-2  col-lg-2 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+													<div class="col-xs-8 col-sm-8 col-md-10  col-lg-10">
+														<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+														<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+															<span th:text="${fjcfbDto.wjm}"></span>
+															<span class="glyphicon glyphicon glyphicon-save"></span>
+														</button>&nbsp;&nbsp;
+														<button title="删除" class="f_button" type="button">
+															<span class="glyphicon glyphicon-remove" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></span>
+														</button>&nbsp;&nbsp;
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+										<div class="form-group" th:if="${dtoList_zk != null && dtoList_zk.size() >0}" >
+											<label for="" class="col-xs-4 col-sm-2 col-md-2  col-lg-2 control-label">质控:</label>
+											<div class="col-xs-12 col-sm-10  col-md-10 col-lg-10" style="overflow-y: auto;padding: 0">
+												<table class='table table-hover table-bordered table-hidden' style='table-layout: fixed;width: 96%;'>
+													<thead>
+													<tr>
+														<th  style='padding-top: 8px;text-align:center;'>名称</th>
+														<th th:each="dto_zk,local:${dtoList_zk}" style='padding-top: 8px;text-align:left;'  th:text='${dto_zk.jcjgmc}' th:title='${dto_zk.jcjgmc}'></th>
+													</tr>
+													</thead>
+													<tbody>
+													<tr>
+														<td  style='padding-top: 8px;text-align:center;'>数值</td>
+														<td th:each="dto_zk,local:${dtoList_zk}" style='padding-top: 8px;text-align:right;'  th:text='${dto_zk.jgsz}' th:title='${dto_zk.jgsz}'>
+													</tr>
+<!--													<tr>-->
+<!--														<td style='padding-top: 8px;text-align:center;'>判定值</td>-->
+<!--														<td th:each="dto_zk,local:${dtoList_zk}" style='padding-top: 8px;text-align:right;'  th:text='${dto_zk.pdz}' th:title='${dto_zk.pdz}'></td>-->
+<!--													</tr>-->
+													<tr>
+														<td style='padding-top: 8px;text-align:center;'>结果</td>
+														<td th:each="dto_zk,local:${dtoList_zk}"  th:title='${dto_zk.jlmc}'  style="padding-top: 8px;text-align:center;">
+															<span style='color: red;font-weight: bold' th:if="${dto_zk.styleFlag!=null&&dto_zk.styleFlag=='1'}" th:text='${dto_zk.jlmc}'></span>
+															<span  th:if="${dto_zk.styleFlag==null||dto_zk.styleFlag!='1'}" th:text='${dto_zk.jlmc}' ></span>
+														</td>
+													</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+										<div class="form-group" th:if="${dtoList_yang != null && dtoList_yang.size() >0}">
+											<label for="" class="col-xs-4 col-sm-2 col-md-2  col-lg-2 control-label">阳性:</label>
+											<table class='table table-hover table-bordered table-hidden' style='table-layout: fixed;width: 80%'>
+												<thead>
+												<tr>
+													<th width='30%' style="padding: 0px;text-align:center;">名称</th>
+													<th width='10%' style="padding: 0px;text-align:center;">数值</th>
+<!--													<th width='10%' style="padding: 0px;text-align:center;">判定值</th>-->
+													<th width='10%' style="padding: 0px;text-align:center;">参考值</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率1</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率2</th>
+													<th width='5%' style="padding: 0px;text-align:center;">孔位</th>
+													<th width='30%' style="padding: 0px;text-align:center;">结果</th>
+												</tr>
+												</thead>
+												<tbody>
+												<tr th:each="dto_yang,local:${dtoList_yang}" >
+													<td style='padding-top: 8px;text-align:left;'  th:text='${dto_yang.jcjgmc}' th:title='${dto_yang.jcjgmc}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.jgsz}' th:title='${dto_yang.jgsz}'></td>
+<!--													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.pdz}' th:title='${dto_yang.pdz}'></td>-->
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.ncjsz}' th:title='${dto_yang.ncjsz}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.ckbl1}' th:title='${dto_yang.ckbl1}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.ckbl2}' th:title='${dto_yang.ckbl2}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yang.kw}' th:title='${dto_yang.kw}'></td>
+													<td style="text-align:center;">
+														<label class='radio-inline' th:each="jl:${jlList}"  >
+															<input style='margin-top: 2px' type='radio' th:text='${jl.csmc}' th:name="'yang_dtoList_'+${local.index}" th:value="${dto_yang.jcjgid+'_'+jl.csid}" th:checked="${dto_yang.jl eq jl.csid}" th:id="${'optionsRadio_'+jlStat.index}"/>
+														</label>
+													</td>
+												</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+									<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+										<div class="form-group" th:if="${dtoList_hui != null && dtoList_hui.size() >0}">
+											<label for="" class="col-xs-4 col-sm-2 col-md-2  col-lg-2 control-label">检测灰区:</label>
+											<table class='table table-hover table-bordered table-hidden' style='table-layout: fixed;width: 80%'>
+												<thead>
+												<tr>
+													<th width='30%' style="padding: 0px;text-align:center;">名称</th>
+													<th width='10%' style="padding: 0px;text-align:center;">数值</th>
+<!--													<th width='10%' style="padding: 0px;text-align:center;">判定值</th>-->
+													<th width='10%' style="padding: 0px;text-align:center;">参考值</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率1</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率2</th>
+													<th width='5%' style="padding: 0px;text-align:center;">孔位</th>
+													<th width='30%' style="padding: 0px;text-align:center;">结果</th>
+												</tr>
+												</thead>
+												<tbody>
+												<tr th:each="dto_hui,local:${dtoList_hui}" >
+													<td style='padding-top: 8px;text-align:left;'  th:text='${dto_hui.jcjgmc}' th:title='${dto_hui.jcjgmc}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.jgsz}' th:title='${dto_hui.jgsz}'></td>
+<!--													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.pdz}' th:title='${dto_hui.pdz}'></td>-->
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.ncjsz}' th:title='${dto_hui.ncjsz}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.ckbl1}' th:title='${dto_hui.ckbl1}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.ckbl2}' th:title='${dto_hui.ckbl2}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_hui.kw}' th:title='${dto_hui.kw}'></td>
+													<td style="text-align:center;">
+														<label class='radio-inline' th:each="jl:${jlList}"  >
+															<input style='margin-top: 2px' type='radio' th:text='${jl.csmc}' th:name="'hui_dtoList_'+${local.index}" th:value="${dto_hui.jcjgid+'_'+jl.csid}"  th:checked="${dto_hui.jl eq jl.csid}" th:id="${'optionsRadio_'+jlStat.index}"/>
+														</label>
+													</td>
+												</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+									<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+										<div class="form-group" th:if="${dtoList_yin != null && dtoList_yin.size() >0}">
+											<label for="" class="col-xs-4 col-sm-2 col-md-2  col-lg-2 control-label">阴性:</label>
+											<div id="show"  onclick='showTable()' style="display: block" class="col-sm-9 col-xs-7 col-md-9 padding_t7 _bacg">
+												<a  href='javascript:void(0);' >点击展开</a>
+											</div>
+											<div id="hide" onclick='hideTable()' style="display: none"  class="col-sm-9 col-xs-7 col-md-9 padding_t7 _bacg">
+												<a  href='javascript:void(0);'>点击隐藏</a>
+											</div>
+											<label for="" class="col-xs-4 col-sm-2 col-md-2  col-lg-2 control-label"></label>
+											<table id="yin_table" class='table table-hover table-bordered table-hidden' style='table-layout: fixed;width: 80%;display: none'>
+												<thead>
+												<tr>
+													<th width='30%' style="padding: 0px;text-align:center;">名称</th>
+													<th width='10%' style="padding: 0px;text-align:center;">数值</th>
+<!--													<th width='10%' style="padding: 0px;text-align:center;">判定值</th>-->
+													<th width='10%' style="padding: 0px;text-align:center;">参考值</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率1</th>
+													<th width='10%' style="padding: 0px;text-align:center;">参考比率2</th>
+													<th width='5%' style="padding: 0px;text-align:center;">孔位</th>
+													<th width='30%' style="padding: 0px;text-align:center;">结果</th>
+												</tr>
+												</thead>
+												<tbody>
+												<tr th:each="dto_yin,local:${dtoList_yin}" >
+													<td style='padding-top: 8px;text-align:left;'  th:text='${dto_yin.jcjgmc}' th:title='${dto_yin.jcjgmc}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.jgsz}' th:title='${dto_yin.jgsz}'></td>
+<!--													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.pdz}' th:title='${dto_yin.pdz}'></td>-->
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.ncjsz}' th:title='${dto_yin.ncjsz}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.ckbl1}' th:title='${dto_yin.ckbl1}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.ckbl2}' th:title='${dto_yin.ckbl2}'></td>
+													<td style='padding-top: 8px;text-align:right;'  th:text='${dto_yin.kw}' th:title='${dto_yin.kw}'></td>
+													<td style="text-align:center;">
+														<label class='radio-inline' th:each="jl:${jlList}"  >
+															<input style='margin-top: 2px' type='radio' th:text='${jl.csmc}' th:name="'yin_dtoList_'+${local.index}" th:value="${dto_yin.jcjgid+'_'+jl.csid}"  th:checked="${dto_yin.jl eq jl.csid}" th:id="${'optionsRadio_'+jlStat.index}"/>
+														</label>
+													</td>
+												</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="tabpanel" class="tab-pane fade" id="ncAuditInfoTab" aria-labelledby="profile-tab">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-xs-12 col-sm-12  col-md-12  col-lg-12">
+									<div class="form-group" th:if="${dtoList != null && dtoList.size() >0}">
+										<table class='table table-hover table-bordered table-hidden' style='table-layout: fixed;width: 98%;margin: auto'>
+											<thead>
+											<tr>
+												<th width='40%' style="padding: 0px;text-align:center;">名称</th>
+												<th width='20%' style="padding: 0px;text-align:center;">参考值</th>
+												<th width='20%' style="padding: 0px;text-align:center;">参考比率1</th>
+												<th width='20%' style="padding: 0px;text-align:center;">参考比率2</th>
+											</tr>
+											</thead>
+											<tbody>
+											<tr th:each="dto,local:${dtoList}" >
+												<td style='padding-top: 8px;text-align:left;'  th:text='${dto.jcjgmc}' th:title='${dto.jcjgmc}'></td>
+												<td style='padding-top: 8px;text-align:right;'  th:text='${dto.ncjsz}' th:title='${dto.ncjsz}'></td>
+												<td style='padding-top: 8px;text-align:right;'  th:text='${dto.ckbl1}' th:title='${dto.ckbl1}'></td>
+												<td style='padding-top: 8px;text-align:right;'  th:text='${dto.ckbl2}' th:title='${dto.ckbl2}'></td>
+											</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</form>
+	</body>
+</html>

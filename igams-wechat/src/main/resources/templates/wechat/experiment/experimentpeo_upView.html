@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<style>
+		/* loading 动画图像父级的布局 */
+		.loading-view {
+			height: 40px;
+			position: relative;
+		}
+
+		.wave {
+			width: 100px;
+			height: 40px;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%,-50%);
+			display: flex;
+			justify-content: space-evenly;
+		}
+
+		.react{
+			width: 3px;
+			height: 34px;
+			margin-top: 3px;
+			background-color: cornflowerblue;
+			animation: waveLoading 1.2s both infinite;
+		}
+
+		/* 设置延时 */
+		.react1{
+			animation-delay: 0s;
+		}
+		.react2{
+			animation-delay: -1.1s;
+		}
+		.react3{
+			animation-delay: -1.0s;
+		}
+		.react4{
+			animation-delay: -0.9s;
+		}
+		.react5{
+			animation-delay: -0.8s;
+		}
+
+		@keyframes waveLoading{
+			0% {
+				transform: scaleY(0.4);
+			}
+			20% {
+				transform: scaleY(1);
+			}
+			80% {
+				transform: scaleY(0.4);
+			}
+			100% {
+				transform: scaleY(0.4);
+			}
+		}
+	</style>
+</head>
+<body>
+
+<form  id="formSearch"  class="form-horizontal sl_all_form"  theme="simple" data-bs-toggle="validation">
+	<input type="hidden" id="fjids" th:value="${fjids}">
+	<div class="body-content">
+		<div id="loading" style="border-radius: 4px; background-color: rgba(0, 0, 0, 0.1);">
+			<div class="loading-view">
+				<div class="wave">
+					<div class="react react1"></div>
+					<div class="react react2"></div>
+					<div class="react react3"></div>
+					<div class="react react4"></div>
+					<div class="react react5"></div>
+				</div>
+			</div>
+			<p style="text-align: center;">
+				<span id="num">0</span>/
+				<span id="count" th:text="${count}"></span>
+			</p>
+
+		</div>
+		<div id="table" style="display: none" class="panel panel-default">
+			<div class="panel-body">
+				<table class="table table-bordered table-hover col-md-12 col-sm-12 col-xs-12" style="margin-top:10px;">
+					<thead>
+					<tr>
+						<th style="width:10%;">序号</th>
+						<th style="width:20%;">内部编码</th>
+						<th style="width:16%;">版本</th>
+						<th style="width:40%;">消息</th>
+						<th style="width:10%;">状态</th>
+					</tr>
+					</thead>
+					<tbody id="list">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</form>
+<script type="text/javascript">
+	var UpList_timer = null
+	$(function(){
+		if (!$("#formSearch #fjids").val())
+			return;
+		UpList_timer = setInterval(function () {
+			$.ajax({
+				"dataType" : 'json',
+				"type" : "POST",
+				"url" : "/experimentS/experimentS/pagedataUpList",
+				"data" : { "access_token" : $("#ac_tk").val(),"fjids":$("#formSearch #fjids").val()},
+				"success" : function(data) {
+					if (data.count){
+						$("#formSearch #num").text(data.count);
+						if ($("#formSearch #num").text() == data.count){
+							if (data.list){
+								clearInterval(UpList_timer);
+								var html = "";
+								$.each(data.list,function(i){
+									html=html+"<tr>"+
+											"<td title='"+(i+1)+"' style='text-align: left'>"+(i+1)+"</td>"+
+											"<td title='"+(data.list[i].nbbm?data.list[i].nbbm:'')+"' style='text-align: left'>"+(data.list[i].nbbm?data.list[i].nbbm:'')+"</td>"+
+											"<td title='"+(data.list[i].bbh?data.list[i].bbh:'')+"' style='text-align: left'>"+(data.list[i].bbh?data.list[i].bbh:'')+"</td>"+
+											"<td title='"+(data.list[i].info?data.list[i].info:'')+"' style='text-align: left'>"+(data.list[i].info?data.list[i].info:'')+"</td>";
+									if ("1"==data.list[i].zt){
+										html=html+"<td style='text-align: left;color: springgreen'>成功</td>";
+									}else{
+										html=html+"<td style='text-align: left;color: red'>异常</td>";
+									}
+								});
+								$("#formSearch #list").empty();
+								$("#formSearch #list").append(html);
+								$("#formSearch #table").removeAttr("style","display");
+								$("#formSearch #loading").remove();
+
+							}
+						}
+					}
+
+				}
+			});
+		},2000)
+	})
+
+	$(".bootbox-close").click(function(){
+		clearInterval(UpList_timer)
+	});
+
+	$("#btn_cancel").click(function(){
+		clearInterval(UpList_timer)
+	});
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+$("#jcxls").click(function(){
+	window.open("http://www.baidu.com/s?wd=检出序列数");
+})
+$("#jyzfgd").click(function(){
+	window.open("http://www.baidu.com/s?wd=基因组覆盖度");
+})
+$("#xdfd").click(function(){
+	window.open("http://www.baidu.com/s?wd=相对丰度");
+})

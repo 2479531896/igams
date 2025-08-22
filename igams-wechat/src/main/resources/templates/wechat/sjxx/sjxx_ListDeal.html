@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head >
+	<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+	<script type="text/javascript" src="/js/wechat/sjxx/sjxx_ListDeal.js?v=20240704" charset="utf-8"></script>
+	<link href="/css/wechat/sjxx/colorview.css" rel="stylesheet" type="text/css" />
+	<style>
+		.sjsyglInfo .form-group {
+			height: 30px;
+		}
+		.sjsyglInfo input, .sjsyglInfo label, .sjsyglInfo .panel-body span {
+			height: 30px;
+			font-size: 12px !important;
+		}
+		.sjsyglInfo .input-group input {
+			height: 30px;
+		}
+		.sjsyglInfo .input-group-btn button {
+			font-size: 12px !important;
+			padding: 0 5px;
+		}
+		#hiddenInfo .form-group div,#editInfo .form-group div {
+			padding: 0 5px;
+		}
+		#editInfo .form-group {
+			margin-right: 0;
+		}
+		#hiddenInfo .col-sm-6, #editInfo .col-sm-6 {
+			padding-left: 0;
+			padding-right: 10px;
+		}
+		.modal-footer {
+			border-top: 0
+		}
+	</style>
+</head>
+<form id="ajaxForm"  th:action="'/inspection/inspection/'+${sjxxDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="sjid" id="sjid" th:value="${sjxxDto.sjid}"/>
+		<input type="hidden" name="xgsj" id="xgsj" th:value="${sjxxDto.xgsj}"/>
+		<input type="hidden" name="csyblx" id="csyblx" th:value="${sjxxDto.yblx}"/>
+		<input type="hidden" name="sjqfdm" id="sjqfdm" th:value="${sjqfdm}"/>
+		<input type="hidden" name="jcdwdm" id="jcdwdm" th:value="${sjxxDto.jcdwdm}"/>
+		<input type="hidden" name="jcdwmc" id="jcdwmc" th:value="${sjxxDto.jcdwmc}"/>
+		<input type="hidden" name="jcdw" id="jcdw" th:value="${sjxxDto.jcdw}"/>
+		<input type="hidden" name="csjcxm" id="csjcxm" th:value="${sjjcxmDtos}"/>
+		<input type="hidden" name="jcxm" id="jcxm"/>
+		<input type="hidden" name="jcxmmc" id="jcxmmc"/>
+		<input type="hidden" name="sjsyglJson" id="sjsyglJson"/>
+		<div class="body-content tab-content">
+			<div class="panel panel-default">
+			<div class="panel-heading">基本信息</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									标本编号:
+								</label>
+								<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+									<span th:text="${sjxxDto.ybbh}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									患者姓名:
+								</label>
+								<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+									<span th:text="${sjxxDto.hzxm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									性别:
+								</label>
+								<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+									<span th:text="${'1' eq sjxxDto.xb?'男':('2' eq sjxxDto.xb?'女':'未知')}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">可修改信息</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									<span style="color: red;">*</span>内部编码:
+								</label>
+								<div class="col-sm-8 col-xs-6">
+									<input style="height: 30px;" id="nbbm" name="nbbm" type="text" th:value="${sjxxDto.nbbm}" class="form-control" validate="{required:true}" autocomplete="off" onchange="getNbbmChangeInfo()"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									<span style="color: red;">*</span>标本类型:
+								</label>
+								<div class="col-sm-8 col-xs-6">
+									<select style="height: 30px;" id="yblx" name="yblx" th:value="${sjxxDto.yblx}" class="form-control chosen-select" validate="{required:true}">
+										<option value="">--请选择--</option>
+										<option class="t_yblx" th:id="${list.csid}" th:if="${yblxlist!=null && yblxlist.size() > 0}" th:csdm="${list.csdm}" th:each="list:${yblxlist}" th:value="${list.csid}" th:kzcs="${list.cskz1}" th:cskz2="${list.cskz2}" th:csmc="${list.csmc}" th:text="${list.csmc}"  th:selected="${sjxxDto.yblx eq list.csid}" ></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									<span style="color: red;display:none;" id="yblxmcspan">*</span>报告显示样本:
+								</label>
+								<div class="col-sm-8 col-xs-6">
+									<input style="height: 30px;" type="text" id="yblxmc" name="yblxmc"  th:value="${sjxxDto.yblxmc}" validate="{required:true}" disabled="disabled" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row" id="jcxmDiv">
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label">
+									<span style="color: red;">*</span>检测项目:
+								</label>
+								<div class="col-sm-8 col-xs-6">
+								</div>
+							</div>
+						</div>
+						<div class="col-md-8 col-sm-8"></div>
+						<div class="col-md-12 col-sm-12" style="margin-top: -31.179px;">
+							<div class="form-group">
+								<label for="" class="col-sm-2 col-xs-2 control-label">
+								</label>
+								<div class="col-sm-10 col-xs-10">
+									<div class="col-sm-4" th:id="'t-'+${detect.csid}" th:each="detect:${jcxmlist}" style="padding-left:0px;">
+										<label class="checkboxLabel checkbox-inline" style="padding-left:0px;">
+											<input th:id="${detect.csid}" type="checkbox" class="jcxm" name="jcxmids" th:csmc="${detect.csmc}" th:value="${detect.csid}" th:cskz2="${detect.cskz2}" th:cskz1="${detect.cskz1}" th:cskz3="${detect.cskz3}" th:cskz4="${detect.cskz4}" th:csdm="${detect.csdm}"  th:attr="checked=${sjxxDto.jcxmids!=null &&sjxxDto.jcxmids.contains(detect.csid)?true:false}" style="padding-left:16px;"/>
+											<div th:class="${'color_light'+ detect.cskz2}" style="border-radius: 5px" ><span th:text="${detect.csmc}" th:class="${'color_'+ detect.cskz2}" style="padding: 10px;"></span></div>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row" id="jczxm_div">
+						<div class="col-md-4 col-sm-4">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-6 control-label" style="padding-left: 0;">
+									<span style="color: red;">*</span>检测子项目:
+								</label>
+								<div class="col-sm-8 col-xs-6">
+								</div>
+							</div>
+						</div>
+						<div class="col-md-8 col-sm-8"></div>
+						<div class="col-md-12 col-sm-12" style="margin-top: -31.179px;">
+							<div class="form-group">
+								<label for="" class="col-sm-2 col-xs-2 control-label">
+								</label>
+								<div class="col-sm-10 col-xs-10" id="jczxmDiv">
+									<div class="col-sm-4" th:id="'zxm_'+${jczxmDto.csid}" th:value="${jczxmDto.csid}" th:each="jczxmDto:${jczxmlist}" style="padding-left:0px;">
+										<label class="checkboxLabel checkbox-inline" style="padding-left:0px;">
+											<input class ='jczxm'  th:id="${jczxmDto.csid}" type="checkbox" th:name="${jczxmDto.csid}" th:csmc="${jczxmDto.csmc}" th:value="${jczxmDto.csid}" th:jcxmid="${jczxmDto.fcsid}" onclick="initTab()"  th:attr="checked=${jczxmids!=null &&jczxmids.contains(jczxmDto.csid)?true:false}" style="padding-left:16px;"/>
+											<div  th:class="${'color_light'+ jczxmDto.fcskz2}" style="border-radius: 5px" ><span th:text="${jczxmDto.csmc}" th:class="${'color_'+ jczxmDto.fcskz2}" style="padding: 10px;"></span></div>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--左右布局-->
+			<div class="panel panel-default sjsyglInfo" style="float: left;width: 49%;">
+				<div class="panel-heading" style="height: 40px;display: flex;justify-content: flex-end;">
+					<span style="position: absolute;top: 50%;left: 10px;transform: translate(0, -50%);">文库原始信息</span>
+					<button id="hiddenButton" type="button" class="btn btn-sm btn-default">隐藏</button>
+				</div>
+				<div class="panel-body" id="hiddenInfo">
+					<div class="panel panel-default" th:if="${sjsyglDtos!=null && sjsyglDtos.size() >0}" th:each="dto:${sjsyglDtos}">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											子编码:
+										</label>
+										<div class="col-sm-3 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.nbzbm}" th:text="${dto.nbzbm}"/>
+										</div>
+										<label for="" class="col-sm-2 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											接头:
+										</label>
+										<div class="col-sm-3 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jt}" th:text="${dto.jt}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											检测单位:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jcdwmc}" th:text="${dto.jcdwmc}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											检测日期:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqjcsj}" th:text="${dto.jqjcsj}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											实验日期:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqsyrq}" th:text="${dto.jqsyrq}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											上机时间:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqsjsj}" th:text="${dto.jqsjsj}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											下机时间:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqxjsj}" th:text="${dto.jqxjsj}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											接收人员:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jsrymc!=null && dto.jsryyhm!=null ? dto.jsrymc+'-'+dto.jsryyhm:''}" th:text="${dto.jsrymc!=null && dto.jsryyhm!=null ? dto.jsrymc+'-'+dto.jsryyhm:''}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											接收日期:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqjsrq}" th:text="${dto.jqjsrq}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											取样人员:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.qyrymc!=null && dto.qyryyhm!=null ? dto.qyrymc+'-'+dto.qyryyhm:''}" th:text="${dto.qyrymc!=null && dto.qyryyhm!=null ? dto.qyrymc+'-'+dto.qyryyhm:''}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											取样时间:
+										</label>
+										<div class="col-sm-8 col-xs-6 control-label" style="text-align: left;">
+											<span th:title="${dto.jqqysj}" th:text="${dto.jqqysj}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default sjsyglInfo" style="float: left;width: 49%;margin-left:2%">
+				<div class="panel-heading" style="height: 40px;">
+					文库更新信息
+				</div>
+				<div class="panel-body" id="editInfo">
+					<div class="panel panel-default" th:if="${sjsyglDtos!=null && sjsyglDtos.size() >0}" th:each="dto,stat:${sjsyglDtos}" th:id="${dto.syglid}" th:xh="${dto.syglid}" th:index="${stat.index}">
+						<div class="panel-body">
+							<input type="hidden" th:id="${stat.index + '_dyid'}" name="${stat.index + '_dyid'}" th:value="${dto.dyid}"/>
+							<input type="hidden" th:id="${stat.index + '_sjid'}" name="${stat.index + '_sjid'}" th:value="${dto.sjid}"/>
+							<input type="hidden" th:id="${stat.index + '_jcxmid'}" name="${stat.index + '_jcxmid'}" th:value="${dto.jcxmid}"/>
+							<input type="hidden" th:id="${stat.index + '_jcxmmc'}" name="${stat.index + '_jcxmmc'}" th:value="${dto.jcxmmc}"/>
+							<input type="hidden" th:id="${stat.index + '_jczxmid'}" name="${stat.index + '_jczxmid'}" th:value="${dto.jczxmid}"/>
+							<input type="hidden" th:id="${stat.index + '_jclxid'}" name="${stat.index + '_jclxid'}" th:value="${dto.jclxid}"/>
+							<input type="hidden" th:id="${stat.index + '_nbzbm'}" name="${stat.index + '_nbzbm'}" th:value="${dto.nbzbm}"/>
+							<input type="hidden" th:id="${stat.index + '_wksxbm'}" name="${stat.index + '_wksxbm'}" th:value="${dto.wksxbm}"/>
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											子编码:
+										</label>
+										<div class="col-sm-3 col-xs-6 control-label" style="text-align: left;">
+											<span class="nbzbm" th:title="${dto.nbzbm}" th:text="${dto.nbzbm}"/>
+											<input type="hidden" th:id="${stat.index+'_nbzbm'}" th:name="${stat.index+'_nbzbm'}" th:value="${dto.nbzbm}"/>
+										</div>
+										<label for="" class="col-sm-2 col-xs-6 control-label" style="padding: 0">
+											接头:
+										</label>
+										<div class="col-sm-3 col-xs-6">
+											<input th:id="${stat.index+'_jt'}" th:name="${stat.index+'_jt'}" type="text" th:value="${dto.jt}" class="form-control jt" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 0">
+											<span style="color: red;">*</span>检测单位:
+										</label>
+										<div class="col-sm-8 col-xs-6 jcdw">
+											<select th:id="${stat.index+'_jcdw'}" th:name="${stat.index+'_jcdw'}" th:value="${dto.jcdw}" class="form-control chosen-select" validate="{required:true}" >
+												<option  th:if="${jcdwlist!=null && jcdwlist.size() > 0}" th:each="list:${jcdwlist}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${dto.jcdw eq list.csid}" ></option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											检测日期:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_jcsj'}" th:name="${stat.index+'_jcsj'}" type="text" th:value="${dto.jqjcsj}" class="form-control jcsj" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											实验日期:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_syrq'}" th:name="${stat.index+'_syrq'}" type="text" th:value="${dto.jqsyrq}" class="form-control syrq" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											上机时间:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_sjsj'}" th:name="${stat.index+'_sjsj'}" type="text" th:value="${dto.jqsjsj}" class="form-control sjsj" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											下机时间:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_xjsj'}" th:name="${stat.index+'_xjsj'}" type="text" th:value="${dto.jqxjsj}" class="form-control xjsj" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											接收人员:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<div class="input-group">
+												<input th:id="${stat.index+'_jsrymc'}" th:name="${stat.index+'_jsrymc'}" type="text" th:value="${dto.jsrymc!=null && dto.jsryyhm!=null ? dto.jsrymc+'-'+dto.jsryyhm:''}" readonly="readonly" class="form-control" />
+												<input th:id="${stat.index+'_jsry'}" th:name="${stat.index+'_jsry'}" type="hidden"  th:value="${dto.jsry}" class="form-control jsry" validate="{required:true}"/>
+												<span class="input-group-btn">
+													<button type="button" th:onclick="chooseYh([[${stat.index+'_jsry'}]])" class="btn btn-primary">选择</button>
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											接收日期:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_jsrq'}" th:name="${stat.index+'_jsrq'}" type="text" th:value="${dto.jqjsrq}" class="form-control jsrq" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											取样人员:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<div class="input-group">
+												<input th:id="${stat.index+'_qyrymc'}" th:name="${stat.index+'_qyrymc'}" type="text" th:value="${dto.qyrymc!=null && dto.qyryyhm!=null ? dto.qyrymc+'-'+dto.qyryyhm:''}" readonly="readonly" class="form-control" />
+												<input th:id="${stat.index+'_qyry'}" th:name="${stat.index+'_qyry'}" type="hidden"  th:value="${dto.qyry}" class="form-control qyry" validate="{required:true}"/>
+												<span class="input-group-btn">
+													<button type="button" th:onclick="chooseYh([[${stat.index+'_qyry'}]])" class="btn btn-primary">选择</button>
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-xs-6 control-label" style="padding: 7px 0 0 0 !important;">
+											取样时间:
+										</label>
+										<div class="col-sm-8 col-xs-6">
+											<input th:id="${stat.index+'_qysj'}" th:name="${stat.index+'_qysj'}" type="text" th:value="${dto.jqqysj}" class="form-control qysj" autocomplete="off"/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 col-sm-12 col-xs-12" style="text-align: center;margin-top:20px;">
+			<button th:if="${access_token !=null}" type="button" id="sub" class="btn btn-primary" onclick="outsubmit();">确定</button>
+		</div>
+	</form>
+<body>
+</body>
+</html>

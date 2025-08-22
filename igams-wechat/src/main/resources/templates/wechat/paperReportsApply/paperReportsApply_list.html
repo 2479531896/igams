@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>纸质报告申请列表</title>
+    <script type="text/javascript" src="/js/wechat/paperReportsApply/paperReportsApply_list.js" charset="utf-8"></script>
+</head>
+<body>
+    <div class="panel-body body-content" style="padding-bottom:100px;">
+        <form id="paperReportsApply_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+            <input type="hidden" id ="single_flag" name="single_flag"  th:value="${sjzzsqDto.single_flag}">
+            <div class="panel panel-default">
+                <div class="panel-heading">查询条件</div>
+                <div class="panel-body">
+                    <div class="">
+                        <div class="form-group padding_l10">
+                            <select name="cxtj" class="form-control chosen-select" id="cxtj">
+                                <option value="0">全　　部</option>
+                                <option value="1">标本编号</option>
+                                <option value="2">内部编号</option>
+                                <option value="3">患者姓名</option>
+                                <option value="4">伙　　伴</option>
+                                <option value="5">收&nbsp;件&nbsp;&nbsp;人</option>
+                                <option value="6">电　　话</option>
+                                <option value="7">快递单号</option>
+                                <option value="8">锁定人员</option>
+                                <option value="9">包&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号</option>
+                            </select>
+                            <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" autocomplete="off" onkeydown="if(event.keyCode==13) {searchPaperReportsApplyResult(); return false;}"/>
+                        </div>
+                        <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                        <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                    </div>
+                    <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                        <span class="tit">已选条件：</span>
+                        <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                            <ul id="sl_add_ul"></ul>
+                        </div>
+                    </div>
+                    <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                        <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                            <div class="tab-pane active" id="tab06">
+                                <div id="kdlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                    <div class="form-group width100">
+                                        <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="快递类型" >快递类型：</label>
+                                        <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                            <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                <li th:if="${kdlxlist!=null && kdlxlist.size() >0}" th:each="dto:${kdlxlist}">
+                                                    <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[kdlx]],[[${dto.csid}]],[[paperReportsApply_formSearch]]);" th:id="'kdlx_id_'+${dto.csid}" th:sfmr="${dto.sfmr}">
+                                                        <span th:text="${dto.csmc}"></span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="sfsd_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                    <div class="form-group width100">
+                                        <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否锁定" >是否锁定：</label>
+                                        <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                            <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                <li>
+                                                    <a style='text-decoration:none;cursor:pointer;'
+                                                       onclick="addTj('sfsd','1','paperReportsApply_formSearch');"
+                                                       id="sfsd_id_1"><span>是</span></a>
+                                                </li>
+                                                <li>
+                                                    <a style='text-decoration:none;cursor:pointer;'
+                                                       onclick="addTj('sfsd','0','paperReportsApply_formSearch');"
+                                                       id="sfsd_id_0"><span>否</span></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="sdrq" class="col-md-6 col-sm-6 col-lg-6">
+                                    <div class="form-group width100">
+                                        <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="锁定日期" >锁定日期：</label>
+                                        <div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+                                            <input id="sdrqstart" name="sdrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                            <input id="sdrqend" name="sdrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="sqsj" class="col-md-6 col-sm-6 col-lg-6">
+                                    <div class="form-group width100">
+                                        <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="申请时间" >申请时间：</label>
+                                        <div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+                                            <input id="sqsjstart" name="sqsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                            <input id="sqsjend" name="sqsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input  type="hidden" id="kdlx_id_tj" name="kdlx_id_tj">
+            <input  type="hidden" id="sfsd_id_tj" name="sfsd_id_tj">
+            <div th:include="common/btn/ancz.html"></div>
+            <table id="paperReportsApply_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true" ></table>
+        </form>
+    </div>
+</body>
+</html>

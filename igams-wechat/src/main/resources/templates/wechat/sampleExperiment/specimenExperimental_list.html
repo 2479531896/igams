@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+	<script type="text/javascript" th:inline="javascript">
+		var specimenExperimental = [];
+		var map = {};
+		var choseList= [[${choseList}]];
+		if(choseList && choseList.length>0){
+			map = {};
+			map["checkbox"] = true;
+			map["width"] = "1%";
+			specimenExperimental.push(map);
+			for(i=0;i< choseList.length;i++){
+				map = {};
+				map["title"] = choseList[i].xszdmc;
+				map["titleTooltip"] = choseList[i].zdsm;
+				map["field"] = choseList[i].xszd;
+				if(choseList[i].pxzd&&choseList[i].pxzd!="")
+					map["sortable"] = true;
+				map["width"] = choseList[i].xskd + "%";
+				if(choseList[i].xsgs){
+					map["formatter"] = choseList[i].xsgs;
+				}
+				map["visible"] = true;
+				specimenExperimental.push(map);
+			}
+			var waitList= [[${waitList}]];
+			if(waitList && waitList.length>0){
+
+				for(i=0;i< waitList.length;i++){
+					map = {};
+					map["title"] = waitList[i].xszdmc;
+					map["titleTooltip"] = waitList[i].zdsm;
+					map["field"] = waitList[i].xszd;
+					if(waitList[i].pxzd&&waitList[i].pxzd!="")
+						map["sortable"] = true;
+					map["width"] = waitList[i].xskd + "%";
+					if(waitList[i].xsgs){
+						map["formatter"] = waitList[i].xsgs;
+					}
+					map["visible"] = false;
+					specimenExperimental.push(map);
+				}
+			}
+		}else{
+			var waitList= [[${waitList}]];
+			if(waitList && waitList.length>0){
+				map = {};
+				map["checkbox"] = true;
+				map["width"] = "1%";
+				specimenExperimental.push(map);
+				for(i=0;i< waitList.length;i++){
+					map = {};
+					map["title"] = waitList[i].xszdmc;
+					map["titleTooltip"] = waitList[i].xszdmc;
+					map["field"] = waitList[i].xszd;
+					if(waitList[i].pxzd&&waitList[i].pxzd!="")
+						map["sortable"] = true;
+					map["width"] = waitList[i].xskd + "%";
+					if(waitList[i].xsgs){
+						map["formatter"] = waitList[i].xsgs;
+					}
+					if(waitList[i].mrxs == '0'){
+						map["visible"] = false;
+					}else if(waitList[i].mrxs == '9'){
+						map["visible"] = false;
+					}
+					specimenExperimental.push(map);
+				}
+			}
+		}
+
+	</script>
+<style type="text/css">
+</style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+ 	<form id="specimenExperimentalForm" class="form-horizontal form-inline">
+		<input type="hidden" id="limitColumns" name="limitColumns" th:value="${limitColumns}"/>
+		<input type="hidden" id="lx" name="lx" th:value="${lx}"/>
+		<input type="hidden" name="jcdwxz" id="jcdwxz" th:value="${jcdwxz}">
+		<input type="hidden" name="single_flag" id="single_flag" th:value="${single_flag}">
+		<input type="hidden" name="allNum" id="allNum">
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件</div>
+			<div class="panel-body">
+			 	<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="specimenExperimental_select" id="specimenExperimental_select" class="form-control chosen-select" style="height:34px;">
+		                	<option value="0">标本编号</option>
+		                	<option value="1">内部编号</option>
+		                	<option value="2">患者姓名</option>
+		         		</select>
+			      		<input id="specimenExperimental_input" name="specimenExperimental_input" class="form-control" placeholder="模糊匹配"
+                        onkeydown="if(event.keyCode==13) {searchSpecimenExperimentalResult(); return false;}"/>
+					</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+					<span class="btn btn-primary btn-sm margin_b5" id="initTableField">字段</span>
+				</div>
+
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+					<span class="tit">已选条件：</span>
+					<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+						<ul id="sl_add_ul"></ul>
+					</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;" >
+					<div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:80px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+						<div class="tab-pane active" id="tab06">
+							<div id="jcxm_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测项目" >检测项目：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${detectlist!=null && detectlist.size() >0}" th:each="detect:${detectlist}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[jcxm]],[[${detect.csid}]],[[specimenExperimentalForm]]);" th:id="'jcxm_id_'+${detect.csid}">
+													<span th:text="${detect.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div id="jcwd_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测单位" >检测单位：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${detectionList!=null && detectionList.size() >0}" th:each="list:${detectionList}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[jcdw]],[[${list.csid}]],[[specimenExperimentalForm]]);" th:id="'jcdw_id_'+${list.csid}">
+													<span th:text="${list.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="送达温度" >送达温度：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<input id="bbsdwdstart" name="bbsdwdstart" class="form-control" placeholder="温度起始数值" validate="{required:true}" />°C~
+										<input id="bbsdwdend" name="bbsdwdend" class="form-control" placeholder="温度终止数值" validate="{required:true}" />°C
+									</div>
+								</div>
+							</div>
+
+							<div id="cyrq" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+								<div class="form-group width100">
+									<label class="col-sm-3 col-md-2 col-lg-2 control-label" title="采样日期" >采样日期：</label>
+									<div class="col-sm-9  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+										<input id="cyrqstart" name="cyrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" autocomplete="off"/>~
+										<input id="cyrqend" name="cyrqend" class="form-control" placeholder="结束日期" validate="{required:true}" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+
+							<div id="jsrq" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+								<div class="form-group width100">
+									<label class="col-sm-3 col-md-2 col-lg-2 control-label" title="接收日期" >接收日期：</label>
+									<div class="col-sm-7  col-md-8 col-lg-8 sl_sel_list" style="margin-top:5px">
+										<input id="jsrqstart" name="jsrqstart" class="form-control" placeholder="开始日期" autocomplete="off"/>~
+										<input id="jsrqend" name="jsrqend" class="form-control" placeholder="结束日期" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+
+							<div id="syrq" class="col-md-6 col-sm-6 col-lg-6 col-xs-6">
+								<div class="form-group width100">
+									<label class="col-sm-3 col-md-2 col-lg-2 control-label" title="实验日期" >实验日期：</label>
+									<div class="col-sm-7  col-md-8 col-lg-8 sl_sel_list" style="margin-top:5px">
+										<input id="syrqstart" name="syrqstart" class="form-control" placeholder="开始日期" autocomplete="off"/>~
+										<input id="syrqend" name="syrqend" class="form-control" placeholder="结束日期" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+
+							<div id="bgrq" class="col-xs-6 col-sm-6 col-lg-6">
+								<div class="form-group width100">
+									<label class="col-sm-3 col-md-2 col-lg-2 control-label" title="报告日期" >报告日期：</label>
+									<div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list"  style="margin-top:5px">
+										<input id="bgrqstart" name="bgrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" autocomplete="off"/>~
+										<input id="bgrqend" name="bgrqend" class="form-control" placeholder="结束日期" validate="{required:true}" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<div th:include="common/btn/ancz.html"></div>
+		<input  type="hidden" id="jcxm_id_tj" name="jcxm_id_tj">
+		<input  type="hidden" id="jcdw_id_tj" name="jcdw_id_tj">
+
+ 		<table id="specimenExperimental_list" class="table table-hover table-bordered table-hidden"></table>
+ 	</form>
+</div>
+</body>
+<script type="text/javascript" src="/js/wechat/sampleExperiment/specimenExperimental_list.js?v=20240911"></script>
+</html>

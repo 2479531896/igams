@@ -1,0 +1,19 @@
+$(function(){
+	$("#nrwbxx1").text($("#wbxx1").val());
+	$("#nrwbxx2").text($("#wbxx2").val());
+	$("#nrwbxx3").text($("#wbxx3").val());
+	$("#nrwbxx4").text($("#wbxx4").val());
+	$("#nrwbxx5").text($("#wbxx5").val());
+	$("#nrwbxx6").text($("#wbxx6").val());
+	$("#nrwbxx7").text($("#wbxx7").val());
+	$("#nrwbxx8").text($("#wbxx8").val());
+	$("#nrsjxx1").text($("#sjxx1").val());
+	$("#nrsjxx2").text($("#sjxx2").val());
+	$("#nrsjxx3").text($("#sjxx3").val());
+	$("#nrrqxx1").text($("#rqxx1").val());
+	$("#nrrqxx2").text($("#rqxx2").val());
+	$("#nrrqxx3").text($("#rqxx3").val());
+	$("#nrbjxx1").text($("#bjxx1").val());
+	$("#nrbjxx2").text($("#bjxx2").val());
+	$("#nrbjxx3").text($("#bjxx3").val());
+})

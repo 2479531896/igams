@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<style type="text/css">
+
+    .tab{
+        border: 1px solid #DEDEDE;
+        width:100%;
+    }
+    .tab thead tr{
+        background-color: #63a3ff;
+        height: 30px;
+        color:#000;
+
+    }
+    .tab th{
+        border: 1px solid #DEDEDE;
+        padding-left:5px;
+        padding-top:2px;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    .tab td{
+        border: 1px solid #DEDEDE;
+        height:25px;
+        padding-left:5px;
+        padding-top:2px;
+        font-size: 10px;
+    }
+
+    .width_2{
+        width: 7%;
+    }
+    .width_3{
+        width: 31%;
+    }
+
+    #tabAttainmentRate thead tr{
+        background-color:#00B2EE;
+        height:40px;
+    }
+    #tabAttainmentRate tr{
+        cursor: pointer;
+    }
+    #tabAttainmentRate th{
+        border:1px solid #C9C9C9;
+        text-align: center;
+    }
+    #tabAttainmentRate td{
+        border:1px solid #C9C9C9;
+        text-align: center;
+    }
+    #tabAttainmentRate .qu_td{
+        width:25%;
+    }
+
+    #tabAttainmentRate tbody .qu_td{
+        background-color:#E0FFFF;
+    }
+    #tabAttainmentRate .other_td{
+        width:25%;
+    }
+    .tab tbody tr:nth-of-type(even){ background:#FFFFFF;}偶数行
+</style>
+<head>
+    <script>
+        function xz(fjid){
+            jQuery('<form action="/common/file/downloadFile" method="POST">' +  // action请求路径及推送方法
+                '<input type="text" name="fjid" value="'+fjid+'"/>' +
+                '<input type="text" name="access_token" value="'+$("#ac_tk").val()+'"/>' +
+                '</form>')
+                .appendTo('body').submit().remove();
+        }
+        function jcxz(sqglid){
+            jQuery('<form action="/application/application/pagedataDetectionZipDownload" method="POST">' +  // action请求路径及推送方法
+                '<input type="text" name="sqglid" value="'+sqglid+'"/>' +
+                '<input type="text" name="access_token" value="'+$("#ac_tk").val()+'"/>' +
+                '</form>')
+                .appendTo('body').submit().remove();
+        }
+        function yl(fjid,wjm){
+            var begin=wjm.lastIndexOf(".");
+            var end=wjm.length;
+            var type=wjm.substring(begin,end);
+            if(type.toLowerCase()==".jpg" || type.toLowerCase()==".jpeg" || type.toLowerCase()==".jfif"||type.toLowerCase()==".png"){
+                var url="/ws/sjxxpripreview?pageflg=1&fjid="+fjid
+                window.open(url);
+            }else if(type.toLowerCase()==".pdf"){
+                var url="/common/view/displayView?view_url=/ws/file/pdfPreview?fjid=" + fjid;
+                window.open(url);
+            }else {
+                $.alert("暂不支持其他文件的预览，敬请期待！");
+            }
+        }
+    </script>
+</head>
+<body>
+<form id="ajaxForm"  data-bs-toggle="validation" method="post"  class="form-horizontal sl_all_form">
+    <ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+        <li  class="nav-item" ><a  class="nav-link active" href="#glTab" role="tab" data-bs-toggle="tab">申请详情</a></li>
+        <li  class="nav-item" th:if="${jcsqglDto.lx eq '0'}"><a  class="nav-link" href="#mxTab" role="tab" data-bs-toggle="tab">申请明细</a></li>
+    </ul>
+    <div class="body-content tab-content">
+        <input type="hidden" name="access_token" />
+        <div role="tabpanel" class="tab-pane fade active in" id="glTab" aria-labelledby="home-tab" >
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                类型：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:if="${jcsqglDto.lx eq '0'}" >清单</span>
+                                <span th:if="${jcsqglDto.lx eq '1'}" >自定义</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                申请类型：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.sqlxmc}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                申请原因：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.sqyy}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                需求说明：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.xqsm}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" th:if="${jcsqglDto.sqlxcsdm eq 'WZ'}">
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                物种信息：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.wzxx}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                样本信息：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.ybxx}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                文库信息：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.wkxx}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                伙伴信息：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.hbxx}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" th:if="${jcsqglDto.lx eq '1'}">
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-5 control-label">
+                                合作伙伴：
+                            </label>
+                            <div class="col-sm-8 col-xs-7 padding_t7">
+                                <span th:text="${jcsqglDto.hb}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+                                <div th:id="${fjcfbDto.fjid}" >
+                                    <label for="" class="col-sm-4 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件："></label>
+                                    <label for="" class="col-sm-4 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+                                    <div class="col-sm-8 padding_t7">
+                                        <label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+                                        <a title="下载"  th:onclick="xz([[${fjcfbDto.fjid}]])" >
+                                            <span th:text="${fjcfbDto.wjm}"></span>
+                                            <span class="glyphicon glyphicon glyphicon-save"></span>
+                                        </a>&nbsp;&nbsp;
+                                        <a th:onclick="yl([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]])">
+                                            <span  class="glyphicon glyphicon-eye-open" ></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <div id="fjcfbDto" th:if="${jcck_fjcfbDtos != null && jcck_fjcfbDtos.size() >0}" th:each="ckfjcfbDto:${jcck_fjcfbDtos}">
+                                <div th:id="${ckfjcfbDto.fjid}" >
+                                    <label for="" class="col-sm-4 control-label" th:if="${ckfjcfbDtoStat.index == 0}" th:text="参考附件："></label>
+                                    <label for="" class="col-sm-4 control-label" th:if="${ckfjcfbDtoStat.index > 0}"></label>
+                                    <div class="col-sm-8 padding_t7">
+                                        <label for="" th:text="${ckfjcfbDtoStat.index+1}+."></label>
+                                        <a title="下载"  th:onclick="xz([[${ckfjcfbDto.fjid}]])" >
+                                            <span th:text="${ckfjcfbDto.wjm}"></span>
+                                            <span class="glyphicon glyphicon glyphicon-save"></span>
+                                        </a>&nbsp;&nbsp;
+                                        <a th:onclick="yl([[${ckfjcfbDto.fjid}]],[[${ckfjcfbDto.wjm}]])">
+                                            <span  class="glyphicon glyphicon-eye-open" ></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12"  th:if="${jcwjm !='' }">
+                        <div class="form-group">
+                            <div id="jc" >
+                                <div >
+                                    <label for="" class="col-sm-4 control-label"  th:text="检出文件："></label>
+                                    <div class="col-sm-8 padding_t7">
+                                        <a title="下载"  th:onclick="jcxz([[${jcsqglDto.sqglid}]])" >
+                                            <span th:text="${jcwjm}"></span>
+                                            <span class="glyphicon glyphicon glyphicon-save"></span>
+                                        </a>&nbsp;&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane fade " id="mxTab" aria-labelledby="profile-tab">
+            <div class="panel-body">
+                <table class="tab">
+                    <thead>
+                    <tr>
+                        <th class="width_2">序号</th>
+                        <th class="width_3">标本编号</th>
+                        <th class="width_3">患者姓名</th>
+                        <th class="width_3">标本类型</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${jcsqmxDtos!=null && jcsqmxDtos.size() >0}" th:each="list:${jcsqmxDtos}">
+                        <td th:title="${listStat.index+1}" th:text="${listStat.index+1}"></td>
+                        <td th:text="${list.ybbh}"></td>
+                        <td th:text="${list.hzxm}"></td>
+                        <td  th:text="${list.yblxmc}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>

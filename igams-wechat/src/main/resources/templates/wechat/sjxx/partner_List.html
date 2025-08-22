@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+	<script type="text/javascript" src="/js/wechat/sjxx/partner_List.js?v=20250217v5" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+ 	<form id="partner_formSearch" class="form-horizontal form-inline">
+ 		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+			 	<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+		                	<option value="0">合作伙伴</option>
+		                	<option value="1">省份</option>
+		                	<option value="2">城市</option>
+		                	<option value="3">用户</option>
+		                	<option value="4">统计名称</option>
+		                	<option value="5">商务名称</option>
+							<option value="6">合作公司</option>
+		         		</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+			       		onkeydown="if(event.keyCode==13) {searchPartnerResult(); return false;}"/>
+					</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+					<span class="tit">已选条件：</span>
+					<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+						<ul id="sl_add_ul"></ul>
+					</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;">
+					<div class="tab-content sl_sel_con row" style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+							id="sl_sel_con">
+						<div class="tab-pane active" id="tab06">
+							<div id="scbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label 
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="状态">状态：								
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+													onclick="addTj('scbj','0','partner_formSearch');"
+													id="scbj_id_0">
+													<span>正常</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+													onclick="addTj('scbj','1','partner_formSearch');"
+													id="scbj_id_1">
+													<span>已删除</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('scbj','2','partner_formSearch');"
+												   id="scbj_id_2">
+												<span>停用</span>
+											</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="fl_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label 
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="分类">分类：								
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+ 											<li th:if="${classifylist!=null && classifylist.size() > 0}" th:each="list:${classifylist}">
+ 												<a style='text-decoration:none;cursor:pointer;' 
+ 													th:onclick="addTj('fl',[[${list.csid}]],'partner_formSearch');" th:id="'fl_id_'+${list.csid}">
+ 													<span th:text="${list.csmc}"></span>
+ 												</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>		
+							<div id="zfl_id" class="col-xs-12 col-sm-12 col-lg-12 hidden" >
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="子分类">子分类：
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+		                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_zfl">
+		                                    <li th:if="${subclassificationlist!=null && subclassificationlist.size() >0}" th:each="list:${subclassificationlist}">
+		                                        <a style='text-decoration:none;cursor:pointer;' th:onclick="addTj('zfl',[[${list.csid}]],'partner_formSearch');" th:id="'zfl_id_'+${list.csid}">
+													<span th:text="${list.csmc}"></span>
+		                                        </a>
+		                                    </li>
+		                            	</ul>
+			                    	</div>
+								</div>
+							</div>
+							<div id="bgmb_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label 
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="报告模板">报告模板：								
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+ 											<li th:if="${templatelist!=null && templatelist.size() > 0}" th:each="list:${templatelist}">
+ 												<a style='text-decoration:none;cursor:pointer;' 
+ 													th:onclick="addTj([[bgmb]],[[${list.csid}]],[[partner_formSearch]]);" th:id="'bgmb_id_'+${list.csid}">
+ 													<span th:text="${list.csmc}"></span>
+ 												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div id="yptgs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="平台归属">平台归属：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${yptgslist!=null && yptgslist.size() >0}"
+												th:each="t_yptgs:${yptgslist}"><a
+													style='text-decoration: none; cursor: pointer;'
+													th:onclick="addTj('yptgs',[[${t_yptgs.csid}]],'partner_formSearch');"
+													th:id="'yptgs_id_'+${t_yptgs.csid}"><span
+													th:style="${t_yptgs.scbj eq '2'?'color:red':''}"
+													th:text="${t_yptgs.csmc}+ ${t_yptgs.scbj eq '2'?'(停用)':''}"></span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="ptgs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="销售部门">销售部门：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${ptgslist!=null && ptgslist.size() >0}"
+												th:each="t_ptgs:${ptgslist}"><a
+													style='text-decoration: none; cursor: pointer;'
+													th:onclick="addTj('ptgs',[[${t_ptgs.csid}]],'partner_formSearch');"
+													th:id="'ptgs_id_'+${t_ptgs.csid}"><span
+													th:style="${t_ptgs.scbj eq '2'?'color:red':''}"
+													th:text="${t_ptgs.csmc}+ ${t_ptgs.scbj eq '2'?'(停用)':''}"></span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="sf_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="省份">省份：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${sflist!=null && sflist.size() >0}" th:each="t_sf:${sflist}"><a style='text-decoration: none; cursor: pointer;'
+													th:onclick="addTj('sf',[[${t_sf.csid}]],'partner_formSearch');"
+													th:id="'sf_id_'+${t_sf.csid}"><span
+													th:style="${t_sf.scbj eq '2'?'color:red':''}"
+													th:text="${t_sf.csmc}+ ${t_sf.scbj eq '2'?'(停用)':''}"></span></a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div id="oncoqx_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="onco权限">onco权限：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('oncoqx','0','partner_formSearch');"
+												   id="oncoqx_id_0">
+													<span>否</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('oncoqx','1','partner_formSearch');"
+												   id="oncoqx_id_1">
+												<span>是</span>
+											</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="zdfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="自动发送">自动发送：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfs','0','partner_formSearch');"
+												   id="zdfs_id_0">
+													<span>否</span>
+												</a>
+											</li>
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfs','1','partner_formSearch');"
+												   id="zdfs_id_1">
+												<span>是</span>
+												</a>
+											</li>
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfs','null1','partner_formSearch');"
+												   id="zdfs_id_null1">
+													<span>未设置</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="zdfst_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="自动发送">自动发送：</label>
+									<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfst','0','partner_formSearch');"
+												   id="zdfst_id_0">
+													<span>否</span>
+												</a>
+											</li>
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfst','1','partner_formSearch');"
+												   id="zdfst_id_1">
+													<span>是</span>
+												</a>
+											</li>
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('zdfst','null1','partner_formSearch');"
+												   id="zdfst_id_null1">
+													<span>未设置</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> 
+		<input type="hidden" id="scbj_id_tj" name="scbj_id_tj"> 
+		<input type="hidden" id="fl_id_tj" name="fl_id_tj"> 
+		<input type="hidden" id="zfl_id_tj" name="zfl_id_tj"> 
+		<input type="hidden" id="bgmb_id_tj" name="bgmb_id_tj"> 
+		<input type="hidden" id="ptgs_id_tj" name="ptgs_id_tj">
+		<input type="hidden" id="yptgs_id_tj" name="yptgs_id_tj">
+		<input type="hidden" id="sf_id_tj" name="sf_id_tj">
+		<input type="hidden" id="oncoqx_id_tj" name="oncoqx_id_tj">
+		<input type="hidden" id="zdfs_id_tj" name="zdfs_id_tj">
+		<input type="hidden" id="zdfst_id_tj" name="zdfst_id_tj">
+		<div th:include="common/btn/ancz.html"></div>
+ 		<table id="partner_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true"></table>
+ 	</form>
+</div> 
+</body>
+</html>

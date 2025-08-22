@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+    <form id="resfirst_formSearch" class="form-horizontal form-inline">
+        <input  type="hidden" id="jcxmdm" name="jcxmdm" th:value="${jcxmdm}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="resfirst_select" id="resfirst_select" class="form-control chosen-select" style="height:34px;">
+                            <option value="0">患者姓名</option>
+                            <option value="1">合作伙伴</option>
+                            <option value="2">医院名称</option>
+                            <option value="5">标本编号</option>
+                            <option value="6">内部编码</option>
+                            <option value="9">快递单号</option>
+                            <option value="10">主治医师</option>
+                            <option value="12">阳性病原</option>
+                        </select>
+                        <input id="resfirst_input" name="resfirst_input" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {searchResFirstResult(); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:300px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tabrfs">
+                            <div id="sjdw_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="送检科室">送检科室：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${sjdwxxlist!=null && sjdwxxlist.size() >0}" th:each="sjdwxx:${sjdwxxlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[sjdw]],[[${sjdwxx.dwid}]],[[resfirst_formSearch]]);" th:id="'sjdw_id_'+${sjdwxx.dwid}">
+                                                    <span th:text="${sjdwxx.dwmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yblx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="标本类型" >标本类型：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${samplelist!=null && samplelist.size() >0}" th:each="sample:${samplelist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yblx]],[[${sample.csid}]],[[resfirst_formSearch]]);" th:id="'yblx_id_'+${sample.csid}">
+                                                    <span th:text="${sample.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="sjhbfl_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="伙伴分类">伙伴分类：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${sjhbflList!=null && sjhbflList.size() >0}" th:each="sjhbfl:${sjhbflList}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj('sjhbfl',[[${sjhbfl.csid}]],'resfirst_formSearch');" th:id="'sjhbfl_id_'+${sjhbfl.csid}"><span th:style="${sjhbfl.scbj eq '2'?'color:red':''}" th:text="${sjhbfl.csmc}+ ${sjhbfl.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sftj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否统计" >是否统计：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" style="top:4px;" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sftj','1','resfirst_formSearch');"
+                                                   id="sftj_id_1"><span>统计</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sftj','0','resfirst_formSearch');"
+                                                   id="sftj_id_0"><span>不统计</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfjs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否接收" >是否接收：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfjs','1','resfirst_formSearch');"
+                                                   id="sfjs_id_1"><span>接收</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfjs','0','resfirst_formSearch');"
+                                                   id="sfjs_id_0"><span>不接收</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jcwd_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测单位" >检测单位：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${detectionList!=null && detectionList.size() >0}" th:each="list:${detectionList}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[jcdw]],[[${list.csid}]],[[resfirst_formSearch]]);" th:id="'jcdw_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="kdlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="快递类型" >快递类型：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${expressage!=null && expressage.size() >0}" th:each="list:${expressage}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[kdlx]],[[${list.csid}]],[[resfirst_formSearch]]);" th:id="'kdlx_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="bgrq" class="col-xs-6 col-sm-6 col-lg-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="报告日期" >报告日期：</label>
+                                    <div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+                                        <input id="bgrqstart" name="bgrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                        <input id="bgrqend" name="bgrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="resfirst_list" class="table table-hover table-bordered table-hidden"></table>
+        <input  type="hidden" id="sjhbfl_id_tj" name="sjhbfl_id_tj">
+        <input  type="hidden" id="sjdw_id_tj" name="sjdw_id_tj">
+        <input  type="hidden" id="yblx_id_tj" name="yblx_id_tj">
+        <input  type="hidden" id="sfjs_id_tj" name="sfjs_id_tj">
+        <input  type="hidden" id="sftj_id_tj" name="sftj_id_tj">
+        <input  type="hidden" id="kdlx_id_tj" name="kdlx_id_tj">
+        <input  type="hidden" id="jcdw_id_tj" name="jcdw_id_tj">
+    </form>
+</div>
+</body>
+<script type="text/javascript" src="/js/wechat/resfirst/resfirst_list.js?v=20231128001"></script>
+</html>

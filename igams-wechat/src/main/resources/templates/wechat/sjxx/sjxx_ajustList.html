@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+	<meta charset="UTF-8">
+	<style>
+		.col-md-6{
+			height:33px;
+		}
+		.col-sm-4{
+			height:24px;
+		}
+		._bacg{
+			text-align: center;
+			background: rgba(113,214,255,0.26)
+		}
+	</style>
+</head>
+<body>
+<form id="ajustView_form" action="/inspection/inspection/pagedataModInfo" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+	<input type="hidden" name="kzcs4" id="kzcs4" th:value="${sjxxDto.yblxdm}"/>
+	<input type="hidden" name="sjid" id="id" th:value="${sjxxDto.sjid}"/>
+	<input type="hidden" name="kzcs5" id="kzcs5" th:value="${sjxxDto.jcdwmc}"/>
+	<input type="hidden" name="jcdw" id="jcdw" th:value="${sjxxDto.jcdw}"/>
+	<input type="hidden" name="json" id="json"/>
+	<input type="hidden" name="access_token"/>
+	<div class="body-content tab-content">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-md-1 col-sm-1 control-label">
+								检测项目：
+							</label>
+							<div class="col-md-3 col-sm-3" style="padding-top: 6px"  th:each="dto,local:${dtoList}">
+								<input th:id="${local.index}"  th:value="${dto.jcxmid+'-'+dto.jczxmid}" th:name="jcxm" type="radio" th:checked="${local.index eq 0}"/>
+								<span th:onclick='checkThis([[${local.index}]])' style="cursor:pointer" th:text="${dto.jczxmmc eq '' || dto.jczxmmc eq null ? dto.jcxmmc:dto.jcxmmc+'-'+dto.jczxmmc}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<table id="info_list" class="table table-hover table-bordered table-hidden"></table>
+		</div>
+	</div>
+</form>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var oTable = new Info_TableInit();
+		oTable.Init();
+	});
+
+
+	function checkThis(index){
+		$("#ajustView_form input[type='radio']").each(function(index){
+			if(this.checked){
+				$("#ajustView_form #"+this.id).removeAttr("checked");
+			}
+		})
+		$('#ajustView_form #'+index).attr('checked', true);
+		$('#ajustView_form #info_list').bootstrapTable('refresh');
+	}
+
+	$('#ajustView_form input:radio').click(function () {
+		$('#ajustView_form #info_list').bootstrapTable('refresh');
+	});
+
+	var Info_TableInit=function(){
+		var oTableInit = new Object();
+		oTableInit.Init = function (){
+			$('#ajustView_form #info_list').bootstrapTable({
+				url: "/inspection/inspection/pagedataGetInfo",         //请求后台的URL（*）
+				method: 'get',                      //请求方式（*）
+				toolbar: '#ajustView_form #toolbar',                //工具按钮用哪个容器
+				striped: true,                      //是否显示行间隔色
+				cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+				pagination: true,                   //是否显示分页（*）
+				paginationShowPageGo: true,         //增加跳转页码的显示
+				sortable: true,                     //是否启用排序
+				sortName: "xxdy.zid,xxdy.kzcs5,xxdy.kzcs4,xxdy.kzcs6",				//排序字段
+				sortOrder: "desc",                   //排序方式
+				queryParams: oTableInit.queryParams,//传递参数（*）
+				sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+				pageNumber:1,                       //初始化加载第一页，默认第一页
+				pageSize: 15,                       //每页的记录行数（*）
+				pageList: [15, 30, 50, 100],        //可供选择的每页的行数（*）
+				paginationPreText: '‹',				//指定分页条中上一页按钮的图标或文字,这里是<
+				paginationNextText: '›',			//指定分页条中下一页按钮的图标或文字,这里是>
+				search: false,                      //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+				strictSearch: true,
+				showColumns: true,                  //是否显示所有的列
+				showRefresh: true,                  //是否显示刷新按钮
+				minimumCountColumns: 2,             //最少允许的列数
+				clickToSelect: true,                //是否启用点击选中行
+				//height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+				uniqueId: "dyid",                     //每一行的唯一标识，一般为主键列
+				showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+				cardView: false,                    //是否显示详细视图
+				detailView: false,                   //是否显示父子表
+				/*rowStyle:rowStyle,*/               //通过自定义函数设置行样式
+				columns: [{
+					checkbox: true
+				},{
+					field: 'dyid',
+					title: '对应ID',
+					width: '2%',
+					align: 'left',
+					visible:false
+				},{
+					field: 'dylx',
+					title: '对应类型',
+					width: '20%',
+					align: 'left',
+					visible: false
+				},{
+					field: 'dylxmc',
+					title: '对应类型',
+					width: '14%',
+					align: 'left',
+					sortable: true,
+					visible: false
+				},{
+					field: 'yxx',
+					title: '原信息',
+					width: '26%',
+					align: 'left',
+					sortable: true,
+					visible:false,
+				},{
+					field: 'dyxx',
+					title: '对应信息ID',
+					width: '20%',
+					align: 'left',
+					visible:false,
+				},{
+					field: 'dyxxmc',
+					title: '对应信息',
+					width: '20%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+				},{
+					field: 'zxx',
+					title: '子信息',
+					width: '20%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+
+				},{
+					field: 'dydm',
+					title: '对应代码',
+					width: '16%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+				},{
+					field: 'kzcs1',
+					title: '扩展参数1',
+					width: '10%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+				},{
+					field: 'kzcs2',
+					title: '扩展参数2',
+					width: '10%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+				},{
+					field: 'kzcs3',
+					title: '扩展参数3',
+					width: '10%',
+					align: 'left',
+					visible:true,
+				},{
+					field: 'kzcs4',
+					title: '扩展参数4',
+					width: '10%',
+					align: 'left',
+					visible:true,
+				},{
+					field: 'kzcs5',
+					title: '扩展参数5',
+					width: '10%',
+					align: 'left',
+					visible:true,
+				},{
+					field: 'kzcs6',
+					title: '扩展参数6',
+					width: '10%',
+					align: 'left',
+					sortable: true,
+					visible:true,
+				}],
+				onLoadSuccess:function(){
+				},
+				onLoadError:function(){
+					alert("数据加载失败！");
+				},
+			});
+			$("#ajustView_form #info_list").colResizable({
+				liveDrag:true,
+				gripInnerHtml:"<div class='grip'></div>",
+				draggingClass:"dragging",
+				resizeMode:'fit',
+				postbackSafe:true,
+				partialRefresh:true}
+			);
+		}
+		oTableInit.queryParams=function(params){
+			var map = {   // 这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
+				pageSize: params.limit,   // 页面大小
+				pageNumber: (params.offset / params.limit) + 1,  // 页码
+				access_token:$("#ac_tk").val(),
+				sortName: params.sort,      // 排序列名
+				sortOrder: params.order, // 排位命令（desc，asc）
+				yxxid: $("#ajustView_form input[name='jcxm']:checked").val(),
+				kzcs4: $("#ajustView_form #kzcs4").val(),
+				kzcs5: $("#ajustView_form #kzcs5").val(),
+				id: $("#ajustView_form #id").val(),
+			};
+			return map;
+		};
+		return oTableInit
+	}
+</script>
+</body>
+</html>

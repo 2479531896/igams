@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>送检报告列表</title>
+<style>
+</style>
+</head>
+<body>
+<div id="local_list_div">
+	<input type="hidden" id="load_flg" th:value="${load_flg}"/>
+	<input type="hidden" id="jsrq" th:value="${sjwzxxDto.jsrq}"/>
+	<input type="hidden" id="bgrq" th:value="${sjwzxxDto.bgrq}"/>
+	<input type="hidden" id="jyjg" th:value="${sjwzxxDto.jyjg}"/>
+	<input th:if="${back_flg!=null}" type="hidden" id="back_flg" th:value="${back_flg}">
+	<div class="col-md-12 col-sm-12 col-xs-12" style="padding:0px;">
+		<div class="alert alert-info" role="alert" style="font-size:16px;">
+			类型：<span th:text="${sjwzxxDto.lxmc}"></span>
+			<input  class="btn btn-primary" type="button" style="float: right;" onclick="wzxx_back_view()" value="返回"/>
+		</div>
+	</div>
+	<div class="container">
+		<table class="table table-striped table-bordered table-hover table-condensed" style="table-layout: fixed;width:100%">
+			<thead>
+				<tr>
+					<th>标本类型</th>
+					<th>合作伙伴</th>
+					<th>检测项目</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="sjxxDto:${sjxxList}">
+					<td th:text="${sjxxDto.yblxmc}"></td>
+					<td th:text="${sjxxDto.db}"></td>
+					<td th:text="${sjxxDto.jcxm}" style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"></td>
+					<td><input type="button" class="btn" th:onclick="getViewSjxx([[${sjxxDto.sjid}]])" value="查看"></td>
+				</tr>
+			</tbody>
+		</table>
+</div>
+</div>
+<script type="text/javascript">
+	var jsrq=$("#local_list_div #jsrq").val();
+	function getViewSjxx(sjid){
+		var load_flg=$("#local_list_div #load_flg").val();
+		if(jsrq){
+			$("#local_list_div").load("/ws/inspection/viewSjxx?sjid="+sjid+"&bgrq="+$("#local_list_div #bgrq").val()+"$jyjg="+$("#local_list_div #jyjg").val()+"&load_flg="+$("#local_list_div #load_flg").val());
+		}else{
+			$("#weeklyStatis").load("/ws/inspection/viewSjxx?sjid="+sjid+"&bgrq="+$("#local_list_div #bgrq").val()+"$jyjg="+$("#local_list_div #jyjg").val()+"&load_flg="+$("#local_list_div #load_flg").val()+"&back_flg=weekly");
+		}
+	}
+	function wzxx_back_view(){
+		if($("#local_list_div #back_flg").val()){
+			$("#weeklyStatis").load("/wechat/statistics/pageListLocal_weekly");
+		}else{
+			$("#local_list_div").load("/wechat/statistics/pageListLocal_daliy?jsrq="+jsrq);
+		}
+		
+	}
+</script>
+</body>
+</html>

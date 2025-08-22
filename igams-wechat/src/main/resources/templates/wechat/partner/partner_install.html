@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<style type="text/css">
+    .sjhbsearch_small{
+        position: fixed;
+        z-index: 1;
+        background-color: white;
+        width: 96%;
+    }
+    .search_box {
+        margin: 0px 0px 30px 15px;
+    }
+
+    .search_box input {
+        background-color: #F5F5F5;
+        width: 100%;
+        display: inline-block;
+    }
+
+    .sl_sel_list li {
+        float: left;
+        line-height: 30px;
+        padding: 0px;
+    }
+
+    .form-horizontal .form-group {
+        margin: 0px;
+    }
+    .col-xs-12{
+        padding-left: 0px;
+    }
+    .form-horizontal .control-label {
+        text-align: left;
+    }
+
+</style>
+<body>
+<form data-bs-toggle="validation" action="/partner/partner/partnerinstallSaveHb" method="post" id="ajaxForm"
+      class="form-horizontal sl_all_form">
+    <input type="hidden" id="yhid" name="yhid" th:value="${hbqxDto.yhid}">
+    <input type="hidden" id="ids" name="ids">
+    <input type="hidden" name="access_token"/>
+    <div class="modal-body body-content">
+        <div class="row">
+            <div class="col-md-12" style="min-height:200px; position: relative">
+                <div class="form-group" id="sjhbsearch">
+                    <div class="col-sm-12 col-xs-12">
+                        <div class="col-sm-3 col-xs-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 col-xs-4 control-label">
+                                    上级：
+                                </label>
+                                <div class="col-sm-8 col-xs-8">
+                                    <select id="sjid" name="sjid" class="form-control chosen-select">
+                                        <option value="">--请选择--</option>
+                                        <option th:if="${xtyhlist!=null && xtyhlist.size() > 0}" th:each="list:${xtyhlist}" th:value="${list.yhid}" th:text="${'('+list.yhm+')'+list.zsxm}" th:selected="${yhqtxxDto.sjid eq list.yhid}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 col-xs-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 col-xs-4 control-label">
+                                    省份：
+                                </label>
+                                <div class="col-sm-8 col-xs-8">
+                                    <select name="sf" id="sf" class="form-control chosen-select">
+                                        <option value="">--请选择--</option>
+                                        <option th:if="${provinceList!=null && provinceList.size() > 0}" th:each="province:${provinceList}" th:value="${province.csid}" th:text="${province.csmc}" th:selected="${province.csid eq yhqtxxDto.sf}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-xs-12" style="height: 25px"></div>
+                    <div class="col-sm-12 col-xs-12 search_box">
+                        <div class="col-sm-3 col-xs-12">
+                            <input type="text" name="item" class="form-control" placeholder="请输入搜索内容">
+                        </div>
+                        <button type="button" class="btn btn-primary" style="display: inline-block;" onclick="search();">搜索</button>
+                        <!-- span -->
+                        <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                        <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                            <span class="tit">已选条件：</span>
+                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                                <ul id="sl_add_ul"></ul>
+                            </div>
+                        </div>
+                        <div class="padding_t7 width100" id="searchMore" style="display: none;">
+                            <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:300px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                                <div class="tab-pane active" id="tab06">
+                                    <div id="province_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="城市">城市：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${provinceList!=null && provinceList.size() >0}" th:each="t_province:${provinceList}">
+                                                        <a style="text-decoration:none;cursor:pointer;" th:onclick="addTj('province',[[${t_province.csid}]],'ajaxForm');" th:id="'province_id_'+${t_province.csid}">
+                                                            <span th:text="${t_province.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="partner_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="伙伴分类">伙伴分类：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${partnerList!=null && partnerList.size() >0}" th:each="partner:${partnerList}">
+                                                        <a style="text-decoration:none;cursor:pointer;" th:onclick="addTj('partner',[[${partner.csid}]],'ajaxForm');" th:id="'partner_id_'+${partner.csid}">
+                                                            <span th:text="${partner.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="ptgs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="平台归属">平台归属：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${ptgsList!=null && ptgsList.size() >0}" th:each="ptgs:${ptgsList}">
+                                                        <a style="text-decoration:none;cursor:pointer;" th:onclick="addTj('ptgs',[[${ptgs.csid}]],'ajaxForm');" th:id="'ptgs_id_'+${ptgs.csid}">
+                                                            <span th:text="${ptgs.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="xsbm_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="平台归属">销售部门：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${xsbmList!=null && xsbmList.size() >0}" th:each="xsbm:${xsbmList}">
+                                                        <a style="text-decoration:none;cursor:pointer;" th:onclick="addTj('xsbm',[[${xsbm.csid}]],'ajaxForm');" th:id="'xsbm_id_'+${xsbm.csid}">
+                                                            <span th:text="${xsbm.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="伙伴状态">伙伴状态：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;' onclick="addTj('zt','0','ajaxForm');" id="zt_id_0">
+                                                            <span>正常</span>
+                                                        </a>
+                                                        <a style='text-decoration:none;cursor:pointer;' onclick="addTj('zt','2','ajaxForm');" id="zt_id_2">
+                                                            <span>停用</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="check_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="选中状态">选中状态：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;' onclick="addTj('checkzt','1','ajaxForm');" id="checkzt_id_1">
+                                                            <span>已选中</span>
+                                                        </a>
+                                                        <a style='text-decoration:none;cursor:pointer;' onclick="addTj('checkzt','2','ajaxForm');" id="checkzt_id_2">
+                                                            <span>未选中</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" style="padding-left:0px ">
+                        <label class="col-xs-12 col-sm-12 col-md-12 col-lg-12 " style="margin-left: 10px" title="伙伴分类">伙伴分类：</label>
+                        <div class="col-xs-12 col-sm-12  col-md-12 col-lg-12 sl_sel_list">
+                            <ul class="col-xs-12 col-sm-12 col-lg-12 col-md-12 ">
+                                <li class="col-xs-12 col-sm-3  col-md-2" th:if="${classifyList!=null && classifyList.size() >0}" th:each="classify:${classifyList}">
+                                    <div class="col-xs-1 col-sm-1  col-md-1" th:style="${'height: 15px;background:#' + classify.cskz3 + ';margin-top: 8px'}"></div>
+                                    <div class="col-xs-10 col-sm-8  col-md-9">
+                                        <span th:text="${classify.csmc}"></span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="col-sm-12 partner_Div">
+                    <th:block th:each="hbqx,qxstate:${hbqxlist}" th:with="var1=${qxstate.index==0?'':hbqxlist[qxstate.index-1].sfmc}">
+                        <th:block th:if="${var1 ne hbqx.sfmc}">
+                            <th:block th:if="${qxstate.index != 0 and hbqx!= null }">
+                                <p th:utext="${'</div></div>'}"/>
+                            </th:block>
+                            <div class='panel panel-info provinceDiv' th:sfid="${hbqx.sfid}" style="display: block">
+                                <div class='panel-heading'>
+                                    <h3 class='panel-title' style="display:inline-block" th:text="${hbqx.sfmc}"></h3>
+                                    <input name="checkAll" th:id="${hbqx.sfid}" class="checkAll" style="display:inline-block;margin-left:20px;" type="checkbox" th:value="${qxstate.index}"/>全选/全不选
+                                </div>
+                                <div class='panel-body'>
+                                    <div th:id="${'checkGroup'+qxstate.index}">
+                                        <div class='col-sm-2 hb' th:hbflid="${hbqx.hbflid}" th:ptgsid="${hbqx.yptgs}" th:xsbmid="${hbqx.ptgs}" th:nm="${hbqx.hbmc}" th:zt="${hbqx.scbj}" th:checkzt="${hbqx.hbxx eq hbqx.hbid? 1:2}">
+                                            <input class="hbitem" th:type="checkbox" th:id="${hbqx.hbid}" th:hbid="${hbqx.hbid}" th:name="hbid" th:checked="${hbqx.hbxx eq hbqx.hbid}" th:value="${hbqx.hbid}"/>
+                                            <label th:for="${hbqx.hbid}" th:text="${hbqx.hbmc}" th:title="${hbqx.hbmc}" th:style="'font-weight: normal;max-width: 140px;word-break: keep-all;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;vertical-align: top;'+${'color: #'+ hbqx.hbys}"></label>
+                                        </div>
+                                    </div>
+                        </th:block>
+                        <th:block th:if="${var1 eq hbqx.sfmc}">
+                            <div class='col-sm-2 hb' th:hbflid="${hbqx.hbflid}" th:ptgsid="${hbqx.yptgs}" th:xsbmid="${hbqx.ptgs}" th:nm="${hbqx.hbmc}" th:zt="${hbqx.scbj}" th:checkzt="${hbqx.hbxx eq hbqx.hbid? 1:2}">
+                                <input class="hbitem" th:type="checkbox" th:id="${hbqx.hbid}" th:hbid="${hbqx.hbid}" th:name="hbid" th:checked="${hbqx.hbxx eq hbqx.hbid}" th:value="${hbqx.hbid}"/>
+                                <label th:for="${hbqx.hbid}" th:text="${hbqx.hbmc}" th:title="${hbqx.hbmc}" th:style="'font-weight: normal;max-width: 140px;word-break: keep-all;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;vertical-align: top;'+${'color: #'+ hbqx.hbys}"></label>
+                            </div>
+                        </th:block>
+                    </th:block>
+                    <th:block th:if="${hbqxlist.size() > 0 }">
+                        <p th:utext="${'</div></div>'}"/>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="province_id_tj" name="province_id_tj">
+    <input type="hidden" id="partner_id_tj" name="partner_id_tj">
+    <input type="hidden" id="ptgs_id_tj" name="ptgs_id_tj">
+    <input type="hidden" id="zt_id_tj" name="zt_id_tj">
+    <input type="hidden" id="checkzt_id_tj" name="checkzt_id_tj">
+    <input type="hidden" id="xsbm_id_tj" name="xsbm_id_tj">
+</form>
+<script type="text/javascript" src="/js/wechat/partner/partner_install.js?v=20240222"></script>
+</body>
+</html>

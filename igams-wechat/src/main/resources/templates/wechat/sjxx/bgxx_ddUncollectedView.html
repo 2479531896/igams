@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+<style type="text/css">
+    .body-content{
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    .tab{
+        border: 1px solid #DEDEDE;
+        width:100%;
+    }
+    .tab thead tr{
+        background-color: #63a3ff;
+        height: 30px;
+        color:#000;
+
+    }
+    .tab th{
+        border: 1px solid #DEDEDE;
+        padding-left:5px;
+        padding-top:2px;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    .tab td{
+        border: 1px solid #DEDEDE;
+        height:25px;
+        padding-left:5px;
+        padding-top:2px;
+        font-size: 10px;
+    }
+
+    #tabAttainmentRate thead tr{
+        background-color:#00B2EE;
+        height:40px;
+    }
+    #tabAttainmentRate tr{
+        cursor: pointer;
+    }
+    #tabAttainmentRate th{
+        border:1px solid #C9C9C9;
+        text-align: center;
+    }
+    #tabAttainmentRate td{
+        border:1px solid #C9C9C9;
+        text-align: center;
+    }
+    #tabAttainmentRate .qu_td{
+        width:25%;
+    }
+
+    #tabAttainmentRate tbody .qu_td{
+        background-color:#E0FFFF;
+    }
+    #tabAttainmentRate .other_td{
+        width:25%;
+    }
+    .tab tbody tr:nth-of-type(even){ background:#FFFFFF;}偶数行
+</style>
+<body>
+<div id="ajaxForm" class="panel-body"  style="color: #000000;padding: 15px;text-align: center">
+    <table class="tab">
+        <thead>
+        <tr>
+            <th style="width: 2%;text-align: center">序号</th>
+            <th style="width: 12%;text-align: center">检测单位</th>
+            <th style="width: 3%;text-align: center">总数</th>
+            <th style="width: 10%;text-align: center">下机时间</th>
+            <th style="width: 10%;text-align: center">首份时间</th>
+            <th style="width: 16%;text-align: center">10分内</th>
+            <th style="width: 16%;text-align: center">20分内</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${list!=null && list.size() >0}" th:each="dto:${list}">
+            <td style="width: 2%"  th:text="${dtoStat.index+1}"></td>
+            <td style="width: 16%" th:text="${dto.csmc}">检测单位</td>
+            <td style="width: 5%" th:text="${dto.num}">总数</td>
+            <td style="width: 25%" th:text="${dto.xjsj}">下机时间</td>
+            <td style="width: 25%" th:text="${dto.scbgrq}">首份时间</td>
+            <td style="width: 11%" th:text="${dto.tenlast}">10分内</td>
+            <td style="width: 11%" th:text="${dto.fivelast}">20分内</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="col-md-3 col-sm-6 col-xs-12 padding_t7">
+    <span style="color:#000000;">报告发送分时统计</span>
+    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+    <div id="echarts_weekly_wxyh_rqtj" style="height:400px;"></div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var choseList= [[${list}]];
+    var timeList= [[${timeList}]];
+    var legendData=[];
+    var seriesData=[];
+    var choseSum={"csmc":"总数","fivelast1":0,"fivelast2":0,"fivelast3":0,"fivelast4":0,"fivelast5":0,"fivelast6":0,"fivelast7":0,"fivelast8":0,"fivelast9":0,"fivelast10":0,"fivelast11":0,"fivelast12":0}
+    
+    for(var i=0;i<choseList.length;i++){
+        legendData.push(choseList[i].csmc)
+        choseSum.fivelast1+=choseList[i].fivelast1;
+        choseSum.fivelast2+=choseList[i].fivelast2;
+        choseSum.fivelast3+=choseList[i].fivelast3;
+        choseSum.fivelast4+=choseList[i].fivelast4;
+        choseSum.fivelast5+=choseList[i].fivelast5;
+        choseSum.fivelast6+=choseList[i].fivelast6;
+        choseSum.fivelast7+=choseList[i].fivelast7;
+        choseSum.fivelast8+=choseList[i].fivelast8;
+        choseSum.fivelast9+=choseList[i].fivelast9;
+        choseSum.fivelast10+=choseList[i].fivelast10;
+        choseSum.fivelast11+=choseList[i].fivelast11;
+        choseSum.fivelast12+=choseList[i].fivelast12;
+         var dataArr=[
+            [timeList[0],choseList[i].fivelast1],[timeList[1],choseList[i].fivelast2],[timeList[2],choseList[i].fivelast3],[timeList[3],choseList[i].fivelast4],[timeList[4],choseList[i].fivelast5],[timeList[5],choseList[i].fivelast6],[timeList[6],choseList[i].fivelast7],[timeList[7],choseList[i].fivelast8],[timeList[8],choseList[i].fivelast9],[timeList[9],choseList[i].fivelast10],[timeList[10],choseList[i].fivelast11],[timeList[11],choseList[i].fivelast12]
+        ]
+        var dto={
+          name: choseList[i].csmc,
+          type: 'line',
+          smooth: true,
+          label: {
+            show: true,
+            position: 'top'
+          },
+          seriesLayoutBy: 'row',
+          data: dataArr.reverse()
+        }
+        seriesData.push(dto)
+    }
+    legendData.push("总数")
+    var sumDto={
+          name: "总数",
+          type: 'line',
+          smooth: true,
+          label: {
+            show: true,
+            position: 'top'
+          },
+          seriesLayoutBy: 'row',
+          data: [
+            [timeList[0],choseSum.fivelast1],[timeList[1],choseSum.fivelast2],[timeList[2],choseSum.fivelast3],[timeList[3],choseSum.fivelast4],[timeList[4],choseSum.fivelast5],[timeList[5],choseSum.fivelast6],[timeList[6],choseSum.fivelast7],[timeList[7],choseSum.fivelast8],[timeList[8],choseSum.fivelast9],[timeList[9],choseSum.fivelast10],[timeList[10],choseSum.fivelast11],[timeList[11],choseSum.fivelast12]
+        ]
+        }
+        seriesData.push(sumDto)
+   var myChart = echarts.init(document.getElementById('echarts_weekly_wxyh_rqtj'));
+
+       myChart.setOption({
+  title: {
+    text: ''
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  legend: {
+    data: legendData
+  },
+  grid: {
+    left: '10%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  toolbox: {
+    feature: {
+      saveAsImage: {}
+    }
+  },
+  xAxis: {
+    type: 'category',
+    boundaryGap: false,
+
+
+  },
+  yAxis: {
+    type: 'value',
+    boundaryGap: [0, '30%']
+  },
+  series: seriesData
+});
+
+</script>
+</html>

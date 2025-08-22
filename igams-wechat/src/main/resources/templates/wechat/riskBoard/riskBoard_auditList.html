@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" src="/js/wechat/riskBoard/riskBoard_auditList.js?v=20230703" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content padding-l30 padding-r30" style="padding-bottom:0px;" id="recheck">
+    <form id="riskBoard_formAudit">
+        <input type="hidden" id="auditType" name="auditType" th:value="${dto.auditType}">
+        <div class="row">
+            <div class="pull-left">
+                <ul class="nav nav-tabs nav-tabs-ky" role="tablist" id="recheck_audit_ul">
+                    <li  class="nav-item" >
+                        <a  class="nav-link active" name="tabBlock[waitAuditDiv]" href="#recheck_auditing" role="tab" data-bs-toggle="tab">待审核的申请</a>
+                    </li>
+                    <li class="nav-item" >
+                        <a  class="nav-link" name="tabBlock[alreadyAuditDiv]" href="#recheck_audited" role="tab" data-bs-toggle="tab">审核记录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </form>
+    <div class="row padding-l15 padding-r15">
+        <div class="main_content tab-content">
+            <div role="tabpanel" class="tab-pane active padding-10" id="recheck_auditing" style="border:1px solid #eee">
+                <form id="riskBoard_audit_formSearch" class="form-horizontal form-inline">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+                        <div class="panel-body">
+                            <div class="">
+                                <div class="form-group padding_l10">
+                                    <select name="cxtj" class="form-control chosen-select" id="cxtj">
+                                        <option value="0">全部</option>
+                                        <option value="1">风险类别</option>
+                                        <option value="2">样本编号</option>
+                                        <option value="3">内部编码</option>
+                                        <option value="3">患者姓名</option>
+                                    </select>
+                                    <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {search_riskBoard_Audit(); return false;}"/>
+                                </div>
+                                <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                                <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                            </div>
+                            <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                                <span class="tit">已选条件：</span>
+                                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                                    <ul id="sl_add_ul"></ul>
+                                </div>
+                            </div>
+                            <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                                <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:80px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                                    <div class="tab-pane active" id="tab06">
+                                        <div id="fxlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                            <div class="form-group width100">
+                                                <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="风险类别" >风险类别：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                        <li th:if="${list!=null && list.size() >0}" th:each="model:${list}">
+                                                            <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[fxlb]],[[${model.csid}]],[[riskBoard_audit_formSearch]]);" th:id="'fxlb_id_'+${model.csid}">
+                                                                <span th:text="${model.csmc}"></span>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="bbcl_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                            <div class="form-group width100">
+                                                <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="标本处理" >标本处理：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                        <li th:if="${riskList!=null && riskList.size() >0}" th:each="model:${riskList}">
+                                                            <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[bbcl]],[[${model.csid}]],[[riskBoard_audit_formSearch]]);" th:id="'bbcl_id_'+${model.csid}">
+                                                                <span th:text="${model.csmc}"></span>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xs-12 col-sm-12 col-lg-12 padding-7">
+                                            <div class="form-group width100">
+                                                <label  class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="通知日期" >通知日期：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <input id="tzrqstart" name="tzrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                    <input id="tzrqend" name="tzrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-12 col-lg-12" style="margin-top: 4px">
+                                            <div class="form-group width100">
+                                                <label  class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="确认时间" >确认时间：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <input id="qrsjstart" name="qrsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                    <input id="qrsjend" name="qrsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input  type="hidden" id="fxlb_id_tj" name="fxlb_id_tj">
+                    <input  type="hidden" id="bbcl_id_tj" name="bbcl_id_tj">
+                    <div th:include="common/btn/ancz.html"></div>
+                    <table id="riskBoard_auditList" class="table table-hover table-bordered table-hidden"></table>
+                </form>
+            </div>
+            <div role="tabpanel" class="tab-pane padding-10" id="recheck_audited" style="border:1px solid #eee">
+                <form id="riskBoard_audited_formSearch" class="form-horizontal form-inline">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">查询条件</div>
+                        <div class="panel-body">
+                            <div class="">
+                                <div class="form-group padding_l10">
+                                    <select name="cxtj_audited" class="form-control chosen-select" id="cxtj_audited">
+                                        <option value="0">全部</option>
+                                        <option value="1">风险类别</option>
+                                        <option value="2">样本编号</option>
+                                        <option value="3">内部编码</option>
+                                        <option value="3">患者姓名</option>
+                                    </select>
+                                    <input id="cxnr_audited" name="cxnr_audited" class="form-control" placeholder="模糊匹配"
+                                           onkeydown="if(event.keyCode==13) {search_riskBoard_Audited(); return false;}"/>
+                                </div>
+                                <button type="button" style="margin-left:50px" id="btn_queryAudited" class="btn btn-primary">查询</button>
+                                <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                            </div>
+                            <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                                <span class="tit">已选条件：</span>
+                                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                                    <ul id="sl_add_ul"></ul>
+                                </div>
+                            </div>
+                            <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                                <div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom:10px; min-height:80px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                                    <div class="tab-pane active" id="tab06">
+                                        <div id="fxlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                            <div class="form-group width100">
+                                                <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="风险类别" >风险类别：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                        <li th:if="${list!=null && list.size() >0}" th:each="model:${list}">
+                                                            <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[fxlb]],[[${model.csid}]],[[riskBoard_audited_formSearch]]);" th:id="'fxlb_id_'+${model.csid}">
+                                                                <span th:text="${model.csmc}"></span>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="bbcl_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                            <div class="form-group width100">
+                                                <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="风险类别" >风险类别：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                        <li th:if="${riskList!=null && riskList.size() >0}" th:each="model:${riskList}">
+                                                            <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[bbcl]],[[${model.csid}]],[[riskBoard_audited_formSearch]]);" th:id="'bbcl_id_'+${model.csid}">
+                                                                <span th:text="${model.csmc}"></span>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-12 col-lg-12 padding-7">
+                                            <div class="form-group width100">
+                                                <label  class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="通知日期" >通知日期：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <input id="tzrqstart" name="tzrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                    <input id="tzrqend" name="tzrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-12 col-lg-12" style="margin-top: 4px">
+                                            <div class="form-group width100">
+                                                <label  class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="确认时间" >确认时间：</label>
+                                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                    <input id="qrsjstart" name="qrsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                    <input id="qrsjend" name="qrsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input  type="hidden" id="fxlb_id_tj" name="fxlb_id_tj">
+                    <input  type="hidden" id="bbcl_id_tj" name="bbcl_id_tj">
+                    <div id="toolbar" class="btn-group">
+                        <button class="btn btn-default" type="button" id="btn_cancelAudit"><i class="glyphicon glyphicon-remove-circle"></i>&nbsp;取消审批</button>
+                    </div>
+                    <table id="riskBoard_auditedList" class="table table-hover table-bordered table-hidden"></table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
