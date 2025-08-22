@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IBbxxDao" >
+
+	<!-- 查询最近3条版本信息 -->
+	<select id="getBbxxDtoList" resultType="BbxxDto">
+		SELECT bbid, bbbq, gxnr, czry, sxsj, lrry, lrsj, xgry, xgsj, scbj, scry, scsj 
+		FROM matridx_bbxx 
+		WHERE scbj = '0'
+		ORDER BY sxsj DESC
+		LIMIT 3
+	</select>
+	<!-- 获取所有版本信息 -->
+	<select id="getAllBbxxDtoList" resultType="BbxxDto">
+		SELECT bbid, bbbq, gxnr, czry, sxsj, lrry, lrsj, xgry, xgsj, scbj, scry, scsj
+		FROM matridx_bbxx
+		WHERE scbj = '0'
+		ORDER BY sxsj DESC
+	</select>
+	
+	<!-- 获取版本信息列表 -->
+	<select id="getPageDtoListVersionInfo" parameterType="BbxxDto" resultType="BbxxDto" >
+		SELECT bbid, bbbq, gxnr, czry, sxsj, lrry, lrsj, xgry, xgsj, scbj, scry, scsj 
+		FROM matridx_bbxx
+		<where>
+			scbj = '0'
+			<if test="bbbq != null and bbbq != ''">
+				and bbbq ILIKE '%'||#{bbbq}||'%'
+			</if>
+			<if test="gxnr != null and gxnr != ''">
+				and gxnr ILIKE '%'||#{gxnr}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据版本id查看版本信息 -->
+	<select id="getDtoVersionInfoByBbid" parameterType="String" resultType="BbxxDto">
+		SELECT bbid, bbbq, gxnr, czry, sxsj, lrry, lrsj, xgry, xgsj, scbj, scry, scsj 
+		FROM matridx_bbxx
+		<where>
+			bbid = #{bbid}
+		</where>
+	</select>
+	
+	<!-- 新增版本信息 -->
+	<insert id="insertDtoVersionInfo" parameterType="BbxxDto">
+		insert into  matridx_bbxx (
+		bbid
+		<if test="bbbq != null and bbbq != ''">,bbbq</if>
+		<if test="gxnr != null and gxnr != ''">,gxnr</if>
+		<if test="czry != null and czry != ''">,czry</if>
+		<if test="sxsj != null and sxsj != ''">,sxsj</if>
+		,lrry,lrsj,scbj)
+		values (#{bbid}
+		<if test="bbbq != null and bbbq != ''">,#{bbbq}</if>
+		<if test="gxnr != null and gxnr != ''">,#{gxnr}</if>
+		<if test="czry != null and czry != ''">,#{czry}</if>
+		<if test="sxsj != null and sxsj != ''">,cast(#{sxsj} as timestamp)</if>		
+		,#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+	
+	<!-- 更新版本信息 -->
+	<update id="updateDtoVersionInfo" parameterType="BbxxDto">
+		update matridx_bbxx
+		<set>
+			<if test="bbbq != null and bbbq != ''">
+				bbbq = #{bbbq},
+			</if>
+				gxnr = #{gxnr},
+			<if test="czry != null and czry != ''">
+				czry = #{czry},
+			</if>
+			<if test="sxsj != null and sxsj != ''">
+				sxsj = cast(#{sxsj} as timestamp),
+			</if>
+				xgsj = LOCALTIMESTAMP,
+				xgry = #{xgry}
+		</set>
+		<where>
+			bbid = #{bbid}
+		</where>
+	</update>
+	
+	<!-- 根据版本ID删除版本信息（更新删除状态） -->
+	<update id="delDtoListVersionInfo" parameterType="BbxxDto">
+		update matridx_bbxx set scry = #{scry}, scsj = LOCALTIMESTAMP, scbj='1' 
+		<where>
+			<if test="bbid !=null and bbid != ''">
+				or bbid = #{bbid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or bbid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+</mapper>

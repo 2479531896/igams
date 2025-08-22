@@ -1,0 +1,303 @@
+spring:
+  profiles:
+    active: dev
+  cloud:
+    config:
+      ## 文件名称
+      #name: ${name:igams-production}
+      ## 环境名称 配置文件会访问/{label}/{name}-{profiles}.yml,同时默认会取/{label}/{name}.yml 内容
+      #profile: ${profile:dev}
+      #uri: ${uri:http://172.17.60.193:8760}
+      #label: ${label:master}
+      discovery:
+        enabled: true
+        serviceId: config-server
+    client:
+      ipAddress: ${ipaddr:localhost}
+    # https://www.jianshu.com/p/84f0667fa277 网络断连恢复引起的
+    stream:
+      default:
+        group: ${spring.application.name}-${spring.cloud.client.ipAddress}-${server.port}
+      rabbit:
+        bindings:
+          springCloudBusInput:
+            consumer:
+              # 队列声明重试次数
+              queue-declaration-retries: 2000
+              # 重试间隔(ms)
+              recovery-interval: 5000
+              # 为true时，使用‘group’作为配置刷新队列的名称
+              queue-name-group-only: true
+  session:
+    ##session存储类型
+    store-type: redis
+    ##设置session超时时间
+    timeout: 2000
+    #redis:
+    #redis的地址
+    #host: 127.0.0.1
+    #redis的端口
+    #port: 6379
+  ## druid配置
+  datasource:
+    ## 连接池最小连接数量
+    minIdle: 5
+    ## 连接池最大连接数量
+    maxActive: 100
+    ## 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+    initialSize: 10
+    ## 获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。
+    maxWait: 60000
+    ## 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒;有两个含义：1) Destroy线程会检测连接的间隔时间 2) testWhileIdle的判断依据，详细看testWhileIdle属性的说明
+    timeBetweenEvictionRunsMillis: 60000
+    ## 配置一个连接在池中最小生存的时间，单位是毫秒
+    minEvictableIdleTimeMillis: 300000
+    ## 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+    testWhileIdle: true
+    ## 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+    testOnBorrow: false
+    ## 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+    testOnReturn: false
+    ## 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql5.5以下的版本中没有PSCache功能，建议关闭掉。5.5及以上版本有PSCache，建议开启。
+    poolPreparedStatements: true
+    ## 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+    maxPoolPreparedStatementPerConnectionSize: 100
+    ## Druid的监控统计功能:属性类型是字符串，通过别名的方式配置扩展插件，常用的插件有：
+    #监控统计用的filter:stat
+    #日志用的filter:slf4j
+    #防御SQL注入的filter:wall
+    filters: config,stat,slf4j
+    ## 连接数据库的额外参数
+    connectionProperties: 3000;
+    ## 缺省多个DruidDataSource的监控数据是各自独立的，在Druid-0.2.17版本之后，支持配置公用监控数据，
+    useGlobalDataSourceStat: true
+    ## druid的登录用户名
+    druidLoginName: admin
+    ## druid的登录密码
+    druidPassword: 1234
+    ## 超过时间限制是否回收
+    removeAbandoned: true
+    ## 超过时间限制多长，单位是毫秒 ，180000毫秒=3分钟
+    removeAbandonedTimeout: 180000
+  thymeleaf:
+    #prefix: classpath*:/static/
+    suffix: .html
+    encoding: UTF-8
+    cache: false
+    #resources:
+    ##“spring.mvc.static-path-pattern”用于阐述HTTP请求地址，而“spring.resources.static-locations”则用于描述静态资源的存放位置。
+    ##资源映射地址为classpath:/content/
+    ##static-locations: classpath*:/
+    #mvc:
+    ##资源映射路径为/static/**
+    #static-path-pattern: /**
+  ##缓存管理
+  cache:
+    ehcache:
+      config: classpath:config/ehcache/ehcache.xml
+  redis:
+    ## Redis数据库索引（默认为0）
+    database: 0
+    ## Redis服务器连接端口
+    port: 6379
+    pool:
+      ## 连接池最大连接数（使用负值表示没有限制）
+      max-active: 8
+      ## 连接池最大阻塞等待时间（使用负值表示没有限制）
+      max-wait: -1
+      ## 连接池中的最大空闲连接
+      max-idle: 8
+      ## 连接池中的最小空闲连接
+      min-idle: 0
+    ## 连接超时时间（毫秒）中时间设置不能为0
+    timeout: 5000
+  ##spring boot自带的tomcat限制了上传图片的大小，为1M
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+  ##消息队列
+  rabbitmq:
+    port: 5672
+    ##发送确认
+    publisher-confirms: true
+    host: ${mqhost:172.17.52.95}
+    username: ${mqname:admin}
+    password: ${mqpass:matridx2019!}
+    docok: ${mqok:production.mq.tran.matridx.ok}
+    report:
+      host: 172.17.60.191
+      port: 5672
+      username: admin
+      password: matridx2019!
+  mail:
+    default-encoding: UTF-8
+  ##电子邮件传输的协议
+  smtp:
+    auth: true
+    starttls:
+      enable: true
+      required: true
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import: optional:configserver:${uri:http://172.17.52.95:8760}
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+postsql:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    validationQuery: SELECT 1
+sqlserver:
+  gmds:
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    validationQuery: SELECT 1
+  matridxds:
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    validationQuery: SELECT 1
+druid:
+  stat:
+    ## 连接数据库的额外参数
+    slowSqlMillis: 3000
+    mergeSql: true
+security:
+  oauth2:
+    resource:
+      ##将我们的资源拦截的过滤器运行顺序放到第3个执行,也就是在oauth2的认证服务器后面执行
+      filter-order: 3
+## 打印sql
+logging:
+  level:
+    com.matridx.igams.sample.dao.post: debug
+    com.matridx.igams.common.dao.post: debug
+    com.matridx.igams.production.dao.post: debug
+    com.matridx.igams.research.dao.post: debug
+    com.matridx.igams.web.dao.post: debug
+    com.matridx.igams.dmp.dao.post: debug
+    com.matridx.igams.wechat.dao.post: debug
+    com.matridx.igams.production.dao.matridxsql: debug
+    com.matridx.igams.experiment.dao.post: debug
+    com.matridx.igams.warehouse.dao.post: debug
+    com.matridx.igams.detection.molecule.dao.post: debug
+    com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver: WARN
+    com.matridx.igams.storehouse.dao.post: debug
+    com.matridx.igams.hrm.dao.post: debug
+    com.matridx.igams.finance.dao.financesql: debug
+    com.matridx.automation.dao.post: debug
+    com.matridx.localization.dao.post: debug
+##myibatis 拦截配置
+sql:
+  interceptor:
+    pagesqlid: .*getPaged*.*
+    dialect: postgresql
+##角色切换配置： 0不支持切换，1支持切换
+matridx:
+  role:
+    switch: 1
+  basictype:
+    file: config/comm/basicType.xml
+  imptype:
+    file: config/comm/config-import.xml
+  exptype:
+    file: config/comm/config-export.xml
+    limit: 500
+  fileupload:
+    prefix:
+    tempPath: /matridx/fileupload/temp/
+    releasePath: /matridx/fileupload/release/
+  file:
+    ##文件导出存放路径
+    exportFilePath: /matridx/download/
+    ##文件保存路径前缀
+    pathPrefix:
+    ##文件转换最大次数
+    translimit: 5
+  ftp:
+    wordpath: /wordFile
+    pdfpath: /pdfFile
+    url: 172.17.50.35
+    user: ftpuser
+    pd: matridx
+    port: 21
+  ##钉钉
+  dingtalk:
+    appkey:
+    appsecret:
+    agentid:
+  ##语音识别
+  audio:
+    savepath: /matridx/audio/save/
+    audiotype: ali       ##ali  baidu
+    #accessKeyId: ZY5umhS7CN9RRVKg1x3poKfc8IzB4TkAp0/GRS/sXYo=
+    #accessKeySecret: YgFUZcqxPzLq286Nwmfj4BFfN+QbP4eu8EGl52g42tIyVYT8gk029pvCGuV+HCfZ
+    #appid: L2rjGmuPzJ9xmSU0/9iyFA==
+    accessKeyId:
+    accessKeySecret:
+    appid:
+  wechat:
+    ##菜单推送微信的地址
+    menuurl: http://localhost:8085
+    ##钉钉查看访问的路径
+    applicationurl: http://172.17.52.95:8086
+    ## 送检发送请求查询 检测结果的地址
+    inspectionurl: http://localhost:8085
+    ## 统计外部地址
+    externalurl: http://101.69.228.218:8093
+    appid: 1
+    secret: 2
+    paternerkey:
+    mchid:
+  baidu:
+    appkey:
+    secret:
+  alipay:
+    ## 应用ID,您的APPID，收款账号既是您的APPID对应支付宝账号
+    app_id:
+    ## 应用ID,您的APPID，收款账号既是您的APPID对应支付宝账号
+    #uid: 2088102177450010
+    ## 商户私钥，您的PKCS8格式RSA2私钥
+    alipay_private_key:
+    ## 支付宝公钥,查看地址：https://openhome.alipay.com/platform/keyManage.htm 对应APPID下的支付宝公钥。
+    alipay_public_key:
+    ## 服务器异步通知页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数
+    notify_url: http://101.69.228.218:8099/wechat/pay/aliPayNotify
+    ## 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数
+    return_url: http://101.69.228.218:8099/wechat/pay/aliPayComplete
+    ## 签名方式
+    alipay_sign_type: RSA2
+    ## 支付宝网关
+    gatewayUrl:
+  ##阿里云短信
+  aliyunSms:
+    accessKeyId:
+    accessSecret:
+    signName: 杰毅检验
+    templateCode: SMS_170840387
+  #eureka:
+  #  client:
+  #    enabled: true
+  #    register-with-eureka: true
+  #    fetch-registry: true
+  #    serviceUrl:
+  #      defaultZone: ${zone:http://user:1234@localhost:8751/eureka/}
+  instance:
+    prefer-ip-address: true
+    ip-address: ${ipaddr:localhost}
+    instance-id: ${ipaddr:localhost}:${server.port}
+### Ribbon 配置
+ribbon:
+  ## http建立socket超时时间,毫秒
+  ConnectTimeout: 3000
+  ## http读取响应socket超时时间
+  ReadTimeout: 60000
+  ## 同一台实例最大重试次数,不包括首次调用
+  MaxAutoRetries: 0
+  ## 重试负载均衡其他的实例最大重试次数,不包括首次server
+  MaxAutoRetriesNextServer: 2
+  ## 是否所有操作都重试，POST请求注意多次提交错误。
+  ## 默认false，设定为false的话，只有get请求会重试
+  OkToRetryOnAllOperations: true
+server:
+  tomcat:
+    port-header: HEAD,PUT,DELETE,OPTIONS,TRACE,COPY,SEARCH,PROPFIND

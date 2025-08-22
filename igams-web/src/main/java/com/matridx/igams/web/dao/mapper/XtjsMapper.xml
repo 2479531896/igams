@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IXtjsDao" >
+	<select id="getAllJsAndChecked" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js,jsmc,js.jsms,js.fjsid,js.sylx
+		<if test="yhid != null and yhid != ''">
+			,yj.yhid
+		</if>
+		from matridx_xtjs js
+		<if test="yhid != null and yhid != ''">
+		left outer join matridx_yhjs yj on js.jsid = yj.jsid and yj.yhid =#{yhid}
+		</if>
+		<where>
+			js.scbj ='0'
+		</where>
+		order by jsmc
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getModelListExceptSelf" parameterType="XtjsModel" resultType="XtjsModel">
+		select jsid,jsmc
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid != #{jsid}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 修改角色仓库分类 -->
+	<update id="updateCkqxByjsid" parameterType="XtjsDto">
+		update matridx_xtjs set ckqx=#{ckqx}
+		<where>
+			scbj='0'
+			and jsid=#{jsid}
+		</where>
+	</update>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getPagedDtoList" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,js.ckqx,
+		  fjs.jsdm fjsdm,fjs.jsmc fjsmc,jc.csmc sylxmc 
+		from matridx_xtjs js
+		left outer join matridx_xtjs fjs on js.fjsid = fjs.jsid
+		left outer join matridx_jcsj jc on jc.csid = js.sylx
+		<if test="qf != null and qf != '' and yhid != null and yhid != ''">
+		left outer join matridx_ryczxg czxg on czxg.dxid = js.jsid and czxg.qf = #{qf} and czxg.yhid = #{yhid}
+		</if>
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid = #{jsid}
+			</if>
+			<if test="jsdm != null and jsdm != ''">
+				and js.jsdm like '%'||#{jsdm}||'%'
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getDtoById" parameterType="String" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,
+		  fjs.jsdm fjsdm,fjs.jsmc fjsmc,jc.csmc sylxmc,jc.cskz1 sylxdz
+		from matridx_xtjs js
+		left outer join matridx_xtjs fjs on js.fjsid = fjs.jsid
+		left outer join matridx_jcsj jc on jc.csid = js.sylx
+		<where>
+			js.scbj='0' and js.jsid = #{jsid}
+		</where>
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getDto" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,js.pptglid
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid = #{jsid}
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc = #{jsmc}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入系统用户信息 -->
+	<insert id="insert" parameterType="XtjsModel">
+		insert into matridx_xtjs(jsid,jsdm,jsmc,jsms,fjsid,sylx,dwxdbj
+        ,lrry,lrsj,scbj) values(#{jsid},#{jsdm},#{jsmc},#{jsms},#{fjsid},#{sylx},#{dwxdbj}
+        ,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 插入系统用户信息 -->
+	<insert id="insertDto" parameterType="XtjsDto">
+		insert into matridx_xtjs(jsid,jsdm,jsmc,jsms,fjsid,sylx,dwxdbj
+		,lrry,lrsj,scbj,pptglid) values(#{jsid},#{jsdm},#{jsmc},#{jsms},#{fjsid},#{sylx},#{dwxdbj}
+		,#{lrry},LOCALTIMESTAMP,'0',#{pptglid})
+	</insert>
+	
+	<!-- 更新系统用户信息 -->
+	<update  id="update" parameterType="XtjsModel">
+		update matridx_xtjs set 
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="jsdm !=null and jsdm != ''">
+			,jsdm = #{jsdm}
+		</if>
+		<if test="jsmc !=null and jsmc != ''">
+			,jsmc = #{jsmc}
+		</if>
+		<if test="jsms !=null and jsms != ''">
+			,jsms = #{jsms}
+		</if>
+			,fjsid = #{fjsid}
+		<if test="sylx !=null and sylx != ''">
+			,sylx = #{sylx}
+		</if>
+		<if test="dwxdbj !=null and dwxdbj != ''">
+			,dwxdbj = #{dwxdbj}
+		</if>
+		<if test="pptglid !=null and pptglid != ''">
+			,pptglid = #{pptglid}
+		</if>
+		<where>
+			jsid = #{jsid}
+		</where>
+	</update>
+	
+	<!-- 删除系统用户信息 -->
+	<update  id="delete" parameterType="XtjsModel">
+		update matridx_xtjs set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	or jsid = #{jsid}
+			</if>
+		</where>
+	</update>
+	
+	<select id="getDtoList" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,js.pptglid
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+			<if test="ids !=null and ids.size > 0">
+				and jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="entire !=null and entire !=''">
+				and (js.jsmc ILIKE '%'||#{entire}||'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 通过角色ID查询到角色下面的用户 -->
+	<select id="getyhmByjsid" parameterType="XtjsDto" resultType="XtyhDto">
+		select xtyh.yhid,xtyh.yhm,xtyh.zsxm
+ 		from matridx_xtjs xtjs
+ 		left join matridx_yhjs yhjs on xtjs.jsid= yhjs.jsid
+ 		left join matridx_xtyh xtyh on xtyh.yhid=yhjs.yhid 
+		<where>
+			xtyh.scbj!='1' and xtyh.sfsd!='1'
+			<if test="jsid !=null and jsid !=''">
+				and xtjs.jsid=#{jsid} 
+			</if>
+			<if test="entire !=null and entire !=''">
+				and (xtyh.yhm ILIKE '%'||#{entire}||'%'
+				or xtyh.zsxm ILIKE '%'||#{entire}||'%')
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询机构列表(小程序) -->
+	<select id="getMiniXtjsList" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsmc,js.fjsid,js.jsdm
+		from matridx_xtjs js
+		<where>
+			js.scbj!='1'
+			<if test="entire !=null and entire != ''">
+				and js.jsmc like '%'||#{entire}||'%'
+			</if>
+		</where>
+		limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+</mapper>

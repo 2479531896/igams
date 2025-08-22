@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.crm.dao.post.IJxhsglDao" >
+    <!--数据库字段-->
+    <sql id="Base_Column_List">
+        jxhsgl.jxhsglid,jxhsgl.mc,jxhsgl.bz,jxhsgl.zt,jxhsgl.fzr,jxhsgl.sd,jxhsgl.jxhsze,jxhsgl.shze,to_char(jxhsgl.jxksrq,'yyyy-MM-dd') jxksrq,to_char(jxhsgl.jxjsrq,'yyyy-MM-dd') jxjsrq,
+        jxhsgl.lrry,jxhsgl.lrsj,jxhsgl.xgry,jxhsgl.xgsj,jxhsgl.scry,jxhsgl.scsj,jxhsgl.scbj,jxhsgl.sfhd,jxhsgl.hdry
+    </sql>
+    <!--模糊查询条件和高级筛选条件-->
+    <sql id="SelectWhere">
+        <!--全部-->
+        <if test="all_param !=null and all_param !=''">
+            and (
+                jxhsgl.mc like '%'||#{all_param}||'%'
+                or fzr_xtyh.zsxm like '%'||#{all_param}||'%'
+                or cjry_xtyh.zsxm like '%'||#{all_param}||'%'
+            )
+        </if>
+        <!--名称-->
+        <if test="mc !=null and mc !=''">
+            and jxhsgl.mc like '%'||#{mc}||'%'
+        </if>
+        <!--负责人姓名-->
+        <if test="fzrxm !=null and fzrxm !=''">
+            and fzr_xtyh.zsxm like '%'||#{fzrxm}||'%'
+        </if>
+        <if test="fzr !=null and fzr !=''">
+            and jxhsgl.fzr = #{fzr}
+        </if>
+        <!--创建人姓名-->
+        <if test="cjryxm !=null and cjryxm !=''">
+            and cjry_xtyh.zsxm like '%'||#{cjryxm}||'%'
+        </if>
+        <!--创建开始日期-->
+        <if test="cjrqStart !=null and cjrqStart !=''">
+            and to_char(jxhsgl.lrsj,'yyyy-MM-dd') &gt;= #{cjrqStart}
+        </if>
+        <!--创建结束日期-->
+        <if test="cjrqEnd != null and cjrqEnd != ''">
+            and to_char(jxhsgl.lrsj,'yyyy-MM-dd') &lt;= #{cjrqEnd}
+        </if>
+        <if test="jxksrq_y !=null and jxksrq_y!=''">
+            and to_char(jxhsgl.jxksrq,'yyyy') &lt;= #{jxksrq_y}
+        </if>
+        <!--是否核对 -->
+        <if test = "sfhds != null and sfhds.length > 0"  >
+            and jxhsgl.sfhd in
+            <foreach collection="sfhds" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "zts != null and zts.length > 0"  >
+            and jxhsgl.zt in
+            <foreach collection="zts" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--查询-->
+    <select id="getSameDto" resultType="JxhsglDto" parameterType="JxhsglDto">
+        select <include refid="Base_Column_List"></include>,fzr_xtyh.zsxm as fzrxm
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj!= '1'
+        <where>
+            jxhsgl.scbj = '0'
+            <if test="jxksrq != null and jxksrq != ''">
+                and to_char(jxhsgl.jxksrq,'yyyy-MM-dd') = #{jxksrq}
+            </if>
+            <if test="jxjsrq != null and jxjsrq != ''">
+                and to_char(jxhsgl.jxjsrq,'yyyy-MM-dd') = #{jxjsrq}
+            </if>
+            <if test="fzr != null and fzr != ''">
+                and jxhsgl.fzr = #{fzr}
+            </if>
+            <if test="jxhsglid != null and jxhsglid != ''">
+                and jxhsgl.jxhsglid != #{jxhsglid}
+            </if>
+        </where>
+    </select>
+    <!--查询-->
+    <select id="getDto" resultType="JxhsglDto" parameterType="JxhsglDto">
+        select <include refid="Base_Column_List"></include>
+        ,fzr_xtyh.zsxm as fzrxm,fzr_xtyh.yhm as fzryhm,cjry_xtyh.zsxm as cjryxm,hdry_xtyh.zsxm as hdryxm
+        ,to_char(jxhsgl.lrsj,'yyyy-MM-dd') as cjrq,to_char(jxhsgl.lrsj,'yyyy-MM-dd hh24:mi:ss') as cjsj
+        ,xszb.sz as xsmb
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj != '1'
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid = jxhsgl.lrry and cjry_xtyh.scbj != '1'
+        left join matridx_xtyh hdry_xtyh on hdry_xtyh.yhid = jxhsgl.hdry and hdry_xtyh.scbj != '1'
+        left join igams_xszb xszb on xszb.scbj = '0' and xszb.yhid = jxhsgl.fzr and xszb.kszq = cast(to_char(jxhsgl.jxksrq,'yyyy-MM')as varchar) and xszb.jszq = cast(to_char(jxhsgl.jxjsrq,'yyyy-MM')as varchar)
+        <where>
+            jxhsgl.scbj = '0'
+            <if test="jxhsglid != null and jxhsglid != ''">
+                and jxhsgl.jxhsglid = #{jxhsglid}
+            </if>
+        </where>
+    </select>
+    <!--分页查询-->
+    <select id="getPagedDtoList" resultType="JxhsglDto" parameterType="JxhsglDto">
+        select <include refid="Base_Column_List"></include>
+        ,fzr_xtyh.zsxm as fzrxm,cjry_xtyh.zsxm as cjryxm,hdry_xtyh.zsxm as hdryxm
+        ,to_char(jxhsgl.lrsj,'yyyy-MM-dd') as cjrq,to_char(jxhsgl.lrsj,'yyyy-MM-dd hh24:mi:ss') as cjsj
+        ,xszb.sz as xsmb
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj != '1'
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid = jxhsgl.lrry and cjry_xtyh.scbj != '1'
+        left join matridx_xtyh hdry_xtyh on hdry_xtyh.yhid = jxhsgl.hdry and hdry_xtyh.scbj != '1'
+        left join igams_xszb xszb on xszb.scbj = '0' and xszb.yhid = jxhsgl.fzr and xszb.kszq = to_char(jxhsgl.jxksrq,'yyyy-MM') and xszb.jszq = to_char(jxhsgl.jxjsrq,'yyyy-MM')
+        <where>
+            jxhsgl.scbj = '0'
+            <include refid="SelectWhere"></include>
+        </where>
+    </select>
+    <select id="getDtoList" resultType="JxhsglDto" parameterType="JxhsglDto">
+        select <include refid="Base_Column_List"></include>
+        ,fzr_xtyh.zsxm as fzrxm,cjry_xtyh.zsxm as cjryxm,hdry_xtyh.zsxm as hdryxm
+        ,to_char(jxhsgl.lrsj,'yyyy-MM-dd') as cjrq,to_char(jxhsgl.lrsj,'yyyy-MM-dd hh24:mi:ss') as cjsj
+        ,xszb.sz as xsmb
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj != '1'
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid = jxhsgl.lrry and cjry_xtyh.scbj != '1'
+        left join matridx_xtyh hdry_xtyh on hdry_xtyh.yhid = jxhsgl.hdry and hdry_xtyh.scbj != '1'
+        left join igams_xszb xszb on xszb.scbj = '0' and xszb.yhid = jxhsgl.fzr and xszb.kszq = to_char(jxhsgl.jxksrq,'yyyy-MM') and xszb.jszq = to_char(jxhsgl.jxjsrq,'yyyy-MM')
+        <where>
+            jxhsgl.scbj = '0'
+            <if test="ids != null and ids.size() != 0">
+                and jxhsgl.jxhsglid in
+                <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <include refid="SelectWhere"></include>
+        </where>
+        order by jxhsgl.lrsj desc
+    </select>
+
+    <!--新增-->
+    <insert id="insert" parameterType="JxhsglDto">
+        insert into igams_jxhsgl
+        ( jxhsglid,lrry,lrsj,scbj,zt
+        <if test="mc != null and mc != ''">
+            ,mc
+        </if>
+        <if test="fzr != null and fzr != ''">
+            ,fzr
+        </if>
+        <if test="sd != null and sd != ''">
+            ,sd
+        </if>
+        <if test="jxksrq != null and jxksrq != ''">
+            ,jxksrq
+        </if>
+        <if test="jxjsrq != null and jxjsrq != ''">
+            ,jxjsrq
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="sfhd != null and sfhd != ''">
+            ,sfhd
+        </if>
+        <if test="hdry != null and hdry != ''">
+            ,hdry
+        </if>
+        <if test="shze != null and shze != ''">
+            ,shze
+        </if>
+        <if test="jxhsze != null and jxhsze != ''">
+            ,jxhsze
+        </if>
+        ) values (
+           #{jxhsglid},#{lrry},localtimestamp,'0',#{zt}
+           <if test="mc != null and mc != ''">
+               ,#{mc}
+           </if>
+            <if test="fzr != null and fzr != ''">
+                ,#{fzr}
+            </if>
+            <if test="sd != null and sd != ''">
+                ,cast(#{sd} as numeric)
+            </if>
+            <if test="jxksrq != null and jxksrq != ''">
+                ,cast(#{jxksrq} as timestamp)
+            </if>
+            <if test="jxjsrq != null and jxjsrq != ''">
+                ,cast(#{jxjsrq} as timestamp)
+            </if>
+            <if test="bz != null and bz != ''">
+                ,#{bz}
+            </if>
+            <if test="sfhd != null and sfhd != ''">
+                ,#{sfhd}
+            </if>
+            <if test="hdry != null and hdry != ''">
+                ,#{hdry}
+            </if>
+            <if test="shze != null and shze != ''">
+                ,cast(#{shze} as numeric)
+            </if>
+            <if test="jxhsze != null and jxhsze != ''">
+                ,cast(#{jxhsze} as numeric)
+            </if>
+        )
+    </insert>
+
+    <update id="delete" parameterType="JxhsglDto">
+        <if test="ids != null and ids.size() != 0">
+            update igams_jxhsgl set scbj = '1',scsj = localtimestamp,scry = #{scry}
+            <where>
+                jxhsglid in
+                <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </where>
+        </if>
+    </update>
+
+    <update id="update" parameterType="JxhsglDto" >
+        update igams_jxhsgl set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="mc !=null and mc!=''">
+            ,mc=#{mc}
+        </if>
+        <if test="bz !=null and bz!=''">
+            ,bz=#{bz}
+        </if>
+        <if test="fzr !=null and fzr!=''">
+            ,fzr=#{fzr}
+        </if>
+        <if test="sd !=null and sd!=''">
+            ,sd=#{sd}
+        </if>
+        <if test="jxhsze !=null and jxhsze!=''">
+            ,jxhsze=cast(#{jxhsze} as numeric)
+        </if>
+        <if test="shze !=null and shze!=''">
+            ,shze=cast(#{shze} as numeric)
+        </if>
+        <if test="jxksrq !=null and jxksrq!=''">
+            ,jxksrq=cast(#{jxksrq} as timestamp)
+        </if>
+        <if test="jxjsrq !=null and jxjsrq!=''">
+            ,jxjsrq=cast(#{jxjsrq} as timestamp)
+        </if>
+        <if test="sfhd !=null and sfhd!=''">
+            ,sfhd=#{sfhd}
+        </if>
+        <if test="hdry !=null and hdry!=''">
+            ,hdry=#{hdry}
+        </if>
+        <where>
+            jxhsglid=#{jxhsglid}
+        </where>
+    </update>
+
+    <update id="updateZt" parameterType="JxhsglDto">
+        update igams_jxhsgl set zt = #{zt}
+        where jxhsglid = #{jxhsglid}
+    </update>
+
+    <select id="getPagedAuditList" resultType="JxhsglDto" parameterType="JxhsglDto">
+        select <include refid="Base_Column_List"></include>
+        ,fzr_xtyh.zsxm as fzrxm,cjry_xtyh.zsxm as cjryxm,hdry_xtyh.zsxm as hdryxm
+        ,to_char(jxhsgl.lrsj,'yyyy-mm-dd') as cjrq,to_char(jxhsgl.lrsj,'yyyy-mm-dd hh24:mi:ss') as cjsj
+        ,xszb.sz as xsmb
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj != '1'
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid = jxhsgl.lrry and cjry_xtyh.scbj != '1'
+        left join matridx_xtyh hdry_xtyh on hdry_xtyh.yhid = jxhsgl.hdry and hdry_xtyh.scbj != '1'
+        left join igams_xszb xszb on xszb.scbj = '0' and xszb.yhid = jxhsgl.fzr and xszb.kszq = to_char(jxhsgl.jxksrq,'yyyy-mm') and xszb.jszq = to_char(jxhsgl.jxjsrq,'yyyy-mm')
+        <where>
+            jxhsgl.scbj = '0'
+            <include refid="SelectWhere"></include>
+        </where>
+    </select>
+
+    <select id="getAuditList" resultType="JxhsglDto" parameterType="List">
+        select <include refid="Base_Column_List"></include>
+        ,fzr_xtyh.zsxm as fzrxm,cjry_xtyh.zsxm as cjryxm,hdry_xtyh.zsxm as hdryxm
+        ,to_char(jxhsgl.lrsj,'yyyy-mm-dd') as cjrq,to_char(jxhsgl.lrsj,'yyyy-mm-dd hh24:mi:ss') as cjsj
+        ,xszb.sz as xsmb
+        from igams_jxhsgl jxhsgl
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = jxhsgl.fzr and fzr_xtyh.scbj != '1'
+        left join matridx_xtyh cjry_xtyh on cjry_xtyh.yhid = jxhsgl.lrry and cjry_xtyh.scbj != '1'
+        left join matridx_xtyh hdry_xtyh on hdry_xtyh.yhid = jxhsgl.hdry and hdry_xtyh.scbj != '1'
+        left join igams_xszb xszb on xszb.scbj = '0' and xszb.yhid = jxhsgl.fzr and xszb.kszq = to_char(jxhsgl.jxksrq,'yyyy-mm') and xszb.jszq = to_char(jxhsgl.jxjsrq,'yyyy-mm')
+        join
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.jxhsglid} as jxhsglid
+        </foreach>
+        tmp on tmp.jxhsglid = jxhsgl.jxhsglid
+        <where>
+            jxhsgl.scbj = '0'
+        </where>
+    </select>
+</mapper>

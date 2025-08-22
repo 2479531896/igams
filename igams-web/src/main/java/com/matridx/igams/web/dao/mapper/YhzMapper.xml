@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhzDao" >
+
+    <!-- 显示所有用户组列表 -->
+    <select id="getPagedDtoList" parameterType="YhzDto" resultType="YhzDto">
+        select yhzid, yhzmc, zsx , lrsj, lrry from
+        (
+            select yhzid, yhzmc, zsx, lrsj, lrry from matridx_yhz yhz
+            <where>
+                yhz.scbj = '0' and yhz.zsx = '0'
+                <if test="yhzmc != null and yhzmc != ''">
+                    and yhz.yhzmc ILIKE '%'||#{yhzmc}||'%'
+                </if>
+            </where>
+            <if test="ids != null and ids.size() > 0">
+                union all
+                select yhzid, yhzmc, zsx, lrsj, lrry from matridx_yhz yhzz
+                <where>
+                    yhzz.scbj = '0' and yhzz.zsx = '1' and yhzz.yhzid in
+                    <foreach collection="ids" open="(" close=")" item="yhzid" index="index" separator=",">
+                        #{yhzid}
+                    </foreach>
+                    <if test="yhzmc != null and yhzmc != ''">
+                        and yhzz.yhzmc ILIKE '%'||#{yhzmc}||'%'
+                    </if>
+                </where>
+            </if>
+        ) yhz
+    </select>
+
+    <select id="getPrivateYhzList" parameterType="YhzDto" resultType="String">
+        select yhz.yhzid
+        from matridx_yhz yhz
+        left join matridx_Yhzcy yhzcy on yhz.yhzid = yhzcy.yhzid
+        <where>
+            yhz.scbj = '0' and zsx = '1' and yhid = #{yhid}
+        </where>
+    </select>
+
+    <!-- 新增一条用户组数据 -->
+    <insert id="insert" parameterType="YhzDto">
+        insert into matridx_yhz
+        (<if test="yhzid !=null and yhzid !=''">
+            yhzid
+        </if>
+        <if test="yhzmc !=null and yhzmc !=''">
+            ,yhzmc
+        </if>
+        <if test="zsx !=null and zsx !=''">
+            ,zsx
+        </if>
+        ,lrry,lrsj,scbj)
+        values(
+        <if test="yhzid !=null and yhzid !=''">
+            #{yhzid}
+        </if>
+        <if test="yhzmc !=null and yhzmc !=''">
+            ,#{yhzmc}
+        </if>
+        <if test="zsx !=null and zsx !=''">
+            ,#{zsx}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <!-- 查找一条用户组信息 -->
+    <select id="getDto" parameterType="YhzDto" resultType="YhzDto">
+        select yhz.yhzid, yhz.yhzmc, case when yhz.zsx='1' then '私有' when yhz.zsx='0' then '共有' end zsx, yhz.lrry
+        from matridx_yhz yhz
+        <where>
+            yhz.yhzid=#{yhzid}
+        </where>
+    </select>
+
+    <!--获取用户组信息，包括用户组中成员信息-->
+    <select id="getYhzxx" parameterType="YhzDto" resultType="YhzDto">
+        select yhz.yhzid, yhz.yhzmc ,yhzcy.yhid, yh.yhm, yh.zsxm as xm, yhz.zsx
+        from matridx_yhz yhz
+        left join matridx_yhzcy yhzcy on yhz.yhzid = yhzcy.yhzid
+        left join matridx_xtyh yh on yhzcy.yhid = yh.yhid
+        <where>
+            yhz.yhzid=#{yhzid}
+        </where>
+    </select>
+
+    <!--    修改用户组信息 -->
+    <update id="updateDto" parameterType="YhzDto">
+        update matridx_yhz
+        set
+        xgsj = LOCALTIMESTAMP
+        ,xgry = #{xgry}
+        <if test="yhzmc != null and yhzmc != ''">
+            ,yhzmc=#{yhzmc}
+        </if>
+        <if test="zsx != null and zsx != ''">
+            ,zsx=#{zsx}
+        </if>
+        <if test="lrry != null and lrry != ''">
+            ,lrry=#{lrry}
+        </if>
+        <where>
+            yhzid=#{yhzid}
+        </where>
+    </update>
+
+    <!--    删除用户组信息 -->
+    <delete id="delete" parameterType="YhzDto">
+        delete from matridx_yhz
+        <where>
+            yhzid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+</mapper>

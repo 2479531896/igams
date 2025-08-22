@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IRszpDao">
+
+    <select id="getPagedDtoList" parameterType="RszpDto" resultType="RszpDto">
+        SELECT
+        rsly.zpid,
+        rsly.xqgw,
+        rsly.gwbased,
+        rsly.fzqyjyy,
+        rsly.xqrs,
+        rsly.yjnx,
+        rsly.gwxyrs,
+        rsly.gwyqzz,
+        rsly.xwdgrq,
+        rsly.fqsj,
+        rsly.fqrbmmc,
+        rsly.fqr,
+        rsly.fqrbm,( SELECT COUNT ( lyid ) AS lyrs FROM igams_rsly WHERE zpid = rsly.zpid )
+        FROM
+        (
+        SELECT
+        zpid,
+        xqgw,
+        gwbased,
+        fzqyjyy,
+        xqrs,
+        yjnx,
+        gwxyrs,
+        gwyqzz,
+        to_char( xwdgrq, 'YYYY-MM-dd' ) xwdgrq,
+        to_char( fqsj, 'YYYY-MM-dd hh24:mi:ss' ) fqsj,
+        fqrbmmc,
+        xtyh.zsxm fqr,
+        jgxx.jgmc fqrbm
+        FROM
+        igams_rszp rszp
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = rszp.fqr
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = rszp.fqrbm
+        <where>
+            rszp.scbj!='1'
+            <if test="fqr != null and fqr != ''">
+                and xtyh.zsxm like '%'||#{fqr}||'%'
+            </if>
+            <if test="fqrbm != null and fqrbm != ''">
+                and fqrbmmc like '%'||#{fqrbm}||'%'
+            </if>
+            <if test="xqgw != null and xqgw != ''">
+                and rszp.xqgw like '%'||#{xqgw}||'%'
+            </if>
+            <if test="xwdgrqstart != null and xwdgrqstart !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &gt;= #{xwdgrqstart}
+            </if>
+            <if test="xwdgrqend != null and xwdgrqend !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &lt;= #{xwdgrqend}
+            </if>
+            <if test="fqsjstart != null and fqsjstart !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &gt;= #{fqsjstart}
+            </if>
+            <if test="fqsjend != null and fqsjend !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &lt;= #{fqsjend}
+            </if>
+        </where>	) rsly
+    </select>
+
+    <select id="getDtoByZpid" parameterType="RszpDto" resultType="RszpDto">
+        select zpid,xqgw,gwbased,fzqyjyy,xqrs,yjnx,gwxyrs,gwyqzz,to_char(xwdgrq,'YYYY-MM-dd') xwdgrq,to_char(fqsj,'YYYY-MM-dd hh24:mi:ss') fqsj,
+        fqrbmmc,xtyh.zsxm fqr,jgxx.jgmc fqrbm
+        from igams_rszp rszp
+        left join matridx_xtyh xtyh on xtyh.yhid=rszp.fqr
+        left join matridx_jgxx jgxx on jgxx.jgid=rszp.fqrbm
+        <where>
+            rszp.scbj!='1'
+            <if test="zpid != null and zpid != ''">
+                and zpid=#{zpid}
+            </if>
+            <if test="fqr != null and fqr != ''">
+                and fqr=#{fqr}
+            </if>
+            <if test="xqgw != null and xqgw != ''">
+                and xqgw=#{xqgw}
+            </if>
+        </where>
+    </select>
+
+    <!-- 删除 -->
+    <update id="delRecruitment" parameterType="RszpDto">
+        update igams_rszp
+        <set>
+            scbj='1',
+        </set>
+        <where>
+            zpid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <!-- 获取审批id-->
+    <select id="getSpid" parameterType="RszpDto" resultType="RszpDto">
+		select spid,zpid
+		from igams_rszp
+		where spid=#{spid} and scbj!='1'
+	</select>
+
+    <insert id="insert" parameterType="RszpDto">
+        insert into igams_rszp(zpid,spid
+        <if test="xqgw != null and xqgw != ''">
+            ,xqgw
+        </if>
+        <if test="gwbased != null and gwbased != ''">
+            ,gwbased
+        </if>
+        <if test="fzqyjyy != null and fzqyjyy != ''">
+            ,fzqyjyy
+        </if>
+        <if test="xqrs != null and xqrs != ''">
+            ,xqrs
+        </if>
+        <if test="yjnx != null and yjnx != ''">
+            ,yjnx
+        </if>
+        <if test="gwxyrs != null and gwxyrs != ''">
+            ,gwxyrs
+        </if>
+        <if test="gwyqzz != null and gwyqzz != ''">
+            ,gwyqzz
+        </if>
+        <if test="xwdgrq != null and xwdgrq != ''">
+            ,xwdgrq
+        </if>
+        <if test="fqr != null and fqr != ''">
+            ,fqr
+        </if>
+        <if test="fqrbm != null and fqrbm != ''">
+            ,fqrbm
+        </if>
+        <if test="fqrbmmc != null and fqrbmmc != ''">
+            ,fqrbmmc
+        </if>
+        <if test="fqsj != null and fqsj != ''">
+            ,fqsj
+        </if>
+        <if test="wbcxid != null and wbcxid != ''">
+            ,wbcxid
+        </if>
+            ,scbj
+        )
+        values(#{zpid},#{spid}
+        <if test="xqgw != null and xqgw != ''">
+            ,#{xqgw}
+        </if>
+        <if test="gwbased != null and gwbased != ''">
+            ,#{gwbased}
+        </if>
+        <if test="fzqyjyy != null and fzqyjyy != ''">
+            ,#{fzqyjyy}
+        </if>
+        <if test="xqrs != null and xqrs != ''">
+            ,cast(#{xqrs} as numeric)
+        </if>
+        <if test="yjnx != null and yjnx != ''">
+            ,cast(#{yjnx} as numeric)
+        </if>
+        <if test="gwxyrs != null and gwxyrs != ''">
+            ,cast(#{gwxyrs} as numeric)
+        </if>
+        <if test="gwyqzz != null and gwyqzz != ''">
+            ,#{gwyqzz}
+        </if>
+        <if test="xwdgrq != null and xwdgrq != ''">
+            ,cast(#{xwdgrq} as timestamp)
+        </if>
+        <if test="fqr != null and fqr != ''">
+            ,#{fqr}
+        </if>
+        <if test="fqrbm != null and fqrbm != ''">
+            ,#{fqrbm}
+        </if>
+        <if test="fqrbmmc != null and fqrbmmc != ''">
+            ,#{fqrbmmc}
+        </if>
+        <if test="fqsj != null and fqsj != ''">
+            ,cast(#{fqsj} as timestamp)
+        </if>
+        <if test="wbcxid != null and wbcxid != ''">
+            ,#{wbcxid}
+        </if>
+        ,'0'
+       )
+    </insert>
+
+    <update id="update" parameterType="RszpDto">
+        update igams_rszp
+        <set>
+            zpid=#{zpid}
+            <if test="xqgw != null and xqgw != ''">
+                ,xqgw=#{xqgw}
+            </if>
+            <if test="gwbased != null and gwbased != ''">
+                ,gwbased=#{gwbased}
+            </if>
+            <if test="fzqyjyy != null and fzqyjyy != ''">
+                ,fzqyjyy=#{fzqyjyy}
+            </if>
+            <if test="xqrs != null and xqrs != ''">
+                ,xqrs=cast(#{xqrs} as numeric)
+            </if>
+            <if test="yjnx != null and yjnx != ''">
+                ,yjnx=cast(#{yjnx} as numeric)
+            </if>
+            <if test="gwxyrs != null and gwxyrs != ''">
+                ,gwxyrs=cast(#{gwxyrs} as numeric)
+            </if>
+            <if test="gwyqzz != null and gwyqzz != ''">
+                ,gwyqzz=#{gwyqzz}
+            </if>
+            <if test="xwdgrq != null and xwdgrq != ''">
+                ,xwdgrq=cast(#{xwdgrq} as timestamp)
+            </if>
+            <if test="fqr != null and fqr != ''">
+                ,fqr=#{fqr}
+            </if>
+            <if test="fqrbm != null and fqrbm != ''">
+                ,fqrbm=#{fqrbm}
+            </if>
+            <if test="fqrbmmc != null and fqrbmmc != ''">
+                ,fqrbmmc=#{fqrbmmc}
+            </if>
+            <if test="fqsj != null and fqsj != ''">
+                ,fqsj=cast(#{fqsj} as timestamp)
+            </if>
+        </set>
+        <where>
+            zpid=#{zpid}
+        </where>
+    </update>
+
+    <select id="getListForSelectExp" parameterType="RszpDto" resultType="RszpDto">
+        select zp.zpid ${sqlParam} from (select rszp.zpid,rszp.xqgw,rszp.gwbased,rszp.fzqyjyy,rszp.xqrs,rszp.yjnx,rszp.gwxyrs,rszp.gwyqzz,to_char(rszp.xwdgrq,'YYYY-MM-dd') xwdgrq,to_char(rszp.fqsj,'YYYY-MM-dd hh24:mi:ss') fqsj,
+        rszp.fqrbmmc,xtyh.zsxm fqr,jgxx.jgmc fqrbm
+        from(
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} zpid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_rszp rszp on rszp.zpid=tmp.zpid
+        left join matridx_xtyh xtyh on xtyh.yhid=rszp.fqr
+        left join matridx_jgxx jgxx on jgxx.jgid=rszp.fqrbm)zp
+    </select>
+
+    <select id="getCountForSearchExp" parameterType="RszpDto"
+            resultType="java.lang.Integer">
+        select count(rszp.zpid)
+        from igams_rszp rszp
+        left join matridx_xtyh xtyh on xtyh.yhid=rszp.fqr
+        left join matridx_jgxx jgxx on jgxx.jgid=rszp.fqrbm
+        <where>
+            rszp.scbj!='1'
+            <if test="fqr != null and fqr != ''">
+                and xtyh.zsxm like '%'||#{fqr}||'%'
+            </if>
+            <if test="fqrbm != null and fqrbm != ''">
+                and fqrbmmc like '%'||#{fqrbm}||'%'
+            </if>
+            <if test="xqgw != null and xqgw != ''">
+                and rszp.xqgw like '%'||#{xqgw}||'%'
+            </if>
+            <if test="xwdgrqstart != null and xwdgrqstart !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &gt;= #{xwdgrqstart}
+            </if>
+            <if test="xwdgrqend != null and xwdgrqend !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &lt;= #{xwdgrqend}
+            </if>
+            <if test="fqsjstart != null and fqsjstart !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &gt;= #{fqsjstart}
+            </if>
+            <if test="fqsjend != null and fqsjend !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &lt;= #{fqsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="RszpDto" resultType="RszpDto">
+        select zp.zpid ${sqlParam}
+        from (
+        select rszp.zpid,rszp.xqgw,rszp.gwbased,rszp.fzqyjyy,rszp.xqrs,rszp.yjnx,rszp.gwxyrs,rszp.gwyqzz,to_char(rszp.xwdgrq,'YYYY-MM-dd') xwdgrq,to_char(rszp.fqsj,'YYYY-MM-dd hh24:mi:ss') fqsj,
+        rszp.fqrbmmc,xtyh.zsxm fqr,jgxx.jgmc fqrbm
+        from igams_rszp rszp
+        left join matridx_xtyh xtyh on xtyh.yhid=rszp.fqr
+        left join matridx_jgxx jgxx on jgxx.jgid=rszp.fqrbm
+        <where>
+            rszp.scbj!='1'
+            <if test="fqr != null and fqr != ''">
+                and xtyh.zsxm like '%'||#{fqr}||'%'
+            </if>
+            <if test="fqrbm != null and fqrbm != ''">
+                and fqrbmmc like '%'||#{fqrbm}||'%'
+            </if>
+            <if test="xqgw != null and xqgw != ''">
+                and rszp.xqgw like '%'||#{xqgw}||'%'
+            </if>
+            <if test="xwdgrqstart != null and xwdgrqstart !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &gt;= #{xwdgrqstart}
+            </if>
+            <if test="xwdgrqend != null and xwdgrqend !=''">
+                AND to_char(rszp.xwdgrq, 'yyyy-mm-dd') &lt;= #{xwdgrqend}
+            </if>
+            <if test="fqsjstart != null and fqsjstart !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &gt;= #{fqsjstart}
+            </if>
+            <if test="fqsjend != null and fqsjend !=''">
+                AND to_char(rszp.fqsj, 'yyyy-mm-dd hh24:mi:ss') &lt;= #{fqsjend}
+            </if>
+        </where>)zp
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+</mapper>

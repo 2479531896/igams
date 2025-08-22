@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhjgqxDao" >
+
+	<!-- 查询用户机构权限信息 未在使用-->
+	<select id="getYhjgqxList"  resultType="YhjgqxDto">
+		select jgqx.yhid,jgqx.jgid,jgqx.xh,jgqx.jsid
+		from matridx_yhjgqx jgqx
+	</select>
+	<!-- 增加用户机构权限信息 -->
+    <insert id="insert" parameterType="YhjgqxModel">
+        insert into matridx_yhjgqx(yhid
+        <if test="jgid !=null and jgid != ''">
+            ,jgid
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,xh
+        </if>
+        ,jsid) values(#{yhid}
+        <if test="jgid !=null and jgid != ''">
+            ,#{jgid}
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,cast(#{xh} as numeric)
+        </if>
+         ,#{jsid})
+	</insert>
+	<!-- 多条添加用机构权限 -->
+	<insert id="insertList" parameterType="list">
+		insert into matridx_yhjgqx (yhid, jgid, xh,jsid) 
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.yhid},#{item.jgid},cast(#{item.xh} as numeric),#{item.jsid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 根据Yhid删除 用户机构权限信息-->
+	<delete id="deleteJgqxxxByYhid" parameterType="YhjgqxDto">
+		delete from matridx_yhjgqx 
+		<where>
+	        	yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+		</where>
+	</delete>
+	
+	<!-- 根据ids查询用户机构权限信息 到Control，但页面没在使用-->
+	<select id="selectYhqxjg" parameterType="YhjgqxDto" resultType="YhjgqxDto">
+		select jgqx.yhid,jgqx.jgid,jgqx.xh,jgqx.jsid
+		from matridx_yhjgqx jgqx
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	jgqx.yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 修改用户机构权限信息 -->
+	<update id="update" parameterType="YhjgqxModel">
+		update  matridx_yhjgqx set
+			jgid=#{jgid}
+		<if test="xh !=null and xh != ''">
+			,xh=cast(#{xh} as numeric),
+		</if>
+		<if test="jsid !=null and jsid != ''">
+			,jsid=#{jsid} 
+		</if>
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	
+	<!-- 未在使用 -->
+	<select id="getJgidByYhid" parameterType="String" resultType="YhjgqxDto">
+		select distinct jgqx.yhid,jgqx.jgid
+			from matridx_yhjgqx jgqx
+			<where>
+				jgqx.yhid =#{yhid}
+			</where>	
+	</select>
+	
+	<!-- 在用户的角色机构里进行设置使用 -->
+	<select id="getListByjsid" parameterType="YhjgqxDto" resultType="YhjgqxDto">
+		select distinct jgqx.yhid,jgqx.jsid,jgqx.jgid,jgxx.jgmc
+			from matridx_yhjgqx jgqx
+			left join matridx_jgxx jgxx on jgxx.jgid=jgqx.jgid
+			<where>
+			<if test="yhid != null and yhid !=''">
+				and jgqx.yhid =#{yhid}
+			</if>
+			<if test="jsid != null and jsid !=''">
+				and jgqx.jsid =#{jsid}
+			</if>
+			</where>	
+	</select>
+</mapper>

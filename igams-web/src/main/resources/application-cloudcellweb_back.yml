@@ -1,0 +1,350 @@
+## 公司内部管理系统用 杰毅麦特 分布式系统
+version: '3'
+spring:
+  application:
+    name: common-igams-web
+  redis:
+    ## Redis服务器地址
+    host: redis-master
+    port: 6379
+    ## Redis服务器连接用户名
+    #username: matridx2021
+    ## Redis服务器连接密码（默认为空）
+    password: matridx_igams_2021_!
+  ##消息队列
+  rabbitmq:
+    #docok: mq.tran.matridx.ok
+    host: ${mqhost:172.17.60.197}
+    username: ${mqname:admin}
+    password: ${mqpass:matridx2019!}
+    port: ${mqport:5672}
+    #address: ${mqaddr:admin:matridx2019!@172.17.60.188:5672}
+  mail:
+    host: smtp.matridx.com
+    viewname: 杰毅生物
+    protocol: smtp
+    username: lctj@matridx.com
+    password: jytj123@
+  cloud:
+    config:
+      ## 文件名称
+      name: ${name:igams-production}
+      ## 环境名称 配置文件会访问/{label}/{name}-{profiles}.yml,同时默认会取/{label}/{name}.yml 内容
+      profile: ${profile:dev}
+      uri: ${uri:http://172.17.60.192:8760}
+      label: ${label:master}
+      discovery:
+        enabled: true
+        serviceId: config-server
+    gateway:
+      discovery:
+        locator:
+          ##是否适用默认路由(通过gatewayUri:port/服务名/path直接访问服务接口)
+          enabled: true
+          ##是否忽略服务名大小写
+          lowerCaseServiceId: true
+      ##gateway配置多条路由规则时注意顺序问题,例如本例中路由谓词为Query的场景
+      routes:
+        ##路由规则ID,上下文唯一
+        - id: gxj
+          ##路由目标的服务名
+          uri: lb://GXJ-IGAMS-PRODUCTION
+          ##路由条件:请求中若包含ptn的路径自动转发至目标服务
+          predicates:
+            -Path=/gxjprod/**
+          filters:
+            ##- StripPrefix=1 去掉Path中第一个节点
+            - RewritePath=/hmzprod/(?<segment>.*), /$\{segment}
+            - name: Retry
+              args:
+                ##重试次数
+                retries: 2
+                ##触发重试的HTTP状态返回码,
+                ##多个参数用-连接
+                statuses: BAD_GATEWAY
+                exceptions:
+                  - java.util.concurrent.TimeoutException
+                  - java.net.ConnectException
+        - id: hmz
+          uri: lb://HMZ-IGAMS-PRODUCTION
+          predicates:
+            -Path=/hmzprod/**
+          filters:
+            - RewritePath=/hmzprod/(?<segment>.*), /$\{segment}
+        - id: yjw
+          uri: lb://YJW-IGAMS-PRODUCTION
+          predicates:
+            -Path=/yjwprod/**
+          filters:
+            - RewritePath=/yjwprod/(?<segment>.*), /$\{segment}
+        - id: ssm
+          uri: lb://SSM-IGAMS-PRODUCTION
+          predicates:
+            -Path=/ssmprod/**
+          filters:
+            - RewritePath=/ssmprod/(?<segment>.*), /$\{segment}
+        - id: lf
+          uri: lb://LF-IGAMS-PRODUCTION
+          predicates:
+            -Path=/lfprod/**
+          filters:
+            - RewritePath=/lfprod/(?<segment>.*), /$\{segment}
+        - id: wyz
+          uri: lb://WYZ-IGAMS-PRODUCTION
+          predicates:
+            -Path=/wyzprod/**
+          filters:
+            - RewritePath=/wyzprod/(?<segment>.*), /$\{segment}
+        - id: HK
+          uri: lb://HK-IGAMS-PRODUCTION
+          predicates:
+            -Path=/hkprod/**
+          filters:
+            - RewritePath=/hkprod/(?<segment>.*), /$\{segment}
+        - id: wyx
+          uri: lb://WYX-IGAMS-PRODUCTION
+          predicates:
+            -Path=/wyxprod/**
+          filters:
+            - RewritePath=/wyxprod/(?<segment>.*), /$\{segment}
+        - id: mfl
+          uri: lb://MFL-IGAMS-PRODUCTION
+          predicates:
+            -Path=/mflprod/**
+          filters:
+            - RewritePath=/mflprod/(?<segment>.*), /$\{segment}
+        - id: jyk
+          uri: lb://JYK-IGAMS-PRODUCTION
+          predicates:
+            -Path=/jykprod/**
+          filters:
+            - RewritePath=/jykprod/(?<segment>.*), /$\{segment}
+        - id: sjn
+          uri: lb://SJN-IGAMS-PRODUCTION
+          predicates:
+            -Path=/sjnprod/**
+          filters:
+            - RewritePath=/sjnprod/(?<segment>.*), /$\{segment}
+  config:
+    import: optional:configserver:${uri:http://172.17.60.192:8760}
+postsql:
+  datasource:
+    username: AEBrmFhq9gZ4Yeq+mogdzQ==
+    password: DmnVklgEln/9NePegyMNig==
+    url: E6Bxa5hFXjN+sYdjKG06wAqfeQK7rfwXaPGZO5j0ihx5D+FWf9P4+oPwV0AJRB9Z
+sqlserver:
+  gmds:
+    username: C7PnCpt+ks/6vf8lMKVK/w==
+    password: MrTVAg0Sn2SfQZE/HUZ5IQ==
+    #jdbc:sqlserver://172.17.50.35:1433;database=UFDATA_001_2016;
+    url: 05rJvWC/dZNwL93RtuHWFJQs3FWGb6huklwUgf54u52+qoIvC+7EEzgD2O+Oo2KXXUwM1uj944lMCopLJDbKpQ==
+    ##flag: 麦特
+  matridxds:
+    username: C7PnCpt+ks/6vf8lMKVK/w==
+    password: MrTVAg0Sn2SfQZE/HUZ5IQ==
+    #jdbc:sqlserver://172.17.50.35:1433;database=UFDATA_003_2019
+    url: 05rJvWC/dZNwL93RtuHWFJQs3FWGb6huklwUgf54u52+qoIvC+7EEzgD2O+Oo2KXXUwM1uj944lMCopLJDbKpQ==
+    flag: 生物
+
+##角色切换配置： 0不支持切换，1支持切换
+matridx:
+  ftpPcr:
+    addr: 60.191.45.245
+    username: abs
+    password: 123456
+    port: 7821
+
+  cnv:
+    auditurl: http://172.17.60.197:8086
+  #杏和软件配置
+  xinghe:
+    # 调用凭证
+    ticket: 8eaadf17e7b76a650455a5d6d1105fff
+    url: http://118.178.255.230:9001/XingHeAreaService.asmx
+    wsdlurl: http://118.178.255.230:9001/XingHeAreaService.asmx?WSDL
+    # 检测机构
+    hospitalservice: 33A038
+  #顺丰物流
+  shunfeng:
+    clientCode: JYSWJW
+    checkWord: x303u6lj59tqMKjBtEqqZjHCCgYqH40w
+    #沙箱环境的地址
+    callUrlBox: https://sfapi-sbox.sf-express.com/std/service
+    #生产环境的地址
+    callUrlProd: https://sfapi.sf-express.com/std/service  
+  sf:
+    ##顺丰平台顾客编码
+    client_code: JYSWJW
+    ##顺丰平台校验码
+    check_word: x303u6lj59tqMKjBtEqqZjHCCgYqH40w
+    ##顺丰生产环境地址
+    call_url_prod: https://sfapi.sf-express.com/std/service
+    #京东物流
+  jingdong:
+    appSecret: c9431790cc7844a0addf888ba9573b98
+    appKey: c40b1bce312d4eff951f4bd1c7beb79a
+    serverUrl: https://api.jdl.com
+    customerCode: 021K1407284
+    accessToken:  817a4f650ee74f83bf8f8a948a84956b
+    refreshToken:  7e7b10f8e57e4af68b9f9bed3ffe22e7
+  role:
+    switch: 1
+  exptype:
+    limit: 500
+  fileupload:
+    prefix: 
+    tempPath: /matridx/fileupload/temp/
+    releasePath: /matridx/fileupload/release/
+  file:
+    ##文件导出存放路径
+    exportFilePath: /matridx/download/
+    ##文件保存路径前缀
+    pathPrefix: 
+    ##文件转换最大次数
+    translimit: 5
+    ##pooling导出路径
+    poolingExportFilePath: /matridx/pooling/
+  ftp:
+    wordpath: /wordFile
+    pdfpath: /pdfFile
+    url: 172.17.60.177
+    user: ftpuser
+    pd: matridx
+    port: 21
+  accountSet:
+    accountName: "001"
+  ##钉钉
+  dingtalk:
+    ## 服务器对外端口
+    callbackurl: http://company.matridx.com
+    cropid: PAi6mqqSMLdnxhFqQOdG7dsZefVmxGWVEvq0JsEZips=
+    ## 要求解密后为43位
+    aeskey: meg2JLExn/OMMQCDJvaAvT812XJ11pKFLXM6LJqL1+GM5YLWGZZkyvVMNH3H7QNm
+    ## 解密后随意
+    token: 9HASPQHOnVmPR6TilCzcDKS2CtVYmm+DHgdv6DOhL/M=
+    appkey: oRNu8t5t3biW9wtBpq73ixnDfmq5vzEiYsWPreR6oBY=
+    appsecret: rhqtmujOx/rMCLSt41jJ/q2o4eRTKwzBwuLGGV9HfDnCPhvjcw9QyRipKj2wZAGBLSyP3SRJyj9gsyARpBUUmTJVhPyCTTb2m8Ia5X4cJ9k=
+    agentid: t2FsObI5DRqDRF28JeEDDA==
+    miniurl: dingtalk://dingtalkclient/action/open_micro_app?miniAppId=5000000001650313&version=1560993&agentId=1407634296&pVersion=1&packageType=1&corpId=ding3afdff6046a29be5&E6Bxa5hFXjN+sYdjKG06wNo3K7KYMfnAF16E5JwcGPku7H/tPprRWiBD3s7cqbo8
+    ## 跳转钉钉小程序路径
+    jumpdingtalkurl: Lz0Qi39mDV9YbnhyI3+8xhciRl4pY5+eMLzG+soXtK1iy373PwQ04d6uT8EjVHNz84DQUkLhuH9AIUKNQLyjjKxPpUnS3vwSb7F0SPNBaLguz7TUB9Q+1GIIysJ26i0NSSJ3ri0g+6ypFrNd63GNPOd294rmQV2NCYW7ej8zRi4y/ydIDnScydU5F6Oa7nrEWK7+FaEt+vRlxOn/gMXDhNlEbAO+Mmmfipa+9TMOB1y7TD4B3IeapES9D7teErnM4dDMD4ZxsuX1zoDwMCWu7yT8jSFPdvH3/zByhNg3Y02xdj6I/l40JSle1FN+dZhY
+  #钉钉小程序 现主要用于扫码登录所使用 医检测试
+    miniappkey: B6as7DpuYYMxhuqiIHwifJISBZhWicg0eqZPXalq8s8=
+    miniappsecret: e92kvOTvkKWv/yIwkiuvz+rhJyJVKimGvybtyGaf+uen7oLrt9weDKWlFHpSxs+Ehmw+nybq5WPEtGwExiF3WDJVhPyCTTb2m8Ia5X4cJ9k=
+  ##语音识别
+  audio:
+    savepath: /matridx/audio/save/
+    audiotype: ali       ##ali  baidu
+    #accessKeyId: ZY5umhS7CN9RRVKg1x3poKfc8IzB4TkAp0/GRS/sXYo=
+    #accessKeySecret: YgFUZcqxPzLq286Nwmfj4BFfN+QbP4eu8EGl52g42tIyVYT8gk029pvCGuV+HCfZ
+    #appid: L2rjGmuPzJ9xmSU0/9iyFA==
+    accessKeyId: Fyj2gzZ9dU2Xw2lxrxfBQzJVhPyCTTb2m8Ia5X4cJ9k=
+    accessKeySecret: AElsGW16bjaYU2qiTVqwIOzhlmPt5FpxGq6c5XKsKHM=
+    appid: vo88lJAbqCj5CzwR8/u4cTJVhPyCTTb2m8Ia5X4cJ9k=
+  wechat:
+    menuurl: http://172.17.60.197:8085
+    applicationurl: http://dev.matridx.com
+    ## 送检发送请求查询 检测结果的地址 钉钉消息使用
+    inspectionurl: http://dev.matridx.com
+    ## 统计外部地址
+    externalurl: http://dev.matridx.com
+    customizeurl: http://dev.matridx.com
+    ## 钉钉回调注册地址190
+    registerurl: http://172.17.60.190
+  systemflg:
+    logourl: /images/logoIn-biology-b.png
+    title: 杰毅测试环境
+    watermark: 杰毅生物
+    systemname: 杰毅医检
+    ## 合同起始编码
+    contractcode: MD
+    ## 合同买方邮箱
+    contractemail: pengtingting@matridx.com
+    ## 系统是否执行定时任务 0：不执行    null或者1 ：执行
+    remindflg: 1
+    ## 启动时根据标记redisreset判断是否进行redis数据的删除重新加入的操作, 1进行操作，0不进行操作
+    redisreset: 1
+  ## cookie所存放的域名
+  cookie:
+    domain: matridx.com
+    cookiekey: dev.matridx.com
+  ## 跳转的认证中心，如果用本系统，则不用设置，否则是 https://medlab.matridx.com/
+  loginCentre:
+    url: 
+  ## 现主要用于身份证扫码
+  #百度接口token获取
+  baidu:
+    appkey: zn7Nv0cL9ronYbOMXGK0dSZ/l4v/pcLnUVSVLhEx8R4=
+    secret: H2Zh1KK6LQoEM/lgt2KrdETv0qH0itW6f4v9czTHB7YyVYT8gk029pvCGuV+HCfZ
+    #阿里身份证识别appcode
+  aliOcr:
+    ocrIdCardAppCode: 6707b7afcecf40dfb1f2a1c36bda36be
+  ##U8账套名称
+  #accountSet:
+    #accountName: 
+  prefix:
+    ## 分布式系统，主程序的地址
+    igamsweb: /common-igams-web
+    ## 如果本身为分布式子系统，则这个地方不为空，到时候会自动连接主程序prefix.igamsweb（以及传递给页面保持路径），如果未设置，则直接访问本身。
+    urlprefix: 
+  rabbit:
+    ## 系统信息同步时的标记，还需在rabbit下进行配置，使Routing key为sys.igams.jcsj.del能同时匹配到sys.igams.jcsj.del，sys.igams.jcsj.del.production
+    ## 其中production就是这个flg标记
+    flg: 
+  ##阿里云短信
+  aliyunSms:
+    accessKeyId: GB3oWZjNqD177DTTdjKelzJVhPyCTTb2m8Ia5X4cJ9k=
+    accessSecret: jDp6CBmApWl/XLtobsbblOs9lXhNO+2cV7zK3SuWHEc=
+    signName: 杰毅检验
+    signNameMatridx: 杰毅生物
+    templateCode: SMS_170840387
+    templateCodeXgyy: SMS_230420216
+    templateCodeXgbg: SMS_230420609
+    templateCodeXglj: SMS_235794552
+  ## 招行支付功能
+  bankpay:
+    # 商户号
+    merid: 308999150470012
+    # 收银员
+    userid: N082523824
+    # APPID
+    appid: 5dbad146-d728-4f7a-bbe2-700a3d91c8e5
+    # APP SECRET
+    secret: a9bff450-4a4b-4f0d-9cbb-039492d2f883
+    # 商户私钥
+    private_key: MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCjn86PmRk6Ae8fNpGliUl+JE+6z5Y0mzFV3XjjKXcEtS6GfWTSsZmOHo5VSIp4THlQ1G10Sr+FGZcAVH6v/XmyPsCRoaKwanBz6c0hnMVRYvILldbqqsoEMJR0ztqABzNXPC1fS9/j8Dy0x5VdPRBpSsBKqylGzJdA0LdMvIBM31SnLXSlnPwRaQgehWDdXpGa+N52b2hi6GFDfClge4E+H6zTvQeiSmmZVCqbpxUKF4181bC9k0DpX+s6xfrmACFvQvZZlYw1JDfUItVXtL+QqpUY0r/DLWj3zQQmREev+dvF7vsUQ+0Z+3Ptr/WMZGREQpeXjGO+um6pkJJtVzfhAgMBAAECggEBAIhPiKCedaKam9/P8RQLxBr/GyDQ8RxQMZCL2bq8/3b/jYvjCMxxwi/gisjHjvvbEbHh1nFsGBNFF0PiIExzCSASIRDxq/v2IEqgexDGbqd3m5dFM+75aySEaBjLfsHrvbyt2Eqshg95QsmD/43WYkalTH6oCtH9fQA1II8f9m6Sv73rjsc7fZzf21xI0euNLcUz1SgWmutPKdT0roOlxcGEpqHABZ4PUuhcFZRymTWs0XahdFR+JQsVww1mdQD6Alg75PFFvyDDajke+nGf+7KZkseSyefcgolCpy1AAL8XD/4krssXnSjgSjWuLEy2uRjbC+gihNoFPLdu9dOcoQECgYEA9/6zkxYGdRhw4arm0Ba5BwG4+vLF2LyzMfdUFOg02Lw5AMtSk2nquZCOBCJ6JoXO4qQ/0U8BdmttwIf5hvbU7ome8kHxqMuF2kw1XdhgO3IRyuCvSuUfhJ50xIvnEVnwjwQdLlyB1ymqcf0FBdgk8NmwusHxm3yz+qImbQYVItECgYEAqOfpLaTdbvyx3zBkzU7V2YLVcu8jRo8dUU0EVF5fh+11N/dyxTdG38YCP4wOkDPvSDx/OIt0ogQr4I1Txc9RJQRJRoiG54NSFOgfykW+ZQnq4aYn/3CvBQIe8X2zM7lTIYKpWn9IeSAfVAiWtWEeQk1QpobUPXkm96JJMPfbaBECgYEAi/L4c/DiBAKe8Tr4tkWcdQ/LzBJlBEK4/WGN2Z6Q9B6ELKaRGw+SntWszziFpmessMnwGbZ0JNfLP/N8JWX2FAcl46DDN3ZjOyX2l9cbt3BQCiVxxto2RykEzEYHSAtxbcPsk9UwkLO6tEkNJJctgZ3X1gzMw+pDxxTqimv8UYECgYBy9hWxaWsFpZxzKn8Rdjz7ZJ9fMQCzf6kWsvLlca5X1/lWdGd7b9ofaKgTFIK9B3wvkG2O0Ow7cddjaQ3Brw+twDMXfMlFPg5aCHvKspmaL5vcpbjHlayqHf1tpH6aD+NTBZm67LMpLgHkskvRfB6aRgFEtrQyewlYtu5WE/0T4QKBgQD057pt7bCVyY7ityQngjuFlt+olBIhaYZZx8QNF6j8AhGPE6wrq2ByLZkwwkt7aqpXa2HQxxX9jFz4YyIyVEDcap52rx8daa1iIjjlCN5w2DRbRJZHKJzcoYgS3yZpnq90i+Ug82PnpGnPAPd26aRrPMURPdm80dHr6LPx4Binmg==
+    # 商户公钥
+    public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo5/Oj5kZOgHvHzaRpYlJfiRPus+WNJsxVd144yl3BLUuhn1k0rGZjh6OVUiKeEx5UNRtdEq/hRmXAFR+r/15sj7AkaGisGpwc+nNIZzFUWLyC5XW6qrKBDCUdM7agAczVzwtX0vf4/A8tMeVXT0QaUrASqspRsyXQNC3TLyATN9Upy10pZz8EWkIHoVg3V6Rmvjedm9oYuhhQ3wpYHuBPh+s070HokppmVQqm6cVCheNfNWwvZNA6V/rOsX65gAhb0L2WZWMNSQ31CLVV7S/kKqVGNK/wy1o980EJkRHr/nbxe77FEPtGftz7a/1jGRkREKXl4xjvrpuqZCSbVc34QIDAQAB
+    # 招行公钥
+    cmb_public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2xsbUaLEPa8o3JYyjB+wSARyzzsL2QRHlIkSrYUK/cZCXIvA3feVqHfZAFkBtNWg45IxADpmSq5ZgkgZSRqfGoRSlLSnxWqBIB1UAmy0dlKY01xLJhCEHEOsGjcG4RYYMTnQ2T8PHAdE/sIMisdW4PDlV1P2WU0LdZZS8o6sKcXvgZeiZNllKoOvvb5uYccjyq8pjSB1AsYzQ4qK6PgAH4mZlPSyn2IBMzPTgdZQQd0nqfWd94z1sdk8XIGovap7rVCIVGWK11Kfos/XiQgjwIi6t812FSTrsONG9uiAsJoET4ujOUNd/eNkuLOY929ZLbjb+jIYQov5yS4y69i04QIDAQAB
+    # 商品描述
+    description: 检测费支付
+zuul:
+  ##需要忽略的头部信息，不在传播到其他服务
+  sensitive-headers: Access-Control-Allow-Origin
+  ignored-headers: Access-Control-Allow-Origin,H-APP-Id,Token,APPToken
+  routes:
+    lwj-igams-production: /matridxprod/**
+    yjw-igams-production: /yjwprod/**
+    gxj-igams-production: /gxjprod/**
+    lsy-igams-production: /lsyprod/**
+    zh-igams-production: /zhprod/**
+    ssm-igams-production: /ssmprod/**
+    lf-igams-production: /lfprod/**
+    hmz-igams-production: /hmzprod/**
+    wyz-igams-production: /wyzprod/**
+    hk-igams-production: /hkprod/**
+    hk-igams-hrm: /hkhrm/**
+    zcm-igams-production: /zcmprod/**
+    dsy-igams-production: /dsyprod/**
+    hzl-igams-production: /hzlprod/**
+    wyx-igams-production: /wyxprod/**
+logging:
+  config: classpath:/log4j2-cell.xml
+server:
+  port: ${sport:80}
+#  http:
+#    port: ${port:80}
+#  ssl:
+#    key-store: 7946905_dev.matridx.com.pfx
+#    key-store-password: 8b06oJDB

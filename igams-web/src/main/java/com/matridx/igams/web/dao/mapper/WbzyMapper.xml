@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IWbzyDao" >
+	
+	<!-- 获取小程序菜单权限列表 -->
+	<select id="getMiniMenuTreeList" parameterType="WbzyDto" resultType="WbzyDto">
+		select zyid, fjd, zybt, depth, btsx, zylj, mrxs,jsid from (
+			WITH RECURSIVE r (zyid, fjd, zybt, depth, btsx, zylj, mrxs) AS (
+					SELECT wbzy.zyid, wbzy.fjd, wbzy.zybt, cdcc AS depth
+						, wbzy.btsx, wbzy.zylj, wbzy.mrxs
+					FROM matridx_wbzy wbzy
+					WHERE wbzy.mrxs = '2'
+					UNION ALL
+					SELECT t.zyid, t.fjd, t.zybt, cdcc AS depth
+						,  t.btsx, t.zylj, t.mrxs
+					FROM matridx_wbzy t, r
+					WHERE r.zyid IS NOT NULL
+						AND t.zyid = r.fjd
+				)
+			SELECT r.zyid, r.fjd, r.zybt, r.depth
+				, r.btsx, r.zylj, r.mrxs,wbzyqx.jsid
+			FROM r
+				LEFT JOIN matridx_wbzyqx wbzyqx ON wbzyqx.zyid = r.zyid and wbzyqx.jsid=#{jsid}
+		) tmp
+		group by  zyid, fjd, zybt, depth
+			, btsx, zylj, mrxs,jsid
+		ORDER BY zyid
+	</select>
+	
+	<!-- 批量保存系统资源权限 -->
+    <insert id="batchSaveWbzyqx" >
+	    insert into matridx_wbzyqx (jsid,zyid)
+	    <foreach collection="list" item="item" index="index" separator=" union all ">  
+	    	(select #{item.jsid}, #{item.zyid})
+	    </foreach>
+	</insert>
+	
+	<!-- 删除系统资源权限 -->
+	<delete id="deleteWbzyqx" parameterType="java.lang.String">
+		delete from matridx_wbzyqx wbzyqx where wbzyqx.jsid=#{jsid}
+	</delete>
+</mapper>

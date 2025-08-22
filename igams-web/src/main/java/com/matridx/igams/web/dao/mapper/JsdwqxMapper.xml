@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IJsdwqxDao" >
+
+	<!-- 查询已选机构列表 -->
+	<select id="getPagedYxJgxxList" parameterType="JsdwqxDto" resultType="JsdwqxDto">
+		select jsdwqx.jgid,jsdwqx.jsid,jg.jgmc,jg.jgdm
+		from matridx_jsdwqx jsdwqx
+		left outer join matridx_jgxx jg on jg.jgid=jsdwqx.jgid
+		<where>
+			scbj!='1'
+			<if test="jsid != null and jsid != ''">
+				and jsdwqx.jsid = #{jsid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getYxJgxxList" parameterType="JsdwqxDto" resultType="JsdwqxDto">
+		select jsdwqx.jgid,jsdwqx.jsid,jg.jgmc,jg.jgdm
+		from matridx_jsdwqx jsdwqx
+		left outer join matridx_jgxx jg on jg.jgid=jsdwqx.jgid
+		<where>
+			scbj!='1'
+			<if test="jsid != null and jsid != ''">
+				and jsdwqx.jsid = #{jsid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 添加机构信息 -->
+	<insert id="toSelectedJg" parameterType="JsdwqxDto">
+		insert into matridx_jsdwqx ( jsid,jgid) 
+		<if test="jgid !=null and jgid != ''">
+        	values (#{jsid},#{jgid})
+		</if>
+		<if test="ids !=null and ids.size > 0">
+        	<foreach collection="ids" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{jsid},#{item}
+			</foreach>
+		</if>
+	</insert>
+	
+	<insert id="insert" parameterType="list" >
+		insert into matridx_jsdwqx (jsid, jdid) 
+			values
+			<if test="list !=null and list.size > 0">
+				<foreach collection="list" separator="," item="item" index="index">
+					(#{item.jsid},#{item.jgid})
+				</foreach>
+			</if>
+	</insert>
+	<!-- 删除用户角色信息 -->
+	<delete  id="toOptionalJg" parameterType="JsdwqxDto">
+		delete from matridx_jsdwqx 
+		<where>
+			<if test="jgid !=null and jgid != ''">
+	        	and jgid = #{jgid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and jgid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	and jsid = #{jsid}
+			</if>
+		</where>
+	</delete>
+	<!-- 查询角色文件权限信息 -->
+	<select id="getPermission" parameterType="XtjsDto" resultType="JsdwqxDto">
+		select temp.jgid,temp.jgmc,case when jsdwqx.jsid is not null then 1 else 0 end jgflg
+			from (select jgid, jgmc from matridx_jgxx) temp
+		left join matridx_jsdwqx jsdwqx on jsdwqx.jgid = temp.jgid and jsdwqx.jsid=#{jsid}
+		order by temp.jgmc
+	</select>
+	<!--根据角色ID删除权限信息-->
+	<delete id="deleteByJsid" parameterType="XtjsDto">
+		delete from matridx_jsdwqx
+		<where>
+				jsid = #{jsid}
+		</where>
+	</delete>
+	<!-- 新增角色机构权限 -->
+	<insert  id="insertByJsid" parameterType="list">
+		insert into matridx_jsdwqx (jgid, jsid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.jgid},#{item.jsid})
+			</foreach>
+		</if>
+	</insert>
+
+	<insert id="batchInsert" parameterType="list">
+		insert into matridx_jsdwqx (jgid, jsid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.jgid},#{item.jsid})
+			</foreach>
+		</if>
+	</insert>
+</mapper>

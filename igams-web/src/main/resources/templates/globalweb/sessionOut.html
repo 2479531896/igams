@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My 'sessionOut' starting page</title>
+    
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">    
+	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+	<meta http-equiv="description" content="This is my page">
+	<script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+	<script type="text/javascript">
+	 	//用户当前页面框架  跳出
+		if (top.location != self.location)  
+		{
+			//top.location=self.location;
+		}
+		//vue iframe嵌套的页面进入sessionout直接跳出
+		let vueUrl = document.referrer;
+		var interval;
+		if(vueUrl&&window.parent){
+			window.parent.postMessage({
+				timeout:true
+			}, vueUrl);
+		}
+		function logout(){
+			//var url = document.getElementById("tzurl").value;
+			var loginCentreUrl = $('#loginCentreUrl').val();
+			var origin = window.location.origin;
+			let a_token = $("#access_token").val();
+			if((loginCentreUrl =="")){
+				document.location.href = "/";
+			}else{
+				document.location.href = loginCentreUrl + "?redirectUrl="+encodeURIComponent(origin+"/tokenToIndex");
+			}
+		}
+		function minusTime(time){
+			//优先从cookie拿到最新token进行验证，如果token已更新，不需要重新登录，
+			checkToken();
+	        interval = setInterval(function(){
+	        	if(document.getElementById("time"))
+	       			document.getElementById("time").innerHTML=time+"";
+       			if(time == 0){
+					clearInterval(interval);
+		    		logout(); 
+           		}
+       			time--;
+	       			
+	         },1000);
+			return ;
+		}
+		jQuery(function(){
+		    var time=document.getElementById("time").innerHTML;
+		    var timeNum= parseInt(time);
+			minusTime(timeNum)
+		});
+		function checkToken(){
+			let a_token = $("#access_token").val();
+			if(a_token ==""){
+				let token = getCookie('TOKEN.' + $('#cookiekey').val());
+				if(!token){
+					return;
+				}else{
+					//校验token是否有效
+					$.ajax({
+						type:"post",
+						url:"/ws/checkToken",
+						data: {
+							access_token:token
+						},
+						dataType:"json",
+						success:function(data){
+							if(data.status == 'true'){ //验证通过
+								//跳转到首页
+								$("#access_token").val(token);
+								$("#ref").val(token);
+								$('#sessionOut_form').attr('action','/index');
+								$('#sessionOut_form').submit();
+								clearInterval(interval);
+							}else{
+								//清除cookie
+								removeCookie('TOKEN.' + $('#cookiekey').val())
+							}
+						},
+						error:function(event){
+							
+						}
+					});
+				}
+			}else{
+				removeCookie('TOKEN.' + $('#cookiekey').val());
+			}
+		}
+		function getCookie(name){
+			var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+			if(arr=document.cookie.match(reg))
+				return unescape(arr[2]);
+			else
+				return null;
+		}
+		function removeCookie(name) {
+			var exp = new Date()
+			exp.setTime(exp.getTime() - 1)
+			document.cookie = `${name}=;expires=${exp.toGMTString()}`
+		}
+	</script>
+  </head>
+ 
+  <body>
+    <center>
+		<form id="sessionOut_form" name="sessionOut_form" method="post" action="" theme="simple">
+			<input type="hidden" id="vueUrl" th:value="${vueViewUrl}">
+			<input type="hidden" id="access_token" name="access_token" th:value="${access_token}"/>
+			<input type="hidden" id="ref" name="ref"/>
+			<input type="hidden" id="loginCentreUrl" name="loginCentreUrl" th:value="${loginCentreUrl}">
+			<input type="hidden" id="tzurl" name="tzurl" value="/"/>
+			<input type="hidden" id="domain" th:value="${domain}"/>
+			<input type="hidden" id="cookiekey" th:value="${cookiekey}"/>
+			<input type="hidden" id="linshi_acctoken" name="linshi_acctoken" th:value="${linshi_acctoken}"/>
+			<div class="page_prompt_yx" style="color: black">
+			  <p>尊敬的用户，您长时间未操作本系统，为保证其安全性，<font color="red"><span  id="time">10</span></font>秒后系统将自动返回登录页面<br/>
+			  <a onclick="logout();" style="cursor: pointer;" target="_top" class="bold underline">如果您的浏览器没有自动跳转,请点击这里</a></p>
+			</div>
+		</form>
+    </center>
+  </body>
+</html>

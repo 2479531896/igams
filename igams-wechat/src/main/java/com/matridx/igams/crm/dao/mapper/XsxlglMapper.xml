@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.crm.dao.post.IXsxlglDao" >
+    <select id="getSaleVolume" parameterType="XsxlglDto" resultType="Map">
+        select tmp.db,coalesce(sum(case when tmp.path=1 then tmp.yfje else 0 end),0) as zyfje ,coalesce(tmp.yxx,'/') yxx,count(tmp.sjid) css,
+        row_number () over(partition by tmp.db) path
+        from (
+        select sj.db,jcxm.sjid,xxdy.yxx,jcxm.yfje,row_number () over(partition by jcxm.xmglid)path
+        from igams_sjjcxm jcxm
+        left join matridx_jcsj jc_xm on jc_xm.csid=jcxm.jcxmid
+        left join igams_sjxx sj on sj.sjid=jcxm.sjid
+        left join igams_xxdy xxdy on xxdy.dyxx=jcxm.jcxmid and xxdy.scbj='0' and xxdy.dylx=#{dylx}
+        left join (select 'D' xmjclx union all select'R' xmjclx) tt on (jc_xm.cskz1 ='C' or xmjclx = jc_xm.cskz1) and jc_xm.cskz3 in ('IMP_REPORT_ONCO_QINDEX_TEMEPLATE')
+        where sj.scbj='0' and jcxm.scbj='0' and jcxm.sfsf!='0'
+        <if test="rqstart != null and rqstart !='' and rqlx =='Month'">
+            and to_char(sj.jsrq,'YYYY-MM')=#{rqstart}
+        </if>
+        <if test="rqstart != null and rqstart !='' and rqend != null and rqend !='' and rqlx =='Quarter'">
+            and to_char(sj.jsrq,'YYYY-MM') &gt;= #{rqstart} and to_char(sj.jsrq,'YYYY-MM') &lt;= #{rqend}
+        </if>
+        <if test="rqstart != null and rqstart !='' and rqlx =='Year'">
+            and to_char(sj.jsrq,'YYYY')=substring(#{rqstart},1,4)
+        </if>
+        <if test="entire != null and entire !=''">
+            and sj.db ilike '%'||#{entire}||'%'
+        </if>
+        )tmp group by tmp.yxx,tmp.db order by tmp.db,tmp.yxx
+    </select>
+
+    <select id="getUnpaidAccounts" parameterType="XsxlglDto" resultType="Map">
+        select swkh.khid,swkh.gsmc khmc,sum(coalesce(yszk.jsje,
+        0)) jsje,
+        sum(coalesce(yszk.whkje,
+        0)) whkje,
+        sum(coalesce (yszk.sfje,
+        0)) sfje,
+        sum(coalesce(yszk.hkje,
+        0)) hkje
+        FROM igams_swyszk yszk
+        LEFT JOIN igams_swkhgl swkh ON swkh.khid = yszk.dzkh
+        LEFT JOIN igams_hbhzkh hzkh ON hzkh.khid = yszk.dzkh
+        LEFT JOIN igams_hbqx hbqx ON hbqx.hbid = hzkh.hbid
+        WHERE yszk.sfjq !='1' and yszk.scbj='0'
+        <if test="yhid != null and yhid !=''">
+            and hbqx.yhid = #{yhid}
+        </if>
+        <if test="rqstart != null and rqstart !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &lt;= #{rqend}
+        </if>
+        GROUP BY swkh.khid,khmc
+    </select>
+    <select id="getUnpaidAmount" parameterType="XsxlglDto" resultType="Map">
+        SELECT coalesce(sum(yszk.whkje),0) amount FROM igams_swyszk yszk
+        LEFT JOIN igams_hbhzkh hzkh ON hzkh.khid = yszk.dzkh
+        LEFT JOIN igams_hbqx hbqx ON hbqx.hbid = hzkh.hbid
+        WHERE yszk.sfjq !='1' and yszk.scbj='0'
+        <if test="yhid != null and yhid !=''">
+            and hbqx.yhid = #{yhid}
+        </if>
+        <if test="rqstart != null and rqstart !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &lt;= #{rqend}
+        </if>
+        <if test="rqY != null and rqY !=''">
+            and to_char(yszk.zdzq,'YYYY') = #{rqY}
+        </if>
+        <if test="khid != null and khid !=''">
+            and hzkh.khid=#{khid}
+        </if>
+    </select>
+
+    <select id="getUnpaidAccountDetail" parameterType="XsxlglDto" resultType="Map">
+        select swkh.khid,swkh.gsmc khmc,coalesce(yszk.jsje,0) jsje,
+        coalesce(yszk.whkje,0) whkje,coalesce (yszk.sfje,0) sfje,
+        coalesce(yszk.hkje,0) hkje,to_char(yszk.zdzq, 'yyyy-MM') zdzq
+        FROM igams_swyszk yszk
+        LEFT JOIN igams_swkhgl swkh ON swkh.khid = yszk.dzkh
+        WHERE yszk.sfjq !='1' and yszk.scbj='0' and swkh.khid = #{khid}
+        <if test="rqstart != null and rqstart !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            and to_char(yszk.zdzq,'YYYY-MM-DD') &lt;= #{rqend}
+        </if>
+        order by yszk.zdzq desc
+    </select>
+</mapper>

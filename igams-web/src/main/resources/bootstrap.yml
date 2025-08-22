@@ -1,0 +1,45 @@
+spring:
+  rabbitmq:
+    host: ${mqhost:172.17.60.190}
+    username: ${mqname:admin}
+    password: ${mqpass:matridx2019!}
+    docok: ${mqok:production.mq.tran.matridx.ok}
+  cloud:
+    config:
+      ## 文件名称
+      name: ${name:igams-production}
+      ## 环境名称 配置文件会访问/{label}/{name}-{profiles}.yml,同时默认会取/{label}/{name}.yml 内容
+      profile: ${profile:dev}
+      uri: ${uri:http://172.17.60.101:8960}
+      label: ${label:master}
+      discovery:
+        enabled: true
+        serviceId: config-server
+    client:
+      ipAddress: ${ipaddr:localhost}
+    # https://www.jianshu.com/p/84f0667fa277 网络断连恢复引起的
+    stream:
+      default:
+        group: ${spring.application.name}-${spring.cloud.client.ipAddress}-${server.port}
+      rabbit:
+        bindings:
+          springCloudBusInput:
+            consumer:
+              # 队列声明重试次数 
+              queue-declaration-retries: 2000
+              # 重试间隔(ms)
+              recovery-interval: 5000
+              # 为true时，使用‘group’作为配置刷新队列的名称
+              queue-name-group-only: true
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import: configserver:${uri:http://172.17.60.101:8960}
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: ${ipaddr:localhost}
+    instance-id: ${ipaddr:localhost}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: ${zone:http://user:1234@localhost:8751/eureka/}

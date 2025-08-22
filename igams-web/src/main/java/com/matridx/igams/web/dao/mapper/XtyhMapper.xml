@@ -1,0 +1,826 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IXtyhDao" >
+	<!-- 根据用户id查询用户信息 -->
+	<select id="getDtoById" parameterType="java.lang.String" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yh.grouping,yh.mrfz,
+		js.jsmc dqjsmc,js.jsdm dqjsdm,ssjg.jgid,jg.jgmc,js.dwxdbj,yh.ddtxlj,wbcx.miniappid,wbcx.wbcxid
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		left outer join matridx_yhqtxx yhqtxx on yhqtxx.yhid = yh.yhid
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid = yhqtxx.wbcxid
+		left outer join matridx_yhssjg ssjg on yh.yhid = ssjg.yhid
+		left outer join matridx_jgxx jg on jg.jgid=ssjg.jgid
+		 where yh.yhid =#{yhid} and yh.scbj!='1'
+	</select>
+	
+	<!-- 根据用户id查询用户信息 -->
+	<select id="getDto" parameterType="XtyhDto" resultType="XtyhDto">
+		select xtyh.yhid,xtyh.yhm,xtyh.zsxm,xtyh.mm,xtyh.sfsd,xtyh.dqjs,xtyh.dlip,xtyh.dlsj,xtyh.lrry,xtyh.lrsj,xtyh.xgry,xtyh.xgsj,xtyh.scry,xtyh.scsj,
+		xtyh.scbj,xtyh.ddid,xtyh.wechatid,xtyh.gwmc,xtyh.grouping,xtyh.mrfz,xtyh.ddtxlj,yhqtxx.zj,yhqtxx.wbcxid,xtyh.email,xtyh.unionid
+		from matridx_xtyh xtyh
+		left join matridx_yhqtxx yhqtxx on  xtyh.yhid = yhqtxx.yhid and yhqtxx.scbj ='0'
+		where xtyh.yhid =#{yhid} and xtyh.scbj!='1'
+	</select>
+	
+	<!-- 根据用户名查询用户信息 -->
+	<select id="getDtoByName" parameterType="java.lang.String" resultType="XtyhDto">
+		 select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddtxlj
+		,yh.ddid,yh.wechatid,yh.gwmc,coalesce(yh.cwcs,0) cwcs,to_char(yh.dlsj,'YYYY-MM-DD') dlrq,to_char(CURRENT_DATE,'YYYY-MM-DD') dqrq,yh.grouping,yh.mrfz,yh.mmxgsj
+		,qt.wbcxid,yh.email,yh.unionid
+		 from matridx_xtyh yh
+			left join matridx_yhqtxx qt on qt.yhid=yh.yhid	
+		where yh.yhm =#{yhm} and yh.scbj!='1'
+	</select>
+	
+	<!-- 根据token查询用户信息 -->
+	<select id="getDtoByToken" parameterType="java.lang.String" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yh.mmxgsj,yh.ddtxlj
+		from oauth_access_token oauth_token
+		left outer join matridx_xtyh yh on yh.yhm = oauth_token.client_id or yh.ddid = SPLIT_PART(oauth_token.client_id, '@', 1)
+		LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = yh.yhid and yhqtxx.scbj='0'
+		LEFT JOIN matridx_wbcx wbcx ON wbcx.wbcxid = yhqtxx.wbcxid
+		WHERE token_id =#{token_id} and yh.scbj!='1'
+		  AND CASE WHEN POSITION('@' IN oauth_token.client_id) !=0 then wbcx.decodeid = SPLIT_PART( oauth_token.client_id, '@', 2 ) ELSE 1=1 END
+	</select>
+	
+	<!-- 根据token查询用户信息 -->
+	<select id="getUserByToken" parameterType="java.lang.String" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,mm,yh.sfsd,yh.cwcs,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc 
+		from matridx_xtyh yh
+		left outer join oauth_access_token token on yh.yhm = token.user_name
+		where token_id =#{token_id} and yh.scbj!='1'
+	</select>
+	
+	<!-- 查询用户列表 -->
+	<select id="getPagedDtoList" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,to_char(yh.dlsj,'yyyy-mm-dd hh24:mi:ss') dlsj,yh.lrry,to_char(yh.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc
+		,js.jsmc dqjsmc,yh.grouping,yh.mrfz,yh.ddtxlj,wbcx.wbcxmc ssgs
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		LEFT OUTER JOIN matridx_yhssjg yhssjg ON yh.yhid = yhssjg.yhid
+		LEFT OUTER JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+		left outer join matridx_yhqtxx yhqtxx on yhqtxx.yhid=yh.yhid
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid=yhqtxx.wbcxid
+		<where>
+			yh.scbj='0'
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="jgmc != null and jgmc != ''">
+				and jgxx.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="grouping != null and grouping != ''">
+				and yh.grouping like concat(concat('%',#{grouping}),'%')
+			</if>
+			<if test="ddid != null and ddid != ''">
+				and yh.ddid like '%'||#{ddid}||'%'
+			</if>
+			<if test="dqjsmc != null and dqjsmc != ''">
+				and js.jsmc like '%'||#{dqjsmc}||'%'
+			</if>
+			<if test = "sfsds != null and sfsds.length > 0 "  >
+				and yh.sfsd in
+				<foreach collection="sfsds" separator="," open="(" close=") "
+					item="item" index="index">
+				#{item}
+				</foreach>
+			</if>
+			<if test = "ssgss != null and ssgss.length > 0 "  >
+				and wbcx.wbcxmc in
+				<foreach collection="ssgss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getNoPagedDtoList" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询用户列表用于查询考勤 -->
+	<select id="getDtoList" resultType="XtyhDto">
+		select ddid
+		from matridx_xtyh
+		where scbj!='1' and sfsd='0' and ddid is not null
+	</select>
+	<!-- 根据ddid查找yhid -->
+	<select id="getYhid" resultType="XtyhDto">
+		select yhid,yhm,zsxm
+		from matridx_xtyh
+		where scbj!='1' and ddid=#{ddid}
+		order by sfsd
+		limit 1
+	</select>
+	
+	<!-- 根据用户名查询用户信息 -->
+	<select id="getUserByName" parameterType="java.lang.String" resultType="User">
+		select xtyh.yhid,yhm,zsxm,mm,sfsd,cwcs,dqjs,dlip,dlsj,xtyh.lrry,xtyh.lrsj,xtyh.xgry,xtyh.xgsj,xtyh.scry,xtyh.scsj,xtyh.scbj,
+		ddid,wechatid,gwmc,coalesce(cwcs,0) cwcs,sdtime,jstime,mmxgsj,yhjg.jgid,jgxx.jgmc,ddtxlj,yhqtxx.wbcxid
+		from matridx_xtyh xtyh
+		left outer join matridx_yhssjg yhjg on xtyh.yhid = yhjg.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+		left join matridx_yhqtxx yhqtxx on yhqtxx.yhid=xtyh.yhid
+		where yhm =#{yhm}
+		and xtyh.scbj!='1'
+	</select>
+	
+	<!-- 根据用户名查询用户信息 -->
+	<select id="getUserByDdORWechat" parameterType="java.lang.String" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,client.client_secret mm,yh.sfsd,yh.cwcs,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,mmxgsj 
+		,yhjg.jgid,jgxx.jgmc,yh.ddtxlj,yhqtxx.wbcxid
+		from matridx_xtyh yh
+		left join matridx_yhqtxx yhqtxx on yhqtxx.yhid = yh.yhid and yhqtxx.scbj='0'
+		left outer join oauth_client_details client on yh.ddid = SPLIT_PART(client.client_id, '@', 1)  or yh.wechatid = client.client_id
+		left outer join matridx_yhssjg yhjg on yh.yhid = yhjg.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+		<where> client.client_id =#{yhm} and yh.scbj!='1'
+		</where>
+	</select>
+	
+	<!-- 更新系统用户登录时间 -->
+	<update id="updateLastLogin" parameterType="XtyhModel">
+		update matridx_xtyh set dlsj = LOCALTIMESTAMP,dlip =#{dlip} where yhid =#{yhid}
+	</update>
+	
+	<!-- 更新用户密码和初始化用户密码 -->
+	<update id="updatePass" parameterType="XtyhDto">
+		update matridx_xtyh set mm = #{mm},xgsj=LOCALTIMESTAMP,mmxgsj=LOCALTIMESTAMP,xgry = #{xgry} where yhid =#{yhid}
+	</update>
+	
+	<!-- 更新用户密码 -->
+	<update id="updateOauthClinetId" parameterType="XtyhDto">
+		update oauth_client_details set client_id = #{yhm} where client_id =#{yyhm}
+	</update>
+	
+	<!-- 更新用户ID -->
+	<update id="updateOauthPass" parameterType="XtyhDto">
+		update oauth_client_details set client_secret = #{mm} where client_id =#{yhm}
+	</update>
+	
+	<!-- 插入系统用户信息 -->
+	<insert id="insert" parameterType="XtyhModel">
+		insert into matridx_xtyh(yhid,yhm,zsxm,mm,sfsd
+		,lrry,lrsj,scbj,ddid,gwmc,ddtxlj,grouping,mrfz,email,unionid) values(#{yhid},#{yhm},#{zsxm},#{mm},#{sfsd}
+		,#{lrry},LOCALTIMESTAMP,'0',#{ddid},#{gwmc},#{ddtxlj},#{grouping},#{mrfz},#{email},#{unionid})
+	</insert>
+	
+	<!-- 更新系统用户信息 --> 
+	<update  id="update" parameterType="XtyhModel">
+		update matridx_xtyh set 
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="yhm !=null and yhm != ''">
+			,yhm = #{yhm}
+		</if>
+		<if test="zsxm !=null and zsxm != ''">
+			,zsxm = #{zsxm}
+		</if>
+		<if test="mm !=null and mm != ''">
+			,mm = #{mm}
+		</if>
+		<if test="sfsd !=null and sfsd != ''">
+			,sfsd = #{sfsd}
+		</if>
+		<if test="dqjs !=null and dqjs != ''">
+			,dqjs = #{dqjs}
+		</if>
+		<if test="dlip !=null and dlip != ''">
+			,dlip = #{dlip}
+		</if>
+		<if test="dlsj !=null and dlsj != ''">
+			,dlsj = #{dlsj}
+		</if>
+		<if test="cwcs !=null and cwcs != ''">
+			,cwcs = cast(#{cwcs} as numeric)
+		</if>
+		<if test="grouping !=null and grouping != ''">
+			,grouping = #{grouping}
+		</if>
+		<if test="mrfz !=null and mrfz != ''">
+			,mrfz = #{mrfz}
+		</if>
+		<where>
+			yhid = #{yhid}
+		</where>
+	</update>
+	
+	<!-- 更新系统用户登录信息 --> 
+	<update  id="updateLoginInfo" parameterType="XtyhModel">
+		update matridx_xtyh set cwcs = cast(#{cwcs} as numeric)
+		<if test="sfsd !=null and sfsd != ''">
+            ,sfsd = #{sfsd}
+        </if>
+		<if test="sdtime !=null and sdtime != ''">
+			,sdtime = #{sdtime}
+		</if>
+		<if test="jstime !=null and jstime != ''">
+			,jstime = #{jstime}
+		</if>
+		,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<where>
+			yhm = #{yhm}
+		</where>
+	</update>
+	
+	<!-- 删除系统用户信息 -->
+	<update  id="delete" parameterType="XtyhModel">
+		update matridx_xtyh set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="yhid !=null and yhid != ''">
+	        	or yhid = #{yhid}
+			</if>
+		</where>
+	</update>
+
+	<!-- oauth_client_details表中根据client_id查找数据 -->
+	<select  id="getByClientId" parameterType="XtyhDto" resultType="XtyhDto">
+        select client_id yhm, client_secret mm
+        from oauth_client_details
+        <where>
+			client_id = #{yhm}
+		</where>
+	</select>
+	
+	<!-- 增加用户信息 -->
+	<insert  id="addClientDetails" parameterType="XtyhDto">
+		insert into oauth_client_details (
+		client_secret, scope, authorized_grant_types,  client_id) 
+		values (#{mm},'all','client_credentials,refresh_token,password,matridx',#{yhm})
+	</insert>
+	
+	<!-- 通过ID删除oauth_access_token中用户 -->
+	<delete id="deleteOauthAccessById" parameterType="java.lang.String">
+		delete from oauth_access_token where client_id =#{yhm}
+	</delete>
+	
+	<!-- 通过用户名获取token信息 -->
+	<select id="selectOauthAccessByName" parameterType="java.lang.String" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,token.token_id 
+		from matridx_xtyh yh
+		left outer join oauth_access_token token on yh.yhm = token.user_name
+		where yh.yhm =#{yhm}
+	</select>
+	
+	<!-- 查询用户列表 -->
+	<select id="getUserList"  resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yhjs.jsid
+		from matridx_xtyh yh
+		left outer join matridx_yhjs yhjs on yh.yhid = yhjs.yhid
+		<where>
+			yh.scbj='0'
+		</where>
+	</select>
+	<select id="getYhmByUsers"  resultType="String" parameterType="List">
+		select yh.yhm
+		from matridx_xtyh yh
+		left join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid and yhqtxx.scbj ='0'
+		where yh.scbj ='0' and yh.ddid||yhqtxx.wbcxid in
+		<foreach collection="list" separator="," open="(" close=")" item="item" index="index">
+			#{item.ddid}||#{item.wbcxid}
+		</foreach>
+	</select>
+	<!-- 根据用户名删除oauth_client_details表中的数据 -->
+	<delete id="lockUsersByYhms" parameterType="List">
+		update matridx_xtyh set sfsd = '1',xgsj=LOCALTIMESTAMP
+		<where>
+			yhm in
+			<foreach collection="yhms" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</delete>
+
+	<!-- 更新用户钉钉信息 -->
+	<update id="updateDingDing" parameterType="XtyhDto">
+		update matridx_xtyh set xgsj=LOCALTIMESTAMP,
+		<if test="ddid !=null and ddid != ''">
+			ddid = #{ddid},
+		</if>
+		<if test="gwmc !=null and gwmc != ''">
+			gwmc = #{gwmc},
+		</if>
+		<if test="ddtxlj !=null and ddtxlj != ''">
+			ddtxlj = #{ddtxlj},
+		</if>
+		<if test="email !=null and email != ''">
+			email = #{email},
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			unionid = #{unionid},
+		</if>
+		xgry = #{xgry} where yhid =#{yhid}
+	</update>
+		<!-- 查询微信用户列表 -->
+	<select id="getPagedDtoListWxyh" parameterType="WxyhDto" resultType="WxyhDto">
+	select yhid,wxm,wxid,yhm,yhcs,case when yhxb ='1' then '男' when yhxb='2' then '女' end yhxb,wbcx.gzpt
+	from matridx_wxyh wxyh
+	left outer join matridx_wbcx wbcx on wbcx.wbcxid = wxyh.gzpt
+	<where>
+		wxyh.scbj!='1'
+		<if test="yhm != null and yhm != ''">
+			and yhm like '%'||#{yhm}||'%'
+		</if>
+		<if test="wxm != null and wxm != ''">
+			and wxm like '%'||#{wxm}||'%'
+		</if>
+		<if test="yhid != null and yhid != ''">
+			and yhid like '%'||#{yhid}||'%'
+		</if>
+		<if test="wxid != null and wxid != ''">
+			and wxid like '%'||#{wxid}||'%'
+		</if>
+		<if test="gzpt != null and gzpt != ''">
+			and wbcx.gzpt like '%'||#{gzpt}||'%'
+		</if>
+	</where>
+	</select>
+		<!-- 将微信列表的微信ID更新到用户列表 -->
+	<update id="updatextyh" parameterType="WxyhDto">
+		update matridx_xtyh set wechatid=#{wxid}
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	<!-- 根据用户名模糊查询 -->
+	<select id="getListByYhm"  parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yh.grouping,yh.mrfz
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="sfsd != null and sfsd != ''">
+				and yh.sfsd =#{sfsd}
+			</if>
+			<if test="grouping !=null and grouping != ''">
+				and (yh.grouping = #{grouping} or yh.grouping = 'ALL')
+			</if>
+			<if test="mrfz !=null and mrfz != '' and mrfz == '1'.toString">
+				and yh.mrfz != '' and yh.mrfz != 'ALL'
+			</if>
+			<if test="mrfz !=null and mrfz != '' and mrfz == 'ALL'.toString">
+				and yh.mrfz = #{mrfz}
+			</if>
+			<if test="signflg !=null and signflg != '' ">
+				and yh.ddid is not null
+			</if>
+			<if test="signflg == null or signflg == '' ">
+				and (yh.ddid is null or yh.ddid = '')
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据用户名模糊查询 -->
+	<select id="getListByYhms"  parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yh.grouping,yh.mrfz
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test="yhms != null and yhms.size()>0">
+				and yh.yhm in
+				<foreach collection="yhms" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfsd != null and sfsd != ''">
+				and yh.sfsd =#{sfsd}
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户Ids查询用户信息 -->
+	<select id="getListByIds"  parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test = "ids != null and ids.size > 0 ">
+				and yh.yhid in 
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户名查询oauth_client_details表中的数据 -->
+	<select id="getclientByYhm" parameterType="XtyhDto" resultType="XtyhDto">
+		select client_id yhm from oauth_client_details 
+		<where>
+			<if test="yhms !=null and yhms.size > 0">
+	        	client_id in
+				<foreach collection="yhms" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户名删除oauth_client_details表中的数据 -->
+	<delete id="deleteclientByYhm" parameterType="XtyhDto">
+		delete from oauth_client_details 
+		<where>			
+        	client_id in
+			<foreach collection="yhms" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</delete>
+	
+	<!-- 根据wxid查询用户信息 -->
+	<select id="getYhxxByWxid" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,to_char(yh.dlsj,'YYYY-MM-DD') dlrq,coalesce(yh.cwcs,0) cwcs,yh.ddid,yh.wechatid,yh.gwmc,yh.ddtxlj,yh.mrfz,yh,mmxgsj,yh.sdtime,yh.jstime,yh.grouping,
+		js.jsmc dqjsmc,yhjg.jgid,jgxx.jgmc,js.jsdm dqjsdm
+		from matridx_wxyh wxyh
+		left join matridx_wxyh wx on wxyh.unionid = wx.unionid 
+		left join matridx_xtyh yh on yh.yhid = wx.xtyhid and yh.scbj!='1'
+		left join matridx_xtjs js on yh.dqjs=js.jsid
+		left outer join matridx_yhssjg yhjg on yh.yhid = yhjg.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+		<where>
+			wxyh.scbj!='1' and wxyh.wxid = #{wechatid} and wx.xtyhid is not null
+		</where>
+	</select>
+
+	<!-- 根据ddid查询用户信息 -->
+	<select id="getYhxxByDdid" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,to_char(yh.dlsj,'YYYY-MM-DD') dlrq,coalesce(yh.cwcs,0) cwcs,yh.ddid,yh.wechatid,yh.gwmc,yh.ddtxlj,yh.mrfz,yh,mmxgsj,yh.sdtime,yh.jstime,yh.grouping,
+		yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,js.jsmc dqjsmc,mmxgsj,yhjg.jgid,jgxx.jgmc,yh.ddtxlj,yhqtxx.wbcxid
+		from matridx_xtyh yh
+		left join matridx_xtjs js on yh.dqjs=js.jsid
+		left join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid
+		left join matridx_wbcx wbcx on yhqtxx.wbcxid=wbcx.wbcxid and wbcx.scbj = '0'
+		left outer join matridx_yhssjg yhjg on yh.yhid = yhjg.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+		<where>
+			yh.scbj!='1' and yh.sfsd = '0'
+			and ddid=#{ddid}
+			<if test="miniappid != null and miniappid != ''">
+				and wbcx.miniappid=#{miniappid}
+			</if>
+			<if test="wbcxid != null and wbcxid != ''">
+				and wbcx.wbcxid = #{wbcxid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据用户名查询用户信息 -->
+	<select id="getDtoByYhm" parameterType="XtyhDto" resultType="XtyhDto">
+		select yhid,yhm,zsxm,mm,sfsd,dqjs,dlip,dlsj,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,ddid,wechatid,gwmc
+		from matridx_xtyh
+		<where>
+			scbj!='1'
+			<if test="yhm != null and yhm != ''">
+				and yhm =#{yhm}
+			</if>
+			<if test="yhid != null and yhid != ''">
+				and yhid!=#{yhid}
+			</if>			  
+		</where>
+	</select>
+	
+	<!-- 查询数据库中所有的系统用户 包括删除标记为1的 -->
+	<select id="getDBAllUserList" resultType="XtyhDto">
+	    select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,
+	           yh.ddid,yh.wechatid,yh.gwmc,yhjs.jsid,ssjg.jgid,ssjg.xh,mmxgsj,yh.ddtxlj
+		from matridx_xtyh yh
+		left outer join matridx_yhjs yhjs on yh.yhid = yhjs.yhid
+		left join matridx_yhssjg ssjg on yh.yhid = ssjg.yhid
+	</select>
+	<!-- 查询数据库中所有的系统用户 不包括删除标记为1的 -->
+	<select id="getAllUserList" resultType="XtyhDto" parameterType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.sdtime,yh.jstime,yh.ddid,yh.gwmc,yh.scbj,yh.mmxgsj,yh.dqjs,yh.ddtxlj,yhqtxx.wbcxid
+		from matridx_xtyh yh
+		left outer join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid
+		where yh.scbj !='1' and yhqtxx.wbcxid = #{wbcxid} and yh.ddid is not null and yh.ddid != ''
+		<if test="sfsd != null and sfsd != ''">
+			and yh.sfsd=#{sfsd}
+		</if>
+	</select>
+	<!-- 更新用户角色Id -->
+	<update id="updateJsidByGwmc" parameterType="XtyhDto">
+	    update matridx_xtyh set dqjs = #{dqjs} where yhid = #{yhid} 
+	</update>
+
+	<!-- 更新系统用户信息 -->
+	<update  id="updateSfsd" parameterType="XtyhDto">
+		update matridx_xtyh set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP,sfsd = '0'
+		<where>
+			yhid = #{yhid}
+		</where>
+	</update>
+
+	<select id="selectXtsz" parameterType="String" resultType="XtszDto">
+	    select szz
+		from matridx_xtsz
+		<where>
+			szlb = #{value}
+		</where>
+	</select>
+
+
+	<!-- 根据用户id查询用户信息包含部门信息 -->
+	<select id="getPersonalData" parameterType="XtyhDto" resultType="XtyhDto">
+        select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,to_char(yh.dlsj,'yyyy-mm-dd hh24:mi:ss') dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yhssjg.jgid,jgxx.jgmc
+        from matridx_xtyh yh
+        left outer join matridx_yhssjg yhssjg
+        on yh.yhid = yhssjg.yhid
+        left outer join matridx_jgxx jgxx
+        on yhssjg.jgid=jgxx.jgid
+        where yh.yhid =#{yhid}
+    </select>
+
+	<!-- 查询所有的机构名称 -->
+	<select id="getJgmc"  resultType="XtyhDto">
+        select jgid,jgmc from matridx_jgxx
+    </select>
+
+	<!-- 更新用户的部门信息 -->
+	<update  id="updateJg" parameterType="XtyhDto">
+        update matridx_yhssjg set jgid = (select jgid from matridx_jgxx where jgmc=#{jgmc}) where yhid=#{yhid}
+    </update>
+
+	<select id="getDdByToken" parameterType="String" resultType="XtyhDto">
+		select client.client_id,yh.yhid,yh.yhm,yh.zsxm,mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc
+			from oauth_access_token token
+			left join matridx_xtyh yh on yh.ddid=token.user_name
+			left join oauth_client_details client on yh.ddid = SPLIT_PART(client.client_id, '@', 1)
+		where token.token_id =#{token_id} and yh.scbj!='1'
+	</select>
+
+	<select id="getPagedYhzOptionalList" resultType="XtyhDto" parameterType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0' and yh.sfsd='0' and not exists (select 1 from matridx_yhzcy yhzcy where yh.yhid=yhzcy.yhid and yhzcy.yhzid=#{yhzid})
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="getPagedYhzSelectedList" resultType="XtyhDto" parameterType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_yhzcy yhzcy
+		left outer join matridx_xtyh yh on yh.yhid = yhzcy.yhid
+		<where>
+			yh.scbj='0' and yh.sfsd='0' and yhzcy.yhzid = #{yhzid}
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!--查询所有用户信息-->
+	<select id="getUsersList" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.sdtime,yh.jstime,yh.ddid,yh.gwmc,yh.scbj,yh.mmxgsj,yh.dqjs,yh.ddtxlj,yhqtxx.wbcxid,yh.email,yh.unionid
+		from matridx_xtyh yh
+		left outer join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid
+		where yh.scbj !='1'
+	</select>
+
+	<select id="getWbaqUsersList" resultType="User">
+		select deta.client_id,deta.client_id yhm,deta.client_secret mm,wbaqyz.mc zsxm  FROM
+			oauth_client_details deta
+		left join matridx_wbaqyz wbaqyz on wbaqyz.code=deta.client_id
+		where deta.client_id not in (select yhm from matridx_xtyh where scbj ='0' and sfsd ='0')
+		  and deta.client_id  not in (select wxyh.wechatid from matridx_xtyh wxyh where  wechatid is not null)
+		  and SPLIT_PART(deta.client_id, '@', 1) not in (select ddid from matridx_xtyh dyh  WHERE ddid is not null  )
+		 and wbaqyz.code is not null
+	</select>
+
+	<!--查询所有微信钉钉用户-->
+	<select id="getUsersByDdORWechatList" resultType="User">
+		select yh.yhid,client.client_id,yh.sfsd,yh.sdtime,yh.jstime,yh.scbj,yh.yhm,yh.zsxm,client.client_secret mm,
+			yh.dqjs,yh.dlsj,yh.ddid,yh.wechatid,yh.gwmc,yh.mmxgsj,yhjg.jgid,jgxx.jgmc,yh.ddtxlj,wbcx.miniappid,yh.email,yh.unionid
+		from oauth_client_details client
+		left outer join matridx_xtyh yh on yh.scbj='0' and yh.sfsd='0' and (yh.ddid = SPLIT_PART(client.client_id, '@', 1) or yh.wechatid = client.client_id)
+		left outer join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid
+		left outer join matridx_yhssjg yhjg on yh.yhid = yhjg.yhid
+		left join matridx_jgxx jgxx on jgxx.jgid= yhjg.jgid
+		left join matridx_wbcx wbcx on yhqtxx.wbcxid=wbcx.wbcxid
+		left join matridx_xtyh xtyh on xtyh.yhm=client.client_id
+		where xtyh.yhid is null and SPLIT_PART(client.client_id, '@', 2) = wbcx.decodeid
+		order by yh.zsxm
+	</select>
+	<!--批量更新系统用户-->
+	<update id="updateXtyhDtos" parameterType="List">
+		<foreach collection="list" separator=";" item="item" index="index">
+			UPDATE matridx_xtyh SET sfsd = '1',xgsj=LOCALTIMESTAMP
+			WHERE
+			yhid in (
+			SELECT
+			xtyh.yhid
+			FROM
+			matridx_xtyh xtyh
+			LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = xtyh.yhid and yhqtxx.scbj='0'
+			WHERE
+			xtyh.scbj= '0' and xtyh.sfsd= '0' and xtyh.ddid = #{item.ddid} and yhqtxx.wbcxid = #{item.wbcxid})
+		</foreach>
+	</update>
+	<!--查询所有用户信息-->
+	<select id="getXtyhDtos" resultType="XtyhDto">
+		select ddid,yhid from matridx_xtyh where scbj !='1'
+	</select>
+	<insert id="insertXtyhDtos" parameterType="List">
+		insert into matridx_xtyh(
+		yhid,
+		yhm,
+		zsxm,
+		ddid,
+		sfsd,
+		lrry,
+		lrsj,
+		scbj
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yhid},#{item.yhm},#{item.zsxm},#{item.ddid},#{item.sfsd},#{item.lrry},LOCALTIMESTAMP,#{item.scbj}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<!-- 删除锁定用户的未完成任务 -->
+	<update  id="deleteInCompleteTaskById" parameterType="String">
+		UPDATE igams_gzgl
+		SET scbj = '1'
+		<where>
+			fzr =#{ yhid }
+			AND zt = '00'
+			AND scbj = '0'
+		</where>
+	</update>
+	<!-- 更新钉钉时删除用户的未完成任务 -->
+	<update  id="deleteInCompleteTaskList" parameterType="List">
+		update igams_gzgl set scbj = '1' where fzr in
+		<foreach collection="list" open="(" close=")" item="item" index="index" separator=",">
+			#{item.yhid}
+		</foreach>
+		AND zt = '00' AND scbj = '0'
+	</update>
+	<!-- 删除删除用户时删除用户的未完成任务 -->
+	<update  id="deleteInCompleteTaskByIds" parameterType="String">
+		update igams_gzgl set scbj = '1' where  zt = '00' AND scbj = '0'
+		and fzr in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 选中导出  -->
+	<select id="getListForSelectExp" parameterType="XtyhDto" resultType="XtyhDto">
+		SELECT  yh.yhid ${sqlParam}
+		FROM (
+		<foreach collection="ids" separator=" union all "  index="index" item="item">
+			select #{item, jdbcType=VARCHAR} yhid, #{index} ordernum
+		</foreach>
+		) tmp
+		left outer join matridx_xtyh yh on yh.yhid=tmp.yhid
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		LEFT OUTER JOIN matridx_yhssjg yhssjg ON yh.yhid = yhssjg.yhid
+		LEFT OUTER JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+		left outer join matridx_yhqtxx yhqtxx on yhqtxx.yhid=yh.yhid
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid=yhqtxx.wbcxid
+		ORDER BY tmp.ordernum
+	</select>
+
+	<!-- 获取搜索导出的条数 -->
+	<select id="getCountForSearchExp"  parameterType="XtyhDto" resultType="java.lang.Integer">
+		select  count (yh.yhid)
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		LEFT OUTER JOIN matridx_yhssjg yhssjg ON yh.yhid = yhssjg.yhid
+		LEFT OUTER JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+		left outer join matridx_yhqtxx yhqtxx on yhqtxx.yhid=yh.yhid
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid=yhqtxx.wbcxid
+		<where>
+			yh.scbj='0'
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="jgmc != null and jgmc != ''">
+				and jgxx.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="grouping != null and grouping != ''">
+				and yh.grouping like concat(concat('%',#{grouping}),'%')
+			</if>
+			<if test="ddid != null and ddid != ''">
+				and yh.ddid like '%'||#{ddid}||'%'
+			</if>
+			<if test="dqjsmc != null and dqjsmc != ''">
+				and js.jsmc like '%'||#{dqjsmc}||'%'
+			</if>
+			<if test = "sfsds != null and sfsds.length > 0 "  >
+				and yh.sfsd in
+				<foreach collection="sfsds" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ssgss != null and ssgss.length > 0 "  >
+				and wbcx.wbcxmc in
+				<foreach collection="ssgss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="XtyhDto" resultType="XtyhDto">
+		SELECT  yh.yhid  ${sqlParam}
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		LEFT OUTER JOIN matridx_yhssjg yhssjg ON yh.yhid = yhssjg.yhid
+		LEFT OUTER JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+		left outer join matridx_yhqtxx yhqtxx on yhqtxx.yhid=yh.yhid
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid=yhqtxx.wbcxid
+		<where>
+			yh.scbj='0'
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="jgmc != null and jgmc != ''">
+				and jgxx.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="grouping != null and grouping != ''">
+				and yh.grouping like concat(concat('%',#{grouping}),'%')
+			</if>
+			<if test="ddid != null and ddid != ''">
+				and yh.ddid like '%'||#{ddid}||'%'
+			</if>
+			<if test="dqjsmc != null and dqjsmc != ''">
+				and js.jsmc like '%'||#{dqjsmc}||'%'
+			</if>
+			<if test = "sfsds != null and sfsds.length > 0 "  >
+				and yh.sfsd in
+				<foreach collection="sfsds" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ssgss != null and ssgss.length > 0 "  >
+				and wbcx.wbcxmc in
+				<foreach collection="ssgss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+</mapper>

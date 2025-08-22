@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<!-- 引入 tagsinput-->
+	<link rel="stylesheet" type="text/css" href="/js/globalweb/systemrole/bootstrap-tagsinput.css"></link>
+    <script type="text/javascript" src="/js/globalweb/systemrole/bootstrap-tagsinput.js"></script>
+    <style type="text/css">
+		#sel_unlist,#sel_list{
+			height:300px;
+			width: 100%;
+			overflow: auto;
+			border:none;
+		}
+	</style>
+<body>
+	<form data-bs-toggle="validation" th:action="'/systemrole/role/' + ${xtjsDto.formAction} + 'SaveRole'" method="post" id="role_ajaxForm" class="form-horizontal sl_all_form">
+		<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+			<li  class=" nav-item" >
+				<a  class="nav-link active"  href="#roleInfoTab" role="tab" data-bs-toggle="tab">角色信息</a>
+			</li>
+			<li class=" nav-item" >
+				<a  class="nav-link"  href="#peopleInfoTab" role="tab" data-bs-toggle="tab">人员机构</a>
+			</li>
+			<li class=" nav-item" >
+				<a  class="nav-link"  href="#agencyInfoTab" role="tab" data-bs-toggle="tab">角色单位</a>
+			</li>
+		</ul>
+		<div class="modal-body body-content tab-content">
+			<div role="tabpanel" class="tab-pane fade active in" id="roleInfoTab" aria-labelledby="home-tab">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<input type="hidden" name="ss_formAction" id="ss_formAction" th:value="${xtjsDto.formAction}"/>
+				        		<input type="hidden" id="jsid" name="jsid" th:value="${xtjsDto.jsid}"></s:hidden>
+				        		<input type="hidden" id="jgids" name="jgids"/>
+				        		<input type="hidden" id="jsjgids" name="jsjgids"/>
+								<input type="hidden" name="access_token"/>
+				         		<label for="" class="col-sm-4 col-xs-4 col-md-4 control-label"><span style="color:red;">*</span>角色名称</label>
+				    			<div class="col-sm-7 col-md-7 col-xs-7">
+				      				<input type="text" id="jsmc" name="jsmc" class="form-control" validate="{required:true,stringMaxLength:128}" th:value="${xtjsDto.jsmc}"></input>
+				        		</div>
+				   			</div>
+						</div>
+						<div class="col-md-12 col-sm-12 col-xs-12">
+					        <div class="form-group">
+					        	<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label"><span style="color:red;">*</span>单位限制</label>
+					   			<div class="col-sm-7 col-md-7 col-xs-7">
+					          		<input type="checkbox" id="dwxdbj" onchange="checkDwxz()" name="dwxdbj" class="make-switch" data-on-color="success" data-off-color="warning" data-on-text="是" data-off-text="否" th:value="1" th:checked="${'1' eq xtjsDto.dwxdbj}">
+								</div>
+					        </div>
+						</div>
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 col-md-4 control-label">父角色</label>
+								<div class="col-sm-7 col-xs-7 col-md-7">
+									<select id="fjsid" name="fjsid" th:value="${xtjsDto.fjsid}" class="form-control chosen-select" style="height:34px;">
+										<option value="">--请选择--</option>
+										<option th:if="${jslist != null && jslist.size() >0}" th:each="list:${jslist}" th:value="${list.jsid}" th:text="${list.jsmc }" th:selected="${list.jsid eq xtjsDto.fjsid}"></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">首页类型</label>
+								<div class="col-sm-7 col-md-7 col-xs-7">
+									<select id="sylx" name="sylx" th:value="${xtjsDto.sylx}" class="form-control chosen-select" style="height:34px;">
+										<option value="">--请选择--</option>
+										<option th:each="list:${sylxlist}" th:value="${list.csid}" th:text="${list.csmc }" th:cskz1="${list.cskz1}" th:selected="${list.csid eq xtjsDto.sylx}"></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">首页PPT</label>
+								<div class="col-sm-7 col-md-7 col-xs-7">
+									<select id="syppt" name="pptglid" th:value="${xtjsDto.pptglid}" class="form-control chosen-select" style="height:34px;">
+										<option value="">--请选择--</option>
+										<option th:each="list:${pptglDtoList}" th:value="${list.pptglid}" th:text="${list.pptmc }"  th:selected="${list.pptglid eq xtjsDto.pptglid}"></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">角色描述</label>
+								<div class="col-sm-7 col-xs-7 col-md-7">
+									<textarea name="jsms" id="jsms" rows="3" cols="20" class="form-control" validate="{stringMaxLength:128}" th:text="${xtjsDto.jsms}"></textarea> 
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane fade" id="peopleInfoTab"aria-labelledby="profile-tab">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-12 col-sm-12" id="jsjgDiv">
+							
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane fade" id="agencyInfoTab"aria-labelledby="profile-tab">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-12 col-sm-12" id="xzjgDiv">
+							<div class="col-md-12 col-sm-12">
+								<div class="pull-left export-left">
+			          				<div>
+							         	<select id="sel_unlist" name="sel_unlist" multiple="multiple">
+							         		<optgroup label="机构名称">
+		                        				<option th:each="u_jsdwqxDto:${unselectList}" th:value="${u_jsdwqxDto.jgid}" th:text="${u_jsdwqxDto.jgmc}" ondblclick="addOption()"></option>
+		                        			</optgroup>
+										</select>
+									</div>
+								</div>
+								<div class="pull-left export-mid">
+									<dl>
+										<dd id="right-all" onclick="addOption()"></dd>
+										<dd id="left-all" class="export-leftico" onclick="moveOption()"></dd>
+									</dl>
+								</div>
+								<div class="pull-right export-right">
+									<div>
+							         	<select id="sel_list" name="sel_list" multiple="multiple">
+							         		<optgroup label="已选机构">
+		                        				<option th:each="s_jsdwqxDto:${selectList}" th:value="${s_jsdwqxDto.jgid}" th:text="${s_jsdwqxDto.jgmc}" ondblclick="moveOption()"></option>
+		                        			</optgroup>
+										</select>
+									</div>
+								</div>	
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+	<script type="text/javascript" src="/js/globalweb/systemrole/role_edit.js"></script>
+</body>
+</html>

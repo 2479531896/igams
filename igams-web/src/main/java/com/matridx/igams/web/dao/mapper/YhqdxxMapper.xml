@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhqdxxDao" >
+	<!-- 根据用户id查询用户信息 -->
+	<select id="selectLastTime" parameterType="YhqdxxDto" resultType="YhqdxxDto">
+		select qdxx.qdid,qdxx.xm,qdxx.xxdz,qdxx.dz,qdxx.ddid,qdxx.qdsj,qdxx.dqsk,qdxx.jd,qdxx.wd,qdxx.bz
+		from igams_yhqdxx qdxx
+		where qdxx.scbj != '1'
+		order by qdxx.dqsk desc
+		limit 1
+	</select>
+	<!-- 多条添加签到信息 -->
+	<insert id="insertByYhqdxxDtos" parameterType="list">
+		insert into igams_yhqdxx (qdid, xm, xxdz,dz,ddid,qdsj,dqsk,jd,wd,bz,lrry,lrsj,scbj) 
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.qdid},#{item.xm},#{item.xxdz},#{item.dz},#{item.ddid},cast(#{item.qdsj} as TIMESTAMP),cast(#{item.dqsk} as numeric),
+				#{item.jd},#{item.wd},#{item.bz},#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	<!-- 按时间范围查询签到信息 -->
+	<select id="selectCheckinInfo" parameterType="YhqdxxDto" resultType="YhqdxxDto">
+		select qdxx.qdid,qdxx.xm,qdxx.xxdz,qdxx.dz,qdxx.ddid,qdxx.qdsj,qdxx.dqsk,qdxx.jd,qdxx.wd,qdxx.bz
+		from igams_yhqdxx qdxx
+		<where>
+			qdxx.scbj != '1'
+			<if test="kssj != null and kssj != ''">
+				and to_char(qdxx.qdsj,'YYYY-MM-dd') &gt;= #{kssj}
+			</if>
+			<if test="jssj != null and jssj != ''">
+				and to_char(qdxx.qdsj,'YYYY-MM-dd') &lt;= #{jssj}
+			</if>
+		</where> 
+	</select>
+</mapper>

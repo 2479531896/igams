@@ -1,0 +1,126 @@
+一、ajaxFileUpload是一个异步上传文件的jQuery插件。
+
+语法：$.ajaxFileUpload([options])
+
+options参数说明：
+
+1、url　　　　　　　　　　  上传处理程序地址。　　
+2，fileElementId　　　　　  需要上传的文件域的ID，即<input type="file">的ID。
+3，secureuri　　　　　　　 是否启用安全提交，默认为false。
+4，dataType　　　　　　　 服务器返回的数据类型。可以为xml,script,json,html。如果不填写，jQuery会自动判断。
+5，success　　　　　　　　提交成功后自动执行的处理函数，参数data就是服务器返回的数据。
+6，error　　　　　　　　　 提交失败自动执行的处理函数。
+7，data 　　　　　　　　　 自定义参数。这个东西比较有用，当有数据是与上传的图片相关的时候，这个东西就要用到了。
+8, type 　　　　　　　　　  当要提交自定义参数时，这个参数要设置成post
+
+错误提示:
+
+1，SyntaxError: missing ; before statement错误
+　　如果出现这个错误就需要检查url路径是否可以访问
+2，SyntaxError: syntax error错误
+　　如果出现这个错误就需要检查处理提交操作的服务器后台处理程序是否存在语法错误
+3，SyntaxError: invalid property id错误
+　　如果出现这个错误就需要检查文本域属性ID是否存在
+4，SyntaxError: missing } in XML expression错误
+　　如果出现这个错误就需要检查文件name是否一致或不存在
+5，其它自定义错误
+　　大家可使用变量$error直接打印的方法检查各参数是否正确，比起上面这些无效的错误提示还是方便很多。
+
+ 
+
+使用方法：
+
+第一步：先引入jQuery与ajaxFileUpload插件。注意先后顺序，这个不用说了，所有的插件都是这样。
+
+<script src="jquery-1.7.1.js" type="text/javascript"></script>
+<script src="ajaxfileupload.js" type="text/javascript"></script>
+
+第二步：HTML代码：
+
+<body>
+    <p><input type="file" id="file1" name="file" /></p>
+    <input type="button" value="上传" />
+    <p><img id="img1" alt="上传成功啦" src="" /></p>
+</body>
+
+第三步：JS代码
+
+
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>
+    <script src="ajaxfileupload.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(":button").click(function () {
+                ajaxFileUpload();
+            })
+        })
+        function ajaxFileUpload() {
+            $.ajaxFileUpload
+            (
+                {
+                    url: '/upload.aspx', //用于文件上传的服务器端请求地址
+                    secureuri: false, //是否需要安全协议，一般设置为false
+                    fileElementId: 'file1', //文件上传域的ID
+                    dataType: 'json', //返回值类型 一般设置为json
+                    success: function (data, status)  //服务器成功响应处理函数
+                    {
+                        $("#img1").attr("src", data.imgurl);
+                        if (typeof (data.error) != 'undefined') {
+                            if (data.error != '') {
+                                alert(data.error);
+                            } else {
+                                alert(data.msg);
+                            }
+                        }
+                    },
+                    error: function (data, status, e)//服务器响应失败处理函数
+                    {
+                        alert(e);
+                    }
+                }
+            )
+            return false;
+        }
+    </script>
+
+
+第四步：后台页面upload.aspx代码：
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            HttpFileCollection files = Request.Files;
+            string msg = string.Empty;
+            string error = string.Empty;
+            string imgurl;
+            if (files.Count > 0)
+            {
+                files[0].SaveAs(Server.MapPath("/") + System.IO.Path.GetFileName(files[0].FileName));
+                msg = " 成功! 文件大小为:" + files[0].ContentLength;
+                imgurl = "/" + files[0].FileName;
+                string res = "{ error:'" + error + "', msg:'" + msg + "',imgurl:'" + imgurl + "'}";
+                Response.Write(res);
+                Response.End();
+            }
+        }
+
+ 
+
+调试过程中发现一个问题，就是作为文件域(<input type="file">)必须要有name属性，如果没有name属性，上传之后服务器是获取不到图片的。如：正确的写法是<input type="file" id="file1" name="file1" />
+最经典的错误终于找到原因所在了。Object function (a,b){return new e.fn.init(a,b,h)} has no method 'handleError'，这个是google浏览器报的错误，非常经典， 不知道是我的版本问题还是真正存在的问题。
+这个问题的根源经过N次上传才找到问题的根本所在。答案是：dataType参数一定要大写。如：dataType: 'HTML'。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

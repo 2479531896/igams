@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhzcyDao" >
+    <!--用户组添加成员-->
+    <insert  id="toYhzcySelected" parameterType="YhzcyDto">
+        insert into matridx_yhzcy (yhid,  yhzid)
+        <if test="yhid !=null and yhid != ''">
+            values (#{yhid},#{yhzid})
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            <foreach collection="ids" separator="union" open="(" close=")" item="item" index="index">
+                select #{item},#{yhzid}
+            </foreach>
+        </if>
+    </insert>
+
+    <!--用户组去除成员-->
+    <delete  id="toYhzcyOptional" parameterType="YhzcyDto">
+        delete from matridx_yhzcy
+        <where>
+            <if test="yhid !=null and yhid != ''">
+                and yhid = #{yhid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and yhid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yhzid !=null and yhzid != ''">
+                and yhzid = #{yhzid}
+            </if>
+        </where>
+    </delete>
+
+    <delete id="deleteByIds" parameterType="java.util.ArrayList">
+        delete from matridx_yhzcy
+        <where>
+            yhzid in
+            <foreach collection="list" separator="," item="yhzid" index="index" open="(" close=")">
+                #{yhzid}
+            </foreach>
+        </where>
+    </delete>
+
+</mapper>

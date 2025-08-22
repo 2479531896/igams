@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.crm.dao.post.IJxhsmxDao" >
+
+
+    <!--查询-->
+    <select id="getDtoList" parameterType="JxhsmxDto" resultType="JxhsmxDto">
+        select jxhsmx.jxhsmxid,jxhsmx.jxhsglid,jxhsmx.yszkid,jxhsmx.jxhsje,jxhsmx.bz,jxhsmx.lrry,jxhsmx.lrsj,jxhsmx.scbj
+        ,to_char(swyszk.zdzq,'yyyy-mm') zdzq,swkhgl.gsmc as dzkhmc,jc_hbfl.csmc as hbflmc,swyszk.sfje,swyszk.hkje,fzr_xtyh.zsxm as fzrmc,swyszk.jsje,swyszk.jxje
+        from igams_jxhsmx jxhsmx
+        left join igams_swyszk swyszk on swyszk.yszkid = jxhsmx.yszkid and swyszk.scbj = '0'
+        left join igams_swkhgl swkhgl on swkhgl.khid = swyszk.dzkh and swkhgl.scbj = '0'
+        left join matridx_jcsj jc_hbfl on swyszk.fl = jc_hbfl.csid and jc_hbfl.scbj != '1'
+        left join matridx_xtyh fzr_xtyh on fzr_xtyh.yhid = swyszk.djxs and fzr_xtyh.scbj != '1'
+        <where>
+            jxhsmx.scbj = '0'
+            <if test="jxhsglid != null and jxhsglid != ''">
+                and jxhsmx.jxhsglid = #{jxhsglid}
+            </if>
+        </where>
+    </select>
+    <!--批量新增绩效核算明细-->
+    <insert id="insertDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            insert into igams_jxhsmx (
+                jxhsmxid,jxhsglid,yszkid,jxhsje,bz,lrry,lrsj,scbj
+            ) values
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.jxhsmxid},
+                #{item.jxhsglid},
+                <if test="item.yszkid != null and item.yszkid != ''">
+                        #{item.yszkid},
+                </if>
+                <if test="item.yszkid == null or item.yszkid == ''">
+                        null,
+                </if>
+                <if test="item.jxhsje != null and item.jxhsje != ''">
+                        cast(#{item.jxhsje} as numeric),
+                </if>
+                <if test="item.jxhsje == null or item.jxhsje == ''">
+                        null,
+                </if>
+                <if test="item.bz != null and item.bz != ''">
+                        #{item.bz},
+                </if>
+                <if test="item.bz == null or item.bz == ''">
+                        null,
+                </if>
+                #{item.lrry},
+                localtimestamp,
+                '0')
+            </foreach>
+        </if>
+    </insert>
+
+    <!--批量更新绩效核算明细-->
+    <update id="updateDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_jxhsmx jxhsmx
+            set jxhsje = cast(tmp.jxhsje as numeric),
+            bz = tmp.bz,
+            xgry = tmp.xgry,
+            xgsj = localtimestamp
+            from (
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.jxhsmxid} as jxhsmxid, #{item.jxhsje} as jxhsje,#{item.bz} as bz, #{item.xgry} as xgry
+            </foreach>
+            ) tmp
+            where  jxhsmx.jxhsmxid = tmp.jxhsmxid
+        </if>
+    </update>
+    <!--批量删除绩效核算明细-->
+    <update id="deleteDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_jxhsmx jxhsmx
+            set scbj = '1',
+            scry = tmp.scry
+            from (
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.jxhsmxid} as jxhsmxid, #{item.scry} as scry
+            </foreach>
+            ) tmp
+            where jxhsmx.jxhsmxid = tmp.jxhsmxid
+        </if>
+    </update>
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhssjgDao" >
+	<!-- 查询用户所属机构信息 -->
+	<select id="getYhssjgList"  resultType="YhssjgDto">
+		select ssjg.yhid,ssjg.jgid,ssjg.xh
+		from matridx_yhssjg ssjg
+	</select>
+	<!-- 增加用户所属机构信息-->
+	<insert id="insert" parameterType="YhssjgModel">
+		insert into matridx_yhssjg(yhid
+		<if test="jgid !=null and jgid != ''">
+			,jgid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		) values(#{yhid}
+		<if test="jgid !=null and jgid != ''">
+			,#{jgid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		)
+	</insert>
+	
+	<!-- 根据用户ID删除用户所属机构信息 -->
+	<delete id="deleteYhssjgByYhid" parameterType="YhssjgDto">
+		delete from matridx_yhssjg
+		<where>
+	        	yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+		</where>
+	</delete>
+	
+	<!-- 根据用户ids查询用户所属机构信息 -->
+	<select id="getYhssjgByIds" parameterType="YhssjgDto" resultType="YhssjgDto">
+		select ssjg.yhid,ssjg.jgid,ssjg.xh
+		from matridx_yhssjg ssjg
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	ssjg.yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户ID获取机构信息 -->
+	<select id="getJgxxByYhid" parameterType="String" resultType="YhssjgDto">
+		select yhjg.jgid,yhjg.yhid,jgxx.jgmc
+		from matridx_yhssjg yhjg
+		left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+		<where>
+			yhjg.yhid = #{yhid}
+		</where>
+	</select>
+	<!-- 修改用户所属机构信息-->
+	<update  id="update" parameterType="YhssjgDto">
+		update  matridx_yhssjg set 
+			jgid=#{jgid}
+		<if test="xh !=null and xh != ''">
+			,xh=cast(#{xh} as numeric)
+		</if>
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	<!-- 通过yhid查询用户所属机构 -->
+	<select id="getDtoById" parameterType="String" resultType="YhssjgDto">
+		select ssjg.yhid,ssjg.jgid,ssjg.xh,jgxx.jgmc
+			from matridx_yhssjg ssjg
+			left join matridx_jgxx jgxx on jgxx.jgid=ssjg.jgid
+			<where>
+				ssjg.yhid=#{yhid}
+			</where>
+	</select>
+</mapper>

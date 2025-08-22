@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IYhjsDao" >
+	<!-- 查询权限信息 -->
+	<select id="getDtoList" parameterType="YhjsDto" resultType="YhjsDto">
+		select qx.yhid,qx.jsid,js.jsmc,js.fjsid,js.sylx,js.jsdm,yh.yhm yhm,yh.zsxm zsxm,js.dwxdbj,ssjg.jgid,js.ckqx
+		from matridx_yhjs qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		left outer join matridx_xtyh yh on yh.yhid = qx.yhid
+		left outer join matridx_yhssjg ssjg on ssjg.yhid = yh.yhid and ssjg.xh ='1'
+		 <where>
+		 	js.scbj ='0'
+		 	<if test="yhid != null and yhid != ''">
+		 		and qx.yhid =#{yhid}
+		 	</if>
+		 	<if test="jsid != null and jsid != ''">
+		 		and qx.jsid =#{jsid}
+		 	</if>
+		 </where>
+		order by js.jsdm,js.jsid
+	</select>
+
+	<!-- 根据用户ID查询权限信息 -->
+	<select id="getDtoListById" parameterType="java.lang.String" resultType="YhjsDto">
+		select qx.yhid,qx.jsid,js.jsmc,js.fjsid,js.sylx,js.jsdm,js.dwxdbj,jc.csmc sylxmc,jc.cskz2 sylxlj,jc.csdm sylxdm
+		from matridx_yhjs qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		left join matridx_jcsj jc on jc.csid = js.sylx and jc.scbj ='0' and jc.jclb ='HOME_PAGE_TYPE'
+		 where yhid =#{yhid} and js.scbj ='0'
+		 order by jsdm,jsid
+	</select>
+
+	<!-- 根据用户ID查询权限信息 -->
+	<delete id="deleteById" parameterType="java.lang.String">
+		delete from matridx_yhjs where yhid =#{yhid}
+	</delete>
+
+	<!-- 插入系统用户信息 -->
+	<insert id="insert" parameterType="YhjsModel">
+		insert into matridx_yhjs(yhid,jsid) values(#{yhid},#{jsid})
+	</insert>
+
+	<!-- 批量插入用户角色 -->
+	<insert id="batchInsert" parameterType="list">
+		insert into matridx_yhjs(yhid,jsid)
+			values
+			<if test="list!=null and list.size>0">
+				<foreach collection="list"  separator=","  index="index" item="item" >
+					(#{item.yhid},#{item.jsid})
+				</foreach>
+			</if>
+	</insert>
+	<!-- 查询角色里未选用户 -->
+	<select id="getPagedOptionalList" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0' and yh.sfsd='0' and not exists (select 1 from matridx_yhjs yhjs where yh.yhid=yhjs.yhid and yhjs.jsid=#{jsid})
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询角色里已选用户 -->
+	<select id="getPagedSelectedList" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_yhjs yhjs
+		left outer join matridx_xtyh yh on yh.yhid = yhjs.yhid
+		<where>
+			yh.scbj='0' and yh.sfsd='0' and yhjs.jsid = #{jsid}
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询角色里已选用户 -->
+	<select id="getSelectedList" parameterType="XtyhDto" resultType="XtyhDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_yhjs yhjs
+		left outer join matridx_xtyh yh on yh.yhid = yhjs.yhid
+		<where>
+			yh.scbj='0' and yh.sfsd='0' and yhjs.jsid = #{jsid}
+			<if test="yhid != null and yhid != ''">
+				and yh.yhid = #{yhid}
+			</if>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 删除用户角色信息 -->
+	<delete  id="toOptional" parameterType="YhjsDto">
+		delete from matridx_yhjs
+		<where>
+			<if test="yhid !=null and yhid != ''">
+	        	and yhid = #{yhid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	and jsid = #{jsid}
+			</if>
+		</where>
+	</delete>
+
+	<!-- 增加用户信息 -->
+	<insert  id="toSelected" parameterType="YhjsDto">
+		insert into matridx_yhjs (yhid,  jsid)
+		<if test="yhid !=null and yhid != ''">
+        	values (#{yhid},#{jsid})
+		</if>
+		<if test="ids !=null and ids.size > 0">
+        	<foreach collection="ids" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{item},#{jsid}
+			</foreach>
+		</if>
+	</insert>
+
+	<!-- 根据Ids查询角色里已选用户 -->
+	<select id="getYxyhList" parameterType="XtyhDto" resultType="YhjsDto">
+		select yhjs.yhid,yhjs.jsid
+		from matridx_yhjs yhjs
+		<where>
+			<if test="ids !=null and ids.size > 0">
+			yhjs.yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="selectYhidByJsid" parameterType="YhjsDto" resultType="YhjsDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_yhjs yhjs
+		left outer join matridx_xtyh yh on yh.yhid = yhjs.yhid
+		<where>
+			yh.scbj='0' and yhjs.jsid = #{jsid}
+			<if test="ids !=null and ids.size > 0">
+				and yhjs.yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<select id="isRepeatJsByYhid" parameterType="String" resultType="YhjsModel">
+	    select yhjs.yhid,yhjs.jsid
+		from matridx_yhjs yhjs
+		<where>
+			yhjs.yhid = #{yhid}
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.web.dao.post.IWbzyqxDao" >
+	<!-- 根据用户js查询外部资源权限 -->
+	<select id="getWbzyqxList" parameterType="WbzyDto" resultType="WbzyqxDto">
+	with recursive t (zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zylb,cskz1,cskz2,cskz3,cskz4,cskz5,depth) as (
+		select wbzy.zyid,wbzy.fjd,wbzy.zybt,wbzy.btsx,wbzy.zylj,wbzy.tblj,wbzy.xssx,wbzy.cdcc,wbzy.zylb,wbzy.cskz1,wbzy.cskz2,wbzy.cskz3,wbzy.cskz4,wbzy.cskz5,cast(#{cdcc} as numeric) as depth
+		from matridx_wbzy wbzy
+		left outer join matridx_wbzyqx wbzyqx on wbzyqx.zyid = wbzy.zyid
+		left outer join matridx_xtjs js on js.jsid = wbzyqx.jsid
+		<where>
+		<if test="zylb != null and zylb != ''">
+            wbzy.zylb=#{zylb} and 
+        </if>
+		<if test="ddzylb != null and ddzylb != ''">
+				wbzy.zylb !=#{ddzylb} and
+		</if>
+		cdcc &lt;=cast(#{cdcc} as numeric) and
+			(( wbzy.mrxs='1' and zylj is not null)
+			<if test="yhjslist != null and yhjslist.size > 0">
+				or (wbzyqx.jsid in 
+					<foreach collection="yhjslist" item="item" index="index" open="(" close=")" separator=",">
+						#{item.jsid}
+					</foreach>
+					and wbzy.mrxs='2')
+			</if>
+			)
+		</where>
+		union all
+		select zy.zyid,zy.fjd,zy.zybt,zy.btsx,zy.zylj,zy.tblj,zy.xssx,zy.cdcc,zy.zylb,zy.cskz1,zy.cskz2,zy.cskz3,zy.cskz4,zy.cskz5,t.depth - 1 as depth
+		from matridx_wbzy zy 
+		join t on zy.zyid = t.fjd
+		)
+		select zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zylb,cskz1,cskz2,cskz3,cskz4,cskz5,depth from t
+		group by zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zylb,cskz1,cskz2,cskz3,cskz4,cskz5,depth
+		 order by xssx,zyid
+	</select>
+	
+	<!-- 根据资源ID和角色查询外部资源权限 -->
+	<select id="getSecWbzyqxList" parameterType="WbzyDto" resultType="WbzyqxDto">
+		WITH RECURSIVE t (zyid, fjd, zybt, btsx, zylj, tblj, xssx, cdcc, zylb, cskz1, cskz2, cskz3, cskz4, cskz5, depth) AS (
+			SELECT wbzy.zyid, wbzy.fjd, wbzy.zybt, wbzy.btsx, wbzy.zylj
+				, wbzy.tblj, wbzy.xssx, wbzy.cdcc, wbzy.zylb, wbzy.cskz1
+				, wbzy.cskz2, wbzy.cskz3, wbzy.cskz4, wbzy.cskz5, CAST(3 AS numeric) AS depth,wbzy.mrxs
+			FROM matridx_wbzy wbzy
+			WHERE zyid =#{zyid}
+			UNION ALL
+			SELECT zy.zyid, zy.fjd, zy.zybt, zy.btsx, zy.zylj
+				, zy.tblj, zy.xssx, zy.cdcc, zy.zylb, zy.cskz1
+				, zy.cskz2, zy.cskz3, zy.cskz4, zy.cskz5
+				, t.depth - 1 AS depth,zy.mrxs
+			FROM matridx_wbzy zy
+				JOIN t ON zy.fjd = t.zyid
+				)
+		SELECT t.zyid, t.fjd, zybt, btsx, zylj
+			, tblj, xssx, cdcc, zylb, cskz1
+			, cskz2, cskz3, cskz4, cskz5, depth
+		FROM t
+		LEFT JOIN matridx_wbzyqx wbzyqx ON wbzyqx.zyid = t.zyid
+					LEFT JOIN matridx_xtjs js ON js.jsid = wbzyqx.jsid
+		where 
+		t.zylb = #{zylb} and (
+		(t.mrxs='1') 
+		<if test="yhjslist != null and yhjslist.size > 0">
+			or (wbzyqx.jsid IN 
+			<foreach collection="yhjslist" item="item" index="index" open="(" close=")" separator=",">
+				#{item.jsid}
+			</foreach>
+			)
+		</if>
+		)
+		GROUP BY t.zyid, fjd, zybt, btsx, zylj, tblj, xssx, cdcc, zylb, cskz1, cskz2, cskz3, cskz4, cskz5, depth
+		ORDER BY xssx,t.zyid
+	</select>
+
+	<insert id="batchInsert" parameterType="list">
+		insert into matridx_wbzyqx (jsid,zyid)
+		<foreach collection="list" item="item" index="index" separator=" union all ">
+			(select #{item.jsid}, #{item.zyid})
+		</foreach>
+	</insert>
+</mapper>

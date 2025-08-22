@@ -1,0 +1,536 @@
+spring:
+  application:
+    name: lwj-igams-web
+  redis:
+    ## Redis服务器地址 
+    ##url: ${rdburl:redis://Matridx_2022!@172.17.60.187:6379}
+    url: ${rdburl:redis://localhost:6379}
+    timeout: 1000
+    host: ${rdbhost:localhost}
+    ## Redis服务器连接密码（默认为空）
+    #password: 
+    port: 6379
+  mail:
+    default-encoding: UTF-8
+    host: smtp.163.com
+    viewname: 杰毅生物
+    protocol: smtp
+    username: 1
+    password: 2
+  rabbitmq:
+    #port: 5672
+    #address: ${mqaddr:admin:matridx2019!@172.17.60.190:5672}
+    port: ${mqport:5672}
+    #发送确认
+    publisher-confirms: true
+    host: ${mqhost:172.17.60.190}
+    username: ${mqname:admin}
+    password: ${mqpass:matridx2019!}
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true     # 是否开启消费者重试（为false时关闭消费者重试，这时消费端代码异常会一直重复收到消息）
+          max-attempts: 5   # 最大重试次数
+          max-interval: 10000   # 重试最大间隔时间
+          initial-interval: 2000  # 重试初始间隔时间
+          # 重试间隔*乘子得出下次重试间隔  2s  4s  8s  16s  此处16s>10s  走10s
+          multiplier: 2 # 间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启从注册中心动态创建路由的功能，利用微服务名进行路由
+      routes:
+        - id: lwj-igams-production
+          # 匹配后提供服务的路由地址
+          uri: lb://lwj-igams-production
+          # 断言，路径相匹配的进行路由
+          predicates:
+            - Path=/matridxprod/**
+          filters:
+          # 请求限制100MB
+          - name: RequestSize
+            args:
+              maxSize: 100000000
+        - id: yjw-igams-production
+          # 匹配后提供服务的路由地址
+          uri: lb://yjw-igams-production
+          # 断言，路径相匹配的进行路由
+          predicates:
+            - Path=/yjwprod/**
+          filters:
+          # 请求限制100MB
+          - name: RequestSize
+            args:
+              maxSize: 100000000
+  config:
+    import: optional:configserver:${uri:http://172.17.60.101:8960}
+  ## 读写分离配置
+  shardingsphere:
+    ## 单机模式 Standalone  集群模式 (推荐)Cluster
+    mode: 
+      ## # 持久化仓库类型
+      type: Standalone
+      repository: 
+        type: JDBC
+    datasource:
+      names: master-0,master-1,slave-0,slave-1
+      master-0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: org.postgresql.Driver
+        url: jdbc:postgresql://172.17.60.197:5432/matridx
+        username: matridx
+        password: matridx2020!
+        connectionTimeoutMilliseconds: 30000 #连接超时毫秒数
+        idleTimeoutMilliseconds: 60000 #空闲连接回收超时毫秒数
+        maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
+        maxPoolSize: 100 #最大连接数
+        minPoolSize: 10  #最小连接数
+        ## 连接池最小连接数量
+        minIdle: 5
+        ## 连接池最大连接数量
+        maxActive: 100
+        ## 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+        initialSize: 10
+        ## 获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。
+        maxWait: 60000
+        ## 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒;有两个含义：1) Destroy线程会检测连接的间隔时间 2) testWhileIdle的判断依据，详细看testWhileIdle属性的说明
+        timeBetweenEvictionRunsMillis: 60000
+        ## 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 300000
+        ## 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+        testWhileIdle: true
+        ## 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+        testOnBorrow: false
+        ## 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+        testOnReturn: false
+        ## 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql5.5以下的版本中没有PSCache功能，建议关闭掉。5.5及以上版本有PSCache，建议开启。
+        poolPreparedStatements: true
+        ## 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+        maxPoolPreparedStatementPerConnectionSize: 100
+        ## 连接数据库的额外参数 
+        connectionProperties: 3000
+        ## 缺省多个DruidDataSource的监控数据是各自独立的，在Druid-0.2.17版本之后，支持配置公用监控数据，
+        useGlobalDataSourceStat: true
+        ## druid的登录用户名
+        druidLoginName: admin
+        ## druid的登录密码
+        druidPassword: 1234
+        ## 超过时间限制是否回收
+        removeAbandoned: true
+        ## 超过时间限制多长，单位是毫秒 ，180000毫秒=3分钟
+        removeAbandonedTimeout: 180000
+      master-1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: org.postgresql.Driver
+        url: jdbc:postgresql://172.17.60.197:5432/matridx
+        username: matridx
+        password: matridx2020!        
+        connectionTimeoutMilliseconds: 30000 #连接超时毫秒数
+        idleTimeoutMilliseconds: 60000 #空闲连接回收超时毫秒数
+        maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
+        maxPoolSize: 100 #最大连接数
+        minPoolSize: 10  #最小连接数
+        ## 连接池最小连接数量
+        minIdle: 5
+        ## 连接池最大连接数量
+        maxActive: 100
+        ## 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+        initialSize: 10
+        ## 获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。
+        maxWait: 60000
+        ## 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒;有两个含义：1) Destroy线程会检测连接的间隔时间 2) testWhileIdle的判断依据，详细看testWhileIdle属性的说明
+        timeBetweenEvictionRunsMillis: 60000
+        ## 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 300000
+        ## 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+        testWhileIdle: true
+        ## 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+        testOnBorrow: false
+        ## 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+        testOnReturn: false
+        ## 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql5.5以下的版本中没有PSCache功能，建议关闭掉。5.5及以上版本有PSCache，建议开启。
+        poolPreparedStatements: true
+        ## 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+        maxPoolPreparedStatementPerConnectionSize: 100
+        ## 连接数据库的额外参数 
+        connectionProperties: 3000
+        ## 缺省多个DruidDataSource的监控数据是各自独立的，在Druid-0.2.17版本之后，支持配置公用监控数据，
+        useGlobalDataSourceStat: true
+        ## druid的登录用户名
+        druidLoginName: admin
+        ## druid的登录密码
+        druidPassword: 1234
+        ## 超过时间限制是否回收
+        removeAbandoned: true
+        ## 超过时间限制多长，单位是毫秒 ，180000毫秒=3分钟
+        removeAbandonedTimeout: 180000
+      slave-0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: org.postgresql.Driver
+        url: jdbc:postgresql://172.17.60.187:6432/matridx
+        #jdbcUrl: jdbc:postgresql://172.17.60.187:6432/matridx
+        username: matridx
+        password: matridx2020!
+        connectionTimeoutMilliseconds: 30000 #连接超时毫秒数
+        idleTimeoutMilliseconds: 60000 #空闲连接回收超时毫秒数
+        maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
+        maxPoolSize: 100 #最大连接数
+        minPoolSize: 10  #最小连接数
+        ## 连接池最小连接数量
+        minIdle: 5
+        ## 连接池最大连接数量
+        maxActive: 100
+        ## 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+        initialSize: 10
+        ## 获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。
+        maxWait: 60000
+        ## 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒;有两个含义：1) Destroy线程会检测连接的间隔时间 2) testWhileIdle的判断依据，详细看testWhileIdle属性的说明
+        timeBetweenEvictionRunsMillis: 60000
+        ## 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 300000
+        ## 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+        testWhileIdle: true
+        ## 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+        testOnBorrow: false
+        ## 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+        testOnReturn: false
+        ## 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql5.5以下的版本中没有PSCache功能，建议关闭掉。5.5及以上版本有PSCache，建议开启。
+        poolPreparedStatements: true
+        ## 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+        maxPoolPreparedStatementPerConnectionSize: 100
+        ## 连接数据库的额外参数 
+        connectionProperties: 3000
+        ## 缺省多个DruidDataSource的监控数据是各自独立的，在Druid-0.2.17版本之后，支持配置公用监控数据，
+        useGlobalDataSourceStat: true
+        ## druid的登录用户名
+        druidLoginName: admin
+        ## druid的登录密码
+        druidPassword: 1234
+        ## 超过时间限制是否回收
+        removeAbandoned: true
+        ## 超过时间限制多长，单位是毫秒 ，180000毫秒=3分钟
+        removeAbandonedTimeout: 180000
+      slave-1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: org.postgresql.Driver
+        url: jdbc:postgresql://172.17.60.187:6432/matridx
+        #url: jdbc:postgresql://localhost:5432/zd
+        #jdbcUrl: jdbc:postgresql://172.17.60.187:6432/matridx
+        username: matridx
+        password: 123456
+        connectionTimeoutMilliseconds: 30000 #连接超时毫秒数
+        idleTimeoutMilliseconds: 60000 #空闲连接回收超时毫秒数
+        maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
+        maxPoolSize: 100 #最大连接数
+        minPoolSize: 10  #最小连接数
+        ## 连接池最小连接数量
+        minIdle: 5
+        ## 连接池最大连接数量
+        maxActive: 100
+        ## 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+        initialSize: 10
+        ## 获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。
+        maxWait: 60000
+        ## 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒;有两个含义：1) Destroy线程会检测连接的间隔时间 2) testWhileIdle的判断依据，详细看testWhileIdle属性的说明
+        timeBetweenEvictionRunsMillis: 60000
+        ## 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 300000
+        ## 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+        testWhileIdle: true
+        ## 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+        testOnBorrow: false
+        ## 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+        testOnReturn: false
+        ## 是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql5.5以下的版本中没有PSCache功能，建议关闭掉。5.5及以上版本有PSCache，建议开启。
+        poolPreparedStatements: true
+        ## 要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+        maxPoolPreparedStatementPerConnectionSize: 100
+        ## 连接数据库的额外参数 
+        connectionProperties: 3000
+        ## 缺省多个DruidDataSource的监控数据是各自独立的，在Druid-0.2.17版本之后，支持配置公用监控数据，
+        useGlobalDataSourceStat: true
+        ## druid的登录用户名
+        druidLoginName: admin
+        ## druid的登录密码
+        druidPassword: 1234
+        ## 超过时间限制是否回收
+        removeAbandoned: true
+        ## 超过时间限制多长，单位是毫秒 ，180000毫秒=3分钟
+        removeAbandonedTimeout: 180000
+    # 展示修改以后的sql语句
+    props:
+      sql-show: true
+      sql:
+        show: true
+    rules:
+      single-table:
+        defaultDataSource: readwrite_ds-0
+      default-data-source-name: readwrite_ds-0
+      #配置读写分离
+      readwrite-splitting:
+        data-sources:
+          #名称
+          readwrite_ds-0:
+            static-strategy: # 读写分离类型
+              # 写库数据源名称
+              writeDataSourceName: master-0
+              # 读库数据源名称，多个从数据源用逗号分隔
+              readDataSourceNames: slave-0
+            # 负载均衡算法名称
+            loadBalancerName: round-matridx
+          # 读写分离类型，比如：Static，Dynamic，动态方式需要配合高可用功能，具体参考下方链接
+          #负载均衡算法名称
+          #load-balancer-name: round-robin
+          #名称
+          readwrite_ds-1:
+            #dynamic-strategy: 
+              #auto-aware-data-source-name: readwrite-ds-1
+              #write-data-source-query-enabled: true
+            static-strategy:  ##静态读写分离
+              writeDataSourceName: master-1
+              readDataSourceNames: slave-1
+            # 负载均衡算法名称
+            loadBalancerName: round-matridx
+        load-balancers:
+          # 负载均衡算法名称
+          round-matridx:
+            #负载均衡算法配置，一共三种一种是 RANDOM（随机），一种是 ROUND_ROBIN（轮询），一种是 WEIGHT（权重）
+            type: ROUND_ROBIN
+            props:
+              #负载均衡算法属性配置
+              workId: 1
+              #负载均衡算法属性配置
+              slave-0: 1
+              slave-1: 1
+      #标准分片表配置
+      sharding:
+        # 默认数据库分片策略
+        default-database-strategy:
+          standard:
+            sharding-column: mxjgid
+            sharding-algorithm-name: database-inline-matridx-default
+        # 绑定表规则列表
+        binding-tables[0]: igams_mngsmxjg   #t_order,t_order_item
+        #广播表规则列表
+        broadcast-tables: matridx_jcsj
+        tables:
+          #table-name
+          igams_mngsmxjg:
+            # 由数据源名 + 表名组成，以小数点分隔。多个表以逗号分隔，支持 inline 表达式。
+            actual-data-nodes: readwrite_ds-$->{0..1}.igams_mngsmxjg_$->{0..1}
+            database-strategy:
+              # 用于单分片键的标准分片场景
+              standard:
+                # 分片算法名称
+                sharding-algorithm-name: database-inline-matridx
+            # 分表策略
+            table-strategy:
+              # 用于单分片键的标准分表场景，多分片键的复合分表场景用 complex，用于 Hint 的分片策略 hint
+              standard:
+                 # 分表列名称，多个列以逗号分隔
+                sharding-column: mxjgid
+                # 分表算法名称
+                sharding-algorithm-name: mngsmxjg-inline-matridx
+            # 分布式序列策略配置
+            key-generate-strategy:
+              # 分布式序列列名称
+              column: mxjgid
+              # 分布式序列算法名称
+              key-generator-name: snowflake-matridx
+            # 分片审计策略配置
+            audit-strategy:
+              # 分片审计算法名称
+              auditor-names: shardingKeyAudit
+              # 是否禁用分片审计hint
+              allow-hint-disable: true
+          #t_order_item:
+            #actual-data-nodes: master-$->{0..1}.t_order_item_$->{0..1}
+            #table-strategy:
+              #standard:
+                #sharding-column: order_id
+                #sharding-algorithm-name: t-order-inline
+            #key-generate-strategy:
+              #column: order_id
+              #key-generator-name: snowflake
+        # 分片算法配
+        sharding-algorithms:
+          # sharding-algorithm-name 里配置的算法名称
+          database-inline-matridx-default:
+            # 分片算法类型
+            type: INLINE
+            # 分片算法属性配置
+            props:
+              algorithm-expression: readwrite_ds-0
+          # sharding-algorithm-name 里配置的算法名称
+          database-inline-matridx:
+            # 分片算法类型
+            type: INLINE
+            # 分片算法属性配置
+            props:
+              algorithm-expression: readwrite_ds-$->{yhid % 2}
+          mngsmxjg-inline-matridx:
+            type: INLINE
+            props:
+              algorithm-expression: igams_mngsmxjg_$->{mxjgid % 2}
+          #t-order-item-inline:
+            #type: INLINE
+            #props:
+              #algorithm-expression: t_order_item_$->{order_id % 2}
+        # 分布式序列算法配置
+        key-generators:
+          # key-generator-name 的名称
+          snowflake-matridx:
+            # 分布式序列算法类型
+            type: SNOWFLAKE
+        # 分片审计算法配置
+        auditors:
+          shardingKeyAudit:
+            # 分片审计算法类型
+            type: DML_SHARDING_CONDITIONS
+#postsql:
+  #datasource:
+    #username: ${dbuser:AEBrmFhq9gZ4Yeq+mogdzQ==}
+    #password: ${dbpass:DmnVklgEln/9NePegyMNig==}
+    ## 172.17.60.191
+    #url: ${dburl:E6Bxa5hFXjN+sYdjKG06wCVRVtUpZbWq5tAcg4sXjnQnD4Uo6p8JvqzZOWVzceZa}
+    #dbaddr: ${dbaddr:jdbc:postgresql://172.17.60.197:5432/matridx}
+    ## 172.17.60.190
+    #url: E6Bxa5hFXjN+sYdjKG06wBR3BbO3wwZLaKt7nIlA5QAnD4Uo6p8JvqzZOWVzceZa
+    ## 172.17.60.189
+    #url: E6Bxa5hFXjN+sYdjKG06wIghU01vQ9b6L6SijT9iGu4nD4Uo6p8JvqzZOWVzceZa
+    ## 172.17.60.188
+    #url: E6Bxa5hFXjN+sYdjKG06wMD2DA7457ThLcyaMeSx4sgnD4Uo6p8JvqzZOWVzceZa
+    ## 101.37.247.249
+    #url: E6Bxa5hFXjN+sYdjKG06wMD2DA7457ThLcyaMeSx4sjGQazTc0qFRoUcmnKe9j1W
+    ## 172.17.60.185
+    #url: E6Bxa5hFXjN+sYdjKG06wFW7LFNEJwXfR84eukHcO7YnD4Uo6p8JvqzZOWVzceZa
+sqlserver:
+  gmds:
+  matridxds:
+    driverClassName: org.postgresql.Driver
+    username: 
+    password: 
+    #jdbc:sqlserver://192.168.1.130:1433;database=ahos";
+    url: 
+##角色切换配置： 0不支持切换，1支持切换
+matridx:
+  role:
+    switch: 1
+  basictype:
+    file: config/comm/basicType.xml
+  imptype:
+    file: config/comm/config-import.xml
+  exptype:
+    file: config/comm/config-export.xml
+    limit: 500
+  fileupload:
+    prefix: 
+    tempPath: /matridx/fileupload/temp/
+    releasePath: /matridx/fileupload/release/
+  file:
+    ##文件导出存放路径
+    exportFilePath: /matridx/download/
+    ##文件保存路径前缀
+    pathPrefix: 
+    ##文件转换最大次数
+    translimit: 5
+  ftp:
+    wordpath: /wordFile
+    pdfpath: /pdfFile
+    url: 172.17.60.177
+    user: root
+    pd: 112
+    port: 22
+  dingtalk:
+    ## 服务器对外端口
+    callbackurl: https://company.matridx.com
+    cropid: PAi6mqqSMLdnxhFqQOdG7dsZefVmxGWVEvq0JsEZips=
+    aeskey: meg2JLExn/OMMQCDJvaAvT812XJ11pKFLXM6LJqL1+GM5YLWGZZkyvVMNH3H7QNm
+    ## 解密后随意
+    token: 9HASPQHOnVmPR6TilCzcDKS2CtVYmm+DHgdv6DOhL/M=
+    appkey: VLjcLsXLBqdq2VNg/1dHyePmCZS3ldtgPmRAaUXWevU=
+    appsecret: yYMpuKIW6oB7g2q5tWuzGCZWZ36nxK6eqckVxXG7il7FMQmXYVeg7awzHZUoRtU2LeUo7pn111Pdq/XpcAouNTJVhPyCTTb2m8Ia5X4cJ9k=
+    agentid: f58T3paimyGbD12fzBIgSA==
+    ##miniurl: dingtalk://dingtalkclient/action/open_micro_app?miniAppId=2021001102630915&version=1560993&agentId=213508707&pVersion=1&packageType=1&corpId=ding3afdff6046a29be5
+    ## 跳转钉钉小程序路径
+    jumpdingtalkurl: Lz0Qi39mDV9YbnhyI3+8xhciRl4pY5+eMLzG+soXtK1iy373PwQ04d6uT8EjVHNz84DQUkLhuH9AIUKNQLyjjMqfbcQdiCnT+VDUXF7m82guz7TUB9Q+1GIIysJ26i0NauK5n/6kOGM6ZfZyjR9yOed294rmQV2NCYW7ej8zRi4y/ydIDnScydU5F6Oa7nrEWK7+FaEt+vRlxOn/gMXDhCt+eA0pOQ1kuDQGvZDPFxw=
+    ##钉钉小程序 现主要用于扫码登录所使用 杰毅OA
+    miniappkey: VLjcLsXLBqdq2VNg/1dHyePmCZS3ldtgPmRAaUXWevU=
+    miniappsecret: yYMpuKIW6oB7g2q5tWuzGCZWZ36nxK6eqckVxXG7il7FMQmXYVeg7awzHZUoRtU2LeUo7pn111Pdq/XpcAouNTJVhPyCTTb2m8Ia5X4cJ9k=
+  audio:
+    savepath: /matridx/audio/save/
+    audiotype: ali       ##ali  baidu
+    #accessKeyId: ZY5umhS7CN9RRVKg1x3poKfc8IzB4TkAp0/GRS/sXYo=
+    #accessKeySecret: YgFUZcqxPzLq286Nwmfj4BFfN+QbP4eu8EGl52g42tIyVYT8gk029pvCGuV+HCfZ
+    #appid: L2rjGmuPzJ9xmSU0/9iyFA==
+    accessKeyId: Fyj2gzZ9dU2Xw2lxrxfBQzJVhPyCTTb2m8Ia5X4cJ9k=
+    accessKeySecret: AElsGW16bjaYU2qiTVqwIOzhlmPt5FpxGq6c5XKsKHM=
+    appid: vo88lJAbqCj5CzwR8/u4cTJVhPyCTTb2m8Ia5X4cJ9k=
+  ##阿里云语音
+  aliyunVoice: 
+    accessKeyId: 
+    accessSecret: 
+  wechat:
+    appid: CFnxXuOD6PhHWP+u8kHi9KeejrbjyDGLT/E/2gL4DEk=
+    secret: HH0lmrK8Ys3sL2TWD1xXD8V45zWlpF1LceyOEfUZ8GMyVYT8gk029pvCGuV+HCfZ
+    token: tknUOBawaYs4o/3HvH6KIw==
+    menuurl: http://service.matridx.com
+    ##钉钉查看访问的路径
+    applicationurl: http://localhost:8086 #https://medlab.matridx.com
+    ## 送检发送请求查询 检测结果的地址
+    inspectionurl: http://172.17.60.226:8000
+    ## 统计外部地址
+    externalurl: https://medlab.matridx.com
+  systemflg:
+    logourl: /images/logoIn-biology-b.png
+    watermark: 杰毅生物
+    ## 定时任务是否执行 0：不执行  1：执行
+    remindflg: 0
+    ## 启动时根据标记redisreset判断是否进行redis数据的删除重新加入的操作, 1进行操作，0不进行操作
+    redisreset: 1
+    ## 跨域限制
+    alloworigin: '*'
+  ## cookie所存放的域名
+  cookie:
+    domain: .matridx.com
+  ## 跳转的认证中心，如果用本系统，则不用设置，否则是 https://medlab.matridx.com/
+  loginCentre:
+    url: 
+  ##U8账套名称
+  accountSet:
+    accountName: 001
+  prefix:
+    urlprefix: 
+    igamsweb: /igams-web
+  rabbit:
+    ## 系统信息同步时的标记，还需在rabbit下进行配置，使Routing key为sys.igams.jcsj.del能同时匹配到sys.igams.jcsj.del，sys.igams.jcsj.del.production
+    ## 其中production就是这个flg标记
+    flg: 
+  # 杏和系统配置文件（配置文件的matridx下）--
+  xinghe:
+    # 调用凭证
+    ticket: 8eaadf17e7b76a650455a5d6d1105fff
+    url: http://118.178.255.230:9001/XingHeAreaService.asmx
+    wsdlurl: http://118.178.255.230:9001/XingHeAreaService.asmx?WSDL
+    # 检测机构
+    hospitalservice: 33A038
+  blanklist:
+    host: 
+zuul:
+  ##需要忽略的头部信息，不在传播到其他服务
+  sensitive-headers: Access-Control-Allow-Origin
+  ignored-headers: Access-Control-Allow-Origin,H-APP-Id,Token,APPToken
+  routes:
+    lwj-igams-production: /matridxprod/**
+    yjw-igams-production: /yjwprod/**
+    lsy-igams-production: /lsyprod/**
+    zh-igams-production: /zhprod/**
+    igams-cloud-lab: /labigams/**
+    igams-cloud-matridx: /matridxigams/**
+server:
+  port: ${sport:8086}
+## 打印sql
+logging:
+  config: classpath:log4j2.xml
