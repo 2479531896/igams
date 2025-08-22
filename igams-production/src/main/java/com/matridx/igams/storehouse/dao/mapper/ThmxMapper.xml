@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IThmxDao">
+    <insert id="insertList" parameterType="List">
+        insert into igams_htfpmx(fpmxid,htfpid,htmxid,fpje)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.fpmxid},#{item.htfpid},#{item.htmxid},cast(#{item.fpje} as numeric))
+        </foreach>
+    </insert>
+    <insert id="insertThmxList" parameterType="List">
+        insert into igams_thmx(thmxid,thid,lrry,hwid,thsl,bz,xsdd,fhmxglid,bj,suil,wsdj,hsdj,xsmxid,fhmxid,lrsj,scbj)
+            VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.thmxid}, #{item.thid},
+            #{item.lrry},
+            #{item.hwid},
+            cast (#{item.thsl} as numeric),
+            #{item.bz},
+            #{item.xsdd},
+            #{item.fhmxglid},
+            cast (#{item.bj} as numeric),
+            cast (#{item.suil} as numeric),
+            cast (#{item.wsdj} as numeric),
+            cast (#{item.hsdj} as numeric),
+            #{item.xsmxid},
+            #{item.fhmxid},
+            LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+    <select id="getDtoList" parameterType="ThmxDto" resultType="ThmxDto">
+        select thgl.thid,thmx.thmxid,thmx.hwid,thmx.thsl,thmx.bz,thmx.xsdd,thmx.fhmxglid,thmx.bj,thmx.suil
+        ,thmx.wsdj,thmx.hsdj,thmx.xsmxid,thmx.fhmxid,thmx.ckid,
+        wlgl.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,
+        fhmx.fhsl,(COALESCE(fhmx.fhsl,0)-COALESCE(fhmx.thsl,0)) as kthsl,
+        wlgl.ychh,wlgl.jldw,fhgl.fhdh,ckxx.ckmc,
+        hwxx.yxq,hwxx.scrq,hwxx.scph,wlgl.bzq,fhgl.fhid,hwxx.kwbh,hwxx.zsh,hwxx.ckid ck,hwxx.kwbh kw,kw.ckmc kwmc,xsgl.u8xsdh,ckxx.ckdm
+        ,xsmx.mxglid,wlgl.bzqflg,kw.ckdm kwckdm,xsmx.xh as ddxh,fhgl.glid fhglid
+        from igams_thmx thmx
+        left join igams_thgl thgl on thgl.thid = thmx.thid
+        left join igams_fhmx fhmx on fhmx.fhmxid = thmx.fhmxid
+        left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid
+        left join igams_hwxx hwxx on hwxx.hwid=thmx.hwid
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+        left join igams_ckxx kw on kw.ckid = hwxx.kwbh
+        left join igams_ckgl ckgl on ckgl.ckid=thmx.ckid
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+        left join igams_xsmx xsmx on fhmx.xsmxid = xsmx.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        <where>
+            thmx.scbj = '0'
+            and thgl.thid = #{thid}
+        </where>
+    </select>
+    <select id="getDtoListByIds" parameterType="ThmxDto" resultType="ThmxDto">
+        select thgl.thid,thmx.thmxid,thmx.hwid,thmx.thsl,thmx.fhmxid,thgl.thdh,dhjy.jydh,thgl.zt,dhjy.dhjyid,hwxx.dhid
+        from igams_thmx thmx
+        left join igams_thgl thgl on thgl.thid = thmx.thid
+        left join igams_fhmx fhmx on fhmx.fhmxid = thmx.fhmxid
+        left join igams_hwxx hwxx on hwxx.hwid=thmx.hwid
+        left join igams_dhjy dhjy on dhjy.dhjyid = hwxx.dhjyid and dhjy.scbj ='0'
+        <where>
+            thmx.scbj != '1'
+            and thgl.thid in
+            <foreach collection="thids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <!-- 批量修改退货明细信息 -->
+    <update id="updateThmxDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_thmx set
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.thsl !=null and  item.thsl !=''">
+                    ,thsl=cast(#{item.thsl} as numeric)
+                </if>
+                <if test="item.bz !=null and  item.bz !=''">
+                    ,bz=#{item.bz}
+                </if>
+                <if test="item.ckid !=null and  item.ckid !=''">
+                    ,ckid=#{item.ckid}
+                </if>
+                <if test="item.u8mxglid !=null and  item.u8mxglid !=''">
+                    ,u8mxglid=#{item.u8mxglid}
+                </if>
+                <if test="item.ckmxglid !=null and  item.ckmxglid !=''">
+                    ,ckmxglid=#{item.ckmxglid}
+                </if>
+                <where>
+                    thmxid=#{item.thmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <update id="deleteByThmxids" parameterType="ThmxDto">
+        update igams_thmx set scbj = '1'
+            where
+           thmxid in
+        <foreach collection="ids" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="delete" parameterType="ThglDto">
+        update igams_thmx set scbj ='1' , scry = #{scry}
+        where thid in
+        <foreach collection="thids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="getHwidsByThmxids" parameterType="String">
+        select hwid from igams_thmx
+        where
+        thid = #{thid} and thmxid not in
+        <foreach collection="ids" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </select>
+</mapper>
+
+

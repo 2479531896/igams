@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGfjxglDao" >
+    <sql id="SEARCH_TERMS">
+        gfjx.scbj!='1'
+        <if test="entire != null and entire != ''">
+            and (
+            gys.gysmc ILIKE '%'||#{entire}||'%'
+            or gys.lxr ILIKE '%'||#{entire}||'%'
+            or gys.cz ILIKE '%'||#{entire}||'%'
+            or gys.dh ILIKE '%'||#{entire}||'%'
+            or gys.gfbh ILIKE '%'||#{entire}||'%'
+            or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="gfmc != null and gfmc != ''">
+            and gys.gysmc ILIKE '%'||#{gfmc}||'%'
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and gys.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="cz != null and cz != ''">
+            and gys.cz ILIKE '%'||#{cz}||'%'
+        </if>
+        <if test="dh != null and dh != ''">
+            and gys.dh ILIKE '%'||#{dh}||'%'
+        </if>
+        <if test="gfbh != null and gfbh != ''">
+            and gys.gfbh ILIKE '%'||#{gfbh}||'%'
+        </if>
+        <if test="lrrymc != null and lrrymc != ''">
+            and xtyh.zsxm ILIKE '%'||#{lrrymc}||'%'
+        </if>
+        <if test="khkssjstart != null and khkssjstart != ''">
+            and to_char(gfjx.khkssj,'yyyy-mm-dd') &gt;= #{khkssjstart}
+        </if>
+        <if test="khkssjend != null and khkssjend != ''">
+            and to_char(gfjx.khkssj,'yyyy-mm-dd') &lt;= #{khkssjend}
+        </if>
+        <if test="khjssjstart != null and khjssjstart != ''">
+            and to_char(gfjx.khjssj,'yyyy-mm-dd') &gt;= #{khjssjstart}
+        </if>
+        <if test="khjssjend != null and khjssjend != ''">
+            and to_char(gfjx.khjssj,'yyyy-mm-dd') &lt;= #{khjssjend}
+        </if>
+
+        <if test = "gfgllbs != null and gfgllbs.length > 0 "  >
+            and gys.gfgllb in
+            <foreach collection="gfgllbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "khxzs != null and khxzs.length > 0 "  >
+            and gfjx.khxz in
+            <foreach collection="khxzs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "pjs != null and pjs.length > 0 "  >
+            and gfjx.pj in
+            <foreach collection="pjs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="GfjxglDto" resultType="GfjxglDto">
+        select gfjx.gfjxid,gfjx.khxz,gfjx.xse,gfjx.khkssj,gfjx.khjssj,gfjx.jlbh,gfjx.gysid,gfjx.sgcp,
+        gfjx.zykh,gfjx.ddslid,gfjx.df,gfjx.mf,gfjx.dfl,gfjx.pj,gfjx.jl,gfjx.zt,gfjx.lrry,gfjx.lrsj,
+        khxz.csmc as khxzmc,xtyh.zsxm as lrrymc,gfpj.csmc as pjmc,gys.gysmc as gfmc,gys.gfbh,gys.cz,gys.dh,gys.dq as dz,
+        gys.lxr,gflb.csmc as gfgllbmc,
+        (select string_agg(yh.zsxm,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfjx.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as shrmc
+        from igams_gfjxgl gfjx
+        left join igams_gysxx gys on gys.gysid=gfjx.gysid
+        left join matridx_jcsj khxz on khxz.csid = gfjx.khxz
+        left join matridx_xtyh xtyh on xtyh.yhid=gfjx.lrry
+        left join matridx_jcsj gfpj on gfpj.csid = gfjx.pj
+        left join matridx_jcsj gflb on gflb.csid = gys.gfgllb
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="GfjxglDto" resultType="GfjxglDto">
+        select gfjx.gfjxid,gfjx.khxz,gfjx.xse,gfjx.khkssj,gfjx.khjssj,gfjx.jlbh,gfjx.gysid,gfjx.sgcp,
+        gfjx.zykh,gfjx.ddslid,gfjx.df,gfjx.mf,gfjx.dfl,gfjx.pj,gfjx.jl,gfjx.zt,gfjx.lrry,gfjx.lrsj,
+        khxz.csmc as khxzmc,xtyh.zsxm as lrrymc,gfpj.csmc as pjmc,gys.gysmc as gfmc,gys.gfbh,gys.cz,gys.dh,gys.dq as dz,
+        gys.lxr,jg.jgid,xtyh.ddid
+        from igams_gfjxgl gfjx
+        left join igams_gysxx gys on gys.gysid=gfjx.gysid
+        left join matridx_jcsj khxz on khxz.csid = gfjx.khxz
+        left join matridx_xtyh xtyh on xtyh.yhid=gfjx.lrry
+        left join matridx_yhssjg jg on jg.yhid=xtyh.yhid
+        left join matridx_jcsj gfpj on gfpj.csid = gfjx.pj
+        <where>
+            gfjx.scbj='0'
+            <if test = "ddslid != null and ddslid != '' ">
+                and gfjx.ddslid=#{ddslid}
+            </if>
+            <if test = "gfjxid != null and gfjxid != '' ">
+                and gfjx.gfjxid=#{gfjxid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and gfjx.gfjxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSprjsBySprid" parameterType="String" resultType="GfjxglDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="GfjxglDto">
+        select gfjx.gfjxid,gfjx.khxz,gfjx.xse,gfjx.khkssj,gfjx.khjssj,gfjx.jlbh,gfjx.gysid,gfjx.sgcp,
+        gfjx.zykh,gfjx.ddslid,gfjx.df,gfjx.mf,gfjx.dfl,gfjx.pj,gfjx.jl,gfjx.zt,gfjx.lrry,gfjx.lrsj,
+        khxz.csmc as khxzmc,xtyh.zsxm as lrrymc,gfpj.csmc as pjmc,gys.gysmc as gfmc,gys.gfbh,gys.cz,gys.dh,gys.dq as dz,
+        gys.lxr,jg.jgid,xtyh.ddid,khxz.cskz1 as khxzCskz1,
+        (select string_agg(yh.zsxm,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfjx.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as shrmc,
+        (select string_agg(yh.ddid,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfjx.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as shrddid
+        from igams_gfjxgl gfjx
+        left join igams_gysxx gys on gys.gysid=gfjx.gysid
+        left join matridx_jcsj khxz on khxz.csid = gfjx.khxz
+        left join matridx_xtyh xtyh on xtyh.yhid=gfjx.lrry
+        left join matridx_yhssjg jg on jg.yhid=xtyh.yhid
+        left join matridx_jcsj gfpj on gfpj.csid = gfjx.pj
+        <where>
+            gfjx.scbj='0' and gfjx.gfjxid=#{gfjxid}
+        </where>
+    </select>
+
+    <select id="getJlbhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') jlbh
+        FROM igams_gfjxgl
+        <where>
+            scbj = '0' AND jlbh like #{jlbh}||'%'
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="GfjxglDto">
+        insert into igams_gfjxgl(
+        <if test="gfjxid != null and gfjxid != ''">
+            gfjxid,
+        </if>
+        <if test="khxz != null and khxz != ''">
+            khxz,
+        </if>
+        <if test="xse != null and xse != ''">
+            xse,
+        </if>
+        <if test="khkssj != null and khkssj != ''">
+            khkssj,
+        </if>
+        <if test="khjssj != null and khjssj != ''">
+            khjssj,
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            jlbh,
+        </if>
+        <if test="gysid != null and gysid != ''">
+            gysid,
+        </if>
+        <if test="sgcp != null and sgcp != ''">
+            sgcp,
+        </if>
+        <if test="zykh != null and zykh != ''">
+            zykh,
+        </if>
+        <if test="ddslid != null and ddslid != ''">
+            ddslid,
+        </if>
+        <if test="df != null and df != ''">
+            df,
+        </if>
+        <if test="mf != null and mf != ''">
+            mf,
+        </if>
+        <if test="dfl != null and dfl != ''">
+            dfl,
+        </if>
+        <if test="pj != null and pj != ''">
+            pj,
+        </if>
+        <if test="jl != null and jl != ''">
+            jl,
+        </if>
+        <if test="zt != null and zt != ''">
+            zt,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        <if test="sybmshr != null and sybmshr != ''">
+            sybmshr,
+        </if>
+        lrsj,scbj)
+        values (
+        <if test="gfjxid != null and gfjxid != ''">
+            #{gfjxid},
+        </if>
+        <if test="khxz != null and khxz != ''">
+            #{khxz},
+        </if>
+        <if test="xse != null and xse != ''">
+            cast(#{xse} as decimal),
+        </if>
+        <if test="khkssj != null and khkssj != ''">
+            cast(#{khkssj} as date),
+        </if>
+        <if test="khjssj != null and khjssj != ''">
+            cast(#{khjssj} as date),
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            #{jlbh},
+        </if>
+        <if test="gysid != null and gysid != ''">
+            #{gysid},
+        </if>
+        <if test="sgcp != null and sgcp != ''">
+            #{sgcp},
+        </if>
+        <if test="zykh != null and zykh != ''">
+            #{zykh},
+        </if>
+        <if test="ddslid != null and ddslid != ''">
+            #{ddslid},
+        </if>
+        <if test="df != null and df != ''">
+            cast(#{df} as decimal),
+        </if>
+        <if test="mf != null and mf != ''">
+            cast(#{mf} as decimal),
+        </if>
+        <if test="dfl != null and dfl != ''">
+            cast(#{dfl} as decimal),
+        </if>
+        <if test="pj != null and pj != ''">
+            #{pj},
+        </if>
+        <if test="jl != null and jl != ''">
+            #{jl},
+        </if>
+        <if test="zt != null and zt != ''">
+            #{zt},
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        <if test="sybmshr != null and sybmshr != ''">
+            #{sybmshr},
+        </if>
+        LOCALTIMESTAMP,'0')
+    </insert>
+    <update id="update" parameterType="GfjxglDto">
+        update igams_gfjxgl set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="gfjxid !=null and gfjxid != ''">
+            ,gfjxid = #{gfjxid}
+        </if>
+        <if test="khxz !=null and khxz != ''">
+            ,khxz = #{khxz}
+        </if>
+        <if test="xse !=null and xse != ''">
+            ,xse = cast(#{xse} as decimal)
+        </if>
+        <if test="khkssj !=null and khkssj != ''">
+            ,khkssj = cast(#{khkssj} as date)
+        </if>
+        <if test="khjssj !=null and khjssj != ''">
+            ,khjssj = cast(#{khjssj} as date)
+        </if>
+        <if test="jlbh !=null and jlbh != ''">
+            ,jlbh = #{jlbh}
+        </if>
+        <if test="gysid !=null and gysid != ''">
+            ,gysid = #{gysid}
+        </if>
+        <if test="sgcp !=null and sgcp != ''">
+            ,sgcp = #{sgcp}
+        </if>
+        <if test="zykh !=null and zykh != ''">
+            ,zykh = #{zykh}
+        </if>
+        <if test="ddslid !=null and ddslid != ''">
+            ,ddslid = #{ddslid}
+        </if>
+        <if test="df !=null and df != ''">
+            ,df = cast(#{df} as decimal)
+        </if>
+        <if test="mf !=null and mf != ''">
+            ,mf = cast(#{mf} as decimal)
+        </if>
+        <if test="dfl !=null and dfl != ''">
+            ,dfl = cast(#{dfl} as decimal)
+        </if>
+        <if test="pj !=null and pj != ''">
+            ,pj = #{pj}
+        </if>
+        <if test="jl !=null and jl != ''">
+            ,jl = #{jl}
+        </if>
+        <if test="zt !=null and zt != ''">
+            ,zt = #{zt}
+        </if>
+        <if test="sybmshr !=null and sybmshr != ''">
+            ,sybmshr = #{sybmshr}
+        </if>
+        <if test="updateFlg == '0'.toString()">
+            ,ddslid = null
+        </if>
+        <where>
+            gfjxid = #{gfjxid}
+        </where>
+    </update>
+
+    <update id="delete" parameterType="GfjxglDto">
+        update igams_gfjxgl set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            gfjxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

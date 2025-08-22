@@ -1,0 +1,2979 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQgglDao" >
+	<select id="getPagedDtoList" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.scbj,
+		qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+		qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+		qggl.glid,qggl.wcbj,jc_qglb.csdm qglbdm,jc_qglb.csmc qglbmc,qggl.shlx,qggl.shsj,qggl.qglx,qggl.rkzt,jc_jgfw.csmc as jgfwmc
+		from igams_qggl qggl
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		left join matridx_jcsj jc_jgfw on jc_jgfw.csid=qggl.jgfw
+		<if test="(gdzcbh!=null and gdzcbh!='') or (sbbh!=null and sbbh!='') or (sbccbh!=null and sbccbh!='') or (xlh!=null and xlh!='')">
+			left join igams_qgmx qgmx on qgmx.qgid=qggl.qgid
+			left join igams_sbys sbys on sbys.qgmxid=qgmx.qgmxid
+		</if>
+		<where>
+			qggl.scbj !='1'
+			<if test="wcbj != null and wcbj != ''">
+				and qggl.wcbj = #{wcbj}
+			</if>
+			<if test="qglx != null and qglx == '1' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglx != null and qglx == '0' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglbdm != null and qglbdm != ''">
+				and jc_qglb.csdm = #{qglbdm}
+			</if>
+			<if test="djh != null and djh != ''">
+				and qggl.djh ILIKE '%'||#{djh}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc  != ''">
+				and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+			</if>
+			<if test="xmbmmc != null and xmbmmc != ''">
+				and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+			</if>
+			<if test="xmdlmc != null and xmdlmc != ''">
+				and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+			</if>
+			<if test="sqly != null and sqly != ''">
+				and qggl.sqly ILIKE '%'||#{sqly}||'%'
+			</if>
+			<if test="gdzcbh != null and gdzcbh != ''">
+				and sbys.gdzcbh ILIKE '%'||#{gdzcbh}||'%'
+			</if>
+			<if test="sbbh != null and sbbh != ''">
+				and sbys.sbbh ILIKE '%'||#{sbbh}||'%'
+			</if>
+			<if test="sbccbh != null and sbccbh != ''">
+				and sbys.sbccbh ILIKE '%'||#{sbccbh}||'%'
+			</if>
+			<if test="xlh != null and xlh != ''">
+				and sbys.xlh ILIKE '%'||#{xlh}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and qggl.qgid in (
+				select qgmx.qgid from igams_qgmx qgmx
+				left join igams_wlgl wl on wl.wlid=qgmx.wlid
+				where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%' )
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and qggl.qgid in (
+				select qgmx.qgid from igams_qgmx qgmx
+				left join igams_wlgl wl on wl.wlid=qgmx.wlid
+				where qgmx.qgid=qggl.qgid and (wl.wlmc ILIKE '%'||#{wlmc}||'%' or qgmx.hwmc ILIKE '%'||#{wlmc}||'%'))
+			</if>
+			<if test = "zffss != null and zffss.length > 0 "  >
+				and qggl.zffs in
+				<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "rkzts != null and rkzts.length > 0 "  >
+				and qggl.rkzt in
+				<foreach collection="rkzts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fkfs != null and fkfs.length > 0 "  >
+				and qggl.fkf in
+				<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and qggl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmbms != null and xmbms.length > 0 "  >
+				and qggl.xmbm in
+				<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmdls != null and xmdls.length > 0 "  >
+				and qggl.xmdl in
+				<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+			</if>
+			<if test = "qglbs != null and qglbs.length > 0 "  >
+				and qggl.qglb in
+				<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="htaddflag == '0' .toString">
+				and jc_qglb.csdm != 'OUTSOURCE'
+			</if>
+		</where>
+		<if test="(gdzcbh!=null and gdzcbh!='') or (sbbh!=null and sbbh!='') or (sbccbh!=null and sbccbh!='') or (xlh!=null and xlh!='')">
+			group by qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm,jg_sqbm.jgmc,qggl.jlbh,qggl.scbj,
+			qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc,jc_fkf.csmc,
+			qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm,jc_xmbm.csmc,jc_xmdl.csmc,
+			qggl.glid,qggl.wcbj,jc_qglb.csdm,jc_qglb.csmc,qggl.shlx,qggl.shsj,qggl.qglx,qggl.rkzt
+		</if>
+	</select>
+
+	<select id="getDto" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+				qggl.glid,jc_qglb.csdm qglbdm,jc_qglb.csmc qglbmc,qggl.qglb,qggl.ddslid,qggl.qglx,jc_qglx.csmc as qglxmc,qggl.shsj,qggl.rkzt,jc_jgfw.csmc as jgfwmc
+			from igams_qggl qggl
+				left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+				left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+				left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+				left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+				left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+				left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+				left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+				left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+				left join matridx_jcsj jc_qglx on jc_qglx.csid=qggl.qglx
+				left join matridx_jcsj jc_jgfw on jc_jgfw.csid=qggl.jgfw
+			<where>
+					qggl.scbj !='1'
+				<if test="qgid != null and qgid != ''">
+					and qggl.qgid=#{qgid}
+				</if>
+			</where>
+	</select>
+
+	<insert id="insert" parameterType="QgglDto">
+		insert into igams_qggl(qgid
+		<if test="djh != null and djh != ''">
+			,djh
+		</if>
+		<if test="sqr != null and sqr != ''">
+			,sqr
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,sqbm
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,jlbh
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,sqrq
+		</if>
+		<if test="xmbm != null and xmbm != ''">
+			,xmbm
+		</if>
+		<if test="xmdl != null and xmdl != ''">
+			,xmdl
+		</if>
+		<if test="sqly != null and sqly != ''">
+			,sqly
+		</if>
+		<if test="zffs != null and zffs != ''">
+			,zffs
+		</if>
+		<if test="fkf != null and v != ''">
+			,fkf
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		<if test="qglb != null and qglb != ''">
+			,qglb
+		</if>
+		<if test="shlx != null and shlx != ''">
+			,shlx
+		</if>
+		<if test="ssyfxm != null and ssyfxm != ''">
+			,ssyfxm
+		</if>
+		<if test="sftgfp != null and sftgfp != ''">
+			,sftgfp
+		</if>
+		<if test="qglx != null and qglx != ''">
+			,qglx
+		</if>
+		<if test="rkzt != null and rkzt != ''">
+			,rkzt
+		</if>
+		,lrry,lrsj,scbj,wcbj,sfbx,sftx)
+		values(#{qgid}
+		<if test="djh != null and djh != ''">
+			,#{djh}
+		</if>
+		<if test="sqr != null and sqr != ''">
+			,#{sqr}
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,#{sqbm}
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,#{jlbh}
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,cast(#{sqrq} as timestamp)
+		</if>
+		<if test="xmbm != null and xmbm != ''">
+			,#{xmbm}
+		</if>
+		<if test="xmdl != null and xmdl != ''">
+			,#{xmdl}
+		</if>
+		<if test="sqly != null and sqly != ''">
+			,#{sqly}
+		</if>
+		<if test="zffs != null and zffs != ''">
+			,#{zffs}
+		</if>
+		<if test="fkf != null and v != ''">
+			,#{fkf}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="qglb != null and qglb != ''">
+			,#{qglb}
+		</if>
+		<if test="shlx != null and shlx != ''">
+			,#{shlx}
+		</if>
+		<if test="ssyfxm != null and ssyfxm != ''">
+			,#{ssyfxm}
+		</if>
+		<if test="sftgfp != null and sftgfp != ''">
+			,#{sftgfp}
+		</if>
+		<if test="qglx != null and qglx != ''">
+			,#{qglx}
+		</if>
+		<if test="rkzt != null and rkzt != ''">
+			,#{rkzt}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0','0','0','0')
+	</insert>
+
+	<!-- 根据单据号查询采购单信息(可用于判断采购单号是否重复) -->
+	<select id="getDtoByDjh" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,qggl.glid
+			from igams_qggl qggl
+				left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+				left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+				left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+				left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+				left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		<where>
+			qggl.scbj!='1'
+			and qggl.djh=#{djh}
+			<if test="qgid != null and qgid!= ''">
+				and qgid!=#{qgid}
+			</if>
+		</where>
+	</select>
+
+	<delete id="delete" parameterType="QgglDto" >
+		update igams_qggl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="qgid !=null and qgid != ''">
+				or qgid = #{qgid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or qgid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<select id="getDtoById" parameterType="String" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.zt,jg_sqbm.jgdm sqbmdm,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmbm.csdm xmbmdm,jc_xmdl.csmc as xmdlmc,jc_xmdl.csdm xmdldm,
+				qggl.glid,qggl.ddslid,jc_xmbm.csdm xmbmdm,jc_xmdl.csdm xmdlbm,jc_qglb.csmc qglbmc,jc_qglb.csdm qglbdm,qggl.qglb,qggl.sftgfp,qggl.ssyfxm,jc_ssyfxm.csmc ssyfxmmc,
+				case when qggl.sftgfp='0' then '否' else '是' end sftgfpmc,jc_qglb.cskz1,qggl.qglx,qggl.rkzt,jc_jgfw.csmc as jgfwmc
+			from igams_qggl qggl
+				left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+				left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+				left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+				left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+				left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+				left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+				left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+				left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+				left join matridx_jcsj jc_ssyfxm on jc_ssyfxm.csid=qggl.ssyfxm
+				left join matridx_jcsj jc_jgfw on jc_jgfw.csid = qggl.jgfw
+			<where>
+				qggl.scbj !='1'
+				and qggl.qgid=#{qgid}
+			</where>
+	</select>
+
+	<update id="update" parameterType="QgglDto">
+		update igams_qggl
+		<set>
+				xgry=#{xgry}
+			 	,xgsj=LOCALTIMESTAMP
+			<if test="djh != null and djh != ''">
+				,djh=#{djh}
+			</if>
+			<if test="sqr != null and sqr != ''">
+				,sqr=#{sqr}
+			</if>
+			<if test="sqbm != null and sqbm != ''">
+				,sqbm=#{sqbm}
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				,jlbh=#{jlbh}
+			</if>
+			<if test="sqrq != null and sqrq != ''">
+				,sqrq=cast(#{sqrq} as timestamp)
+			</if>
+			<if test="xmbm != null and xmbm != ''">
+				,xmbm=#{xmbm}
+			</if>
+			<if test="xmdl != null and xmdl != ''">
+				,xmdl=#{xmdl}
+			</if>
+			<if test="sqly != null and sqly != ''">
+				,sqly=#{sqly}
+			</if>
+			<if test="zffs != null and zffs != ''">
+				,zffs=#{zffs}
+			</if>
+			<if test="fkf != null and fkf != ''">
+				,fkf=#{fkf}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="ddslid != null and ddslid != ''">
+				,ddslid=#{ddslid}
+			</if>
+			<if test="glid != null and glid != ''">
+				,glid=#{glid}
+			</if>
+			<if test="wcbj != null and wcbj != ''">
+				,wcbj=cast(#{wcbj} as numeric)
+			</if>
+			<if test="shsj != null and shsj != ''">
+				,shsj=cast(#{shsj} as timestamp)
+			</if>
+			<if test="ssyfxm != null and ssyfxm != ''">
+				,ssyfxm=#{ssyfxm}
+			</if>
+			<if test="sftgfp != null and sftgfp != ''">
+				,sftgfp=#{sftgfp}
+			</if>
+			<if test="jgfw != null and jgfw != ''">
+				,jgfw=#{jgfw}
+			</if>
+			<if test="shys != null and shys != ''">
+				,shys=cast(#{shys} as json)
+			</if>
+		</set>
+		<where>
+			qgid=#{qgid}
+		</where>
+	</update>
+
+	<!-- 获取默认申请人和他的部门信息 -->
+	<select id="getMrsqrxxByYhid" parameterType="QgglDto" resultType="QgglDto">
+		select jg.jgid sqbm,jg.jgmc sqbmmc,yh.zsxm sqrmc,yh.yhid sqr,yh.ddid,jg.jgdm sqbmdm,jg.kzcs1 jgdh
+		from matridx_jgxx jg
+		left join matridx_yhssjg  ssjg on ssjg.jgid=jg.jgid
+		left join matridx_xtyh yh on yh.yhid=ssjg.yhid and yh.scbj='0'
+		<where>
+			jg.scbj!='1' and
+			yh.yhid=#{sqr}
+		</where>
+	</select>
+
+	<!-- 获取申请部门信息 -->
+	<select id="getSqbmxx" parameterType="QgglDto" resultType="QgglDto">
+		select jgid sqbm,jgmc sqbmmc,jgdm
+		from matridx_jgxx
+		<where>
+			scbj!='1' and
+			jgid=#{sqbm}
+		</where>
+	</select>
+
+	<!-- 获取请购列表审核的ID列表 -->
+	<select id="getPagedAuditQggl" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.lrsj,qggl.sqbm,qggl.qglb,jc_qglb.csmc qglbmc,qggl.shlx,qggl.djh,yh_sqr.zsxm sqrmc,jg_sqbm.jgmc sqbmmc,qggl.sqrq,jc_xmbm.csmc xmbmmc,jc_xmdl.csmc xmdlmc,qggl.sqly,qggl.bz,qggl.jlbh,xt_lrry.zsxm lrrymc
+			,qggl.qglx
+			from igams_qggl qggl
+			left join matridx_jcsj jc_xmbm on jc_xmbm.csid = qggl.xmbm
+			left join matridx_jcsj jc_xmdl on jc_xmdl.csid = qggl.xmdl
+			left join matridx_xtyh xt_lrry on xt_lrry.yhid = qggl.lrry
+			left join matridx_jcsj jc_qglb on jc_qglb.csid = qggl.qglb
+			left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+			left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+			<where>
+				qggl.scbj !='1'
+				<if test="entire != null and entire != ''">
+					and (qggl.djh like '%'||#{entire}||'%'
+					or yh_sqr.zsxm like '%'||#{entire}||'%'
+					or jg_sqbm.jgmc like '%'||#{entire}||'%'
+					or qggl.jlbh like '%'||#{entire}||'%'
+					or qggl.sqly like '%'||#{entire}||'%')
+				</if>
+				<if test="djh !=null and djh !=''">
+					and qggl.djh ILIKE '%'||#{djh}||'%'
+				</if>
+				<if test="sqrmc != null and sqrmc  != ''">
+					and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+				</if>
+				<if test="sqbmmc != null and sqbmmc != ''">
+					and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+				</if>
+				<if test="jlbh != null and jlbh != ''">
+					and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+				</if>
+				<if test="sqly != null and sqly != ''">
+					and qggl.sqly ILIKE '%'||#{sqly}||'%'
+				</if>
+				<if test="zt !=null and zt !=''">
+					and qggl.zt=#{zt}
+				</if>
+			</where>
+	</select>
+
+	<!-- 请购审核列表-->
+	<select id="getAuditListQggl" parameterType="List" resultType="QgglDto">
+		select
+				qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.scbj,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+				shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,jc_qglb.csmc qglbmc,qggl.shlx,shxx_shyj,
+				qggl.qglx,qggl.rkzt
+			from
+				<foreach collection="list" separator="union" open="(" close=") "
+						item="item" index="index">
+					select #{item.qgid} qgid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+					#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+					#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+				</foreach>
+			tmp
+			left join igams_qggl qggl on qggl.qgid=tmp.qgid		  
+			left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs and jc_zffs.scbj='0'
+			left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf and jc_fkf.scbj='0'
+			left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr and yh_sqr.scbj='0'
+			left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm and jg_sqbm.scbj='0'
+			left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry and yh_lrry.scbj='0'
+			left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm and jc_xmbm.scbj='0'
+			left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl and jc_xmdl.scbj='0'
+			left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb and jc_qglb.scbj='0'	 
+		order by tmp.rownum
+	</select>
+
+	<!-- 根据钉钉实例ID获取在钉钉进行请购审批的请购单信息 -->
+	<select id="getDtoByDdslid" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.zt,qggl.ddslid,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+				qggl.glid,jc_qglb.csdm qglbdm
+			from igams_qggl qggl
+				left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+				left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+				left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr and yh_sqr.scbj='0'
+				left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+				left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+				left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+				left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+				left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+			<where>
+				qggl.scbj !='1'
+				and qggl.ddslid=#{ddslid}
+			</where>
+	</select>
+
+	<!-- 获取审批人信息 -->
+	<select id="getSprxxByDdid" parameterType="String" resultType="QgglDto">
+		select yhid as sprid,zsxm as sprxm,ddid as sprddid,yhm as spryhm
+		from matridx_xtyh
+		<where>
+			scbj!='1' and ddid=#{ddid}
+		</where>
+	</select>
+
+	<!-- 获取审批人角色 -->
+	<select id="getSprjsBySprid" parameterType="String" resultType="QgglDto">
+		select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+		from matridx_yhjs yhjs
+		left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		<where>
+			yhjs.yhid=#{sprid}
+		</where>
+	</select>
+
+	<select id="getCount" parameterType="QgglDto" resultType="int">
+		select count(qgid) from igams_qggl
+		<where>
+			scbj !='1'
+			and djh=#{djh}
+			<if test="qgid !=null and qgid !=''">
+				<if test="flg=='0'.toString()">
+					and qgid !=#{qgid}
+				</if>
+				<if test="flg=='1'.toString()">
+					and qgid =#{qgid}
+				</if>
+			</if>
+		</where>
+	</select>
+
+	<!-- 将钉钉实例ID设置为空 -->
+	<update id="updateDdslidToNull" parameterType="QgglDto">
+		update igams_qggl set ddslid = null
+		<where>
+			scbj !='1' and qgid =#{qgid}
+		</where>
+	</update>
+
+	<select id="getDtoList" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,
+				qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+				qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+				qggl.glid,yh_sqr.ddid,qggl.rkzt,yh_sqr.yhm sqryhm
+			from igams_qggl qggl
+				left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+				left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+				left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+				left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+				left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+				left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+				left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+			<where>
+					qggl.scbj =#{scbj}
+				<if test="qgid != null and qgid != ''">
+					and qggl.qgid=#{qgid}
+				</if>
+				<if test="ids !=null and ids.size >0" >
+					and qggl.qgid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<sql id="purchase">
+		<if test="wcbj != null and wcbj != ''">
+			and qggl.wcbj = #{wcbj}
+		</if>
+		<if test="qglx != null and qglx == '1' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglx != null and qglx == '0' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglbdm != null and qglbdm != ''">
+			and jc_qglb.csdm = #{qglbdm}
+		</if>
+		<if test="djh != null and djh != ''">
+			and qggl.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc  != ''">
+			and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="xmbmmc != null and xmbmmc != ''">
+			and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+		</if>
+		<if test="xmdlmc != null and xmdlmc != ''">
+			and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+		</if>
+		<if test="sqly != null and sqly != ''">
+			and qggl.sqly ILIKE '%'||#{sqly}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and qggl.qgid in (
+			select qgmx.qgid from igams_qgmx qgmx
+			left join igams_wlgl wl on wl.wlid=qgmx.wlid
+			where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+		</if>
+		<if test = "zffss != null and zffss.length > 0 "  >
+			and qggl.zffs in
+			<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "rkzts != null and rkzts.length > 0 "  >
+			and qggl.rkzt in
+			<foreach collection="rkzts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "fkfs != null and fkfs.length > 0 "  >
+			and qggl.fkf in
+			<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and qggl.zt in
+			<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmbms != null and xmbms.length > 0 "  >
+			and qggl.xmbm in
+			<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmdls != null and xmdls.length > 0 "  >
+			and qggl.xmdl in
+			<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test = "qglbs != null and qglbs.length > 0 "  >
+			and qggl.qglb in
+			<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="htaddflag == '0' .toString">
+			and jc_qglb.csdm != 'OUTSOURCE'
+		</if>
+	</sql>
+	<sql id="purchaseAdministration">
+		and jc_qglb.csdm = 'ADMINISTRATION'
+		<if test="wcbj != null and wcbj != ''">
+			and qggl.wcbj = #{wcbj}
+		</if>
+		<if test="entire != null and entire != ''">
+			and (qggl.djh like '%'||#{entire}||'%'
+			or yh_sqr.zsxm like '%'||#{entire}||'%'
+			or jg_sqbm.jgmc like '%'||#{entire}||'%'
+			or qggl.jlbh like '%'||#{entire}||'%'
+			or qggl.sqly like '%'||#{entire}||'%')
+		</if>
+		<if test="djh != null and djh != ''">
+			and qggl.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="zt != null and zt != ''">
+			and qggl.zt ILIKE '%'||#{zt}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc  != ''">
+			and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="xmbmmc != null and xmbmmc != ''">
+			and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+		</if>
+		<if test="xmdlmc != null and xmdlmc != ''">
+			and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+		</if>
+		<if test="sqly != null and sqly != ''">
+			and qggl.sqly ILIKE '%'||#{sqly}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and qggl.qgid in (
+			select qgmx.qgid from igams_qgmx qgmx
+			left join igams_wlgl wl on wl.wlid=qgmx.wlid
+			where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+		</if>
+		<if test = "zffss != null and zffss.length > 0 "  >
+			and qggl.zffs in
+			<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "fkfs != null and fkfs.length > 0 "  >
+			and qggl.fkf in
+			<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and qggl.zt in
+			<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmbms != null and xmbms.length > 0 "  >
+			and qggl.xmbm in
+			<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmdls != null and xmdls.length > 0 "  >
+			and qggl.xmdl in
+			<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test = "qglbs != null and qglbs.length > 0 "  >
+			and qggl.qglb in
+			<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "sfbxs != null and sfbxs.length > 0 "  >
+			and qggl.sfbx in
+			<foreach collection="sfbxs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "rkzts != null and rkzts.length > 0 "  >
+			and qggl.rkzt in
+			<foreach collection="rkzts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="QgglDto"
+			resultType="java.lang.Integer">
+		select count (qgmx.qgmxid)
+		from igams_qgmx qgmx
+		left join igams_qggl qggl on qggl.qgid = qgmx.qgid and qggl.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid = qgmx.wlid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid = wlgl.wllb
+		left join matridx_jcsj jc_qglb on jc_qglb.csid = qggl.qglb
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join igams_gysxx gysxx on gysxx.gysid = qgmx.gys
+		left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+		left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+		left outer join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+		left join matridx_jcsj xmbm on xmbm.csid=qggl.xmbm
+		left join matridx_jcsj xmdl  on xmdl.csid=qggl.xmdl
+		<where>
+			qgmx.scbj !='1'
+			<if test="flg=='purchase'">
+				<include refid="purchase"></include>
+			</if>
+			<if test="flg=='purchaseAdministration'">
+				<include refid="purchaseAdministration"></include>
+			</if>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="QgglDto" resultType="QgglDto">
+		select qgmx.qgmxid ${sqlParam}
+		from igams_qgmx qgmx
+		left join igams_qggl qggl on qggl.qgid = qgmx.qgid and qggl.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid = qgmx.wlid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid = wlgl.wllb
+		left join matridx_jcsj jc_qglb on jc_qglb.csid = qggl.qglb
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join igams_gysxx gysxx on gysxx.gysid = qgmx.gys
+		left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+		left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+		left outer join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+		left join matridx_jcsj xmbm on xmbm.csid=qggl.xmbm
+		left join matridx_jcsj xmdl  on xmdl.csid=qggl.xmdl
+		<where>
+			qgmx.scbj !='1'
+			<if test="flg=='purchase'">
+				<include refid="purchase"></include>
+			</if>
+			<if test="flg=='purchaseAdministration'">
+				<include refid="purchaseAdministration"></include>
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<select id="getListForSelectExp" parameterType="QgglDto" resultType="QgglDto">
+		select qgmx.qgid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} qgid,#{index} ordernum
+		</foreach>
+		) tmp
+			left outer join igams_qgmx qgmx on tmp.qgid = qgmx.qgid and qgmx.scbj='0'
+			left join igams_qggl qggl on qggl.qgid = qgmx.qgid
+			left join igams_wlgl wlgl on wlgl.wlid = qgmx.wlid
+			left join matridx_jcsj jc_wllb on jc_wllb.csid = wlgl.wllb
+			left join matridx_jcsj jc_qglb on jc_qglb.csid = qggl.qglb
+			left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+			left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		    left join igams_gysxx gysxx on gysxx.gysid = qgmx.gys
+			left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+			left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+			left outer join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+			left join matridx_jcsj xmbm on xmbm.csid=qggl.xmbm
+			left join matridx_jcsj xmdl  on xmdl.csid=qggl.xmdl
+			order by tmp.ordernum
+	</select>
+	<select id="getDjhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(djh,LENGTH(djh)-strpos(reverse(djh),'-')+2,LENGTH(djh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+			FROM igams_qggl
+			<where>
+				scbj = '0' AND djh like #{prefix}||'%'
+			</where>
+	</select>
+
+	<select id="getQgList" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,htgl.htnbbh,htmx.sl as htsl,qgmx.sl,wlgl.wlbm,wlgl.wlmc,qgmx.qwrq,htmx.jhdhrq,htmx.yjhdhrq
+			from igams_qggl qggl
+			left join igams_qgmx qgmx on qgmx.qgid=qggl.qgid
+			left join igams_htmx htmx on htmx.qgmxid=qgmx.qgmxid
+			left join igams_htgl htgl on htgl.htid=htmx.htid
+			left join igams_wlgl wlgl on wlgl.wlid=qgmx.wlid
+		<where>
+			qggl.scbj !='1' and qggl.qgid =#{qgid} and htgl.htid=#{htid}
+		</where>
+	</select>
+
+	<!-- 批量更新请购完成标记 -->
+	<update id="updateWcbjs" parameterType="QgglDto">
+		update igams_qggl
+		set xgry=#{xgry}, xgsj=LOCALTIMESTAMP, wcbj=#{wcbj}
+		<where>
+			scbj !='1'
+			and qgid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!-- 根据请购ids获取请购信息 -->
+	<select id="getDtoListByIds" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.ddslid,qggl.sqr,qggl.sqbm,qggl.jlbh,qggl.sqrq,qggl.sqly,yh_sqr,zsxm sqrmc,jg.jgmc sqbmmc,qggl.bz
+			from igams_qggl qggl
+			left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+			left join matridx_jgxx jg on jg.jgid=qggl.sqbm and jg.scbj='0'
+			<where>
+				qggl.scbj!='1' and qggl.qgid in
+				<foreach collection="ids" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</where>
+	</select>
+
+	<select id="getPurchaseMap" parameterType="QgglDto" resultType="Map">
+		select qg.qgid,qg.djh AS number,qg.jlbh,qg.sqly,yh.zsxm sqrmc,jg.jgmc sqbmmc,fjcfb.wjlj
+		from igams_qggl qg
+		left join matridx_xtyh yh on yh.yhid=qg.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid=qg.sqbm and jg.scbj='0'
+		LEFT JOIN matridx_jcsj qgmb
+			ON qgmb.csid = qg.qglb
+				AND qgmb.jclb = 'PURCHASE_SUB_TYPE'
+			LEFT JOIN matridx_fjcfb fjcfb ON fjcfb.ywid = qgmb.csid
+		<where>
+			qg.scbj='0' and qg.qgid=#{qgid}
+		</where>
+	</select>
+
+	<!-- 获取请购明细 -->
+	<select id="getPurchaseListMap" parameterType="QgglDto" resultType="Map">
+		select qgmx.hwmc,qgmx.hwbz,qgmx.hwyt,qgmx.gys,qgmx.sl,qgmx.yq,qgmx.wbyq,qgmx.pzyq,qgmx.sjjl,
+		yh.zsxm sqrmc,jg.jgmc sqbmmc,qggl.sqly,qgmx.sjjl,zlyq.csmc zlyqmc
+		from igams_qgmx qgmx
+		left join igams_qggl qggl on qggl.qgid=qgmx.qgid and qggl.scbj='0'
+		left join matridx_xtyh yh on yh.yhid=qggl.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid=qggl.sqbm and jg.scbj='0'
+		left join matridx_jcsj zlyq on zlyq.csid=qgmx.yq and zlyq.scbj='0'
+		<where>
+			qgmx.scbj='0' and qgmx.qgid=#{qgid}
+		</where>
+	</select>
+
+	<!-- 获取请购单数量(月) -->
+	<select id="getRequisitionMapByMon" parameterType="QgglDto" resultType="Map">
+		select to_char(qg.sqrq,'YYYY-MM') sqrq,count(qg.qgid) from igams_qggl qg
+		where qg.zt !='00' and qg.scbj ='0'
+		and to_char(qg.sqrq,'YYYY-MM') >= #{sqrqstart}
+		and  #{sqrqend} >= to_char(qg.sqrq,'YYYY-MM')
+		group by to_char(qg.sqrq,'YYYY-MM')
+		order by to_char(qg.sqrq,'YYYY-MM') desc
+	</select>
+	<!-- 获取请购单数量(周) -->
+	<select id="getRequisitionMapByWeek" parameterType="QgglDto" resultType="Map">
+		select tjrq.rq,COALESCE(tmp.num,0) num from
+		<if test = "rqs != null and rqs.length > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=")" item="item" index="index">
+				select to_char(to_date(#{item},'yyyy-MM-dd') + 6,'yyyy-MM-dd') rq
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(qg.qgid) as num,
+				case when to_char(qg.sqrq,'yyyy-MM-dd') &gt;= #{sqrq}  and to_char(qg.sqrq + -6,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') + 6,'yyyy-MM-dd')
+				 when to_char(qg.sqrq+7,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +1,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 1,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +14,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +8 ,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 8,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +21,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +15,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 15,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +28,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +22,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 22,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +35,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +29,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 29,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +42,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +36,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 36,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +49,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +43,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 43,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +56,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +50,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 50,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +63,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +57,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 57,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +70,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +64,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 64,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +77,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +71,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 71,'yyyy-MM-dd')
+				end rqz
+				from igams_qggl qg
+				where qg.scbj!='1'  and qg.sqrq is not null and qg.zt !='00'
+				<if test="sqrq != null and sqrq != ''">
+					and  to_char(qg.sqrq,'yyyy-MM-dd') &gt;= to_char(to_date(#{sqrq},'yyyy-MM-dd') -77,'yyyy-MM-dd')
+					and to_char(qg.sqrq,'yyyy-MM-dd') &lt;= to_char(to_date(#{sqrq },'yyyy-MM-dd') +6,'yyyy-MM-dd')
+				</if>
+				group by rqz
+				) tmp on tjrq.rq = tmp.rqz
+				order by tjrq.rq
+	</select>
+	<!-- 获取请购物料数量(月) -->
+	<select id="getPurchaseMaterialMapByMon" parameterType="QgglDto" resultType="Map">
+		select to_char(qg.sqrq,'YYYY-MM') sqrq,count(mx.qgmxid) from igams_qggl qg
+		left outer join igams_qgmx mx on mx.qgid = qg.qgid
+		where qg.zt !='00' and qg.scbj ='0' and mx.zt!='00' and mx.qxqg ='0' and mx.scbj ='0'
+		and to_char(qg.sqrq,'YYYY-MM') >= #{sqrqstart}
+		and #{sqrqend} >= to_char(qg.sqrq,'YYYY-MM')
+		group by to_char(qg.sqrq,'YYYY-MM')
+		order by to_char(qg.sqrq,'YYYY-MM') desc
+	</select>
+	<!-- 获取请购物料数量(周) -->
+	<select id="getPurchaseMaterialMapByWeek" parameterType="QgglDto" resultType="Map">
+	select tjrq.rq,COALESCE(tmp.num,0) num from
+		<if test = "rqs != null and rqs.length > 0 "  >
+			<foreach collection="rqs" separator=" union all " open="(" close=") "
+			item="item" index="index">
+				select to_char(to_date(#{item},'yyyy-MM-dd') + 6,'yyyy-MM-dd') rq
+			</foreach>
+		</if> tjrq
+		left outer join (
+			select count(qg.qgid) as num,
+				case when to_char(qg.sqrq,'yyyy-MM-dd') &gt;= #{sqrq}  and to_char(qg.sqrq + -6,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') + 6,'yyyy-MM-dd')
+				 when to_char(qg.sqrq+7,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +1,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 1,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +14,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +8 ,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 8,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +21,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +15,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 15,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +28,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +22,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 22,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +35,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +29,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 29,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +42,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +36,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 36,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +49,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +43,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 43,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +56,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +50,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 50,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +63,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +57,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 57,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +70,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +64,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 64,'yyyy-MM-dd')
+				 when to_char(qg.sqrq +77,'yyyy-MM-dd') &gt;= #{sqrq} and to_char(qg.sqrq +71,'yyyy-MM-dd') &lt;= #{sqrq} then to_char(to_date(#{sqrq},'yyyy-MM-dd') - 71,'yyyy-MM-dd')
+				end rqz
+				from igams_qggl qg
+			left outer join igams_qgmx mx on mx.qgid = qg.qgid
+				where qg.scbj!='1'  and qg.sqrq is not null and qg.zt !='00' and mx.zt!='00' and mx.qxqg ='0' and mx.scbj ='0'
+				<if test="sqrq != null and sqrq != ''">
+					and  to_char(qg.sqrq,'yyyy-MM-dd') &gt;= to_char(to_date(#{sqrq},'yyyy-MM-dd') -77,'yyyy-MM-dd')
+					and to_char(qg.sqrq,'yyyy-MM-dd') &lt;= to_char(to_date(#{sqrq},'yyyy-MM-dd') +6,'yyyy-MM-dd')
+				</if>
+				group by rqz
+				) tmp on tjrq.rq = tmp.rqz
+				order by tjrq.rq
+
+	</select>
+
+	<select id="queryByWlid" parameterType="QgglDto" resultType="QgglDto">
+		select qgmx.wlid,jc_dl.csid as xmdl,jc_bm.csid as xmbm
+			from igams_qggl qggl
+			left join igams_qgmx qgmx on qgmx.qgid=qggl.qgid and qgmx.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid=qgmx.wlid and wlgl.scbj!='1'
+			left join matridx_jcsj jc_dl on jc_dl.csid=qggl.xmdl
+			left join matridx_jcsj jc_bm on jc_bm.csid=qggl.xmbm
+			<where>
+				qggl.scbj='0'
+				<if test="wlid != null and wlid != ''">
+					and qgmx.wlid=#{wlid}
+				</if>
+				<if test = "ids != null and ids.size > 0 "  >
+					and qgmx.wlid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+			group by qgmx.wlid,jc_dl.csid,jc_bm.csid
+	</select>
+    <select id="getPagedListAdministration" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.scbj,
+		qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+		qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+		qggl.glid,qggl.wcbj,jc_qglb.csdm qglbdm,jc_qglb.csmc qglbmc,qggl.shlx,qggl.shsj,qggl.sfbx,qggl.rkzt
+		from igams_qggl qggl
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qggl.scbj !='1' and jc_qglb.csdm = 'ADMINISTRATION'
+			<if test="wcbj != null and wcbj != ''">
+				and qggl.wcbj = #{wcbj}
+			</if>
+			<if test="entire != null and entire != ''">
+				and (qggl.djh like '%'||#{entire}||'%'
+				or yh_sqr.zsxm like '%'||#{entire}||'%'
+				or jg_sqbm.jgmc like '%'||#{entire}||'%'
+				or qggl.jlbh like '%'||#{entire}||'%'
+				or qggl.sqly like '%'||#{entire}||'%')
+			</if>
+			<if test="djh != null and djh != ''">
+				and qggl.djh ILIKE '%'||#{djh}||'%'
+			</if>
+			<if test="zt != null and zt != ''">
+				and qggl.zt ILIKE '%'||#{zt}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc  != ''">
+				and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+			</if>
+			<if test="xmbmmc != null and xmbmmc != ''">
+				and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+			</if>
+			<if test="xmdlmc != null and xmdlmc != ''">
+				and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+			</if>
+			<if test="sqly != null and sqly != ''">
+				and qggl.sqly ILIKE '%'||#{sqly}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and qggl.qgid in (
+				select qgmx.qgid from igams_qgmx qgmx
+				left join igams_wlgl wl on wl.wlid=qgmx.wlid
+				where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+			</if>
+			<if test = "zffss != null and zffss.length > 0 "  >
+				and qggl.zffs in
+				<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fkfs != null and fkfs.length > 0 "  >
+				and qggl.fkf in
+				<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and qggl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmbms != null and xmbms.length > 0 "  >
+				and qggl.xmbm in
+				<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmdls != null and xmdls.length > 0 "  >
+				and qggl.xmdl in
+				<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+			</if>
+			<if test = "qglbs != null and qglbs.length > 0 "  >
+				and qggl.qglb in
+				<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "sfbxs != null and sfbxs.length > 0 "  >
+				and qggl.sfbx in
+				<foreach collection="sfbxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "rkzts != null and rkzts.length > 0 "  >
+				and qggl.rkzt in
+				<foreach collection="rkzts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+
+	<select id="getPagedListAdminStock" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid,qggl.djh,qggl.sqr,qggl.sqbm,yh_sqr.zsxm as sqrmc,jg_sqbm.jgmc as sqbmmc,qggl.jlbh,qggl.scbj,
+		qggl.sqrq,qggl.xmbm,qggl.xmdl,qggl.sqly,qggl.zffs,qggl.fkf,jc_zffs.csmc as zffsmc,jc_fkf.csmc as fkfmc,
+		qggl.bz,qggl.zt,qggl.lrry,qggl.lrsj ,yh_lrry.zsxm as lrrymc,jc_xmbm.csmc as xmbmmc,jc_xmdl.csmc as xmdlmc,
+		qggl.glid,qggl.wcbj,jc_qglb.csdm qglbdm,jc_qglb.csmc qglbmc,qggl.shlx,qggl.shsj,qggl.sfbx
+		from (
+		select qgmx.qgid from igams_xzkcxx kcxx
+		left join igams_xzrkmx xzrkmx on xzrkmx.xzkcid=kcxx.xzkcid
+		left join igams_qgmx qgmx on qgmx.qgmxid = xzrkmx.qgmxid
+		group by qgmx.qgid
+		) tmp
+		left join igams_qggl qggl on tmp.qgid=qggl.qgid
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qggl.scbj !='1' and jc_qglb.csdm = 'ADMINISTRATION'
+			<if test="djh != null and djh != ''">
+				and qggl.djh ILIKE '%'||#{djh}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc  != ''">
+				and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+		</where>
+	</select>
+
+    <update id="updateByQgmxid" parameterType="QgglDto" >
+		update igams_qggl set wcbj=#{wcbj}
+		<where>
+			or qgid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<update id="baoxiaoQggl" parameterType="QgglDto">
+		update igams_qggl set sfbx= '1'
+		<where>
+			or qgid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="updateQrbj" parameterType="QgglDto">
+		update igams_qggl set sfqr=#{sfqr}
+		where scbj='0' and qgid in
+		<foreach collection="ids" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 审核导出 -->
+	<select id="getCountForAuditingSearchExp" parameterType="QgglDto"
+			resultType="java.lang.Integer">
+		select count(qggl.qgid) from igams_qggl qggl
+		left join (
+		select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as tmp
+		from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+		from matridx_shxx sh
+		left join matridx_spgw gw on gw.gwid=sh.gwid
+		where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+		group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+		group by tmp.ywid
+		) tmp on tmp.ywid=qggl.qgid
+		left join (
+		select ywid,max(shsj) tjsj
+		from matridx_shxx
+		where lcxh is null  and sftg is null
+		group by ywid
+		)tj on tj.ywid=qggl.qgid
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qggl.scbj !='1'
+			<if test="wcbj != null and wcbj != ''">
+				and qggl.wcbj = #{wcbj}
+			</if>
+			<if test="qglx != null and qglx == '1' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglx != null and qglx == '0' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglbdm != null and qglbdm != ''">
+				and jc_qglb.csdm = #{qglbdm}
+			</if>
+			<if test="djh != null and djh != ''">
+				and qggl.djh ILIKE '%'||#{djh}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc  != ''">
+				and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+			</if>
+			<if test="xmbmmc != null and xmbmmc != ''">
+				and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+			</if>
+			<if test="xmdlmc != null and xmdlmc != ''">
+				and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+			</if>
+			<if test="sqly != null and sqly != ''">
+				and qggl.sqly ILIKE '%'||#{sqly}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and qggl.qgid in (
+				select qgmx.qgid from igams_qgmx qgmx
+				left join igams_wlgl wl on wl.wlid=qgmx.wlid
+				where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+			</if>
+			<if test = "zffss != null and zffss.length > 0 "  >
+				and qggl.zffs in
+				<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fkfs != null and fkfs.length > 0 "  >
+				and qggl.fkf in
+				<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and qggl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmbms != null and xmbms.length > 0 "  >
+				and qggl.xmbm in
+				<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmdls != null and xmdls.length > 0 "  >
+				and qggl.xmdl in
+				<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+			</if>
+			<if test = "qglbs != null and qglbs.length > 0 "  >
+				and qggl.qglb in
+				<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getListForAuditingSearchExp" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid ${sqlParam}
+		from igams_qggl qggl
+		left join (
+		select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp
+		from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+		from matridx_shxx sh
+		left join matridx_spgw gw on gw.gwid=sh.gwid
+		where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+		group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+		group by tmp.ywid
+		) tmp on tmp.ywid=qggl.qgid
+		left join (
+		select ywid,max(shsj) tjsj
+		from matridx_shxx
+		where lcxh is null  and sftg is null
+		group by ywid
+		)tj on tj.ywid=qggl.qgid
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qggl.scbj !='1'
+			<if test="wcbj != null and wcbj != ''">
+				and qggl.wcbj = #{wcbj}
+			</if>
+			<if test="qglx != null and qglx == '1' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglx != null and qglx == '0' .toString">
+				and qglx=#{qglx}
+			</if>
+			<if test="qglbdm != null and qglbdm != ''">
+				and jc_qglb.csdm = #{qglbdm}
+			</if>
+			<if test="djh != null and djh != ''">
+				and qggl.djh ILIKE '%'||#{djh}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc  != ''">
+				and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+			</if>
+			<if test="xmbmmc != null and xmbmmc != ''">
+				and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+			</if>
+			<if test="xmdlmc != null and xmdlmc != ''">
+				and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+			</if>
+			<if test="sqly != null and sqly != ''">
+				and qggl.sqly ILIKE '%'||#{sqly}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and qggl.qgid in (
+				select qgmx.qgid from igams_qgmx qgmx
+				left join igams_wlgl wl on wl.wlid=qgmx.wlid
+				where qgmx.qgid=qggl.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+			</if>
+			<if test = "zffss != null and zffss.length > 0 "  >
+				and qggl.zffs in
+				<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fkfs != null and fkfs.length > 0 "  >
+				and qggl.fkf in
+				<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and qggl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmbms != null and xmbms.length > 0 "  >
+				and qggl.xmbm in
+				<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "xmdls != null and xmdls.length > 0 "  >
+				and qggl.xmdl in
+				<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+			</if>
+			<if test = "qglbs != null and qglbs.length > 0 "  >
+				and qggl.qglb in
+				<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForAuditingSelectExp" parameterType="QgglDto" resultType="QgglDto">
+		select qggl.qgid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} qgid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_qggl qggl on tmp.qgid = qggl.qgid
+		left join (
+		select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp
+		from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+		from matridx_shxx sh
+		left join matridx_spgw gw on gw.gwid=sh.gwid
+		where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+		group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+		group by tmp.ywid
+		) tmp1 on tmp1.ywid=tmp.qgid
+		left join (
+		select ywid,max(shsj) tjsj
+		from matridx_shxx
+		where lcxh is null  and sftg is null
+		group by ywid
+		)tj on tj.ywid=tmp.qgid
+		left join matridx_jcsj jc_zffs on jc_zffs.csid=qggl.zffs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=qggl.fkf
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qggl.sqbm
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=qggl.lrry
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qggl.xmdl
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		order by tmp.ordernum
+	</select>
+
+	<select id="getCountStatistics" parameterType="String" resultType="QgglDto">
+		SELECT count(qgid) qgds ,to_char(sqrq,'MM') sqrq
+		,(select count(qgid) from igams_qggl where scbj = '0'
+		AND zt = '80'
+		AND to_char( sqrq, 'yyyy' ) =#{year}) zs
+		FROM igams_qggl where scbj='0' and zt='80' and to_char(sqrq,'yyyy')=#{year}  GROUP BY to_char(sqrq,'MM')  ORDER BY sqrq asc
+	</select>
+	<select id="getTodeyCount"  parameterType="QgglDto" resultType="QgglDto">
+		(
+			SELECT COUNT
+					   ( * ) sl , '请购单数' lx
+			FROM
+				igams_qggl qggl
+			WHERE
+					TO_CHAR( qggl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '合同单数' lx
+			FROM
+				igams_htgl htgl
+			WHERE
+					TO_CHAR( htgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '付款单数' lx
+			FROM
+				igams_htfkqk htfkqk
+			WHERE
+					TO_CHAR( htfkqk.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '发票单数' lx
+			FROM
+				igams_fpgl fpgl
+			WHERE
+					TO_CHAR( fpgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '到货单数' lx
+			FROM
+				igams_dhxx dhxx
+			WHERE
+					TO_CHAR( dhxx.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '质检单数' lx
+			FROM
+				igams_dhjy dhjy
+			WHERE
+					TO_CHAR( dhjy.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '入库单数' lx
+			FROM
+				igams_rkgl rkgl
+			WHERE
+					TO_CHAR( rkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '领料单数' lx
+			FROM
+				igams_llgl llgl
+			WHERE
+					TO_CHAR( llgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '借出单数' lx
+			FROM
+				igams_jcjygl jcjygl
+			WHERE
+					TO_CHAR( jcjygl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '销售单数' lx
+			FROM
+				igams_xsgl xsgl
+			WHERE
+					TO_CHAR( xsgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '发货单数' lx
+			FROM
+				igams_fhgl fhgl
+			WHERE
+					TO_CHAR( fhgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '需求单数' lx
+			FROM
+				igams_cpxqjh cpxqjh
+			WHERE
+					TO_CHAR( cpxqjh.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '生产单数' lx
+			FROM
+				igams_sczlmx sczlmx
+			WHERE
+					TO_CHAR( sczlmx.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '行政确认单数' lx
+			FROM
+				igams_xzqgqrgl xzqgqrgl
+			WHERE
+					TO_CHAR( xzqgqrgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '行政付款单数' lx
+			FROM
+				igams_xzqgfkgl xzqgfkgl
+			WHERE
+					TO_CHAR( xzqgfkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '行政入库单数' lx
+			FROM
+				igams_xzrkgl xzrkgl
+			WHERE
+					TO_CHAR( xzrkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+			SELECT COUNT
+					   ( * ) sl , '行政领料单数' lx
+			FROM
+				igams_xzllgl xzqgfkgl
+			WHERE
+					TO_CHAR( xzqgfkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj} AND scbj = '0'
+		) UNION ALL
+		(
+		select round(sum(wlgl.rf*xqmx.sl),0) sl,'宏基因需求人份' lx
+		from igams_xqjhmx xqmx
+		left join igams_wlgl wlgl on wlgl.wlid=xqmx.wlid and wlgl.scbj='0'
+		left join igams_cpxqjh xqjh on xqjh.cpxqid=xqmx.xqjhid and xqjh.scbj='0'
+		where
+		xqmx.scbj='0'
+		and wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		and xqjh.zt in ('00','10','15')
+		)
+		UNION ALL
+		(
+		select round(sum(wlgl.rf*sczlmx.scsl),0) sl,'宏基因生产人份' lx
+		from igams_sczlmx sczlmx
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid and wlgl.scbj='0'
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid and sczlgl.scbj='0'
+		where
+		sczlmx.scbj='0'
+		and wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		and sczlgl.zt in ('00','10','15')
+		)
+		UNION ALL
+		(
+		select round(sum(wlgl.rf*ckhwxx.kcl),0) sl,'宏基因库存人份' lx
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid and wlgl.scbj='0'
+		where
+		wlgl.wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		)
+		UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'宏基因出库人份' lx
+		from
+		(select wlgl.rf*hwllxx.qlsl number
+		from igams_llgl llgl
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid=hwllxx.wlid and wlgl.scbj='0'
+		where
+		llgl.zt in ('00','10','15') and hwllxx.scbj='0'
+		and wlgl.wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		union all
+		select wlgl.rf*xsmx.sl number
+		from igams_xsgl xsgl
+		left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+		where
+		xsgl.zt in ('00','10','15') and xsmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		union all
+		select wlgl.rf*jcjymx.jysl number
+		from igams_jcjygl jcjygl
+		left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid
+		left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		jcjygl.zt in ('00','10','15') and jcjymx.scbj='0'
+		and wlgl.wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		union all
+		select wlgl.rf*fhmx.fhsl number
+		from igams_fhmx fhmx
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid
+		left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		fhgl.zt in ('00','10','15') and fhmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00149','GS00150','GS00151','GS00152','GS00153','GS00154','GS00155','GS00156','GS00137','GS00138','GS00139','GS00134'
+		,'GS00135','GS00136','GS00133','GS00111','GS00101','GS00047','GS00046','GS00040')
+		)tmp
+		)
+		UNION ALL
+		(
+		select round(sum(wlgl.rf*xqmx.sl),0) sl,'血流需求人份' lx
+		from igams_xqjhmx xqmx
+		left join igams_wlgl wlgl on wlgl.wlid=xqmx.wlid and wlgl.scbj='0'
+		left join igams_cpxqjh xqjh on xqjh.cpxqid=xqmx.xqjhid and xqjh.scbj='0'
+		where
+		xqmx.scbj='0'
+		and wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		and xqjh.zt in ('00','10','15')
+		)UNION ALL
+		(
+		select round(sum(wlgl.rf*sczlmx.scsl),0) sl,'血流生产人份' lx
+		from igams_sczlmx sczlmx
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid and wlgl.scbj='0'
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid and sczlgl.scbj='0'
+		where
+		sczlmx.scbj='0'
+		and wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		and sczlgl.zt in ('00','10','15')
+		)
+		UNION ALL
+		(
+		select round(sum(wlgl.rf*ckhwxx.kcl),0) sl,'血流库存人份' lx
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid and wlgl.scbj='0'
+		where
+		wlgl.wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		)
+		UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'血流出库人份' lx
+		from
+		(select wlgl.rf*hwllxx.qlsl number
+		from igams_llgl llgl
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid=hwllxx.wlid and wlgl.scbj='0'
+		where
+		llgl.zt in ('00','10','15') and hwllxx.scbj='0'
+		and wlgl.wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		union all
+		select wlgl.rf*xsmx.sl number
+		from igams_xsgl xsgl
+		left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+		where
+		xsgl.zt in ('00','10','15') and xsmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		union all
+		select wlgl.rf*jcjymx.jysl number
+		from igams_jcjygl jcjygl
+		left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid
+		left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		jcjygl.zt in ('00','10','15') and jcjymx.scbj='0'
+		and wlgl.wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		union all
+		select wlgl.rf*fhmx.fhsl number
+		from igams_fhmx fhmx
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid
+		left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		fhgl.zt in ('00','10','15') and fhmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00215','GS00216','GS00217','GS00218','GS00219','GS00214','GS00201','GS00143','GS00140','GS00117','GS00102','GS00099'
+					,'GS00068','GS00048')
+		)tmp
+		)
+		UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'three需求人份' lx from
+		(select wlgl.rf*xqmx.sl number
+		from igams_xqjhmx xqmx
+		left join igams_wlgl wlgl on wlgl.wlid=xqmx.wlid and wlgl.scbj='0'
+		left join igams_cpxqjh xqjh on xqjh.cpxqid=xqmx.xqjhid and xqjh.scbj='0'
+		where
+		xqmx.scbj='0'
+		and wlbm in
+		('GS00204')
+		and xqjh.zt in ('00','10','15')
+		)tmp
+		)UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'three生产人份' lx
+		from
+		(select wlgl.rf*sczlmx.scsl number
+		from igams_sczlmx sczlmx
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid and wlgl.scbj='0'
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid and sczlgl.scbj='0'
+		where
+		sczlmx.scbj='0'
+		and wlbm in
+		('GS00204')
+		and sczlgl.zt in ('00','10','15')
+		)tmp
+		)
+		UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'three库存人份' lx
+		from
+		(select wlgl.rf*ckhwxx.kcl number
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid and wlgl.scbj='0'
+		where
+		wlgl.wlbm in
+		('GS00204')
+		)tmp
+		)
+		UNION ALL
+		(
+		select round(sum(tmp.number),0) sl,'three出库人份' lx
+		from
+		(select wlgl.rf*hwllxx.qlsl number
+		from igams_llgl llgl
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid=hwllxx.wlid and wlgl.scbj='0'
+		where
+		llgl.zt in ('00','10','15') and hwllxx.scbj='0'
+		and wlgl.wlbm in
+		('GS00204')
+		union all
+		select wlgl.rf*xsmx.sl number
+		from igams_xsgl xsgl
+		left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+		where
+		xsgl.zt in ('00','10','15') and xsmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00204')
+		union all
+		select wlgl.rf*jcjymx.jysl number
+		from igams_jcjygl jcjygl
+		left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid
+		left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		jcjygl.zt in ('00','10','15') and jcjymx.scbj='0'
+		and wlgl.wlbm in
+		('GS00204')
+				union all
+		select wlgl.rf*fhmx.fhsl number
+		from igams_fhmx fhmx
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid
+		left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+		where
+		fhgl.zt in ('00','10','15') and fhmx.scbj='0'
+		and wlgl.wlbm in
+		('GS00204')
+		)tmp)
+	</select>
+
+	<select id="getTodayList" parameterType="QgglDto" resultType="QgglDto">
+		<if test="lx != null and lx != '' and lx == 'qg'">
+			SELECT
+			qggl.djh,
+			qggl.zt,
+			xtyh.zsxm sqrmc,
+			jgxx.jgmc sqbmmc,
+			qggl.qgid
+			FROM
+			igams_qggl qggl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = qggl.sqr
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = qggl.sqbm
+			WHERE
+			TO_CHAR( qggl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND qggl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'ht'">
+			SELECT
+			htgl.htnbbh,
+			htgl.zje,
+			htgl.zt,
+			xtyh.zsxm fzrmc,
+			gysxx.gysmc,
+			htgl.htid
+			FROM
+			igams_htgl htgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = htgl.fzr
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = htgl.gys
+			WHERE
+			TO_CHAR( htgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND htgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'fk'">
+			SELECT
+			htfkqk.fkdh,
+			htfkqk.zt,
+			htfkqk.fkzje,
+			xtyh.zsxm sqrmc,
+			gysxx.gysmc  zfdxmc,
+			htfkqk.htfkid
+			FROM
+			igams_htfkqk htfkqk
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = htfkqk.sqr
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = htfkqk.zfdx
+			WHERE
+			TO_CHAR( htfkqk.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND htfkqk.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'fp'">
+			SELECT
+			fpgl.fph,
+			fpgl.kpje,
+			fpgl.zt,
+			gysxx.gysmc,
+			fpgl.fpid
+			FROM
+			igams_fpgl fpgl
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = fpgl.gys
+			WHERE
+			TO_CHAR( fpgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND fpgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'dh'">
+			SELECT
+			dhxx.dhdh,
+			dhxx.zt,
+			gysxx.gysmc,
+			dhxx.dhid,
+			jcsj.csmc rklbmc
+			FROM
+			igams_dhxx dhxx
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = dhxx.gysid
+			LEFT JOIN matridx_jcsj jcsj ON jcsj.csid = dhxx.rklb
+			WHERE
+			TO_CHAR( dhxx.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND dhxx.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'zj'">
+			SELECT
+			dhjy.jydh,
+			dhjy.zt,
+			xtyh.zsxm fzrmc,
+			jcsj.csmc jyjgmc,
+			dhjy.dhjyid
+			FROM
+			igams_dhjy dhjy
+			LEFT JOIN matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+			LEFT JOIN matridx_jcsj jcsj on jcsj.csid = dhjy.jyjg
+			WHERE
+			TO_CHAR( dhjy.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND dhjy.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'rk'">
+			SELECT
+			rkgl.rkdh,
+			rkgl.zt,
+			gysxx.gysmc,
+			jcsj.csmc rklbmc,
+			rkgl.rkid
+			FROM
+			igams_rkgl rkgl
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = rkgl.gysid
+			LEFT JOIN matridx_jcsj jcsj ON jcsj.csid = rkgl.rklb
+			WHERE
+			TO_CHAR( rkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND rkgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'll'">
+			SELECT
+			llgl.lldh,
+			llgl.zt,
+			xtyh.zsxm sqrmc,
+			jgxx.jgmc sqbmmc,
+			llgl.llid
+			FROM
+			igams_llgl llgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = llgl.sqry
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = llgl.sqbm
+			WHERE
+			TO_CHAR( llgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND llgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'jc'">
+			SELECT
+			jcjygl.jydh,
+			jcjygl.zt,
+			jcjygl.lxr,
+			jgxx.jgmc sqbmmc,
+			COALESCE(gysxx.gysmc,COALESCE(khgl.khjc,jgbm.jgmc)) khjc,
+			jcjygl.jcjyid
+			FROM
+			igams_jcjygl jcjygl
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = jcjygl.bm
+			LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = jcjygl.dwid
+			LEFT JOIN igams_khgl khgl ON khgl.khid = jcjygl.dwid
+			LEFT JOIN matridx_jgxx jgbm ON jgbm.jgid = jcjygl.dwid
+			WHERE
+			TO_CHAR( jcjygl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND jcjygl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xs'">
+			SELECT
+			xsgl.oaxsdh,
+			xsgl.zt,
+			xsgl.xszje,
+			khgl.khjc,
+			xsgl.xsid,
+			xtyh.zsxm ywymc
+			FROM
+			igams_xsgl xsgl
+			LEFT JOIN igams_khgl khgl ON khgl.khid = xsgl.khjc
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = xsgl.ywy
+			WHERE
+			TO_CHAR( xsgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND xsgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'fh'">
+			SELECT
+			fhgl.fhdh,
+			fhgl.zt,
+			fhgl.shdz,
+			khgl.khjc,
+			xtyh.zsxm jsrmc,
+			fhgl.fhid
+			FROM
+			igams_fhgl fhgl
+			LEFT JOIN igams_khgl khgl ON khgl.khid = fhgl.kh
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = fhgl.jsr
+			WHERE
+			TO_CHAR( fhgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND fhgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xq'">
+			SELECT
+			cpxqjh.xqdh,
+			cpxqjh.zt,
+			jgxx.jgmc sqbmmc,
+			xtyh.zsxm sqrmc,
+			cpxqjh.cpxqid
+			FROM
+			igams_cpxqjh cpxqjh
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = cpxqjh.sqr
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = cpxqjh.sqbm
+			WHERE
+			TO_CHAR( cpxqjh.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND cpxqjh.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'sc'">
+			SELECT
+			sczlgl.zldh,
+			wlgl.wlmc,
+			wlgl.wlbm,
+			sczlmx.xlh,
+			sczlmx.zt,
+			sczlmx.sczlmxid
+			FROM
+			igams_sczlmx sczlmx
+			LEFT JOIN igams_sczlgl sczlgl ON sczlgl.sczlid = sczlmx.sczlid
+			LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = sczlmx.wlid
+			WHERE
+			TO_CHAR( sczlmx.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND sczlmx.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xzqr'">
+			SELECT
+			xzqgqrgl.qrid,
+			xzqgqrgl.qrdh,
+			xtyh.zsxm sqrmc,
+			xzqgqrgl.zfdx zfdxmc,
+			xzqgqrgl.zje,
+			xzqgqrgl.zt
+			FROM
+			igams_xzqgqrgl xzqgqrgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = xzqgqrgl.sqr
+			WHERE
+			TO_CHAR( xzqgqrgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND xzqgqrgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xzfk'">
+			SELECT
+			xzqgfkgl.fkid,
+			xzqgfkgl.fkdh,
+			xtyh.zsxm sqrmc,
+			xzqgfkgl.zfdx zfdxmc,
+			xzqgfkgl.fkje,
+			xzqgfkgl.zt
+			FROM
+			igams_xzqgfkgl xzqgfkgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = xzqgfkgl.sqr
+			WHERE
+			TO_CHAR( xzqgfkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND xzqgfkgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xzrk'">
+			SELECT
+			xzrkgl.xzrkid,
+			xzrkgl.rkdh,
+			xtyh.zsxm rkrymc,
+			rk_jcsj.csmc rklbmc,
+			kw_jcsj.csmc kwmc
+			FROM
+			igams_xzrkgl xzrkgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = xzrkgl.rkry
+			LEFT JOIN matridx_jcsj rk_jcsj ON rk_jcsj.csid = xzrkgl.rklb
+			LEFT JOIN matridx_jcsj kw_jcsj ON kw_jcsj.csid = xzrkgl.kwid
+			WHERE
+			TO_CHAR( xzrkgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND xzrkgl.scbj = '0'
+		</if>
+		<if test="lx != null and lx != '' and lx == 'xzll'">
+			SELECT
+			xzllgl.xzllid,
+			xzllgl.lldh,
+			xtyh.zsxm sqrmc,
+			fl_xtyh.zsxm flrymc,
+			jgxx.jgmc sqbmmc
+			FROM
+			igams_xzllgl xzllgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = xzllgl.llry
+			LEFT JOIN matridx_xtyh fl_xtyh ON fl_xtyh.yhid = xzllgl.flry
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = xzllgl.sqbm
+			WHERE
+			TO_CHAR( xzllgl.lrsj, 'yyyy-MM-dd' ) = #{lrsj}
+			AND xzllgl.scbj = '0'
+		</if>
+	</select>
+	<select id="getPurchasesByRkid" resultType="QgglDto" parameterType="String">
+		SELECT
+			tmp.qgid,
+			SUM ( qgmx.sl ) sl,
+			SUM ( qgmx.rksl ) rksl,
+			tmp.rkid
+		FROM
+			(
+			SELECT
+				qggl.qgid,
+				rkgl.rkid
+			FROM
+				igams_rkgl rkgl
+				LEFT JOIN igams_hwxx hwxx ON hwxx.rkid = rkgl.rkid
+				LEFT JOIN igams_qgmx qgmx ON qgmx.qgmxid = hwxx.qgmxid
+				LEFT JOIN igams_qggl qggl ON qggl.qgid = qgmx.qgid
+			WHERE
+				rkgl.rkid = #{rkid}
+				AND rkgl.scbj = '0'
+			) tmp
+			LEFT JOIN igams_qgmx qgmx ON qgmx.qgid = tmp.qgid
+		GROUP BY
+			tmp.qgid,
+			tmp.rkid
+	</select>
+	<select id="getPurchaseByQgmxids" resultType="QgglDto" parameterType="List">
+		SELECT
+		tmp.qgid,
+		SUM (  qgmx.rksl ) rksl,
+		SUM ( qgmx.sl ) AS sl
+		FROM
+		(
+		SELECT
+		qgmx.qgid
+		FROM
+		igams_qgmx qgmx
+		left join igams_xzrkmx xzrkmx on xzrkmx.qgmxid=qgmx.qgmxid and xzrkmx.scbj='0'
+		where qgmx.qgmxid in
+		<foreach collection="list" open="(" close=")" item="item" index="index" separator=",">
+			#{item.qgmxid}
+		</foreach>
+		) tmp
+		LEFT JOIN igams_qgmx qgmx ON qgmx.qgid = tmp.qgid and qgmx.scbj='0'
+		GROUP BY
+		tmp.qgid
+	</select>
+	<select id="getRkslByQgmxids" resultType="QgglDto" parameterType="List">
+		SELECT
+		tmp.qgid,
+		COALESCE (SUM ( hwxx.sl ),0)sl
+		FROM
+		(
+		SELECT
+		qgmx.qgid
+		FROM
+		igams_qgmx qgmx
+		where qgmx.qgmxid in
+		<foreach collection="list" open="(" close=")" item="item" index="index" separator=",">
+			#{item}
+		</foreach>
+		group by qgmx.qgid
+		) tmp
+		LEFT JOIN igams_qgmx qgmx ON qgmx.qgid = tmp.qgid and qgmx.scbj='0'
+		left join igams_hwxx hwxx on hwxx.qgmxid=qgmx.qgmxid and hwxx.scbj='0' and hwxx.rkid is not NULL
+		GROUP BY
+		tmp.qgid
+	</select>
+	<select id="getXzRkslByQgmxids" resultType="QgglDto" parameterType="List">
+		SELECT
+		tmp.qgid,
+		COALESCE (SUM (  qgmx.rksl ) ,0)sl
+		FROM
+		(
+		SELECT
+		qgmx.qgid
+		FROM
+		igams_qgmx qgmx
+		where qgmx.qgmxid in
+		<foreach collection="list" open="(" close=")" item="item" index="index" separator=",">
+			#{item}
+		</foreach>
+		) tmp
+		LEFT JOIN igams_qgmx qgmx ON qgmx.qgid = tmp.qgid
+		GROUP BY
+		tmp.qgid
+	</select>
+	<update id="updateRkztList" parameterType="List">
+		<foreach collection="list" open="" close="" item="item" index="index" separator=";">
+			update igams_qggl set rkzt = #{item.rkzt}
+			where qgid = #{item.qgid}
+		</foreach>
+	</update>
+	<!-- 审核导出 -->
+	<select id="getCountForCgAuditingSearchExp" parameterType="QgglDto"
+			resultType="java.lang.Integer">
+		SELECT COUNT(*) from  (SELECT COUNT(qg.qgid)
+		FROM
+		igams_qggl qg
+		LEFT JOIN igams_qgmx mx ON mx.qgid = qg.qgid
+		LEFT JOIN igams_htmx htmx ON htmx.qgmxid = mx.qgmxid
+		LEFT JOIN igams_htgl ht ON ht.htid = htmx.htid
+		AND ht.zt = '80'
+		AND ht.scbj = '0'
+		LEFT JOIN (
+		SELECT
+		tmp.ywid,
+		string_agg ( tmp.gwmc || '!' || tmp.shsj, ',' ORDER BY tmp.shsj ) AS TEMP
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp
+		GROUP BY
+		tmp.ywid
+		) tmp ON tmp.ywid = qg.qgid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj ON tj.ywid = qg.qgid
+		LEFT JOIN (
+		SELECT
+		tmp1.ywid,
+		string_agg ( tmp1.gwmc || '!' || tmp1.shsj, ',' ORDER BY tmp1.shsj ) AS temp1
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp1
+		GROUP BY
+		tmp1.ywid
+		) tmp1 ON tmp1.ywid = ht.htid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj1 ON tj1.ywid = ht.htid
+		left join matridx_jcsj jcsj on jcsj.csid = qg.qglb
+		left join matridx_xtyh sqr on sqr.yhid = qg.sqr
+		left join matridx_jgxx jgxx on jgxx.jgid = qg.sqbm
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qg.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qg.xmdl
+		WHERE
+		jcsj.csdm != 'ADMINISTRATION'
+		AND qg.zt = '80'
+		AND qg.scbj = '0'
+		<if test="wcbj != null and wcbj != ''">
+			and qg.wcbj = #{wcbj}
+		</if>
+		<if test="qglx != null and qglx == '1' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglx != null and qglx == '0' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglbdm != null and qglbdm != ''">
+			and jcsj.csdm = #{qglbdm}
+		</if>
+		<if test="djh != null and djh != ''">
+			and qg.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc  != ''">
+			and sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and qg.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="xmbmmc != null and xmbmmc != ''">
+			and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+		</if>
+		<if test="xmdlmc != null and xmdlmc != ''">
+			and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+		</if>
+		<if test="sqly != null and sqly != ''">
+			and qg.sqly ILIKE '%'||#{sqly}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and qg.qgid in (
+			select qgmx.qgid from igams_qgmx qgmx
+			left join igams_wlgl wl on wl.wlid=qgmx.wlid
+			where qgmx.qgid=qg.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+		</if>
+		<if test = "zffss != null and zffss.length > 0 "  >
+			and qg.zffs in
+			<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "fkfs != null and fkfs.length > 0 "  >
+			and qg.fkf in
+			<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and qg.zt in
+			<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmbms != null and xmbms.length > 0 "  >
+			and qg.xmbm in
+			<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmdls != null and xmdls.length > 0 "  >
+			and qg.xmdl in
+			<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(qg.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(qg.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test = "qglbs != null and qglbs.length > 0 "  >
+			and qg.qglb in
+			<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY
+		qg.qgid,
+		qg.djh,
+		ht.htnbbh,
+		qg.lrsj,
+		tj.tjsj,
+		ht.lrsj,
+		tj1.tjsj,
+		temp1,
+		TEMP)tpp
+	</select>
+
+	<select id="getListForCgAuditingSearchExp" parameterType="QgglDto" resultType="QgglDto">
+		SELECT
+		qg.qgid ${sqlParam}
+		FROM
+		igams_qggl qg
+		LEFT JOIN igams_qgmx mx ON mx.qgid = qg.qgid
+		LEFT JOIN igams_htmx htmx ON htmx.qgmxid = mx.qgmxid
+		LEFT JOIN igams_htgl ht ON ht.htid = htmx.htid
+		AND ht.zt = '80'
+		AND ht.scbj = '0'
+		LEFT JOIN (
+		SELECT
+		tmp.ywid,
+		string_agg ( tmp.gwmc || '!' || tmp.shsj, ',' ORDER BY tmp.shsj ) AS TEMP
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp
+		GROUP BY
+		tmp.ywid
+		) tmp ON tmp.ywid = qg.qgid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj ON tj.ywid = qg.qgid
+		LEFT JOIN (
+		SELECT
+		tmp1.ywid,
+		string_agg ( tmp1.gwmc || '!' || tmp1.shsj, ',' ORDER BY tmp1.shsj ) AS temp1
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp1
+		GROUP BY
+		tmp1.ywid
+		) tmp1 ON tmp1.ywid = ht.htid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj1 ON tj1.ywid = ht.htid
+		left join matridx_jcsj jcsj on jcsj.csid = qg.qglb
+		left join matridx_xtyh sqr on sqr.yhid = qg.sqr
+		left join matridx_jgxx jgxx on jgxx.jgid = qg.sqbm
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qg.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qg.xmdl
+		WHERE
+		jcsj.csdm != 'ADMINISTRATION'
+		AND qg.zt = '80'
+		AND qg.scbj = '0'
+		<if test="wcbj != null and wcbj != ''">
+			and qg.wcbj = #{wcbj}
+		</if>
+		<if test="qglx != null and qglx == '1' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglx != null and qglx == '0' .toString">
+			and qglx=#{qglx}
+		</if>
+		<if test="qglbdm != null and qglbdm != ''">
+			and jcsj.csdm = #{qglbdm}
+		</if>
+		<if test="djh != null and djh != ''">
+			and qg.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc  != ''">
+			and sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and qg.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="xmbmmc != null and xmbmmc != ''">
+			and jc_xmbm.csmc ILIKE '%'||#{xmbmmc}||'%'
+		</if>
+		<if test="xmdlmc != null and xmdlmc != ''">
+			and jc_xmdl.csmc ILIKE '%'||#{xmdlmc}||'%'
+		</if>
+		<if test="sqly != null and sqly != ''">
+			and qg.sqly ILIKE '%'||#{sqly}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and qg.qgid in (
+			select qgmx.qgid from igams_qgmx qgmx
+			left join igams_wlgl wl on wl.wlid=qgmx.wlid
+			where qgmx.qgid=qg.qgid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+		</if>
+		<if test = "zffss != null and zffss.length > 0 "  >
+			and qg.zffs in
+			<foreach collection="zffss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "fkfs != null and fkfs.length > 0 "  >
+			and qg.fkf in
+			<foreach collection="fkfs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and qg.zt in
+			<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmbms != null and xmbms.length > 0 "  >
+			and qg.xmbm in
+			<foreach collection="xmbms" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "xmdls != null and xmdls.length > 0 "  >
+			and qg.xmdl in
+			<foreach collection="xmdls" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(qg.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(qg.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test = "qglbs != null and qglbs.length > 0 "  >
+			and qg.qglb in
+			<foreach collection="qglbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY
+		qg.qgid,
+		qg.djh,
+		ht.htnbbh,
+		qg.lrsj,
+		tj.tjsj,
+		ht.lrsj,
+		tj1.tjsj,
+		temp1,
+		TEMP
+		ORDER BY
+		qg.lrsj,
+		qg.djh
+		DESC
+	</select>
+
+	<select id="getListForCgAuditingSelectExp" parameterType="QgglDto" resultType="QgglDto">
+		select qg.qgid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} qgid,#{index} ordernum
+		</foreach>
+		) tpp
+		left join igams_qggl qg on qg.qgid = tpp.qgid
+		LEFT JOIN igams_qgmx mx ON mx.qgid = qg.qgid
+		LEFT JOIN igams_htmx htmx ON htmx.qgmxid = mx.qgmxid
+		LEFT JOIN igams_htgl ht ON ht.htid = htmx.htid
+		AND ht.zt = '80'
+		AND ht.scbj = '0'
+		LEFT JOIN (
+		SELECT
+		tmp.ywid,
+		string_agg ( tmp.gwmc || '!' || tmp.shsj, ',' ORDER BY tmp.shsj ) AS TEMP
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp
+		GROUP BY
+		tmp.ywid
+		) tmp ON tmp.ywid = qg.qgid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj ON tj.ywid = qg.qgid
+		LEFT JOIN (
+		SELECT
+		tmp1.ywid,
+		string_agg ( tmp1.gwmc || '!' || tmp1.shsj, ',' ORDER BY tmp1.shsj ) AS temp1
+		FROM
+		(
+		SELECT
+		gw.gwmc,
+		MAX ( sh.shsj ) AS shsj,
+		sh.ywid,
+		SUM ( sh.lcxh ) AS lcxh
+		FROM
+		matridx_shxx sh
+		LEFT JOIN matridx_spgw gw ON gw.gwid = sh.gwid
+		WHERE
+		( ( sh.sftg = '1' AND sh.gwid IS NOT NULL ) OR ( sh.sftg IS NULL ) )
+		GROUP BY
+		sh.lcxh,
+		gw.gwmc,
+		sh.ywid
+		) tmp1
+		GROUP BY
+		tmp1.ywid
+		) tmp1 ON tmp1.ywid = ht.htid
+		LEFT JOIN ( SELECT ywid, MAX ( shsj ) tjsj FROM matridx_shxx WHERE lcxh IS NULL AND sftg IS NULL GROUP BY ywid ) tj1 ON tj1.ywid = ht.htid
+		left join matridx_jcsj jcsj on jcsj.csid = qg.qglb
+		left join matridx_xtyh sqr on sqr.yhid = qg.sqr
+		left join matridx_jgxx jgxx on jgxx.jgid = qg.sqbm
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qg.xmbm
+		left join matridx_jcsj jc_xmdl on jc_xmdl.csid=qg.xmdl
+		WHERE
+		jcsj.csdm != 'ADMINISTRATION'
+		AND qg.zt = '80'
+		AND qg.scbj = '0'
+		GROUP BY
+		qg.djh,
+		ht.htnbbh,
+		qg.lrsj,
+		tj.tjsj,
+		ht.lrsj,
+		tj1.tjsj,
+		temp1,
+		TEMP,
+		qg.qgid,
+		tpp.ordernum
+		ORDER BY
+		tpp.ordernum
+	</select>
+	<select id="selectXqSpSlIds" parameterType="QgglDto" resultType="String">
+		select cpxqjh.ddslid
+		from igams_cpxqjh cpxqjh
+		left join igams_xqjhmx xqjhmx on xqjhmx.xqjhid=cpxqjh.cpxqid
+		left join igams_qgmx qgmx on qgmx.xqjhmxid=xqjhmx.xqjhmxid
+		where qgmx.qgid=#{qgid} and cpxqjh.ddslid is not null
+		group by cpxqjh.ddslid
+	</select>
+
+	<select id="queryOverTime" parameterType="QgglDto" resultType="QgglDto">
+		SELECT tmp2.qgid,tmp2.shsj,tmp2.djh,tmp2.sqrmc,tmp2.sqbmmc,tmp2.sqly,tmp2.zt,xtyh.ddid,xtyh.zsxm as fzrmc,ROUND(CAST ((EXTRACT(EPOCH FROM CAST (NOW() AS TIMESTAMP)-CAST (tmp2.shsj AS TIMESTAMP))/3600) AS DECIMAL),2) AS timeLag
+		FROM (
+		SELECT tmp.qgid,tmp.djh,tmp.sqrmc,tmp.sqbmmc,tmp.sqly,tmp.zt,string_agg (tmp.shsj || '',',' ORDER BY tmp.shsj) AS shsj,
+		LENGTH(string_agg (tmp.shsj || '',',' ORDER BY tmp.shsj))-LENGTH(REPLACE(string_agg (tmp.shsj || '',',' ORDER BY tmp.shsj),',','')) AS comma_count
+		FROM (
+		SELECT gw.gwmc,to_char(MAX(sh.shsj),'YYYY-MM-DD HH24:MI:SS') AS shsj,qggl.qgid,qggl.djh,xtyh.zsxm AS sqrmc,jgxx.jgmc AS sqbmmc,qggl.sqly,qggl.zt
+		FROM igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		LEFT JOIN matridx_shxx sh ON sh.ywid=qggl.qgid
+		LEFT JOIN matridx_spgw gw ON gw.gwid=sh.gwid
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid=qggl.sqr
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid=qggl.sqbm
+		WHERE gw.gwmc IN (#{postEnd}, #{postStart}) AND jcsj.csdm !='ADMINISTRATION' AND qggl.scbj='0' AND qggl.zt='10'
+		<if test="sftx != null and sftx != ''">
+			and qggl.sftx='0'
+		</if>
+		GROUP BY qggl.qgid,qggl.djh,xtyh.zsxm,jgxx.jgmc,qggl.sqly,qggl.zt,gw.gwmc) tmp
+		GROUP BY tmp.qgid,tmp.djh,tmp.sqrmc,tmp.sqbmmc,tmp.sqly,tmp.zt
+		) tmp2
+		LEFT JOIN matridx_shxx shxx ON shxx.ywid=tmp2.qgid
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid=shxx.gwid
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid=shxx.lrry
+		WHERE tmp2.comma_count=0 AND spgw.gwmc=#{postCg} AND shxx.sftg='1' AND shxx.lrry IS NOT NULL AND shxx.lrry !=''
+		GROUP BY tmp2.qgid,tmp2.shsj,tmp2.djh,tmp2.sqrmc,tmp2.sqbmmc,tmp2.sqly,tmp2.zt,xtyh.ddid,xtyh.zsxm
+	</select>
+	<update id="updateSftxList" parameterType="List">
+		<foreach collection="list" open="" close="" item="item" index="index" separator=";">
+			update igams_qggl set sftx = #{item.sftx}
+			where qgid = #{item.qgid}
+		</foreach>
+	</update>
+	<select id="getPagedOverTimeList" parameterType="QgglDto" resultType="QgglDto">
+		select tmp.qgid,tmp.djh,tmp.sqrq,tmp.sqrmc,tmp.sqbmmc,tmp.sqly,tmp.bz,tmp.csbz,tmp.jlbh,tmp.qglx,tmp.qglbdm,tmp.fzrmc,tmp.cszt,tmp.shys
+		from (
+		select qggl.qgid,qggl.djh,qggl.sqrq,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,qggl.sqly,qggl.bz,qggl.csbz,qggl.jlbh,qggl.qglx,jcsj.csdm qglbdm,fzr.zsxm as fzrmc
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				,case when (qggl.cszt is null or qggl.cszt='1') then '1' else '0' end as cszt,shys::json#>>'{hour,0}' as shys
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				,case when (qggl.cszt is null or qggl.cszt='1') then '1' else '0' end as cszt,shys::json#>>'{hour,1}' as shys
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				,case when (qggl.cszt is null or qggl.cszt='1') then '1' else '0' end as cszt,shys::json#>>'{day,0}' as shys
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				,case when (qggl.cszt is null or qggl.cszt='1') then '1' else '0' end as cszt,shys::json#>>'{day,1}' as shys
+			</if>
+		</if>
+		from igams_qggl qggl
+		left join matridx_xtyh xtyh on xtyh.yhid=qggl.sqr
+		left join matridx_jgxx jgxx on jgxx.jgid=qggl.sqbm
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		LEFT JOIN matridx_shxx shxx ON shxx.ywid=qggl.qgid
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid=shxx.gwid
+		LEFT JOIN matridx_xtyh fzr ON fzr.yhid=shxx.lrry
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null and spgw.gwmc=#{postCg}
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{hour,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{hour,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{day,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{day,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		<if test="djh != null and djh != ''">
+			and qggl.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc  != ''">
+			and xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and qggl.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="sqly != null and sqly != ''">
+			and qggl.sqly ILIKE '%'||#{sqly}||'%'
+		</if>
+		<if test="fzrmc != null and fzrmc != ''">
+			and fzr.zsxm ILIKE '%'||#{fzrmc}||'%'
+		</if>
+		<if test="entire != null and entire != ''">
+			and (
+			qggl.djh ILIKE '%'||#{entire}||'%'
+			or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+			or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+			or qggl.jlbh ILIKE '%'||#{entire}||'%'
+			or qggl.sqly ILIKE '%'||#{entire}||'%'
+			or fzr.zsxm ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		</if>
+		<if test="cszt != null and cszt == '1'.toString()">
+			and (qggl.cszt=#{cszt} or qggl.cszt is null)
+		</if>
+		<if test="cszt != null and cszt == '0'.toString()">
+			and qggl.cszt=#{cszt}
+		</if>
+		group by qggl.qgid,qggl.djh,qggl.sqrq,xtyh.zsxm,jgxx.jgmc,qggl.sqly,qggl.bz,qggl.csbz,qggl.jlbh,qggl.qglx,jcsj.csdm,qggl.cszt,fzr.zsxm
+		)tmp
+	</select>
+	<update id="updateDispose" parameterType="QgglDto">
+		update igams_qggl set xgry=#{xgry},cszt=#{cszt},csbz=#{csbz}
+		where qgid=#{qgid}
+	</update>
+	<select id="getOverTimeTable" resultType="Map" parameterType="QgglDto">
+		select tmp.cszt,count(cszt) as count
+		from (
+		select
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				case when qggl.cszt is not null and qggl.cszt='0' then '处理正常'
+				when cast(shys::json#>>'{hour,0}' as decimal)>cast(#{overTime} as decimal) and (cszt is null or cszt='1') then '超时'
+				when cast(#{overTime} as decimal)>=cast(shys::json#>>'{hour,0}' as decimal) then '正常' end as cszt
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				case when qggl.cszt is not null and qggl.cszt='0' then '处理正常'
+				when cast(shys::json#>>'{hour,1}' as decimal)>cast(#{overTime} as decimal) and (cszt is null or cszt='1') then '超时'
+				when cast(#{overTime} as decimal)>=cast(shys::json#>>'{hour,1}' as decimal) then '正常' end as cszt
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				case when qggl.cszt is not null and qggl.cszt='0' then '处理正常'
+				when cast(shys::json#>>'{day,0}' as decimal)>cast(#{overTime} as decimal) and (cszt is null or cszt='1') then '超时'
+				when cast(#{overTime} as decimal)>=cast(shys::json#>>'{day,0}' as decimal) then '正常' end as cszt
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				case when qggl.cszt is not null and qggl.cszt='0' then '处理正常'
+				when cast(shys::json#>>'{day,1}' as decimal)>cast(#{overTime} as decimal) and (cszt is null or cszt='1') then '超时'
+				when cast(#{overTime} as decimal)>=cast(shys::json#>>'{day,1}' as decimal) then '正常' end as cszt
+			</if>
+		</if>
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		)tmp
+		group by tmp.cszt
+	</select>
+	<select id="getTimeliness" resultType="String" parameterType="QgglDto">
+		select ROUND(cast(sum(cast(tmp.shys as decimal)) as decimal)/cast(count(tmp.shys) as decimal),2) as timeliness
+		from (
+		select
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				shys::json#>>'{hour,0}' as shys
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				shys::json#>>'{hour,1}' as shys
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				shys::json#>>'{day,0}' as shys
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				shys::json#>>'{day,1}' as shys
+			</if>
+		</if>
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		)tmp
+	</select>
+	<select id="getMonthTj" resultType="QgglDto" parameterType="QgglDto">
+		select COALESCE(count(qggl.qgid),0) sl,to_char(qggl.sqrq,'MM') sqrq
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and (qggl.cszt is null or qggl.cszt='1') and to_char( sqrq, 'yyyy' )=#{sqrq}
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{hour,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{hour,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{day,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{day,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		group by to_char(qggl.sqrq,'MM')
+		order by to_char(qggl.sqrq,'MM') asc
+	</select>
+	<select id="getTimeTj" resultType="QgglDto" parameterType="QgglDto">
+		select tmp.sqrq,COALESCE(count(tmp.sqrq),0) as sl
+		from (
+		select
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				case when 1>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时小于1小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=1 and 2>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时1-2小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=2 and 3>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时2-3小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=3 and 4>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时3-4小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=4 and 5>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时4-5小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=5 and 6>cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal) then '超时5-6小时'
+				when cast(shys::json#>>'{hour,0}' as decimal)-cast(#{overTime} as decimal)>=6 then '超时大于6小时' end as sqrq
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				case when 1>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时小于1小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=1 and 2>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时1-2小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=2 and 3>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时2-3小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=3 and 4>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时3-4小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=4 and 5>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时4-5小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=5 and 6>cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal) then '超时5-6小时'
+				when cast(shys::json#>>'{hour,1}' as decimal)-cast(#{overTime} as decimal)>=6 then '超时大于6小时' end as sqrq
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				case when 1>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时小于1天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=1 and 2>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时1-2天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=2 and 3>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时2-3天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=3 and 4>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时3-4天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=4 and 5>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时4-5天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=5 and 6>cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal) then '超时5-6天'
+				when cast(shys::json#>>'{day,0}' as decimal)-cast(#{overTime} as decimal)>=6 then '超时大于6天' end as sqrq
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				case when 1>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时小于1天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=1 and 2>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时1-2天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=2 and 3>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时2-3天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=3 and 4>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时3-4天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=4 and 5>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时4-5天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=5 and 6>cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal) then '超时5-6天'
+				when cast(shys::json#>>'{day,1}' as decimal)-cast(#{overTime} as decimal)>=6 then '超时大于6天' end as sqrq
+			</if>
+		</if>
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and (qggl.cszt is null or qggl.cszt='1') and to_char(qggl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+		and to_char(qggl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{hour,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{hour,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{day,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{day,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		)tmp
+		group by tmp.sqrq
+	</select>
+	<select id="getPercentageTj" resultType="QgglDto" parameterType="QgglDto">
+		select ROUND(sum(cast(tmp.cssl as decimal))/sum(cast(tmp.zsl as decimal))*100,2) as sl,tmp.sqrq
+		from (
+		select COALESCE(count(qggl.qgid),0) as cssl,'0' as zsl,to_char(qggl.sqrq,'MM') sqrq
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and (qggl.cszt is null or qggl.cszt='1') and to_char( sqrq, 'yyyy' )=#{sqrq}
+		<if test="unit != null and unit != '' and unit=='hour'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{hour,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{hour,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		<if test="unit != null and unit != '' and unit=='day'.toString()">
+			<if test="rule != null and rule != '' and rule=='0'.toString()">
+				and cast(shys::json#>>'{day,0}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+			<if test="rule != null and rule != '' and rule=='1'.toString()">
+				and cast(shys::json#>>'{day,1}' as decimal)>cast(#{overTime} as decimal)
+			</if>
+		</if>
+		group by to_char(qggl.sqrq,'MM')
+		union all
+		select '0' as cssl,COALESCE(count(qggl.qgid),0) as zsl,to_char(qggl.sqrq,'MM') sqrq
+		from igams_qggl qggl
+		LEFT JOIN matridx_jcsj jcsj ON jcsj.csid=qggl.qglb
+		where qggl.scbj='0' and jcsj.csdm !='ADMINISTRATION' and qggl.zt='80' and shys is not null
+		and to_char( sqrq, 'yyyy' )=#{sqrq}
+		group by to_char(qggl.sqrq,'MM')
+		)tmp
+		group by tmp.sqrq
+		order by tmp.sqrq asc
+	</select>
+</mapper>

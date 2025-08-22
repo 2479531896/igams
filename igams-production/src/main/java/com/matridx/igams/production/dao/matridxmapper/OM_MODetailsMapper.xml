@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.OM_MODetailsDao">
+    <insert id="insertList" parameterType="List">
+        insert into OM_MODetails(MODetailsID,MOID
+        ,cInvCode
+        ,iQuantity
+        ,iUnitPrice
+        ,iMoney
+        ,iTax
+        ,iSum
+        ,iNatUnitPrice
+        ,iNatMoney
+        ,iNatTax
+        ,iNatSum
+        ,dStartDate
+        ,dArriveDate
+        ,iPerTaxRate
+        ,cItemCode
+        ,cItem_class
+        ,cItemName
+        ,iTaxPrice
+        ,BomID
+        ,fParentScrp
+        ,iVTids
+        ,cupsocode
+        ,cupsoids
+        ,iVouchRowNo
+        ,cbMemo
+        ,cbsysbarcode
+        ,BomType
+        ,imrpqty
+        ,iNum,cDefine26,cDefine27,bTaxCost,cSource,SOType,isoordertype,iReceivedQTY
+        )values
+        <if test="list !=null and list.size > 0">
+        <foreach collection="list" separator="," item="item" index="index">(
+        #{item.MODetailsID},#{item.MOID}
+        ,#{item.cInvCode}
+        ,#{item.iQuantity}
+        ,#{item.iUnitPrice}
+        ,#{item.iMoney}
+        ,#{item.iTax}
+        ,#{item.iSum}
+        ,#{item.iNatUnitPrice}
+        ,#{item.iNatMoney}
+        ,#{item.iNatTax}
+        ,#{item.iNatSum}
+        ,#{item.dStartDate}
+        ,#{item.dArriveDate}
+        ,#{item.iPerTaxRate}
+        ,#{item.cItemCode}
+        ,#{item.cItem_class}
+        ,#{item.cItemName}
+        ,#{item.iTaxPrice}
+        ,#{item.BomID}
+        ,#{item.fParentScrp}
+        ,#{item.iVTids}
+        ,#{item.cupsocode}
+        ,#{item.cupsoids}
+        ,#{item.iVouchRowNo}
+        ,#{item.cbMemo}
+        ,#{item.cbsysbarcode}
+        ,#{item.BomType}
+        ,#{item.imrpqty}
+        ,0,null ,null,1,'app',0,0,null
+        )
+        </foreach>
+        </if>
+    </insert>
+
+    <!-- 获得序号最大值 -->
+    <select id="getXhMax" parameterType="OM_MODetailsDto" resultType="java.lang.Integer">
+		select max(ivouchrowno) as xhNum from OM_MODetails
+		where MODetailsID=#{MODetailsID}
+	</select>
+
+    <update id="updateRkxx" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update OM_MODetails
+                <set>
+                    MODetailsID=#{item.MODetailsID}
+                    <if test="item.iReceivedQTY != null and item.iReceivedQTY != ''">
+                        ,iReceivedQTY = COALESCE(iReceivedQTY,0) + #{item.iReceivedQTY}
+                    </if>
+                    <if test="item.iReceivedMoney != null and item.iReceivedMoney != ''">
+                        ,iReceivedMoney = #{item.iReceivedMoney}
+                    </if>
+                    <if test="item.iReceivedNum != null and item.iReceivedNum != ''">
+                        ,iReceivedNum = #{item.iReceivedNum}
+                    </if>
+                    <if test="item.iMaterialSendQty != null and item.iMaterialSendQty != ''">
+                        ,iMaterialSendQty = #{item.iMaterialSendQty}
+                    </if>
+                </set>
+                <where>
+                    MODetailsID=#{item.MODetailsID}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <!-- 同步修改方法 -->
+    <update id="update" parameterType="OM_MODetailsDto">
+        update OM_MODetails
+        <set>
+                cbCloser = #{cbCloser}
+                ,cbCloseTime = #{cbCloseTime}
+                ,cbCloseDate = #{cbCloseDate}
+        </set>
+        <where>
+            MODetailsID = #{MODetailsID}
+        </where>
+    </update>
+    <!-- 同步修改方法 -->
+    <update id="updates" parameterType="OM_MODetailsDto">
+        update OM_MODetails
+        <set>
+                cbCloser = #{cbCloser}
+                ,cbCloseTime = #{cbCloseTime}
+                ,cbCloseDate = #{cbCloseDate}
+        </set>
+        <where>
+            MODetailsID in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>
+
+

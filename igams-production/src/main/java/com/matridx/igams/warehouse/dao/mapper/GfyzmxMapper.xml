@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGfyzmxDao" >
+    <select id="getDtoById" parameterType="String" resultType="GfyzmxDto">
+        select  yzmx.yzmxid,yzmx.gfyzid,yzmx.wlid ,yzmx.jszb ,yzmx.xh ,yzmx.zlyq ,yzmx.lrry ,yzmx.lrsj ,yzmx.xgry ,yzmx.xgsj ,yzmx.scry ,
+        yzmx.scsj ,yzmx.scbj ,yzmx.fwmc ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,yzmx.xmh
+        from igams_gfyzmx yzmx
+        left join igams_wlgl wlgl on wlgl.wlid=yzmx.wlid
+        <where>
+            yzmx.scbj='0'
+                and yzmx.yzmxid=#{yzmxid}
+        </where>
+    </select>
+    <insert id="insertGfyzmxDtoList" parameterType="List">
+        insert into igams_gfyzmx(yzmxid,gfyzid,wlid,fwmc,xh,jszb,zlyq,xmh,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.yzmxid},#{item.gfyzid},#{item.wlid},#{item.fwmc},cast(#{item.xh} as decimal),#{item.jszb},#{item.zlyq},#{item.xmh},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getPagedDtoList" parameterType="GfyzmxDto" resultType="GfyzmxDto">
+        select yzmx.yzmxid,yzmx.gfyzid,yzmx.wlid ,yzmx.jszb ,yzmx.zlyq ,yzmx.xh,yzmx.lrry ,yzmx.lrsj ,yzmx.xgry ,yzmx.xgsj ,yzmx.scry ,
+        yzmx.scsj ,yzmx.scbj ,yzmx.fwmc ,wlgl.wlbm,wlgl.wlmc,wlgl.gg
+        from igams_gfyzmx yzmx
+        left join igams_gfyzgl gfyz on gfyz.gfyzid = yzmx.gfyzid
+        left join igams_wlgl wlgl on wlgl.wlid=yzmx.wlid
+        <where>
+            yzmx.scbj='0'
+            <if test="gfyzid != null and gfyzid != ''">
+                and yzmx.gfyzid=#{gfyzid}
+            </if>
+        </where>
+    </select>
+    <select id="getListByGfyzid" parameterType="GfyzmxDto" resultType="GfyzmxDto">
+        select yzmx.yzmxid,yzmx.gfyzid,yzmx.wlid ,yzmx.jszb ,yzmx.zlyq ,yzmx.xh,yzmx.lrry ,yzmx.lrsj ,yzmx.xgry ,yzmx.xgsj ,yzmx.scry ,
+        yzmx.scsj ,yzmx.scbj ,yzmx.fwmc ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,yzmx.xmh
+        from igams_gfyzmx yzmx
+        left join igams_gfyzgl gfyz on gfyz.gfyzid = yzmx.gfyzid
+        left join igams_wlgl wlgl on wlgl.wlid=yzmx.wlid
+        <where>
+            yzmx.scbj='0'
+            <if test="gfyzid != null and gfyzid != ''">
+                and yzmx.gfyzid=#{gfyzid}
+            </if>
+        </where>
+        order by yzmx.xh
+    </select>
+    <update id="updateGfyzmxDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="gfyzmxDtoList" separator=";" item="item" index="index">
+                update igams_gfyzmx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.xgry != null and item.xgry != ''">
+                        ,xgry=#{item.xgry}
+                    </if>
+                    <if test="item.wlid != null and item.wlid != ''">
+                        ,wlid=#{item.wlid}
+                    </if>
+                    <if test="item.jszb != null and item.jszb != ''">
+                        ,jszb=#{item.jszb}
+                    </if>
+                    <if test="item.zlyq != null and item.zlyq != ''">
+                        ,zlyq=#{item.zlyq}
+                    </if>
+                    <if test="item.scry != null and item.scry != ''">
+                        ,scry=#{item.scry}
+                    </if>
+                    <if test="item.scsj != null and item.scsj != ''">
+                        ,scsj=LOCALTIMESTAMP
+                    </if>
+                    <if test="item.scbj !=null and  item.scbj !=''">
+                        ,scbj=#{item.scbj}
+                    </if>
+                    <if test="item.fwmc !=null and  item.fwmc !=''">
+                        ,fwmc=#{item.fwmc}
+                    </if>
+                    <if test="item.xh !=null and  item.xh !=''">
+                        ,xh=cast(#{item.xh} as decimal)
+                    </if>
+                    <if test="item.xmh !=null and  item.xmh !=''">
+                        ,xmh=#{item.xmh}
+                    </if>
+                </set>
+                <where>
+                    yzmxid=#{item.yzmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="delete" parameterType="GfyzmxDto">
+        update igams_gfyzmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+                gfyzid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+        </where>
+    </update>
+
+
+</mapper>

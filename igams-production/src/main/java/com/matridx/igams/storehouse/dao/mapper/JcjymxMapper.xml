@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJcjymxDao">
+
+    <insert id="insert" parameterType="JcjymxDto">
+        INSERT INTO igams_jcjymx(jymxid, jyxxid, jcjyid, hwid, jysl, bz, lrry, lrsj, scbj)
+        VALUES
+        (#{jymxid}, #{jyxxid}, #{jcjyid}, #{hwid}, cast(#{jysl} as numeric), #{bz}, #{lrry}, LOCALTIMESTAMP, '0')
+    </insert>
+
+    <delete id="delete" parameterType="JcjymxDto">
+        delete from igams_jcjymx where jcjyid = #{jcjyid}
+    </delete>
+
+    <select id="getDtoList" parameterType="JcjymxDto" resultType="JcjymxDto">
+        select
+        jcjymx.jymxid, jcjymx.jyxxid, jcjymx.jcjyid, jcjymx.hwid, jcjymx.jysl,COALESCE(hwxx.yds,0) as yds,
+        COALESCE(hwxx.kcl,0) as kcl,jcjyxx.ckhwid,COALESCE(ckhwxx.kcl,0) as ckkcl,COALESCE(ckhwxx.yds,0) as ckyds,
+        hwxx.ckid,wlgl.wlbm,wlgl.wlmc,ck.ckdm,kw.ckdm as kwdm,wlgl.bzq,hwxx.yxq,hwxx.scrq,hwxx.kcglid,wlgl.bzqflg as yxqbz,
+        hwxx.scph,jcjyxx.yjghrq,jcjyxx.jyxxid,wlgl.gg,wlgl.jldw,hwxx.kwbh, hwxx.wlid,jc_dl.csmc as dlmc,jc_dl.csdm as dldm,jc_bm.csmc as bmmc,jc_bm.csdm as bmdm,jcsj_lb.csdm lbdm,jcsj_lb.cskz1 lbcskz1,hwxx.zsh,COALESCE(tab.yhsl,0) as yhsl,
+        hwxx.sbysid,sbys.sbzt,sbys.xlh,ck.ckmc
+        from igams_jcjymx jcjymx
+        left join igams_hwxx hwxx on hwxx.hwid = jcjymx.hwid
+        left join igams_sbys sbys on hwxx.sbysid = sbys.sbysid and sbys.scbj='0'
+        left join igams_qgmx qgmx on hwxx.qgmxid = qgmx.qgmxid
+        left join igams_qggl qggl on qggl.qgid = qgmx.qgid
+        left join matridx_jcsj jc_dl on jc_dl.csid=qggl.xmdl
+        left join matridx_jcsj jc_bm on jc_bm.csid=qggl.xmbm
+        left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+        left join igams_ckxx ck on ck.ckid = hwxx.ckid
+        left join igams_ckxx kw on kw.ckid = hwxx.kwbh
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid = jcjymx.jyxxid
+        left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = jcjyxx.ckhwid
+        LEFT JOIN matridx_jcsj jcsj_lb on wlgl.lb = jcsj_lb.csid
+        LEFT JOIN (select jymxid,sum(ghsl) as yhsl from igams_jcghmx where scbj='0' and jymxid is not null group by jymxid) tab on tab.jymxid=jcjymx.jymxid
+        where jcjymx.scbj = '0'
+        <if test="jcjyid != null and jcjyid != ''">
+            and jcjymx.jcjyid = #{jcjyid}
+        </if>
+        <if test="jyxxid != null and jyxxid != ''">
+            and jcjymx.jyxxid = #{jyxxid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            and jcjymx.jcjyid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="JcjymxDto" resultType="JcjymxDto">
+        select
+        jcjymx.jymxid, jcjymx.jyxxid, jcjymx.jcjyid, jcjymx.hwid,wlgl.wlbm,wlgl.wlmc,
+        hwxx.scph,wlgl.gg,khgl.khmc,jcjymx.jysl,wlgl.wlid,khgl.khid,jcjygl.jyrq
+        from igams_jcjymx jcjymx
+        left join igams_hwxx hwxx on hwxx.hwid = jcjymx.hwid
+        left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid=jcjymx.jcjyid
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid
+        where jcjymx.scbj = '0'
+        <if test="wlmc !=null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="wlbm !=null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="khmc !=null and khmc != ''">
+            and khgl.khmc ILIKE '%'||#{khmc}||'%'
+        </if>
+        <if test="scph !=null and scph != ''">
+            and hwxx.scph ILIKE '%'||#{scph}||'%'
+        </if>
+    </select>
+
+    <select id="getDtoListGroupByCk" parameterType="JcjymxDto" resultType="JcjymxDto">
+        select tem.ckid from (select
+        jcjymx.jymxid, jcjymx.jyxxid, jcjymx.jcjyid, jcjymx.hwid, jcjymx.jysl,COALESCE(hwxx.yds,0) as
+        yds,COALESCE(hwxx.kcl,0) as kcl,jcjyxx.ckhwid,COALESCE(ckhwxx.kcl,0) as ckkcl,COALESCE(ckhwxx.yds,0) as
+        ckyds,hwxx.ckid,wlgl.wlbm,wlgl.wlmc,ck.ckdm,kw.ckdm as kwdm,wlgl.bzq,hwxx.yxq,hwxx.scrq,hwxx.kcglid,wlgl.bzqflg as yxqbz,
+        hwxx.scph,jcjyxx.yjghrq
+        from igams_jcjymx jcjymx
+        left join igams_hwxx hwxx on hwxx.hwid = jcjymx.hwid
+        left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+        left join igams_ckxx ck on ck.ckid = hwxx.ckid
+        left join igams_ckxx kw on kw.ckid = hwxx.kwbh
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid = jcjymx.jyxxid
+        left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = jcjyxx.ckhwid
+        where jcjymx.scbj = '0'
+        <if test="jcjyid != null and jcjyid != ''">
+            and jcjymx.jcjyid = #{jcjyid}
+        </if>
+        ) as tem group by tem.ckid
+    </select>
+
+    <select id="getDtoListGroupByXx" parameterType="JcjymxDto" resultType="JcjymxDto">
+        select jcjymx.jyxxid,sum(COALESCE(jcjymx.jysl,0)) as jysl,jcjyxx.ckhwid,jcjyxx.jcsl
+        from igams_jcjymx jcjymx
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid=jcjymx.jyxxid
+        where jcjymx.scbj = '0'
+        <if test="jcjyid != null and jcjyid != ''">
+            and jcjymx.jcjyid = #{jcjyid}
+        </if>
+        group by jcjymx.jyxxid,jcjyxx.ckhwid,jcjyxx.jcsl
+    </select>
+
+    <select id="getDtoListGroupBy" parameterType="JcjymxDto" resultType="JcjymxDto">
+        select jcjymx.jyxxid,sum(COALESCE(jcjymx.jysl,0)) as jysl,jcjyxx.ckhwid,jcjyxx.jcsl,jcjygl.zt
+        from igams_jcjymx jcjymx
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid=jcjymx.jyxxid
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid=jcjymx.jcjyid
+        where jcjymx.scbj = '0'
+        and jcjymx.jcjyid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+        group by jcjymx.jyxxid,jcjyxx.ckhwid,jcjyxx.jcsl,jcjygl.zt
+    </select>
+
+    <update id="deleteByIds" parameterType="list">
+        update igams_jcjymx set scbj = '1'
+        where jcjyid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </update>
+    <select id="getScphAndSlByJyxxid" parameterType="String" resultType="JcjymxDto">
+        select hwxx.scph,hwxx.sl,jcjymx.jyxxid from igams_jcjymx jcjymx left join igams_hwxx hwxx on hwxx.hwid = jcjymx.hwid and hwxx.scbj ='0'
+        where jcjymx.jyxxid = #{jyxxid}
+    </select>
+    <update id="updateList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_jcjymx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.mxglid != null and item.mxglid != ''">
+                        ,mxglid=#{item.mxglid}
+                    </if>
+                </set>
+                <where>
+                    jymxid=#{item.jymxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+</mapper>

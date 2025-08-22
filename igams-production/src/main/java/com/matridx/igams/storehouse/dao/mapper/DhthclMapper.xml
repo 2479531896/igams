@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IDhthclDao" >
+	<sql id="SEARCH_TERMS">
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+		</if>
+		<if test="dhdh != null and dhdh != ''">
+			and dhxx.dhdh ILIKE '%'||#{dhdh}||'%'
+		</if>
+		<if test="gysmc != null and gysmc != ''">
+			and gysxx.gysmc ILIKE '%'||#{gysmc}||'%'
+		</if>
+		<if test="htnbbh!= null and htnbbh != ''">
+			and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+		</if>
+		<if test="bz != null and bz != ''">
+			and dhth.bz ILIKE '%'||#{bz}||'%'
+		</if>
+		<if test="bz != null and bz != ''">
+			and dhth.bz ILIKE '%'||#{bz}||'%'
+		</if>
+		<if test="bz != null and bz != ''">
+			and dhth.bz ILIKE '%'||#{bz}||'%'
+		</if>
+		<if test="dhrqstart != null and dhrqstart != ''">
+			and to_char(dhxx.dhrq,'yyyy-mm-dd') &gt;= #{dhrqstart}
+		</if>
+		<if test="dhrqend != null and dhrqend != ''">
+			and to_char(dhxx.dhrq,'yyyy-mm-dd') &lt;= #{dhrqend}
+		</if>
+		
+	</sql>
+	<!-- 到货退回列表 -->
+	<select id="getPagedDtoList" parameterType="DhthclDto" resultType="DhthclDto">
+		SELECT
+			dhth.dhthid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,gysxx.gysmc,dhxx.dhrq,dhth.zt,dhth.clbh,dhth.clcs,hwxx.zsh,dhth.lrry,dhth.lrsj,dhxx.dhdh,
+			hwysqk.ysqk,xtyh.zsxm lrrymc,dhth.hwid
+		FROM
+			igams_dhthcl dhth
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on dhth.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		<where>
+			dhth.scbj!='1'
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="DhthclDto" resultType="DhthclDto">
+		SELECT
+		dhth.dhthid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,gysxx.gysmc,dhxx.dhrq,dhth.zt,dhth.clbh,dhth.clcs,hwxx.zsh,dhth.lrry,dhth.lrsj,dhxx.dhdh,
+		hwysqk.ysqk,xtyh.zsxm lrrymc,dhth.hwid
+		FROM
+		igams_dhthcl dhth
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on dhth.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		<where>
+			dhth.scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and dhth.dhthid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 到货退回审核信息 -->
+	<select id="getAuditListDhthcl" parameterType="List" resultType="DhthclDto">
+		SELECT dhth.dhthid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,gysxx.gysmc,dhxx.dhrq,dhth.zt,dhth.clbh,dhth.clcs,hwxx.zsh,dhth.lrry,dhth.lrsj,dhxx.dhdh,
+			hwysqk.ysqk,xtyh.zsxm lrrymcshxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,xtsh.shlb shlb
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{item.dhthid} dhthid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+				#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shid} shxx_shid,
+				#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach> tmp 
+		left join igams_dhthcl dhth on tmp.dhthid = dhthcl.dhthid
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		order by tmp.rownum
+	</select>
+	<select id="getDtoByHwidAndLx" parameterType="DhthclDto" resultType="DhthclDto">
+		select dhth.dhthid,dhth.hwid,dhth.htmxid,dhth.qgmxid,dhth.lx,dhth.wlid,dhth.sl,
+		dhth.clbh,dhth.clcs,dhth.clry,dhth.clrq,dhth.bz
+		from igams_dhthcl dhth
+		<where>
+			dhth.scbj!='1'
+			and dhth.lx=#{lx} and dhth.hwid=#{hwid}
+		</where>
+	</select>
+	
+	<update id="update" parameterType="DhthclDto">
+	 	update igams_dhthcl
+	 	<set>
+	 		xgry=#{xgry},xgsj=LOCALTIMESTAMP
+	 		<if test="sl != null and sl != ''">
+	 			,sl=cast(#{sl} as numeric)
+	 		</if>
+	 		<if test="zt != null and zt != ''">
+	 			,zt=#{zt}
+	 		</if>
+	 		<if test="clbh != null and clbh != ''">
+	 			,clbh=#{clbh}
+	 		</if>
+	 		<if test="clcs != null and clcs != ''">
+	 			,clcs=#{clcs}
+	 		</if>
+	 	</set>
+	 	<where>
+	 		dhthid=#{dhthid}
+	 	</where>
+	</update>
+	
+	<insert id="insert" parameterType="DhthclDto">
+		insert into igams_dhthcl(dhthid
+		<if test="hwid != null and hwid != ''">
+			,hwid
+		</if>
+		<if test="htmxid != null and htmxid != ''">
+			,htmxid
+		</if>
+		<if test="qgmxid != null and qgmxid != ''">
+			,qgmxid
+		</if>
+		<if test="lx != null and lx != ''">
+			,lx
+		</if>
+		<if test="wlid != null and wlid != ''">
+			,wlid
+		</if>
+		<if test="sl != null and sl != ''">
+			,sl
+		</if>
+		<if test="clbh != null and clbh != ''">
+			,clbh
+		</if>
+		<if test="clcs != null and clcs != ''">
+			,clcs
+		</if>
+		<if test="clry != null and clry != ''">
+			,clry
+		</if>
+		<if test="clrq != null and clrq != ''">
+			,clrq
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		,lrry,lrsj,scbj)
+		values(#{dhthid}
+		<if test="hwid != null and hwid != ''">
+			,#{hwid}
+		</if>
+		<if test="htmxid != null and htmxid != ''">
+			,#{htmxid}
+		</if>
+		<if test="qgmxid != null and qgmxid != ''">
+			,#{qgmxid}
+		</if>
+		<if test="lx != null and lx != ''">
+			,#{lx}
+		</if>
+		<if test="wlid != null and wlid != ''">
+			,#{wlid}
+		</if>
+		<if test="sl != null and sl != ''">
+			,cast(#{sl} as numeric)
+		</if>
+		<if test="clbh != null and clbh != ''">
+			,#{clbh}
+		</if>
+		<if test="clcs != null and clcs != ''">
+			,#{clcs}
+		</if>
+		<if test="clry != null and clry != ''">
+			,#{clry}
+		</if>
+		<if test="clrq != null and clrq != ''">
+			,cast(#{clrq} as date)
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 查询导出 -->
+	<select id="getCountForSearchExp" parameterType="DhthclDto"
+		resultType="java.lang.Integer">
+		select count(dhth.dhthid)  
+		FROM igams_dhthcl dhth
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		<where>
+			dhth.scbj!='1'
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	<select id="getListForSearchExp" parameterType="DhthclDto" resultType="DhthclDto">
+		select dhth.dhthid ${sqlParam}
+		FROM igams_dhthcl dhth
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		<where>
+			dhth.scbj!='1'
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<!-- 选择导出 -->
+	<select id="getListForSelectExp" parameterType="DhthclDto" resultType="DhthclDto">
+		select dhth.dhthid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} dhthid,#{index} ordernum
+		</foreach>
+		) tmp
+		left join igams_dhthcl dhth on dhth.dhthid = tmp.dhthid
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = dhth.hwid
+		left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_gysxx gysxx on gysxx.gysid = dhxx.gysid
+		left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_hwysqk hwysqk on hwysqk.hwid = hwxx.hwid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhth.lrry
+		order by tmp.ordernum
+	</select>
+</mapper>

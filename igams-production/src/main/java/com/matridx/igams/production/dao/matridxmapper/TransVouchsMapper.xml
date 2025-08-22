@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.TransVouchsDao" >
+	
+	<insert id="insertTransVouchs" parameterType="List">
+		insert into TransVouchs(cTVCode,cInvCode,iTVQuantity,cTVBatch,dDisDate,irowno,cbsysbarcode,ID,autoID
+		,fSalePrice,iMassDate,cMassUnit,bCosting,iExpiratDateCalcu,cinposcode,coutposcode,fSaleCost,dMadeDate,iSSotype,iDSoType,corufts,RdsID,iTVNum)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+					#{item.cTVCode},#{item.cInvCode},#{item.iTVQuantity},#{item.cTVBatch},#{item.dDisDate},#{index}+1,'||st12|'+#{item.cTVCode}+'|'+cast((#{index}+1) as varchar)
+					,#{item.ID},#{item.autoID},
+					0,#{item.iMassDate},#{item.cMassUnit},1,0,#{item.cinposcode},#{item.coutposcode},0,#{item.dMadeDate},null,null,null,null,null
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	<select id="getMaxAutoID" resultType="String">
+		select max(autoID) autoID from TransVouchs
+	</select>
+	<update id="updateByid" parameterType="TransVouchsDto">
+		update TransVouchs
+		set iTVQuantity=#{iTVQuantity},cTVBatch = #{cTVBatch},dDisDate= #{dDisDate},coutposcode= #{coutposcode},dMadeDate= #{dMadeDate}
+		where autoID = #{autoID}
+	</update>
+	<select id="getInfoByAutoId" resultType="TransVouchsDto" parameterType="TransVouchsDto">
+		select iTVQuantity from TransVouchs
+		where autoID = #{autoID}
+	</select>
+</mapper>

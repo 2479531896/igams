@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ICpjgDao" >
+    <sql id="SEARCH_TERMS">
+        cpjg.scbj!='1'
+        <if test="entire != null and entire != ''">
+            and (
+            wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or cpjg.bbsm ILIKE '%'||#{entire}||'%'
+            or cpjg.bbdh ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="wlbm != null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc != null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="bbsm != null and bbsm != ''">
+            and cpjg.bbsm ILIKE '%'||#{bbsm}||'%'
+        </if>
+        <if test="bbdh != null and bbdh != ''">
+            and cpjg.bbdh ILIKE '%'||#{bbdh}||'%'
+        </if>
+        <if test="bbrqstart != null and bbrqstart != ''">
+            and to_char(cpjg.bbrq,'yyyy-mm-dd') &gt;= #{bbrqstart}
+        </if>
+        <if test="bbrqend != null and bbrqend != ''">
+            and to_char(cpjg.bbrq,'yyyy-mm-dd') &lt;= #{bbrqend}
+        </if>
+        <if test = "boms != null and boms.length > 0 "  >
+            and cpjg.lb in
+            <foreach collection="boms" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" resultType="CpjgDto" parameterType="CpjgDto">
+        select wlgl.wlbm wlbm,wlgl.wlmc wlmc,round(cpjg.mjshl,2) mjshl,cpjg.bbdh,cpjg.bbsm,cpjg.bbrq,cpjg.zt,bomlb.csmc lbmc,cpjg.cpjgid,cpjg.scbj
+        from igams_cpjg cpjg
+        left join igams_wlgl wlgl on cpjg.mjwlid=wlgl.wlid
+        left join matridx_jcsj bomlb on bomlb.csid=cpjg.lb
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+    <select id="getDtoById" resultType="CpjgDto" parameterType="String">
+        select wlgl.wlbm wlbm,wlgl.wlmc wlmc,round(cpjg.mjshl,2) mjshl,cpjg.bbdh,cpjg.bbsm,cpjg.bbrq,cpjg.zt,bomlb.csmc lbmc,cpjg.cpjgid
+        ,bomlb.csdm lbdm,xtyh.grouping,to_char(cpjg.lrsj,'YYYY-MM-DD') lrsj,case when bzqflg = '0'  then to_char(cpjg.bbrq::date + (bzq || ' month')::interval,'YYYY-MM-DD') else to_char(cpjg.bbrq::date + ('12' || ' month')::interval,'YYYY-MM-DD')   end  sxsj,
+        cpjg.mjwlid,cpjg.lb,quepartid,cpjg.u8cpjgid
+        from igams_cpjg cpjg
+        left join igams_wlgl wlgl on cpjg.mjwlid=wlgl.wlid
+        left join matridx_jcsj bomlb on bomlb.csid=cpjg.lb
+        left join matridx_xtyh xtyh on xtyh.yhid = cpjg.lrry
+       where cpjg.scbj!='1' and cpjg.cpjgid=#{cpjgid}
+    </select>
+    
+    <insert id="insert" parameterType="CpjgDto">
+        INSERT INTO igams_cpjg(
+        <if test="cpjgid != null and cpjgid != ''">
+            cpjgid,
+        </if>
+        <if test="lb != null and lb != ''">
+            lb,
+        </if>
+        <if test="mjwlid != null and mjwlid != ''">
+            mjwlid,
+        </if>
+        <if test="mjshl != null and mjshl != ''">
+            mjshl,
+        </if>
+        <if test="bbdh != null and bbdh != ''">
+            bbdh,
+        </if>
+        <if test="bbsm != null and bbsm != ''">
+            bbsm,
+        </if>
+        <if test="bbrq != null and bbrq != ''">
+            bbrq,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        scbj,lrsj )
+        VALUES (
+        <if test="cpjgid != null and cpjgid != ''">
+            #{cpjgid},
+        </if>
+        <if test="lb != null and lb != ''">
+            #{lb},
+        </if>
+        <if test="mjwlid != null and mjwlid != ''">
+            #{mjwlid},
+        </if>
+        <if test="mjshl != null and mjshl != ''">
+            cast(#{mjshl} as numeric),
+        </if>
+        <if test="bbdh != null and bbdh != ''">
+            #{bbdh},
+        </if>
+        <if test="bbsm != null and bbsm != ''">
+            #{bbsm},
+        </if>
+        <if test="bbrq != null and bbrq != ''">
+            cast(#{bbrq} as date),
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        '0',LOCALTIMESTAMP)
+    </insert>
+
+
+    <select id="getDtoList" resultType="CpjgDto" parameterType="CpjgDto">
+        select wlgl.wlbm wlbm,wlgl.wlmc wlmc,round(cpjg.mjshl,0) mjshl,cpjg.bbdh,cpjg.bbsm,cpjg.bbrq,cpjg.zt,bomlb.csmc lbmc,cpjg.cpjgid
+        ,bomlb.csdm lbdm,xtyh.grouping,cpjg.lrsj,case when bzqflg = '0'  then to_char(cpjg.bbrq::date + (bzq || ' month')::interval,'YYYY-MM-DD') else to_char(cpjg.bbrq::date + ('12' || ' month')::interval,'YYYY-MM-DD')   end  sxsj
+        from igams_cpjg cpjg
+        left join igams_wlgl wlgl on cpjg.mjwlid=wlgl.wlid
+        left join matridx_jcsj bomlb on bomlb.csid=cpjg.lb
+        left join matridx_xtyh xtyh on xtyh.yhid = cpjg.lrry
+        <where>
+            cpjg.scbj!='1'
+            <if test="mjwlid != null and mjwlid != ''">
+                and cpjg.mjwlid=#{mjwlid}
+            </if>
+            <if test="nowwlid != null and nowwlid != ''">
+                and cpjg.mjwlid != #{nowwlid}
+            </if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="CpjgDto">
+        update igams_cpjg
+        <set>
+            <trim prefixOverrides=",">
+                <if test="scbj != null and scbj != ''">
+                    ,scbj=#{scbj}
+                </if>
+                <if test="scry != null and scry != ''">
+                    ,scry=#{scry},scsj=LOCALTIMESTAMP
+                </if>
+                <if test="xgry != null and xgry != ''">
+                    ,xgry=#{xgry},xgsj=LOCALTIMESTAMP
+                </if>
+                <if test="u8cpjgid != null and u8cpjgid != ''">
+                    ,u8cpjgid=#{u8cpjgid}
+                </if>
+                <if test="quepartid != null and quepartid != ''">
+                    ,quepartid=#{quepartid}
+                </if>
+            </trim>
+        </set>
+        <where>
+            <if test="cpjgid != null and cpjgid != ''">
+                cpjgid=#{cpjgid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and cpjgid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+</mapper>

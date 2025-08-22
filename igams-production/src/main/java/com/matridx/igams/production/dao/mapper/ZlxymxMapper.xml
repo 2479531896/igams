@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IZlxymxDao">
+    <select id="getDtoList" resultType="ZlxymxDto" parameterType="ZlxymxDto">
+        select zlxymx.zlxymxid,zlxymx.zlxyid,wlgl.wlbm,case when wlgl.wlmc is not null then wlgl.wlmc else zlxymx.fwmc end wlmc,zlxymx.fwmc,wlgl.scs,zlxymx.jszb,zlxymx.zlyq,zlxymx.ysbz,zlxy.zlxybh,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxymx.zt,zlxymx.wlid,
+        case when (zlxymx.wlid is not null and zlxymx.wlid!='' )then wlgl.sscplb else zlxymx.sjxmh end sjxmh
+        from igams_zlxymx zlxymx
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_zlxy zlxy on zlxy.zlxyid=zlxymx.zlxyid and zlxy.scbj='0'
+        <where>
+            zlxymx.scbj='0'
+            <if test="zlxyid!=null and zlxyid!=''">
+                and zlxymx.zlxyid=#{zlxyid}
+            </if>
+        </where>
+        order by cast(zlxymx.xh as numeric) asc
+    </select>
+
+    <select id="getPagedDtoList" parameterType="ZlxymxDto" resultType="ZlxymxDto">
+        select zlxymx.zlxymxid,zlxymx.zlxyid,wlgl.wlbm,case when wlgl.wlmc is not null then wlgl.wlmc else zlxymx.fwmc end wlmc,zlxymx.fwmc,wlgl.scs,zlxymx.jszb,zlxymx.zlyq,zlxymx.ysbz,zlxy.zlxybh,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxymx.zt,zlxymx.wlid,
+        case when (zlxymx.wlid is not null and zlxymx.wlid!='' )then wlgl.sscplb else zlxymx.sjxmh end sjxmh
+        from igams_zlxymx zlxymx
+        left join igams_zlxy zlxy on zlxy.zlxyid=zlxymx.zlxyid and zlxy.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        <where>
+            zlxymx.scbj='0'
+            <if test="gysid!=null and gysid!=''">
+                and zlxy.gysid=#{gysid}
+            </if>
+            <if test="zlxyid!=null and zlxyid!=''">
+                and zlxymx.zlxyid!=#{zlxyid}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateZt" parameterType="ZlxymxDto">
+        update igams_zlxymx
+        set
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            ,zt=#{zt}
+        <where>
+            zlxymxid = #{zlxymxid}
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_zlxymx(
+        zlxymxid,
+        zlxyid,
+        wlid,
+        fwmc,
+        sjxmh,
+        jszb,
+        zlyq,
+        ysbz,
+        xh,
+        zt,
+        lrry,
+        lrsj,
+        scbj
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.zlxymxid},#{item.zlxyid},#{item.wlid},#{item.fwmc},#{item.sjxmh},#{item.jszb},#{item.zlyq},#{item.ysbz},cast(#{item.xh} as numeric ),'1',#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="deleteInfo" parameterType="ZlxymxDto">
+        delete from igams_zlxymx
+        <where>
+            zlxyid = #{zlxyid}
+        </where>
+    </delete>
+
+    <update id="delete" parameterType="ZlxymxDto">
+        update igams_zlxymx
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zlxyid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="getDtoById" parameterType="String" resultType="ZlxymxDto">
+        select zlxymx.zlxymxid,zlxymx.zlxyid,wlgl.wlbm,case when wlgl.wlmc is not null then wlgl.wlmc else fwmc end wlmc,zlxymx.fwmc,wlgl.scs,zlxymx.jszb,zlxymx.zlyq,zlxymx.ysbz,zlxy.zlxybh,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxymx.zt,zlxymx.wlid
+        ,wlgl.gg,wlgl.jldw,case when (zlxymx.wlid is not null and zlxymx.wlid!='' )then wlgl.sscplb else zlxymx.sjxmh end sjxmh
+        from igams_zlxymx zlxymx
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_zlxy zlxy on zlxy.zlxyid=zlxymx.zlxyid and zlxy.scbj='0'
+        <where>
+            zlxymx.zlxymxid=#{zlxymxid}
+        </where>
+    </select>
+</mapper>

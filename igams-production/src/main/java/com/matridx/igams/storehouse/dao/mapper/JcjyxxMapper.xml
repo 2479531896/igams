@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJcjyxxDao">
+
+
+    <select id="getDtoListInfo" parameterType="JcjyxxDto" resultType="JcjyxxDto">
+        select wlgl.wlmc,wlgl.wlbm,wlgl.wlid,wlgl.gg,wlgl.jldw,ckhwxx.kcl,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as kqls,jcjyxx.jcsl,jcjyxx.bz,jcjyxx.jyxxid,jcsj.csmc as ckqxmc,jcjyxx.yjghrq,jcjyxx.ckhwid,ckhwxx.ckqxlx,jcjyxx.cplx,cplx.csmc cplxmc,jcjyxx.jcsl sl
+	,jcjygl.jydh,jcjygl.jcjyid,ckhwxx.ckid
+        from igams_jcjyxx jcjyxx
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid = jcjyxx.jcjyid
+        left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = jcjyxx.ckhwid
+        left join igams_wlgl wlgl on wlgl.wlid = ckhwxx.wlid
+        left join matridx_jcsj jcsj on jcsj.csid = ckhwxx.ckqxlx
+        left join matridx_jcsj cplx on cplx.csid=jcjyxx.cplx
+        where jcjyxx.scbj = '0'
+        <if test="jcjyid != null and jcjyid != ''">
+            and jcjyxx.jcjyid = #{jcjyid}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="JcjyxxDto">
+        INSERT INTO igams_jcjyxx(jyxxid, jcjyid, ckhwid, jcsl, yjghrq, bz, lrry, lrsj, scbj,cplx)
+        VALUES
+        (#{jyxxid}, #{jcjyid}, #{ckhwid},cast(#{jcsl} as numeric), cast(#{yjghrq} as timestamp), #{bz}, #{lrry}, LOCALTIMESTAMP, '0',#{cplx})
+    </insert>
+
+    <update id="update" parameterType="JcjyxxDto">
+        UPDATE igams_jcjyxx
+        SET
+        <trim prefixOverrides=",">
+            <if test="jcjyid != null and jcjyid != ''">
+                , jcjyid = #{jcjyid}
+            </if>
+            <if test="ckhwid != null and ckhwid != ''">
+                , ckhwid = #{ckhwid}
+            </if>
+            <if test="jcsl != null and jcsl != ''">
+                , jcsl = cast(#{jcsl} as numeric)
+            </if>
+            <if test="yjghrq != null and yjghrq != ''">
+                , yjghrq = cast(#{yjghrq} as timestamp)
+            </if>
+            <if test="bz != null and bz != ''">
+                , bz = #{bz}
+            </if>
+            <if test="cplx != null and cplx != ''">
+                , cplx = #{cplx}
+            </if>
+            <if test="xgry != null and xgry != ''">
+                , xgry = #{xgry}
+                , xgsj = LOCALTIMESTAMP
+            </if>
+        </trim>
+        WHERE jyxxid = #{jyxxid}
+    </update>
+
+    <update id="delete" parameterType="JcjyxxDto">
+        UPDATE igams_jcjyxx
+        SET
+        <trim prefixOverrides=",">
+            <if test="scry != null and scry != ''">
+                , scry = #{scry}
+                , scsj = LOCALTIMESTAMP
+                , scbj = '1'
+            </if>
+        </trim>
+        WHERE jyxxid = #{jyxxid}
+    </update>
+
+    <select id="getDtoListGroupByJyxx" parameterType="JcjyxxDto" resultType="JcjyxxDto">
+        select jcjyxx.jyxxid,sum(COALESCE(jcjymx.jysl,0)) as jysl,jcjyxx.ckhwid,jcjyxx.jcsl,jcjygl.zt
+        from igams_jcjyxx jcjyxx
+        left join igams_jcjymx jcjymx on jcjyxx.jyxxid=jcjymx.jyxxid and jcjymx.scbj ='0'
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid=jcjyxx.jcjyid and jcjygl.scbj ='0'
+        where jcjyxx.scbj = '0'
+        and jcjyxx.jcjyid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+        group by jcjyxx.jyxxid,jcjyxx.ckhwid,jcjyxx.jcsl,jcjygl.zt
+    </select>
+    <select id="getDto" parameterType="JcjyxxDto" resultType="JcjyxxDto">
+        select jcjyxx.jyxxid,jcjyxx.jcsl,jcjyxx.ckhwid
+        from igams_jcjyxx jcjyxx
+        where jcjyxx.scbj = '0'
+        <if test="jyxxid != null and jyxxid != ''">
+            and jcjyxx.jyxxid = #{jyxxid}
+        </if>
+    </select>
+    <update id="deleteByIds" parameterType="list">
+        update igams_jcjyxx set scbj = '1'
+        where jcjyid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

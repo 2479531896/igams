@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGfyzglDao" >
+    <sql id="SEARCH_TERMS">
+        gfyz.scbj!='1'
+        <if test = "chooseFlg != null and chooseFlg != '' ">
+            and (gfpjb.gfpjid is null
+            <if test="gfpjid !=null and gfpjid !=''">
+                or gfpjb.gfpjid = #{gfpjid}
+            </if>
+            )
+        </if>
+        <if test = "yzzt != null and yzzt != '' ">
+            and gfyz.yzzt =#{yzzt}
+        </if>
+        <if test="entire != null and entire != ''">
+            and (
+            gys.gysmc ILIKE '%'||#{entire}||'%'
+            or gys.lxr ILIKE '%'||#{entire}||'%'
+            or gys.cz ILIKE '%'||#{entire}||'%'
+            or gys.dh ILIKE '%'||#{entire}||'%'
+            or gys.gfbh ILIKE '%'||#{entire}||'%'
+            or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or yzmx.xmh ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="wlbm != null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc != null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="xmh != null and xmh != ''">
+            and yzmx.xmh ILIKE '%'||#{xmh}||'%'
+        </if>
+        <if test="gfmc != null and gfmc != ''">
+            and gys.gysmc ILIKE '%'||#{gfmc}||'%'
+        </if>
+        <if test="sfwc != null and sfwc != ''">
+            and gfyz.sfwc = #{sfwc}
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and gys.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="cz != null and cz != ''">
+            and gys.cz ILIKE '%'||#{cz}||'%'
+        </if>
+        <if test="dh != null and dh != ''">
+            and gys.dh ILIKE '%'||#{dh}||'%'
+        </if>
+        <if test="gfbh != null and gfbh != ''">
+            gys.gfbh ILIKE '%'||#{gfbh}||'%'
+        </if>
+        <if test="sqrmc != null and sqrmc != ''">
+            xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+        </if>
+
+        <if test="yzshsjstart != null and yzshsjstart != ''">
+            and to_char(gfyz.yzshsj,'yyyy-mm-dd') &gt;= #{yzshsjstart}
+        </if>
+        <if test="yzshsjend != null and yzshsjend != ''">
+            and to_char(gfyz.yzshsj,'yyyy-mm-dd') &lt;= #{yzshsjend}
+        </if>
+        <if test="yzsqsjstart != null and yzsqsjstart != ''">
+            and to_char(gfyz.yzsqsj,'yyyy-mm-dd') &gt;= #{yzsqsjstart}
+        </if>
+        <if test="yzsqsjend != null and yzsqsjend != ''">
+            and to_char(gfyz.yzsqsj,'yyyy-mm-dd') &lt;= #{yzsqsjend}
+        </if>
+        <if test = "gfgllbs != null and gfgllbs.length > 0 "  >
+            and gys.gfgllb in
+            <foreach collection="gfgllbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="GfyzglDto" resultType="GfyzglDto">
+        select gfyz.gfyzid,gfyz.gysid,gfyz.cbpj,gfyz.sqr,gfyz.sybmshr,gfyz.yzshsj,gfyz.yzshpj,gfyz.jlbh,gfyz.yzsqsj,gfyz.jl,gfyz.sqzt,gfyz.yzzt,gfyz.sqddslid,gfyz.yzddslid,gfyz.scbj,
+        gys.dq as dz,gys.cz,gys.lxr,gys.dh,gys.fzrq,gys.gysmc as gfmc,gys.gfbh,xtyh.zsxm as sqrmc,gfyz.sfwc,
+        (select string_agg(yh.zsxm,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfyz.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as sybmshrmc,jcsj.csmc as gfgllbmc
+        from igams_gfyzgl gfyz
+        left join igams_gysxx gys on gys.gysid=gfyz.gysid
+        left join matridx_xtyh xtyh on xtyh.yhid=gfyz.sqr
+        left join matridx_jcsj jcsj on jcsj.csid=gys.gfgllb
+        <if test = "chooseFlg != null and chooseFlg != '' ">
+                left join igams_gfpjb gfpjb on gfpjb.gfyzid=gfyz.gfyzid and gfpjb.scbj='0'
+        </if>
+        left join igams_gfyzmx yzmx on yzmx.gfyzid=gfyz.gfyzid
+        left join igams_wlgl wlgl on wlgl.wlid=yzmx.wlid
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+        group by gfyz.gfyzid,gfyz.gysid,gfyz.cbpj,gfyz.sqr,gfyz.sybmshr,gfyz.yzshsj,gfyz.yzshpj,gfyz.jlbh,gfyz.yzsqsj,gfyz.jl,gfyz.sqzt,gfyz.yzzt,gfyz.sqddslid,gfyz.yzddslid,gfyz.scbj,
+        gys.dq,gys.cz,gys.lxr,gys.dh,gys.fzrq,gys.gysmc,gys.gfbh,xtyh.zsxm,gfyz.sfwc,jcsj.csmc
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="GfyzglDto">
+        select gfyz.gfyzid,gfyz.gysid,gfyz.cbpj,gfyz.sqr,gfyz.sybmshr,gfyz.yzshsj,gfyz.yzshpj,gfyz.jlbh,gfyz.yzsqsj,gfyz.jl,gfyz.sqzt,gfyz.yzzt,gfyz.sqddslid,gfyz.yzddslid,gfyz.scbj,
+        gys.dq as dz,gys.cz,gys.lxr,gys.dh,gys.fzrq,gys.gfbh,gys.gysmc as gfmc,xtyh.zsxm as sqrmc,
+        (select string_agg(yh.zsxm,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfyz.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as sybmshrmc,
+        (select string_agg(yh.ddid,',')
+        FROM
+        ( SELECT regexp_split_to_table( gfyz.sybmshr, E'[\\s,]+' ) AS yhid, ROW_NUMBER ( ) OVER ( ) xh ) tt
+        left join matridx_xtyh yh on yh.yhid=tt.yhid)as shrddid,
+        jg.jgid,xtyh.ddid
+        from igams_gfyzgl gfyz
+        left join igams_gysxx gys on gys.gysid=gfyz.gysid
+        left join matridx_xtyh xtyh on xtyh.yhid=gfyz.sqr
+        left join matridx_yhssjg jg on jg.yhid=xtyh.yhid
+        <where>
+            gfyz.scbj='0' and gfyz.gfyzid=#{gfyzid}
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="GfyzglDto" resultType="GfyzglDto">
+        select gfyz.gfyzid,gfyz.cbpj,gfyz.sqr,gfyz.sybmshr,gfyz.yzshsj,gfyz.yzshpj,gfyz.jlbh,gfyz.yzsqsj,gfyz.jl,gfyz.sqzt,gfyz.yzzt,gfyz.sqddslid,gfyz.yzddslid,gfyz.scbj,
+        gys.dq as dz,gys.cz,gys.lxr,gys.dh,gys.fzrq,gys.gfbh,gys.gysmc as gfmc,xtyh.zsxm as sqrmc,jg.jgid,xtyh.ddid
+        from igams_gfyzgl gfyz
+        left join igams_gysxx gys on gys.gysid=gfyz.gysid
+        left join matridx_xtyh xtyh on xtyh.yhid=gfyz.sqr
+        left join matridx_yhssjg jg on jg.yhid=xtyh.yhid
+        <where>
+            gfyz.scbj='0'
+            <if test = "gfyzid != null and gfyzid != '' ">
+                and gfyz.gfyzid=#{gfyzid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and gfyz.gfyzid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDto" parameterType="GfyzglDto" resultType="GfyzglDto">
+        select gfyz.gfyzid,gfyz.cbpj,gfyz.sqr,gfyz.sybmshr,gfyz.yzshsj,gfyz.yzshpj,gfyz.jlbh,gfyz.yzsqsj,gfyz.jl,gfyz.sqzt,gfyz.yzzt,gfyz.sqddslid,gfyz.yzddslid,gfyz.scbj,
+        gys.dq as dz,gys.cz,gys.lxr,gys.dh,gys.fzrq,gys.gfbh,gys.gysmc as gfmc,xtyh.zsxm as sqrmc,jg.jgid,xtyh.ddid
+        from igams_gfyzgl gfyz
+        left join igams_gysxx gys on gys.gysid=gfyz.gysid
+        left join matridx_xtyh xtyh on xtyh.yhid=gfyz.sqr
+        left join matridx_yhssjg jg on jg.yhid=xtyh.yhid
+        <where>
+            gfyz.scbj='0'
+            <if test = "sqddslid != null and sqddslid != '' ">
+                and gfyz.sqddslid=#{sqddslid}
+            </if>
+            <if test = "yzddslid != null and yzddslid != '' ">
+                and gfyz.yzddslid=#{yzddslid}
+            </if>
+            <if test = "gfyzid != null and gfyzid != '' ">
+                and gfyz.gfyzid=#{gfyzid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and gfyz.gfyzid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getSprjsBySprid" parameterType="String" resultType="GfyzglDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+    <select id="getJlbhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') jlbh
+        FROM igams_gfyzgl
+        <where>
+            scbj = '0' AND jlbh like #{jlbh}||'%'
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="GfyzglDto">
+        insert into igams_gfyzgl(
+        <if test="sqr != null and sqr != ''">
+            sqr,
+        </if>
+        <if test="gysid != null and gysid != ''">
+            gysid,
+        </if>
+        <if test="cbpj != null and cbpj != ''">
+            cbpj,
+        </if>
+        <if test="sybmshr != null and sybmshr != ''">
+            sybmshr,
+        </if>
+        <if test="yzsqsj != null and yzsqsj != ''">
+            yzsqsj,
+        </if>
+        <if test="yzshsj != null and yzshsj != ''">
+            yzshsj,
+        </if>
+        <if test="yzshpj != null and yzshpj != ''">
+            yzshpj,
+        </if>
+        <if test="jl != null and jl != ''">
+            jl,
+        </if>
+        <if test="sqzt != null and sqzt != ''">
+            sqzt,
+        </if>
+        <if test="yzzt != null and yzzt != ''">
+            yzzt,
+        </if>
+        <if test="sqddslid != null and sqddslid != ''">
+            sqddslid,
+        </if>
+        <if test="yzddslid != null and yzddslid != ''">
+            yzddslid,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        <if test="gfyzid != null and gfyzid != ''">
+            gfyzid,
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            jlbh,
+        </if>
+        sfwc,lrsj,scbj)
+        values (
+        <if test="sqr != null and sqr != ''">
+            #{sqr},
+        </if>
+        <if test="gysid != null and gysid != ''">
+            #{gysid},
+        </if>
+        <if test="cbpj != null and cbpj != ''">
+            #{cbpj},
+        </if>
+        <if test="sybmshr != null and sybmshr != ''">
+            #{sybmshr},
+        </if>
+        <if test="yzsqsj != null and yzsqsj != ''">
+            cast(#{yzsqsj} as date),
+        </if>
+        <if test="yzshsj != null and yzshsj != ''">
+            cast(#{yzshsj} as date),
+        </if>
+        <if test="yzshpj != null and yzshpj != ''">
+            #{yzshpj},
+        </if>
+        <if test="jl != null and jl != ''">
+            #{jl},
+        </if>
+        <if test="sqzt != null and sqzt != ''">
+            #{sqzt},
+        </if>
+        <if test="yzzt != null and yzzt != ''">
+            #{yzzt},
+        </if>
+        <if test="sqddslid != null and sqddslid != ''">
+            #{sqddslid},
+        </if>
+        <if test="yzddslid != null and yzddslid != ''">
+            #{yzddslid},
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        <if test="gfyzid != null and gfyzid != ''">
+            #{gfyzid},
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            #{jlbh},
+        </if>
+        '0',LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="GfyzglDto">
+        update igams_gfyzgl set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="gysid !=null and gysid != ''">
+            ,gysid = #{gysid}
+        </if>
+        <if test="cbpj !=null and cbpj != ''">
+            ,cbpj = #{cbpj}
+        </if>
+        <if test="sqr !=null and sqr != ''">
+            ,sqr = #{sqr}
+        </if>
+        <if test="sybmshr !=null and sybmshr != ''">
+            ,sybmshr = #{sybmshr}
+        </if>
+        <if test="yzshsj !=null and yzshsj != ''">
+            ,yzshsj = cast(#{yzshsj} as date)
+        </if>
+        <if test="yzsqsj !=null and yzsqsj != ''">
+            ,yzsqsj = cast(#{yzsqsj} as date)
+        </if>
+        <if test="jlbh !=null and jlbh != ''">
+            ,jlbh = #{jlbh}
+        </if>
+        <if test="yzshpj !=null and yzshpj != ''">
+            ,yzshpj = #{yzshpj}
+        </if>
+        <if test="jl !=null and jl != ''">
+            ,jl = #{jl}
+        </if>
+        <if test="sqzt !=null and sqzt != ''">
+            ,sqzt = #{sqzt}
+        </if>
+        <if test="yzzt !=null and yzzt != ''">
+            ,yzzt = #{yzzt}
+        </if>
+        <if test="sqddslid !=null and sqddslid != ''">
+            ,sqddslid = #{sqddslid}
+        </if>
+        <if test="yzddslid !=null and yzddslid != ''">
+            ,yzddslid = #{yzddslid}
+        </if>
+        <if test="updateFlg == '0'.toString()">
+            ,sqddslid = null
+        </if>
+        <if test="updateFlg == '1'.toString()">
+            ,yzddslid = null
+        </if>
+        <if test="sfwc !=null and sfwc != ''">
+            ,sfwc = #{sfwc}
+        </if>
+        <where>
+            gfyzid = #{gfyzid}
+        </where>
+    </update>
+    <update id="delete" parameterType="GfyzglDto">
+        update igams_gfyzgl set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            gfyzid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <update id="updateList" parameterType="GfyzglDto">
+        update igams_gfyzgl set
+        xgry = #{xgry},xgsj = LOCALTIMESTAMP,sfwc=#{sfwc}
+        <where>
+            gfyzid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IDhjyDao" >
+	<sql id="SEARCH_TERMS">
+		dhjy.scbj!='1'
+		<if test="entire != null and entire != ''">
+			and (
+			dhjy.jydh ILIKE '%'||#{entire}||'%'
+			or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+			or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+			or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+			or hwxx.bgdh ILIKE '%'||#{entire}||'%'
+			or hwxx.scph ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="bgdh != null and bgdh != ''">
+			and hwxx.bgdh ILIKE '%'||#{bgdh}||'%'
+		</if>
+		<if test="scph != null and scph != ''">
+			and hwxx.scph ILIKE '%'||#{scph}||'%'
+		</if>
+		<if test="jydh != null and jydh != ''">
+			and dhjy.jydh ILIKE '%'||#{jydh}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+		</if>
+		<if test="jyfzrmc != null and jyfzrmc != ''">
+			and xtyh.zsxm ILIKE '%'||#{jyfzrmc}||'%'
+		</if>
+		<if test="shsjstart != null and shsjstart != ''">
+			and to_char(dhjy.jyrq,'yyyy-mm-dd') &gt;= #{shsjstart}
+		</if>
+		<if test="shsjend != null and shsjend != ''">
+			and to_char(dhjy.jyrq,'yyyy-mm-dd') &lt;= #{shsjend}
+		</if>
+		<if test="zt != null and zt != ''">
+			and dhjy.zt=#{zt}
+		</if>
+		<if test="sflyck != null and sflyck != ''">
+			and coalesce(dhjy.sflyck,'0')=#{sflyck}
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and dhjy.zt in
+			<foreach collection="zts" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="lbcskz1 != null and lbcskz1 != ''">
+			and jcsj.cskz1=#{lbcskz1}
+		</if>
+		<if test = "jyjgs != null and jyjgs.length > 0 "  >
+			and dhjy.jyjg in
+			<foreach collection="jyjgs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	
+	<!-- 查询检验审核信息 -->
+	<select id="getPagedAuditDhjy" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid,dhjy.lrsj,dhjy.jydh,dhjy.jyrq
+		from igams_dhjy dhjy
+		<where>
+			dhjy.scbj!='1'
+			<if test="jydh != null and jydh != ''">
+				and dhjy.jydh ILIKE '%'||#{jydh}||'%'
+			</if>
+			<if test="zt != null and zt != ''">
+				and dhjy.zt=#{zt}
+			</if>
+		</where>
+	</select>
+	<!-- 到货检验审核列表-->
+	<select id="getAuditListDhjy" parameterType="List" resultType="DhjyDto">
+		select  dhjy.dhjyid,dhjy.lrsj,dhjy.jydh,dhjy.jyrq,dhjy.jyfzr,dhjy.bz,dhjy.zt,dhjy.wcbj,xtyh.zsxm as jyfzrmc,
+		dhjy.lrry as sqr,xtyh2.zsxm as sqrxm,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,xtsh.shlb shlb,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{item.dhjyid} dhjyid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+				#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shid} shxx_shid,
+				#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+		</foreach> tmp 
+		left join igams_dhjy dhjy on tmp.dhjyid = dhjy.dhjyid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join matridx_xtyh xtyh2 on xtyh2.yhid = dhjy.lrry
+		left join matridx_xtsh xtsh on xtsh.shid=tmp.shxx_shid
+		order by tmp.rownum
+	</select>
+	<!-- 查询检验列表 -->
+	<select id="getPagedDtoList" parameterType="DhjyDto" resultType="DhjyDto">
+		select distinct jcsj1.csmc,dhjy.dhjyid,dhjy.jydh,dhjy.jyrq,dhjy.jyfzr,dhjy.bz,dhjy.zt,dhjy.wcbj,xtyh.zsxm as jyfzrmc,hwxx.lbcskz as lbcskz1,dhjy.sffqlld,dhjy.sflyck,
+		to_char(dhjy.shsj,'yyyy-MM-dd HH24:mi:ss') shsj
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join igams_hwxx hwxx on dhjy.dhjyid=hwxx.dhjyid
+		left join igams_wlgl wlgl on hwxx.wlid=wlgl.wlid
+		left join matridx_jcsj jcsj1 on jcsj1.csid=dhjy.jyjg
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+			group by 
+				jcsj1.csmc,
+				dhjy.dhjyid,
+				dhjy.jydh,
+				dhjy.jyrq,
+				dhjy.jyfzr,
+				dhjy.bz,
+				dhjy.zt,
+				dhjy.wcbj,
+				xtyh.zsxm,
+				hwxx.lbcskz,
+				dhjy.sffqlld,
+				dhjy.sflyck,
+				dhjy.shsj
+		</where>
+	</select>
+	<!-- 查询检验物料列表 -->
+	<select id="getPagedWlDtoList" parameterType="DhjyDto" resultType="DhjyDto">
+		select jcsj1.csmc,dhjy.dhjyid,dhjy.jydh,dhjy.jyrq,dhjy.jyfzr,dhjy.bz,dhjy.zt,dhjy.wcbj,xtyh.zsxm as jyfzrmc,hwxx.lbcskz as lbcskz1,dhjy.sffqlld,dhjy.sflyck,
+		to_char(dhjy.shsj,'yyyy-MM-dd HH24:mi:ss') shsj,wlgl.wlbm,wlgl.wlmc,wlgl.gg,hwxx.scph,hwxx.sl,hwxx.bgdh,dhjy.jygs,hwxx.hwid
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join igams_hwxx hwxx on dhjy.dhjyid=hwxx.dhjyid 
+		left join igams_wlgl wlgl on hwxx.wlid=wlgl.wlid
+		left join matridx_jcsj jcsj1 on jcsj1.csid=dhjy.jyjg
+		left join matridx_jcsj lb on lb.csid=wlgl.lb
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+			<if test="lbcskz2!= null and lbcskz2!= ''">
+				and lb.cskz2=#{lbcskz2}
+			</if>
+		</where>
+	</select>
+	<select id="getDtoById" parameterType="String" resultType="DhjyDto">
+		select jcsj.csmc csmc,dhjy.dhjyid,dhjy.jydh,dhjy.jyrq,dhjy.jyfzr,dhjy.bz,dhjy.zt,dhjy.wcbj,xtyh.zsxm as jyfzrmc,dhjy.lrry,dhjy.jyjg,dhjy.sffqlld,dhjy.sflyck,to_char(dhjy.shsj,'yyyy-MM-dd HH24:mi:ss') shsj
+		,to_char(dhjy.lrsj,'yyyy-MM-dd HH24:mi:ss') lrsj,dhjy.jygs,dhjy.bhgyy
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join matridx_jcsj jcsj on jcsj.csid=dhjy.jyjg
+		<where>
+			dhjy.scbj!='1' and dhjy.dhjyid=#{dhjyid}
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="DhjyDto" resultType="DhjyDto">
+		select jcsj.csmc csmc,dhjy.dhjyid,dhjy.jydh,dhjy.jyrq,dhjy.jyfzr,dhjy.bz,dhjy.zt,dhjy.wcbj,xtyh.zsxm as jyfzrmc,dhjy.lrry,dhjy.jyjg,dhjy.sffqlld,dhjy.sflyck,to_char(dhjy.shsj,'yyyy-MM-dd HH24:mi:ss') shsj
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join matridx_jcsj jcsj on jcsj.csid=dhjy.jyjg
+		<where>
+			dhjy.scbj!='1' and dhjy.dhjyid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+			<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="DhjyDto"
+		resultType="java.lang.Integer">
+		select count(dhjy.dhjyid) from igams_dhjy dhjy
+			left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<!-- 检验物料导出 -->
+	<select id="getCountForGoodsSearchExp" parameterType="DhjyDto"
+			resultType="java.lang.Integer">
+		select count(dhjy.dhjyid) from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join igams_hwxx hwxx on dhjy.dhjyid=hwxx.dhjyid and hwxx.scbj ='0'
+		left join igams_wlgl wlgl on hwxx.wlid=wlgl.wlid
+		left join matridx_jcsj jcsj1 on jcsj1.csid=dhjy.jyjg
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid ${sqlParam}
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForGoodsSearchExp" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid ${sqlParam}
+		from igams_dhjy dhjy
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join igams_hwxx hwxx on dhjy.dhjyid=hwxx.dhjyid and hwxx.scbj ='0'
+		left join igams_wlgl wlgl on hwxx.wlid=wlgl.wlid
+		left join matridx_jcsj jcsj1 on jcsj1.csid=dhjy.jyjg
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} dhjyid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_dhjy dhjy on tmp.dhjyid = dhjy.dhjyid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		order by tmp.ordernum
+	</select>
+
+	<select id="getListForGoodsSelectExp" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} dhjyid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_dhjy dhjy on tmp.dhjyid = dhjy.dhjyid
+		left join matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+		left join igams_hwxx hwxx on dhjy.dhjyid=hwxx.dhjyid and hwxx.scbj ='0'
+		left join igams_wlgl wlgl on hwxx.wlid=wlgl.wlid
+		left join matridx_jcsj jcsj1 on jcsj1.csid=dhjy.jyjg
+		order by tmp.ordernum
+	</select>
+
+	<!-- 获取订货检验编号 -->
+	<select id="getInspectionDh" resultType="String">
+		SELECT lpad(cast((CAST(coalesce(MAX(substring(jydh,LENGTH(jydh)-strpos(reverse(jydh),'-')+2,LENGTH(jydh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_dhjy
+		<where>
+			cast(lrsj as date)=current_date
+		</where>
+	</select>
+	<select id="getDto" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjyid,jydh,jyrq,jyfzr,bz,wcbj,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sflyck
+			from igams_dhjy
+		<where>
+			<if test="dhjyid != null and dhjyid != ''">
+				and dhjyid=#{dhjyid}
+			</if>
+			<if test="jydh != null and jydh != ''">
+				and jydh=#{jydh}
+			</if>
+		</where>
+	</select>
+	<select id="getSaveRecord" parameterType="String" resultType="String">
+		SELECT max(dhjy.dhjyid) from igams_jycgl jycgl
+		left join igams_hwxx hwxx on jycgl.hwid = hwxx.hwid
+		left join igams_dhjy dhjy on hwxx.dhjyid = dhjy.dhjyid
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		left join matridx_jcsj jcsj on jcsj.csid=wlgl.lb
+		<where>
+			jcsj.cskz1 = #{lbcskz1} and jycgl.ryid = #{yhid}
+		</where>
+	</select>
+	<insert id="insert" parameterType="DhjyDto">
+		insert into igams_dhjy(dhjyid
+		<if test="jydh !=null and jydh != ''">
+			,jydh
+		</if>
+		<if test="jyrq !=null and jyrq != ''">
+			,jyrq
+		</if>
+		<if test="jyfzr !=null and jyfzr != ''">
+			,jyfzr
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="lrry !=null and lrry != ''">
+			,lrry
+		</if>
+		<if test="lrsj !=null and lrsj != ''">
+			,lrsj
+		</if>
+		<if test="scbj !=null and scbj != ''">
+			,scbj
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="jyjg !=null and jyjg != ''">
+			,jyjg
+		</if>
+		<if test="sflyck !=null and sflyck != ''">
+			,sflyck
+		</if>
+		<if test="sffqlld !=null and sffqlld != ''">
+			,sffqlld
+		</if>
+		<if test="bhgyy !=null and bhgyy != ''">
+			,bhgyy
+		</if>
+		)values(#{dhjyid}
+		<if test="jydh !=null and jydh != ''">
+				,#{jydh}
+		</if>
+		<if test="jyrq !=null and jyrq != ''">
+				,cast(#{jyrq} as TIMESTAMP)
+		</if>
+		<if test="jyfzr !=null and jyfzr != ''">
+				,#{jyfzr}
+		</if>
+		<if test="bz !=null and bz != ''">
+				,#{bz}
+		</if>
+		<if test="lrry !=null and lrry != ''">
+				,#{lrry}
+		</if>
+		<if test="lrsj !=null and lrsj != ''">
+				,cast(#{lrsj} as TIMESTAMP)
+		</if>
+		<if test="scbj !=null and scbj != ''">
+				,#{scbj}
+		</if>
+		<if test="zt !=null and zt != ''">
+				,#{zt}
+		</if>
+		<if test="jyjg !=null and jyjg != ''">
+				,#{jyjg}
+		</if>
+		<if test="sflyck !=null and sflyck != ''">
+			,#{sflyck}
+		</if>
+		<if test="sffqlld !=null and sffqlld != ''">
+			,#{sffqlld}
+		</if>
+		<if test="bhgyy !=null and bhgyy != ''">
+			,#{bhgyy}
+		</if>
+		)
+	</insert>
+	<update id="update" parameterType="DhjyDto">
+		update igams_dhjy 
+		<set>
+			xgsj=LOCALTIMESTAMP
+			<if test="xgry !=null and xgry != ''">
+				,xgry = #{xgry}
+			</if>
+			<if test="zt !=null and zt != ''">
+				,zt = #{zt}
+			</if>
+			<if test="jydh !=null and jydh != ''">
+				,jydh=#{jydh}
+			</if>
+			<if test="jyrq !=null and jyrq != ''">
+				,jyrq=cast(#{jyrq} as TIMESTAMP)
+			</if>
+			<if test="jyfzr !=null and jyfzr != ''">
+				,jyfzr=#{jyfzr}
+			</if>
+			<if test="bz !=null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="bhgglid !=null and bhgglid != ''">
+				,bhgglid=#{bhgglid}
+			</if>
+			<if test="jyjg !=null and jyjg != ''">
+				,jyjg=#{jyjg}
+			</if>
+			<if test="sffqlld !=null and sffqlld != ''">
+				,sffqlld=#{sffqlld}
+			</if>
+		    <if test="sflyck !=null and sflyck != ''">
+				,sflyck=#{sflyck}
+			</if>
+			<if test="shsj !=null and shsj != ''">
+				,shsj=cast(#{shsj} as timestamp)
+			</if>
+			<if test="jygs !=null and jygs != ''">
+				,jygs=cast(#{jygs} as numeric)
+			</if>
+			<if test="bhgyy !=null and bhgyy != ''">
+				,bhgyy=#{bhgyy}
+			</if>
+		</set>
+		<where>
+			dhjyid=#{dhjyid}
+		</where>
+	</update>
+	<update id="updatedelflag" parameterType="DhjyDto">
+		update igams_dhjy 
+		<set>
+			scsj=LOCALTIMESTAMP,scbj='1'
+			<if test="xgry !=null and xgry != ''">
+				,xgry = #{xgry}
+			</if>
+		</set>
+		<where>
+			 dhjyid in 
+	           <foreach collection="ids" open="(" close=")" separator="," item="item">
+	               #{item}
+	           </foreach>
+		</where>
+	</update>
+	
+	<!-- 根据到货检验ids获取到货检验信息（共通页面） -->
+	<select id="getCommonDtoListByDhjyids" parameterType="DhjyDto" resultType="DhjyDto">
+		SELECT
+			dhjy.dhjyid,dhjy.jydh,dhjy.jyrq,dhjy.bz,dhjy.zt,dhjy.wcbj,dhjy.scbj,
+			xtyh.zsxm jyfzrmc,
+			wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.ychh,wlgl.jldw,
+			htgl.htnbbh,
+			hwxx.hwid,hwxx.htmxid,hwxx.qgmxid,hwxx.wlid,hwxx.zsh,hwxx.scrq,hwxx.sl,hwxx.yxq,hwxx.dhid,hwxx.dhsl,hwxx.cythsl,hwxx.dhbz,hwxx.zjthsl,hwxx.qyl,hwxx.qyrq,hwxx.zjrq,hwxx.zjry,hwxx.jybz,hwxx.rkid,hwxx.ckid,hwxx.kwbh,hwxx.rkry,hwxx.rkrq,hwxx.rkbz,hwxx.kcl,hwxx.yds,hwxx.glid,hwxx.kcglid,hwxx.scph
+		FROM igams_dhjy dhjy
+			LEFT JOIN matridx_xtyh xtyh on xtyh.yhid = dhjy.jyfzr
+			LEFT JOIN igams_hwxx hwxx on dhjy.dhjyid = hwxx.dhjyid and hwxx.scbj != '1'
+			LEFT JOIN igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+			LEFT JOIN igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+			LEFT JOIN igams_htgl htgl on htgl.htid = htmx.htid
+		<where>
+			dhjy.scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and dhjy.dhjyid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getListByDhjyid" parameterType="String" resultType="DhjyDto">
+		select dhjy.dhjyid,ckxx.ckmc,ckxx.ckdm,xtyh.zsxm as llrymc,dhjy.jydh
+		from igams_dhjy dhjy 
+		left join igams_hwxx hwxx on hwxx.dhjyid=dhjy.dhjyid and hwxx.scbj='0'
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj='0'
+		left join igams_ckxx ckxx on ckxx.ckid=dhxx.ckid and ckxx.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid=dhjy.lrry and xtyh.scbj='0'
+		<where>
+			dhjy.dhjyid=#{dhjyid}
+		</where>
+	</select>
+	<select id="getCgHcxxByDhjyids" parameterType="DhjyDto" resultType="DhjyDto">
+		select dhjy.dhjyid,hchwxx.chhwid,dbmxdc.dchwid,dbmxdr.drhwid,wlgl.wlbm,dhxx.dhdh,dhjy.jydh
+		from igams_dhjy dhjy
+		left join igams_hwxx hwxx on hwxx.dhjyid=dhjy.dhjyid and hwxx.scbj='0'
+		left join igams_hwxx hchwxx on hchwxx.chhwid = hwxx.hwid and hchwxx.scbj='0'
+		left join igams_dbmx dbmxdc on dbmxdc.dchwid = hwxx.hwid and dbmxdc.scbj='0'
+		left join igams_dbmx dbmxdr on dbmxdr.drhwid = hwxx.hwid and dbmxdr.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid = hwxx.wlid and wlgl.scbj='0'
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		<where>
+			dhjy.dhjyid in
+			<foreach collection="dhjyids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+		<select id="getAuditStatistics" parameterType="String"  resultType="DhjyDto">
+		SELECT
+			yshb.jyrq,
+			COALESCE ( yshb.yshs, '0' ) yshs,
+			COALESCE ( shzb.shzs, '0' ) shzs,
+			COALESCE ( wshb.wshs, '0' ) wshs,
+			COALESCE ( wtgb.wtgs, '0' ) wtgs
+		FROM
+			(
+			SELECT COUNT
+				( zt ) yshs,
+				'80' shzt,
+				to_char( jyrq, 'MM' ) jyrq
+			FROM
+				igams_dhjy
+			WHERE
+				scbj='0'
+				and
+				zt = '80'
+			<if test="year !=null and year != ''">
+				and to_char( jyrq, 'yyyy' )=#{year}
+			</if>
+			GROUP BY
+				to_char( jyrq, 'MM' )
+			) yshb
+			LEFT JOIN (
+			SELECT COUNT
+				( zt ) shzs,
+				'10' shzt,
+				to_char( jyrq, 'MM' ) jyrq
+			FROM
+				igams_dhjy
+			WHERE
+				scbj='0'
+				and
+				zt = '10'
+			<if test="year !=null and year != ''">
+				and to_char( jyrq, 'yyyy' )=#{year}
+			</if>
+			GROUP BY
+				to_char( jyrq, 'MM' )
+			) shzb ON shzb.jyrq = yshb.jyrq
+			LEFT JOIN (
+			SELECT COUNT
+				( zt ) wshs,
+				'00' shzt,
+				to_char( jyrq, 'MM' ) jyrq
+			FROM
+				igams_dhjy
+			WHERE
+				scbj='0'
+				and
+				zt = '00'
+			<if test="year !=null and year != ''">
+				and to_char( jyrq, 'yyyy' )=#{year}
+			</if>
+			GROUP BY
+			to_char( jyrq, 'MM' )
+			) wshb ON wshb.jyrq = yshb.jyrq
+			LEFT JOIN (
+			SELECT COUNT
+			( zt ) wtgs,
+			'15' shzt,
+			to_char( jyrq, 'MM' ) jyrq
+			FROM
+			igams_dhjy
+			WHERE
+			scbj='0'
+			and
+			zt = '15'
+			<if test="year !=null and year != ''">
+				and to_char( jyrq, 'yyyy' )=#{year}
+			</if>
+			GROUP BY
+			to_char( jyrq, 'MM' )
+			) wtgb ON wtgb.jyrq = yshb.jyrq
+	</select>
+
+	<select id="getYearGroup" resultType="DhjyDto">
+	select  to_char( dhjy.jyrq, 'yyyy' ) jyrq from igams_dhjy dhjy where dhjy.scbj = '0' GROUP BY
+		to_char( dhjy.jyrq, 'yyyy' )
+	ORDER BY
+		to_char( dhjy.jyrq, 'yyyy' ) desc
+	</select>
+	<select id="getInspectionResultStatistics" resultType="Map" parameterType="String">
+		select sum(tgsl) tgsl,sum(bftgsl) bftgsl,sum(btgsl) btgsl,tmp.jyrq from (select
+		sum(case when jyjg.csmc='通过' then 1 else 0 end) tgsl,
+		sum(case when jyjg.csmc='部分通过' then 1 else 0 end)  bftgsl,
+		sum(case when jyjg.csmc='不通过' then 1 else 0 end)  btgsl,
+		to_char(dhjy.jyrq,'MM') jyrq
+		from
+		igams_dhjy dhjy
+		left join matridx_jcsj jyjg on jyjg.csid = dhjy.jyjg
+		where
+		dhjy.scbj = '0' and jyjg.csmc is not null
+		<if test="year !=null and year != ''">
+			and to_char( dhjy.jyrq, 'yyyy' )=#{year}
+		</if>
+		group by
+		jyjg.csmc,to_char(dhjy.jyrq,'MM')
+		order by to_char(dhjy.jyrq,'MM') desc) tmp
+		group by tmp.jyrq
+	</select>
+	<select id="getInspectionCategoryProportion" resultType="Map" parameterType="String">
+		select
+		wllb.csdm||wlzlb.csdm lbdm,count(*)
+		from
+		igams_dhjy dhjy
+		left join igams_hwxx hwxx on hwxx.dhjyid = dhjy.dhjyid
+		left join igams_wlgl wlgl on wlgl.wlid = hwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid  = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid  = wlgl.wlzlb
+		where dhjy.scbj ='0' and wllb.csdm||wlzlb.csdm is not null
+		<if test="rqstart != null and rqstart != ''">
+			and to_char(dhjy.jyrq,'yyyy-MM-dd') &gt;= #{rqstart}
+		</if>
+		<if test="rqend != null and rqend != ''">
+			and to_char(dhjy.jyrq,'yyyy-MM-dd') &lt;= #{rqend}
+		</if>
+		group by wllb.csdm||wlzlb.csdm
+	</select>
+</mapper>

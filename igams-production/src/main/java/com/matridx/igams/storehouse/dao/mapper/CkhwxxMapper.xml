@@ -1,0 +1,1092 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ICkhwxxDao" >
+
+
+	<select id="getDtoByWlbmAndCkdm" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwid,ckhwxx.kcl,wlgl.wlbm,ckxx.ckmc
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid = ckhwxx.wlid
+		left join igams_ckxx ckxx on ckhwxx.ckqxlx = ckxx.ckqxlx
+		<where>
+			wlbm = #{wlbm} and ckxx.ckdm =#{ckdm}
+		</where>
+	</select>
+	<!-- 库存列表 -->
+	<select id="getPagedDtoStockList" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwxx.ckhwid ckhwid,ckhwxx.wlid wlid,ckhwxx.kcl,ckhwxx.yds,
+		wlgl.wlmc wlmc,wlgl.wlbm wlbm,wlgl.gg gg,wlgl.ychh ychh,wlgl.jldw jldw,wlgl.scs scs,wllb.csmc wllb,wlzlb.csmc wlzlb,lb.csmc lb,wlgl.aqkc,ckqx.csmc as ckqxmc,ckxx.ckmc
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join igams_ckxx ckxx on ckxx.ckid=ckhwxx.ckid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		<if test="(yxqstart != null and yxqstart != '') or (yxqend != null and yxqend != '')">
+			left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid and hwxx.ckid=ckhwxx.ckid
+		</if>
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="yxqstart != null and yxqstart != ''">
+				and to_char(hwxx.yxq,'YYYY-MM-dd') &gt;= #{yxqstart}
+			</if>
+			<if test="yxqend != null and yxqend != ''">
+				and to_char(hwxx.yxq,'YYYY-MM-dd') &lt;= #{yxqend}
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='1'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&gt;0
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='0'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&lt;=0
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in 
+					<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+						#{item}
+					</foreach> 
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+					<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+						#{item}
+					</foreach>
+				 then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cskz1 != null and cskz1 != ''">
+				and ckqx.cskz1 != '1'
+			</if>
+			<if test="(xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+				and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+				left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+				where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+			</if>
+			<if test="cks != null and cks.length > 0">
+				and ckhwxx.ckid in
+				<foreach collection="cks" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="(yxqstart != null and yxqstart != '') or (yxqend != null and yxqend != '')">
+			group by ckhwxx.ckhwid,ckhwxx.wlid,ckhwxx.kcl,ckhwxx.yds,
+			wlgl.wlmc,wlgl.wlbm,wlgl.gg,wlgl.ychh,wlgl.jldw,wlgl.scs,wllb.csmc,wlzlb.csmc,lb.csmc,wlgl.aqkc,ckqx.csmc,ckxx.ckmc
+		</if>
+	</select>
+	<!-- 安全库存列表 -->
+	<select id="getPagedDtoSecureStockList" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select  ckhwxx.wlid wlid,ckhwxx.kcl,ckhwxx.yds,
+		wlgl.wlmc wlmc,wlgl.wlbm wlbm,wlgl.gg gg,wlgl.ychh ychh,wlgl.jldw jldw,wlgl.scs scs,wllb.csmc wllb,wlzlb.csmc wlzlb,lb.csmc lb,wlgl.aqkc,ckqx.csmc as ckqxmc
+		from (
+		select ckhwxx.wlid wlid,sum(ckhwxx.kcl) kcl,sum(ckhwxx.yds) yds,ckhwxx.ckqxlx
+		from igams_ckhwxx ckhwxx
+		group by ckhwxx.wlid,ckhwxx.ckqxlx
+		)ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='1'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&gt;0
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='0'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&lt;=0
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ckqxlxs != null and ckqxlxs.size > 0">
+				and ckqxlx in
+				<foreach collection="ckqxlxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cskz1 != null and cskz1 != ''">
+				and ckqx.cskz1 != '1'
+			</if>
+		</where>
+	</select>
+	<!-- 库存列表 -->
+	<select id="getPagedDtoStockListDingTalk" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwxx.wlid wlid,ckhwxx.kcl,ckhwxx.yds,
+		wlgl.wlmc wlmc,wlgl.wlbm wlbm,wlgl.gg gg,wlgl.ychh ychh,wlgl.jldw jldw,wlgl.scs scs,wllb.csmc wllb,wlzlb.csmc wlzlb,lb.csmc lb,wlgl.aqkc,sfwxp.csmc sfwxpmc,
+		case when (ckhwxx.kcl-COALESCE(ckhwxx.yds,0))>0 then '库存充足' else '库存不足' end jjts
+		from
+		(select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join matridx_jcsj sfwxp on sfwxp.csid=wlgl.sfwxp
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+				or gg ILIKE '%' ||#{entire}||'%'
+				or wlgl.ychh ILIKE '%' ||#{entire}||'%'
+				or wlgl.scs ILIKE '%' ||#{entire}||'%'
+				or wlgl.jwlbm ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='1'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&gt;0
+			</if>
+			<if test="kczt != null and kczt != '' and kczt =='0'.toString()">
+				and COALESCE(ckhwxx.kcl,0)&lt;=0
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="wlzlb != null and wlzlb != ''">
+				and wlzlb.csmc ILIKE '%' ||#{wlzlb}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) > COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) >= COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and wlgl.lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="wllbs != null and wllbs.length > 0">
+				and wlgl.wllb in
+				<foreach collection="wllbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="wlzlbs != null and wlzlb.length > 0">
+				and wlgl.wlzlb in
+				<foreach collection="wlzlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfwxps != null and sfwxps.length > 0">
+				and sfwxp.csid in
+				<foreach collection="sfwxps" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cskz1 != null and cskz1 != ''">
+				and ckqx.cskz1 != '1'
+			</if>
+
+		</where>
+	</select>
+	<update id="updateCkhwxxs" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+			<set>
+				ckhwid=#{item.ckhwid}
+				<if test="item.wlid !=null and  item.wlid !=''">
+					,wlid=#{item.wlid}
+				</if>
+				<if test="item.kcl !=null and  item.kcl !=''">
+					,kcl=cast(#{item.kcl} as numeric)
+				</if>
+				<if test="item.yds !=null and  item.yds !=''">
+					,yds=cast(#{item.yds} as numeric)
+				</if>
+			</set>
+			<where>
+				ckhwid=#{item.ckhwid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<insert id="insertCkhwxxs" parameterType="List">
+		insert into igams_ckhwxx(ckhwid,wlid,kcl,yds,ckqxlx,ckid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.ckhwid},#{item.wlid},cast(#{item.kcl} as numeric),cast('0' as numeric),#{item.ckqxlx},#{item.ckid}
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+		<!-- 库存查看 查询基本信息 -->
+	<select id="getJbxxByCkhwid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select wlgl.wlbm wlbm,wlgl.wlmc wlmc,wlgl.scs scs,wlgl.gg gg,wlgl.jldw jldw,ckhwxx.yds,
+		wllb.csmc wllb,wlzlb.csmc wlzlb,lb.csmc lb
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid=wlgl.lb
+		<where>
+			ckhwxx.ckhwid=#{ckhwid}
+		</where>
+	</select>
+
+	<select id="getJbxxListByCkhwid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select wlgl.wlbm wlbm,wlgl.wlmc wlmc,wlgl.scs scs,wlgl.gg gg,wlgl.jldw jldw,ckhwxx.yds,
+		wllb.csmc wllb,wlzlb.csmc wlzlb,lb.csmc lb
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid=wlgl.lb
+		<where>
+			ckhwxx.wlid=#{wlid}
+		</where>
+	</select>
+	<!-- 库存查看 查询进货信息 -->
+	<select id="getJhxxByCkhwid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select dhxx.dhrq,
+		hwxx.dhsl dhsl,hwxx.sl dqkcl,hwxx.yxq yxq,
+		gysxx.gysmc gys,
+		xtyh.zsxm rkry
+		from igams_ckhwxx ckhwxx
+		left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid 
+		left join igams_gysxx gysxx on gysxx.gysid=dhxx.gysid
+		left join matridx_xtyh xtyh on xtyh.yhid = hwxx.rkry
+		<where>
+			ckhwid=#{ckhwid}
+		</where>
+	</select>
+	<select id="getJhxxList" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select dhxx.dhrq,ckhwxx.ckhwid,
+		hwxx.dhsl dhsl,hwxx.kcl dqkcl,hwxx.yxq yxq,
+		gysxx.gysmc gys,dhxx.dhdh,dhxx.dhid,
+		xtyh.zsxm rkry
+		from igams_ckhwxx ckhwxx
+		left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid and hwxx.scbj != '1'
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj != '1'
+		left join igams_gysxx gysxx on gysxx.gysid=dhxx.gysid and gysxx.scbj != '1'
+		left join matridx_xtyh xtyh on xtyh.yhid = hwxx.rkry and xtyh.scbj != '1'
+		<where>
+			hwxx.scbj='0' and hwxx.zt='99' and 
+			ckhwid=#{ckhwid}
+		</where>
+	</select>
+
+	<select id="getJhxxListByWlid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select dhxx.dhrq,
+		hwxx.dhsl dhsl,hwxx.kcl dqkcl,hwxx.yxq yxq,
+		gysxx.gysmc gys,dhxx.dhdh,dhxx.dhid,
+		xtyh.zsxm rkry
+		from (select wlid from igams_ckhwxx group by wlid) ckhwxx
+		left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid and hwxx.scbj != '1'
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj != '1'
+		left join igams_gysxx gysxx on gysxx.gysid=dhxx.gysid and gysxx.scbj != '1'
+		left join matridx_xtyh xtyh on xtyh.yhid = hwxx.rkry and xtyh.scbj != '1'
+		<where>
+			hwxx.scbj='0' and hwxx.zt='99' and
+			ckhwxx.wlid=#{wlid}
+		</where>
+	</select>
+
+
+
+	
+	<select id="getDtoList" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwid,wlid,kcl,yds
+		from igams_ckhwxx
+		<where>
+		<trim prefixOverrides="and">
+			<if test="ids !=null and ids.size >0" >
+				and wlid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</trim>
+		</where>
+	</select>
+
+	<select id="getDtoByWlidAndCkid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwid,wlid,kcl,yds,ckid
+		from igams_ckhwxx
+		<where>
+		wlid=#{wlid} and ckid =#{ckid}
+		</where>
+	</select>
+	
+	<!-- 根据查询条件模糊查询物料信息 -->
+	<select id="queryWlxx" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwxx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.scs,ckhwxx.ckqxlx,ckqx.csmc as ckqxmc,ckhwxx.ckhwid,ckxx.ckid,ckxx.ckmc
+			from igams_ckhwxx ckhwxx
+			left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid and wlgl.scbj ='0' and wlgl.zt = '80'
+		    left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+			left join igams_ckxx ckxx on ckxx.ckid = ckhwxx.ckid
+			where
+		<trim prefixOverrides="and">
+			<if test="cskz1 != null and cskz1 != ''">
+				and ckqx.cskz1 != '1'
+			</if>
+			<if test="zcck != null and zcck != ''">
+				and ckxx.ckid = #{zcck}
+			</if>
+			<if test="(xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+				and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+				left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+				where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+			</if>
+			<if test="ckqxlxs !=null and ckqxlxs.size >0">
+				and ckhwxx.ckqxlx in
+				<foreach collection="ckqxlxs" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="entire != null and  entire!= ''">
+				and (wlgl.wlmc ILIKE '%'||#{entire}||'%'
+				or wlgl.wlbm ILIKE '%'||#{entire}||'%')
+			</if>
+		</trim>
+	</select>
+	
+	<select id="queryWlxxByWlid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT ckhwxx.wlid, ckhwxx.kcl, ckhwxx.yds, wlgl.wlbm wlbm, wlgl.wlmc wlmc, wlgl.gg gg, wlgl.scs scs, wlgl.jldw jldw,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as klsl
+		,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,zlbtcjc.csmc wlzlbtcmc,ckhwxx.ckhwid,ckqx.csmc as ckqxmc,ckhwxx.ckqxlx,wlgl.aqkc aqkc,lb.csmc lbmc,wlgl.ychh ychh,
+		case when (ckhwxx.kcl-COALESCE(ckhwxx.yds,0))>0 then '库存充足' else '库存不足' end jjts,sfwxp.csmc sfwxpmc,lbjc.cskz1 lbcskz1,ckxx.ckid,ckxx.ckmc
+		FROM igams_ckhwxx ckhwxx
+			LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = ckhwxx.wlid AND wlgl.scbj!='1'
+			LEFT JOIN igams_ckxx ckxx ON ckxx.ckid = ckhwxx.ckid
+			left outer join matridx_jcsj jc on wlgl.wllb = jc.csid
+			left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+			left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+			left outer join matridx_jcsj zlbtcjc on wlgl.wlzlbtc = zlbtcjc.csid
+		    left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		    left join matridx_jcsj lb on lb.csid=wlgl.lb
+			left join matridx_jcsj sfwxp on sfwxp.csid=wlgl.sfwxp
+		<where>
+		<trim prefixOverrides="and">
+			<if test="ckhwid != null and  ckhwid!= ''">
+				and ckhwxx.ckhwid = #{ckhwid}
+			</if>
+			<if test="wlid != null and  wlid!= ''">
+				and wlgl.wlid =#{wlid}
+			</if>
+		</trim>
+		</where>		
+	</select>
+	<select id="queryCkhwxxGroupByWlid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT ckhwxx.wlid, ckhwxx.kcl, ckhwxx.yds, wlgl.wlbm wlbm, wlgl.wlmc wlmc, wlgl.gg gg, wlgl.scs scs, wlgl.jldw jldw,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as klsl
+		,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,zlbtcjc.csmc wlzlbtcmc,wlgl.aqkc aqkc,lb.csmc lbmc,wlgl.ychh ychh,
+		case when (ckhwxx.kcl-COALESCE(ckhwxx.yds,0))>0 then '库存充足' else '库存不足' end jjts,sfwxp.csmc sfwxpmc,lbjc.cskz1 lbcskz1
+		FROM (select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx
+			LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = ckhwxx.wlid AND wlgl.scbj!='1'
+			left outer join matridx_jcsj jc on wlgl.wllb = jc.csid
+			left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+			left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+			left outer join matridx_jcsj zlbtcjc on wlgl.wlzlbtc = zlbtcjc.csid
+		    left join matridx_jcsj lb on lb.csid=wlgl.lb
+			left join matridx_jcsj sfwxp on sfwxp.csid=wlgl.sfwxp
+		<where>
+		<trim prefixOverrides="and">
+			<if test="wlid != null and  wlid!= ''">
+				and wlgl.wlid =#{wlid}
+			</if>
+		</trim>
+		</where>
+	</select>
+	<select id="getWlxxByWlid" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT hwxx.hwid hwid,ckhwxx.wlid, COALESCE(hwxx.kcl,0) kcl, hwxx.yds, wlgl.wlbm wlbm, wlgl.wlmc wlmc, wlgl.gg gg, wlgl.scs scs, wlgl.jldw jldw
+		,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,zlbtcjc.csmc wlzlbtcmc,ckhwxx.ckhwid,ckqx.csmc as ckqxmc,ckhwxx.ckqxlx,wlgl.aqkc aqkc,lb.csmc lbmc,hwxx.scph scph,ckxx.ckmc ckmc,
+		kw.ckmc kw
+		FROM igams_ckhwxx ckhwxx
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = ckhwxx.wlid AND wlgl.scbj!='1'
+		left outer join matridx_jcsj jc on wlgl.wllb = jc.csid
+		left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+		left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+		left outer join matridx_jcsj zlbtcjc on wlgl.wlzlbtc = zlbtcjc.csid
+		left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		left join matridx_jcsj lb on lb.csid=wlgl.lb
+		left join igams_hwxx hwxx on wlgl.wlid=hwxx.wlid and hwxx.scbj!='1'
+		left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+		left join igams_ckxx kw on kw.ckid=hwxx.kwbh
+		<where>
+			<trim prefixOverrides="and">
+				<if test="ckhwid != null and  ckhwid!= ''">
+					and ckhwxx.ckhwid = #{ckhwid}
+				</if>
+				<if test="wlid != null and  wlid!= ''">
+					and wlgl.wlid =#{wlid}
+				</if>
+			</trim>
+		</where>
+	</select>
+	<update id="updateByCkhwid" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+			<set>
+				<trim prefixOverrides=",">
+					<if test="item.ydsbj =='1'.toString()">
+						,yds=COALESCE(yds,0) + cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.ydsbj =='0'.toString()">
+						,yds=COALESCE(yds,0) - cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.kclbj =='1'.toString()">
+						,kcl=COALESCE(kcl,0) + cast(#{item.kcl} as numeric)
+					</if>
+					<if test="item.kclbj =='0'.toString()">
+						,kcl=COALESCE(kcl,0) - cast(#{item.kcl} as numeric)
+					</if>
+				</trim>
+			</set>
+			<where>		
+				ckhwid=#{item.ckhwid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<!-- 选中导出  --> 
+ 	<select id="getListForSelectExp" parameterType="CkhwxxDto" resultType="CkhwxxDto"> 
+	    SELECT  ckhwxx.ckhwid ${sqlParam}
+		FROM (
+             <foreach collection="ids" separator=" union all "  index="index" item="item">
+		        select #{item, jdbcType=VARCHAR} ckhwid, #{index} ordernum
+		     </foreach>
+			) tmp 
+		left outer join igams_ckhwxx ckhwxx on ckhwxx.ckhwid=tmp.ckhwid
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join igams_ckxx ckxx on ckxx.ckid=ckhwxx.ckid
+		ORDER BY tmp.ordernum
+	</select>
+
+	<!-- 选中导出  -->
+	<select id="getListForSeruceSelectExp" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT  ckhwxx.wlid ${sqlParam}
+		FROM (
+		<foreach collection="ids" separator=" union all "  index="index" item="item">
+			select #{item, jdbcType=VARCHAR} wlid, #{index} ordernum
+		</foreach>
+		) tmp
+		left outer join (select wlid,sum(kcl) kcl from igams_ckhwxx  group by wlid) ckhwxx on ckhwxx.wlid=tmp.wlid
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		ORDER BY tmp.ordernum
+	</select>
+	
+	<!-- 获取搜索导出的条数 -->
+  	<select id="getCountForSearchExp"  parameterType="CkhwxxDto" resultType="java.lang.Integer">
+		select  count (ckhwxx.ckhwid)
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join igams_ckxx ckxx on ckxx.ckid=ckhwxx.ckid
+		<if test="entire != null and entire != ''">
+			left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		</if>
+		<if test="zsh != null and zsh != ''">
+			left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		</if>
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+				or zsh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="(xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+				and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+				left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+				where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+			</if>
+			<if test="cks != null and cks.length > 0">
+				and ckhwxx.ckid in
+				<foreach collection="cks" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取搜索导出的条数 -->
+	<select id="getCountForSeruceSearchExp"  parameterType="CkhwxxDto" resultType="java.lang.Integer">
+		select  count (ckhwxx.wlid)
+		from (select wlid,sum(kcl) kcl from igams_ckhwxx group by wlid) ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT  ckhwxx.ckhwid  ${sqlParam}
+		from igams_ckhwxx ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+		left join igams_ckxx ckxx on ckxx.ckid=ckhwxx.ckid
+		<if test="entire != null and entire != ''">
+			left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		</if>
+		<if test="zsh != null and zsh != ''">
+			left join igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		</if>
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+				or zsh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="(xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+				and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+				left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+				where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+			</if>
+			<if test="cks != null and cks.length > 0">
+				and ckhwxx.ckid in
+				<foreach collection="cks" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+		   ${sortName} ${sortOrder}
+		</if>
+ 		<if test="sortLastName != null and sortLastName != ''">
+		   ,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForSeruceSearchExp" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT    ckhwxx.wlid ${sqlParam}
+		from (select wlid,sum(kcl) kcl from igams_ckhwxx group by wlid) ckhwxx
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wllb.csid = wlgl.wllb
+		left join matridx_jcsj wlzlb on wlzlb.csid = wlgl.wlzlb
+		left join matridx_jcsj lb on lb.csid = wlgl.lb
+
+		<where>
+			<if test="entire != null and entire != ''">
+				and (
+				wlbm ILIKE '%' ||#{entire}||'%'
+				or wlmc ILIKE '%' ||#{entire}||'%'
+
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="jjtss != null and jjtss.length == 1 ">
+				and (
+				case when '1' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(ckhwxx.kcl,0) >= COALESCE(wlgl.aqkc,0))
+				when '0' in
+				<foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				then (COALESCE(wlgl.aqkc,0) > COALESCE(ckhwxx.kcl,0)) end)
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bms != null and bms.length > 0">
+				and wlgl.wlid in (select wlid from igams_bmwl where bm in
+				<foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach> GROUP BY wlid)
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	
+	<update id="updateHwSl" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+			<set>
+				ckhwid=#{item.ckhwid}
+				<if test="item.ydsbj =='1'.toString()">
+					,yds=COALESCE(yds,0) + cast(#{item.yds} as numeric)
+				</if>
+				<if test="item.ydsbj =='0'.toString()">
+					,yds=COALESCE(yds,0) - cast(#{item.yds} as numeric)
+				</if>
+			</set>
+			<where>
+				ckhwid=#{item.ckhwid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateCkhwxx" parameterType="CkhwxxDto">
+		update igams_ckhwxx
+		<set>
+			<trim prefixOverrides=",">
+				<if test="kcl !=null and  kcl !=''">
+					,kcl=cast(#{kcl} as numeric)
+				</if>
+			</trim>
+		</set>
+		where ckhwid = #{ckhwid}
+	</update>
+
+	<select id="getCkhwInfo" parameterType="String" resultType="CkhwxxDto">
+		SELECT  ckhwid,wlid,kcl,yds
+		FROM igams_ckhwxx
+	    where wlid = #{wlid}
+	</select>
+
+	<select id="getJsInfo" parameterType="String" resultType="CkhwxxDto">
+		select xtjs.ckqx
+		from matridx_xtjs xtjs
+		<where>
+			xtjs.jsid=#{jsid}
+		</where>
+	</select>
+	
+	<select id="getDtoListByWlids" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		select ckhwid,wlid,kcl,yds,ckqxlx,ckid
+		from igams_ckhwxx
+		<where>
+			wlid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+			and ckid in
+			<foreach collection="ckids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+			<set>
+				ckhwid=#{item.ckhwid}
+				<if test="item.ydsbj == '0'.toString()">
+					,kcl=COALESCE(kcl,0) - cast(#{item.kcl} as numeric)
+				</if>
+				<if test="item.ydsbj == '1'.toString()">
+					,kcl=COALESCE(kcl,0) + cast(#{item.kcl} as numeric)
+				</if>
+			</set>
+			<where>
+				ckhwid=#{item.ckhwid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateYdsList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+				<set>
+					ckhwid=#{item.ckhwid}
+					<if test="item.ydsbj == '0'.toString()">
+						,yds= COALESCE(yds,0) - cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.ydsbj == '1'.toString()">
+						,yds= COALESCE(yds,0) + cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.ydsbj == '2'.toString()">
+						,yds=  cast(#{item.yds} as numeric)
+					</if>
+				</set>
+				<where>
+					ckhwid=#{item.ckhwid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<update id="updateCkhwxxYds" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+			<set>
+				<trim prefixOverrides=",">
+					<if test="item.ydsbj == '0'.toString()">
+						,yds=COALESCE(yds,0) - cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.ydsbj == '1'.toString()">
+						,yds=COALESCE(yds,0) + cast(#{item.yds} as numeric)
+					</if>
+					<if test="item.kclbj =='1'.toString()">
+						,kcl=COALESCE(kcl,0) + cast(#{item.kcl} as numeric)
+					</if>
+					<if test="item.kclbj =='0'.toString()">
+						,kcl=COALESCE(kcl,0) - cast(#{item.kcl} as numeric)
+					</if>
+				</trim>
+			</set>
+			<where>
+				wlid=#{item.wlid} and ckid = #{item.ckid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+
+	<update id="update" parameterType="CkhwxxDto">
+			update igams_ckhwxx
+			<set>
+				<if test="kcl !=null and  kcl !=''">
+					,kcl=cast(#{kcl} as numeric)
+				</if>
+				<if test="yds !=null and  yds !=''">
+					,yds=cast(#{yds} as numeric)
+				</if>
+				<if test="kclbj =='1'.toString()">
+					,kcl=COALESCE(kcl,0) + cast(#{kcl} as numeric)
+				</if>
+				<if test="kclbj =='0'.toString()">
+					,kcl=COALESCE(kcl,0) - cast(#{kcl} as numeric)
+				</if>
+			</set>
+			<where>
+				ckhwid=#{ckhwid}
+			</where>
+	</update>
+	<select id="getHwxxtbyCkhwid" parameterType="String" resultType="CkhwxxDto">
+		select wlgl.wlbm,wlgl.wlmc,wlgl.jldw,hwxx.scph,hwxx.zsh,hwxx.scrq,hwxx.kcl,hwxx.dhsl,hwxx.cythsl,hwxx.zjthsl,hwxx.ckid,ckxx.ckmc,kw.csmc kw,dhjy.jydh,dhxx.dhdh,dhxx.dhid,
+		dhjy.dhjyid,hwxx.yxq
+		from
+		igams_ckhwxx ckhwxx
+		left join  igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+		left join matridx_jcsj kw on kw.csid=hwxx.kwbh
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj!='1'
+		left join igams_dhjy dhjy on hwxx.dhjyid=dhjy.dhjyid and dhjy.scbj!='1'
+		where ckhwid=#{ckhwid} and hwxx.zt = '99' and hwxx.scbj='0'
+	</select>
+
+	<select id="getHwxxtbyWlid" parameterType="String" resultType="CkhwxxDto">
+		select wlgl.wlbm,wlgl.wlmc,wlgl.jldw,hwxx.scph,hwxx.zsh,hwxx.scrq,hwxx.kcl,hwxx.dhsl,hwxx.cythsl,hwxx.zjthsl,hwxx.ckid,ckxx.ckmc,kw.csmc kw,dhjy.jydh,dhxx.dhdh,dhxx.dhid,
+		dhjy.dhjyid,hwxx.yxq
+		from
+		(select wlid from igams_ckhwxx group by wlid) ckhwxx
+		left join  igams_hwxx hwxx on hwxx.wlid=ckhwxx.wlid
+		left join igams_wlgl wlgl on wlgl.wlid=ckhwxx.wlid
+		left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+		left join matridx_jcsj kw on kw.csid=hwxx.kwbh
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj!='1'
+		left join igams_dhjy dhjy on hwxx.dhjyid=dhjy.dhjyid and dhjy.scbj!='1'
+		where ckhwxx.wlid=#{wlid} and hwxx.zt = '99'
+	</select>
+	
+	<update id="updateDto" parameterType="CkhwxxDto">
+		update igams_ckhwxx
+		<set>
+			<if test="kclbj =='1'.toString()">
+				,kcl=COALESCE(kcl,0) + cast(#{kcl} as numeric)
+			</if>
+			<if test="kclbj =='0'.toString()">
+				,kcl=COALESCE(kcl,0) - cast(#{kcl} as numeric)
+			</if>
+		</set>
+		<where>
+			wlid=#{wlid} and ckid = #{ckid}
+		</where>
+	</update>
+	<update id="updateByWlidAndCkid" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckhwxx
+				<set>
+					<trim prefixOverrides=",">
+						<if test="item.kclbj =='1'.toString()">
+							,kcl=COALESCE(kcl,0) + cast(#{item.kcl} as numeric)
+						</if>
+						<if test="item.kclbj =='0'.toString()">
+							,kcl=COALESCE(kcl,0) - cast(#{item.kcl} as numeric)
+						</if>
+					</trim>
+				</set>
+				<where>
+					wlid=#{item.wlid} and ckid = #{item.ckid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<select id="SelectInsufficientInventory" resultType="CkhwxxDto">
+		select tmp.wlmc,tmp.wlbm,tmp.jldw,tmp.gg,tmp.aqkc,tmp.wlid,COALESCE(tmp.kcl,0) kcl
+		from
+		(select wlgl.wlmc,wlgl.wlbm,wlgl.jldw,wlgl.gg, COALESCE(wlgl.aqkc,0) aqkc,ckhwxx.wlid,sum(kcl) kcl
+		from igams_ckhwxx ckhwxx
+		left join  igams_wlgl wlgl on ckhwxx.wlid=wlgl.wlid and wlgl.scbj='0'
+		group by wlgl.wlmc,wlgl.wlbm,wlgl.jldw,wlgl.gg,wlgl.aqkc,ckhwxx.wlid
+		)tmp
+		where cast (kcl as numeric)&lt;cast(aqkc as numeric)
+	</select>
+
+	<select id="getLastCkInfo" parameterType="CkhwxxDto" resultType="CkhwxxDto">
+		SELECT
+			ckgl.ckrq,COALESCE ( ckhwxx.kcl, 0 ) kcl
+		FROM
+			igams_ckhwxx ckhwxx
+				LEFT JOIN igams_hwxx hwxx ON ckhwxx.wlid = hwxx.wlid
+				AND hwxx.scbj = '0'
+				LEFT JOIN igams_ckmx ckmx ON ckmx.hwid = hwxx.hwid
+				AND ckmx.scbj = '0'
+				LEFT JOIN igams_ckgl ckgl ON ckmx.ckid = ckgl.ckid AND cklb in (SELECT csid FROM matridx_jcsj WHERE csdm NOT IN ( '7', 'HZ' ) AND jclb = 'DELIVERY_TYPE')
+		WHERE
+			ckhwxx.wlid = #{wlid}
+		ORDER BY
+			ckgl.ckrq DESC NULLS LAST
+			LIMIT 1
+	</select>
+</mapper>

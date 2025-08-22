@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJcjyglDao">
+    <select id="getJydhSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(jydh,LENGTH(jydh)-strpos(reverse(jydh),'-')+2,LENGTH(jydh))),'0')
+        AS numeric) + 1) as VARCHAR), 3, '0') serial
+        FROM igams_jcjygl
+        <where>
+            jydh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <select id="getDtoByJydh" parameterType="String" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjygl.jydh ,jcjygl.dwlx , jcjygl.dwid ,jcjygl.bm ,jcjygl.jyrq ,case jcjygl.sfzfyf WHEN '1' THEN '是' WHEN '0' THEN '否' ELSE '' END sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgdm bmdm,dwlx.csmc as dwlxmc
+        from igams_jcjygl jcjygl
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        where jcjygl.scbj = '0'  and jcjygl.jydh = #{jydh}
+    </select>
+
+    <insert id="insert" parameterType="JcjyglDto">
+        INSERT INTO igams_jcjygl
+        (jcjyid, jydh, dwlx, dwid,dwdm,dwmc, bm,jyrq, sfzfyf, lxr, lxfs, bz, lrry,zt, lrsj,scbj
+        <if test="ywy != null and ywy != ''">
+            ,ywy
+        </if>
+        <if test="shdz != null and shdz != ''">
+            ,shdz
+        </if>
+        <if test="htbh != null and htbh != ''">
+            ,htbh
+        </if>
+        <if test="fzdq != null and fzdq != ''">
+            ,fzdq
+        </if>
+        <if test="zd != null and zd != ''">
+            ,zd
+        </if>
+        <if test="zdqy != null and zdqy != ''">
+            ,zdqy
+        </if>
+        <if test="shlxfs != null and shlxfs != ''">
+            ,shlxfs
+        </if>
+        <if test="yjcjyid != null and yjcjyid != ''">
+            ,yjcjyid
+        </if>
+         <if test="djlx != null and djlx != ''">
+            ,djlx
+        </if>
+        <if test="xslx != null and xslx != ''">
+            ,xslx
+        </if>
+        <if test="fzr != null and fzr != ''">
+            ,fzr
+        </if>
+        <if test="ysfs != null and ysfs != ''">
+            ,ysfs
+        </if>
+        )
+        VALUES
+        (#{jcjyid}, #{jydh}, #{dwlx}, #{dwid}, #{dwdm}, #{dwmc}, #{bm} ,cast(#{jyrq} as timestamp), #{sfzfyf},#{lxr} ,
+        #{lxfs},#{bz} , #{lrry},'00', LOCALTIMESTAMP,'0'
+        <if test="ywy !=null and ywy != ''">
+            ,#{ywy}
+        </if>
+        <if test="shdz !=null and shdz != ''">
+            ,#{shdz}
+        </if>
+        <if test="htbh !=null and htbh != ''">
+            ,#{htbh}
+        </if>
+        <if test="fzdq !=null and fzdq != ''">
+            ,#{fzdq}
+        </if>
+        <if test="zd !=null and zd != ''">
+            ,#{zd}
+        </if>
+        <if test="zdqy !=null and zdqy != ''">
+            ,#{zdqy}
+        </if>
+        <if test="shlxfs !=null and shlxfs != ''">
+            ,#{shlxfs}
+        </if>
+        <if test="yjcjyid !=null and yjcjyid != ''">
+            ,#{yjcjyid}
+        </if>
+        <if test="djlx !=null and djlx != ''">
+            ,#{djlx}
+        </if>
+        <if test="xslx !=null and xslx != ''">
+            ,#{xslx}
+        </if>
+        <if test="fzr !=null and fzr != ''">
+            ,#{fzr}
+        </if>
+        <if test="ysfs !=null and ysfs != ''">
+            ,#{ysfs}
+        </if>
+        )
+    </insert>
+
+    <select id="getPagedDtoList" parameterType="JcjyglDto" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjygl.u8jydh ,jcjygl.jydh ,jcjygl.dwlx , jcjygl.dwmc ,jcjygl.dwid ,jcjygl.bm ,jcjygl.jyrq ,case jcjygl.sfzfyf WHEN '1' THEN '是' WHEN '0' THEN '否' ELSE '' END sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgmc as bmmc,bm.jgdm bmdm,dwlx.csmc as dwlxmc,
+        case when jcjygl.zt='00' then '未提交' when jcjygl.zt='15' then '审核未通过' when jcjygl.zt='80' then '审核通过' else '审核中' end ztmc,jcjygl.lrsj,jcjygl.ywy,coalesce(yxht.htbh,jcjygl.htbh) htbh,jcjygl.fzdq,jcjygl.zd,
+        jcjygl.zdqy,jcjygl.shdz,jcjygl.shlxfs,jcjygl.kdxx,case when jcjygl.sfqr='1' then '是' else '否' end sfqr,xtyh.zsxm ywymc,sf.csmc zdqymc,jcjygl.djlx,yjcjygl.jydh yjydh,jcjygl.yjcjyid
+        ,jcjygl.xslx,xslx.csmc xslxmc,jcjygl.htbh htid,jcjygl.fzr,fzr.zsxm fzrmc,jcjygl.ysfs,ysfs.csmc ysfsmc
+        from igams_jcjygl jcjygl
+        left join igams_yxht yxht on yxht.htid = jcjygl.htbh
+        left join igams_jcjygl yjcjygl on yjcjygl.jcjyid = jcjygl.yjcjyid
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid
+        left join matridx_xtyh xtyh on jcjygl.ywy=xtyh.yhid
+        left join matridx_jcsj sf on sf.csid=jcjygl.zdqy
+        left join matridx_jcsj xslx on xslx.csid=jcjygl.xslx
+        left join matridx_jcsj ysfs on ysfs.csid=jcjygl.ysfs
+        left join matridx_xtyh fzr on fzr.yhid=jcjygl.fzr
+        where jcjygl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcjygl.lxr ILIKE '%'||#{entire}||'%'
+            or jcjygl.jydh ILIKE '%'||#{entire}||'%'
+            or jcjygl.dwmc ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.htbh ILIKE '%'||#{entire}||'%'
+            or yxht.htbh ILIKE '%'||#{entire}||'%'
+            or jcjygl.fzdq ILIKE '%'||#{entire}||'%'
+            or sf.csmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.zd ILIKE '%'||#{entire}||'%'
+            or jcjygl.shdz ILIKE '%'||#{entire}||'%'
+            or khgl.khmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.shlxfs ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and jcjygl.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="jydh != null and jydh != ''">
+            and jcjygl.jydh ILIKE '%'||#{jydh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="dwmc != null and dwmc != ''">
+            and jcjygl.dwmc ILIKE '%'||#{dwmc}||'%'
+        </if>
+        <if test="khmc != null and khmc != ''">
+            and khgl.khmc ILIKE '%'||#{khmc}||'%'
+        </if>
+        <if test="htbh != null and htbh != ''">
+            and (jcjygl.htbh ILIKE '%'||#{htbh}||'%' or  yxht.htbh ILIKE '%'||#{htbh}||'%')
+        </if>
+        <if test="fzdq != null and fzdq != ''">
+            and jcjygl.fzdq ILIKE '%'||#{fzdq}||'%'
+        </if>
+        <if test="zdqy != null and zdqy != ''">
+            and sf.csmc ILIKE '%'||#{zdqy}||'%'
+        </if>
+        <if test="zd != null and zd != ''">
+            and jcjygl.zd ILIKE '%'||#{zd}||'%'
+        </if>
+        <if test="shdz != null and shdz != ''">
+            and jcjygl.shdz ILIKE '%'||#{shdz}||'%'
+        </if>
+        <if test="shlxfs != null and shlxfs != ''">
+            and jcjygl.shlxfs ILIKE '%'||#{shlxfs}||'%'
+        </if>
+        <if test="jysjstart != null and jysjstart != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &gt;= #{jysjstart}
+        </if>
+        <if test="jysjend != null and jysjend != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &lt;= #{jysjend}
+        </if>
+        <if test="sfqss != null and sfqss.length > 0 ">
+            and (select case when jcjygl.sfqs ='1' then '1' else '0' end  sfqs) in
+            <foreach collection="sfqss" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sfqrs != null and sfqrs.length > 0 ">
+            and (select case when jcjygl.sfqr='1' then '1' else '0' end sfqr) in
+            <foreach collection="sfqrs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="khlbs != null and khlbs.length > 0 ">
+            and khgl.khlb in
+            <foreach collection="khlbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="djlxs != null and djlxs.length > 0 ">
+            and coalesce(jcjygl.djlx,'0') in
+            <foreach collection="djlxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjygl.jydh ,jcjygl.dwlx ,jcjygl.dwmc ,jcjygl.dwdm , jcjygl.dwid ,jcjygl.bm ,jcjygl.jyrq ,case jcjygl.sfzfyf WHEN '1' THEN '是' WHEN '0' THEN '否' ELSE '' END sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgmc as bmmc,bm.jgdm bmdm,dwlx.csmc as dwlxmc,
+        case when jcjygl.zt='00' then '未提交' when jcjygl.zt='15' then '审核未通过' when jcjygl.zt='80' then '审核通过' else '审核中' end ztmc,xtyh.zsxm lrrymc,to_char(jcjygl.lrsj,'yyyyMMdd') lrsj,jcjygl.ywy,jcjygl.shdz,coalesce(yxht.htbh,jcjygl.htbh) htbh,
+        jcjygl.fzdq,jcjygl.zd,jcjygl.zdqy,jcjygl.shlxfs,khgl.khmc,xtyh1.zsxm ywymc,jcjygl.kdxx,jcjygl.sfqr,sf.csmc zdqymc,shry.zsxm shrymc,jcjygl.shrq,jcjygl.kdxx,jcjygl.sfqr,khgl.khjc,xtyh1.grouping
+        ,jcjygl.xslx,xslx.csmc xslxmc,jcjygl.htbh htid,jcjygl.fzr,fzr.zsxm fzrmc,jcjygl.ysfs,ysfs.csmc ysfsmc
+        from igams_jcjygl jcjygl
+        left join igams_yxht yxht on yxht.htid = jcjygl.htbh
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        left join matridx_xtyh xtyh on xtyh.yhid = jcjygl.lrry
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid
+        left join matridx_xtyh xtyh1 on xtyh1.yhid=jcjygl.ywy
+        left join matridx_jcsj sf on sf.csid=jcjygl.zdqy
+        left join matridx_xtyh shry on jcjygl.shry=shry.yhid
+        left join matridx_jcsj xslx on xslx.csid=jcjygl.xslx
+        left join matridx_jcsj ysfs on ysfs.csid=jcjygl.ysfs
+        left join matridx_xtyh fzr on fzr.yhid=jcjygl.fzr
+        where jcjygl.jcjyid = #{jcjyid} and jcjygl.scbj = '0'
+    </select>
+
+    <select id="getDto" parameterType="String" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjygl.jydh ,jcjygl.dwlx ,jcjygl.dwmc ,jcjygl.dwdm , jcjygl.dwid ,jcjygl.dwmc,jcjygl.bm ,jcjygl.jyrq ,jcjygl.sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgmc as bmmc,bm.jgdm bmdm,dwlx.csmc as dwlxmc
+        from igams_jcjygl jcjygl
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        where jcjygl.jcjyid = #{jcjyid} and jcjygl.scbj = '0'
+    </select>
+
+    <update id="update" parameterType="JcjyglDto">
+        UPDATE igams_jcjygl
+        SET
+        <trim prefixOverrides=",">
+        <if test="jydh != null and jydh != ''">
+            , jydh = #{jydh}
+        </if>
+        <if test="glid != null and glid != ''">
+            , glid = #{glid}
+        </if>
+        <if test="dwlx != null and dwlx != ''">
+            , dwlx = #{dwlx}
+        </if>
+        <if test="dwdm != null and dwdm != ''">
+            , dwdm = #{dwdm}
+        </if>
+        <if test="dwmc != null and dwmc != ''">
+            , dwmc = #{dwmc}
+        </if>
+        <if test="dwid != null and dwid != ''">
+            , dwid = #{dwid}
+        </if>
+        <if test="bm != null and bm != ''">
+            , bm = #{bm}
+        </if>
+        <if test="jyrq != null and jyrq != ''">
+            , jyrq = cast(#{jyrq} as timestamp)
+        </if>
+        <if test="sfzfyf != null and sfzfyf != ''">
+            , sfzfyf = #{sfzfyf}
+        </if>
+        <if test="lxr != null and lxr != ''">
+            , lxr = #{lxr}
+        </if>
+        <if test="lxfs != null and lxfs != ''">
+            , lxfs = #{lxfs}
+        </if>
+        <if test="zt != null and zt != ''">
+            , zt = #{zt}
+        </if>
+        <if test="bz != null and bz != ''">
+            , bz = #{bz}
+        </if>
+        <if test="u8jydh != null and u8jydh != ''">
+            , u8jydh = #{u8jydh}
+        </if>
+        <if test="lrry != null and lrry != ''">
+            , lrry = #{lrry}
+            , lrsj = LOCALTIMESTAMP
+        </if>
+        <if test="xgry != null and xgry != ''">
+            , xgry = #{xgry}
+            , xgsj = LOCALTIMESTAMP
+        </if>
+        <if test="scry != null and scry != ''">
+            , scry = #{scry}
+            , scsj = LOCALTIMESTAMP
+            , scbj = '1'
+        </if>
+        <if test="ywy != null and ywy != ''">
+            ,ywy=#{ywy}
+        </if>
+        <if test="shdz != null and shdz != ''">
+            ,shdz=#{shdz}
+        </if>
+        <if test="htbh != null and htbh != ''">
+            ,htbh=#{htbh}
+        </if>
+        <if test="fzdq != null and fzdq != ''">
+            ,fzdq=#{fzdq}
+        </if>
+        <if test="zd != null and zd != ''">
+            ,zd=#{zd}
+        </if>
+        <if test="zdqy != null and zdqy != ''">
+            ,zdqy=#{zdqy}
+        </if>
+        <if test="xslx !=null and xslx != ''">
+            ,xslx=#{xslx}
+        </if>
+        <if test="shlxfs != null and shlxfs != ''">
+            ,shlxfs=#{shlxfs}
+        </if>
+        <if test="shrq != null and shrq != ''">
+            ,shrq=cast(#{shrq} as timestamp)
+        </if>
+        <if test="shry != null and shry != ''">
+            ,shry=#{shry}
+        </if>
+        <if test="sfqs != null and sfqs != ''">
+            ,sfqs=#{sfqs}
+        </if>
+        <if test="fzr !=null and fzr != ''">
+            ,fzr=#{fzr}
+        </if>
+        <if test="ysfs !=null and ysfs != ''">
+            ,ysfs=#{ysfs}
+        </if>
+        </trim>
+        WHERE jcjyid = #{jcjyid}
+    </update>
+
+    <select id="getPagedAuditJcjyglDto" parameterType="JcjyglDto" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjygl.jydh ,jcjygl.dwlx ,jcjygl.dwdm,jcjygl.dwmc, jcjygl.dwid , jcjygl.lrsj, jcjygl.bm ,jcjygl.jyrq ,case jcjygl.sfzfyf WHEN '1' THEN '是' WHEN '0' THEN '否' ELSE '' END sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgmc as bmmc,bm.jgdm bmdm,dwlx.csmc as dwlxmc
+        ,jcjygl.xslx,xslx.csmc xslxmc
+        from igams_jcjygl jcjygl
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        left join matridx_jcsj xslx on xslx.csid=jcjygl.xslx
+        where jcjygl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcjygl.lxr ILIKE '%'||#{entire}||'%'
+            or jcjygl.jydh ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%')
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and jcjygl.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="jydh != null and jydh != ''">
+            and jcjygl.jydh ILIKE '%'||#{jydh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="zt != null and zt!='' ">
+            and jcjygl.zt = #{zt}
+        </if>
+    </select>
+
+    <select id="getAuditListJcjyglDto" parameterType="List" resultType="JcjyglDto">
+
+        select
+        jcjygl.jcjyid ,jcjygl.jydh ,jcjygl.dwlx ,jcjygl.dwmc ,jcjygl.dwdm, jcjygl.dwid ,jcjygl.bm ,jcjygl.jyrq ,case jcjygl.sfzfyf WHEN '1' THEN '是' WHEN '0' THEN '否' ELSE '' END sfzfyf,jcjygl.lxr ,jcjygl.lxfs ,jcjygl.zt ,jcjygl.bz,bm.jgmc as bmmc,bm.jgdm bmdm,dwlx.csmc as dwlxmc,jcjygl.xslx,xslx.csmc xslxmc,
+        shxx_sqsj, shxx_gwmc, sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from 
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.jcjyid} jcjyid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc, #{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp 
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid = tmp.jcjyid
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx
+        left join matridx_jcsj xslx on xslx.csid=jcjygl.xslx
+        order by tmp.rownum
+    </select>
+
+    <select id="getDtoListByIds" parameterType="JcjyglDto" resultType="JcjyglDto">
+        select
+        jcjygl.jcjyid ,jcjyxx.jyxxid,coalesce(jcjyxx.jcsl,0) as jcsl,jcjygl.zt,jcjyxx.ckhwid,jcjymx.jymxid,jcjymx.hwid,coalesce(jcjymx.jysl,0) as jysl
+        from
+        igams_jcjygl jcjygl
+        left join igams_jcjyxx jcjyxx on jcjygl.jcjyid = jcjyxx.jcjyid and jcjyxx.scbj = '0'
+        left join igams_jcjymx jcjymx on jcjyxx.jyxxid = jcjymx.jyxxid and jcjymx.scbj = '0'
+        where jcjygl.scbj = '0' and jcjygl.jcjyid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </select>
+    <update id="deleteByIds" parameterType="JcjyglDto">
+        update igams_jcjygl set scbj = '1',scry = #{scry},scsj = LOCALTIMESTAMP
+        where jcjyid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </update>
+    <select id="getJcjyWithKh" resultType="JcjyglDto">
+        SELECT
+            khgl.khjc,COUNT(jcjyxx.jyxxid) ts,jcjygl.dwid
+        FROM
+            igams_jcjygl jcjygl
+                LEFT JOIN igams_jcjyxx jcjyxx ON jcjygl.jcjyid = jcjyxx.jcjyid and jcjyxx.scbj = '0'
+                LEFT JOIN igams_khgl khgl on jcjygl.dwid = khgl.khid
+        where khgl.khjc is not null
+        GROUP BY khgl.khjc,jcjygl.dwid
+    </select>
+    <select id="getJcjyxxByDwid" parameterType="JcjyglDto" resultType="JcjyglDto">
+        SELECT
+            wlgl.wlmc,
+            wlgl.wlbm,
+            jcjyxx.jcsl,
+            jcjyxx.jyxxid,jcjygl.jcjyid,wlgl.wlid
+            FROM
+            igams_jcjygl jcjygl
+            LEFT JOIN igams_jcjyxx jcjyxx ON jcjygl.jcjyid = jcjyxx.jcjyid
+            AND jcjyxx.scbj = '0'
+            LEFT JOIN igams_ckhwxx ckhwxx ON ckhwxx.ckhwid = jcjyxx.ckhwid
+            LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = ckhwxx.wlid
+            WHERE
+            jcjygl.scbj = '0'
+          AND jcjygl.dwid IN
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+            <if test="ddentire != null and ddentire != ''">
+                and (
+                wlgl.wlmc ILIKE '%'||#{ddentire}||'%'
+                or wlgl.wlbm ILIKE '%'||#{ddentire}||'%'
+                )
+            </if>
+            LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="JcjyglDto"
+            resultType="java.lang.Integer">
+        select count(jcjygl.jcjyid) from igams_jcjygl jcjygl
+        left join igams_yxht yxht on yxht.htid = jcjygl.htbh
+        left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid and jcjymx.scbj!='0'
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid=jcjymx.jyxxid and jcjyxx.scbj!='0'
+        left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm and bm.scbj='0'
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx and dwlx.scbj='0'
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid and khgl.scbj='0'
+        left join matridx_xtyh zdr on zdr.yhid=jcjygl.lrry and zdr.scbj='0'
+        left join matridx_xtyh shr on shr.yhid=jcjygl.shry and shr.scbj='0'
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid and hwxx.scbj='0'
+        left join matridx_xtyh xtyh on jcjygl.ywy=xtyh.yhid
+        left join matridx_jcsj sf on sf.csid=jcjygl.zdqy
+        where jcjygl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcjygl.lxr ILIKE '%'||#{entire}||'%'
+            or jcjygl.jydh ILIKE '%'||#{entire}||'%'
+            or jcjygl.dwmc ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.htbh ILIKE '%'||#{entire}||'%'
+            or yxht.htbh ILIKE '%'||#{entire}||'%'
+            or jcjygl.fzdq ILIKE '%'||#{entire}||'%'
+            or sf.csmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.zd ILIKE '%'||#{entire}||'%'
+            or jcjygl.shdz ILIKE '%'||#{entire}||'%'
+            or khgl.khmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.shlxfs ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and jcjygl.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="jydh != null and jydh != ''">
+            and jcjygl.jydh ILIKE '%'||#{jydh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="dwmc != null and dwmc != ''">
+            and jcjygl.dwmc ILIKE '%'||#{dwmc}||'%'
+        </if>
+        <if test="khmc != null and khmc != ''">
+            and khgl.khmc ILIKE '%'||#{khmc}||'%'
+        </if>
+        <if test="htbh != null and htbh != ''">
+            and (jcjygl.htbh ILIKE '%'||#{htbh}||'%' or yxht.htbh ILIKE '%'||#{htbh}||'%')
+        </if>
+        <if test="fzdq != null and fzdq != ''">
+            and jcjygl.fzdq ILIKE '%'||#{fzdq}||'%'
+        </if>
+        <if test="zdqy != null and zdqy != ''">
+            and sf.csmc ILIKE '%'||#{zdqy}||'%'
+        </if>
+        <if test="zd != null and zd != ''">
+            and jcjygl.zd ILIKE '%'||#{zd}||'%'
+        </if>
+        <if test="shdz != null and shdz != ''">
+            and jcjygl.shdz ILIKE '%'||#{shdz}||'%'
+        </if>
+        <if test="shlxfs != null and shlxfs != ''">
+            and jcjygl.shlxfs ILIKE '%'||#{shlxfs}||'%'
+        </if>
+        <if test="jysjstart != null and jysjstart != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &gt;= #{jysjstart}
+        </if>
+        <if test="jysjend != null and jysjend != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &lt;= #{jysjend}
+        </if>
+        <if test="sfqss != null and sfqss.length > 0 ">
+            and (select case when jcjygl.kdxx is null then '0' else '1' end sfqr) in
+            <foreach collection="sfqss" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sfqrs != null and sfqrs.length > 0 ">
+            and jcjygl.sfqr in
+            <foreach collection="sfqrs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="khlbs != null and khlbs.length > 0 ">
+            and khgl.khlb in
+            <foreach collection="khlbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="JcjyglDto" resultType="JcjyglDto">
+        select jcjygl.jcjyid ${sqlParam}
+        from igams_jcjygl jcjygl
+        left join igams_yxht yxht on yxht.htid = jcjygl.htbh
+        left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid and jcjymx.scbj='0'
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid=jcjymx.jyxxid and jcjyxx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm and bm.scbj='0'
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx and dwlx.scbj='0'
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid and khgl.scbj='0'
+        left join matridx_xtyh zdr on zdr.yhid=jcjygl.lrry and zdr.scbj='0'
+        left join matridx_xtyh shr on shr.yhid=jcjygl.shry and shr.scbj='0'
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid and hwxx.scbj='0'
+        left join matridx_xtyh xtyh on jcjygl.ywy=xtyh.yhid
+        left join matridx_jcsj sf on sf.csid=jcjygl.zdqy
+        where jcjygl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcjygl.lxr ILIKE '%'||#{entire}||'%'
+            or jcjygl.jydh ILIKE '%'||#{entire}||'%'
+            or jcjygl.dwmc ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.htbh ILIKE '%'||#{entire}||'%'
+            or yxht.htbh ILIKE '%'||#{entire}||'%'
+            or jcjygl.fzdq ILIKE '%'||#{entire}||'%'
+            or sf.csmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.zd ILIKE '%'||#{entire}||'%'
+            or jcjygl.shdz ILIKE '%'||#{entire}||'%'
+            or khgl.khmc ILIKE '%'||#{entire}||'%'
+            or jcjygl.shlxfs ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and jcjygl.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="jydh != null and jydh != ''">
+            and jcjygl.jydh ILIKE '%'||#{jydh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="dwmc != null and dwmc != ''">
+            and jcjygl.dwmc ILIKE '%'||#{dwmc}||'%'
+        </if>
+        <if test="khmc != null and khmc != ''">
+            and khgl.khmc ILIKE '%'||#{khmc}||'%'
+        </if>
+        <if test="htbh != null and htbh != ''">
+            and (jcjygl.htbh ILIKE '%'||#{htbh}||'%' or yxht.htbh ILIKE '%'||#{htbh}||'%')
+        </if>
+        <if test="fzdq != null and fzdq != ''">
+            and jcjygl.fzdq ILIKE '%'||#{fzdq}||'%'
+        </if>
+        <if test="zdqy != null and zdqy != ''">
+            and sf.csmc ILIKE '%'||#{zdqy}||'%'
+        </if>
+        <if test="zd != null and zd != ''">
+            and jcjygl.zd ILIKE '%'||#{zd}||'%'
+        </if>
+        <if test="shdz != null and shdz != ''">
+            and jcjygl.shdz ILIKE '%'||#{shdz}||'%'
+        </if>
+        <if test="shlxfs != null and shlxfs != ''">
+            and jcjygl.shlxfs ILIKE '%'||#{shlxfs}||'%'
+        </if>
+        <if test="jysjstart != null and jysjstart != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &gt;= #{jysjstart}
+        </if>
+        <if test="jysjend != null and jysjend != ''">
+            and to_char(jcjygl.jyrq,'yyyy-mm-dd') &lt;= #{jysjend}
+        </if>
+        <if test="sfqss != null and sfqss.length > 0 ">
+            and (select case when jcjygl.kdxx is null then '0' else '1' end sfqr) in
+            <foreach collection="sfqss" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sfqrs != null and sfqrs.length > 0 ">
+            and jcjygl.sfqr in
+            <foreach collection="sfqrs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="khlbs != null and khlbs.length > 0 ">
+            and khgl.khlb in
+            <foreach collection="khlbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="JcjyglDto" resultType="JcjyglDto">
+        select jcjygl.jcjyid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} jcjyid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_jcjygl jcjygl on jcjygl.jcjyid=tmp.jcjyid
+        left join igams_yxht yxht on yxht.htid = jcjygl.htbh
+        left join igams_jcjymx jcjymx on jcjymx.jcjyid=jcjygl.jcjyid and jcjymx.scbj='0'
+        left join igams_jcjyxx jcjyxx on jcjyxx.jyxxid=jcjymx.jyxxid and jcjyxx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.hwid=jcjymx.hwid and hwxx.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj='0'
+        left join matridx_jgxx bm on bm.jgid = jcjygl.bm and bm.scbj='0'
+        left join matridx_jcsj dwlx on dwlx.csid = jcjygl.dwlx and dwlx.scbj='0'
+        left join igams_khgl khgl on khgl.khid=jcjygl.dwid and khgl.scbj='0'
+        left join matridx_xtyh zdr on zdr.yhid=jcjygl.lrry and zdr.scbj='0'
+        left join matridx_xtyh shr on shr.yhid=jcjygl.shry and shr.scbj='0'
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid and hwxx.scbj='0'
+        left join matridx_xtyh xtyh on jcjygl.ywy=xtyh.yhid
+        left join matridx_jcsj sf on sf.csid=jcjygl.zdqy
+        where jcjygl.scbj = '0'
+        order by tmp.ordernum
+    </select>
+    <update id="updateWlxx" parameterType="JcjyglDto">
+        update igams_jcjygl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfqr=#{sfqr},kdxx=#{kdxx}
+        </set>
+        <where>
+            jcjyid=#{jcjyid}
+        </where>
+    </update>
+    <update id="updateFzrByYfzr" parameterType="JcjyglDto">
+		update igams_jcjygl set
+		fzr=#{fzr}
+		where fzr=#{yfzr}
+	</update>
+</mapper>

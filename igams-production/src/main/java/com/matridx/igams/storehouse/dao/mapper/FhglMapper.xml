@@ -1,0 +1,910 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IFhglDao" >
+ 	<sql id="SEARCH_TERMS">
+		fhgl.scbj!='1' and fhgl.sfbj='1'
+		<if test="entire != null and entire != ''">
+			and (
+				fhgl.fhdh ILIKE '%'||#{entire}||'%'
+				or khgl.khmc ILIKE '%'||#{entire}||'%'
+				or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+				or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="fhdh != null and fhdh != ''">
+			and fhgl.fhdh ILIKE '%'||#{fhdh}||'%'
+		</if>
+		<if test="khmc != null and khmc != ''">
+			and khgl.khmc ILIKE '%'||#{khmc}||'%'
+		</if>
+		<if test="jsrmc != null and jsrmc != ''">
+			and xtyh.zsxm ILIKE '%'||#{jsrmc}||'%'
+		</if>		
+		<if test="xsbmmc != null and xsbmmc != ''">
+			and jgxx.jgmc ILIKE '%'||#{xsbmmc}||'%'
+		</if>
+		
+		<if test="shsjstart != null and shsjstart != ''">
+			and to_char(fhgl.djrq,'yyyy-mm-dd') &gt;= #{shsjstart}
+		</if>
+		<if test="shsjend != null and shsjend != ''">
+			and to_char(fhgl.djrq,'yyyy-mm-dd') &lt;= #{shsjend}
+		</if>
+        <if test="zt != null and zt != ''">
+            and zt= #{zt}
+        </if>
+	</sql>
+    <select id="getFhdhSerial" parameterType="String" resultType="String">
+        SELECT   lpad(cast((CAST(coalesce(MAX(substring(fhdh,13)),'0') AS numeric) + 1) as VARCHAR), 5, '0') serial
+        FROM igams_fhgl
+        <where>
+            scbj = '0' AND fhdh like #{prefix}||'%'
+        </where>
+    </select>
+		
+    <insert id="insert" parameterType="FhglDto">
+        INSERT INTO igams_fhgl(
+        <if test="fhid != null and fhid != ''">
+            fhid,
+        </if>
+        <if test="fhdh != null and fhdh != ''">
+            fhdh,
+        </if>
+		<if test="jsr != null and jsr != ''">
+            jsr,
+        </if>
+        <if test="xslx != null and xslx != ''">
+            xslx,
+        </if>
+        <if test="djrq != null and djrq != ''">
+            djrq,
+        </if>
+        <if test="xsbm != null and xsbm != ''">
+            xsbm,
+        </if>
+        <if test="ddh != null and ddh != ''">
+	    	ddh,
+        </if>
+        <if test="kh != null and kh != ''">
+            kh,
+        </if>
+        <if test="shdz != null and shdz != ''">
+            shdz,
+        </if>
+        <if test="sfbj != null and sfbj != ''">
+            sfbj,
+        </if>
+        <if test="bz != null and bz != ''">
+            bz,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        <if test="ckid != null and ckid != ''">
+            ckid,
+        </if>
+        <if test="ysfs != null and ysfs != ''">
+            ysfs,
+        </if>
+        <if test="zt != null and zt != ''">
+            zt,
+        </if>
+	scbj,lrsj )
+        
+        VALUES (
+        <if test="fhid != null and fhid != ''">
+            #{fhid},
+		</if>
+		<if test="fhdh != null and fhdh != ''">
+		     #{fhdh},
+		</if>
+		<if test="jsr != null and jsr != ''">
+	            #{jsr},
+		</if>
+        <if test="xslx != null and xslx != ''">
+            #{xslx},
+        </if>
+		<if test="djrq != null and djrq != ''">
+	            cast(#{djrq} as date),
+		</if>		
+		<if test="xsbm != null and xsbm != ''">
+	            #{xsbm},
+		</if>
+        <if test="ddh != null and ddh != ''">
+            #{ddh},
+        </if>
+		<if test="kh != null and kh != ''">
+	            #{kh},
+		</if>
+		<if test="shdz != null and shdz != ''">
+	            #{shdz},
+		</if>
+        <if test="sfbj != null and sfbj != ''">
+            #{sfbj},
+		</if>
+        <if test="bz != null and bz != ''">
+            #{bz},
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        <if test="ckid != null and ckid != ''">
+            #{ckid},
+        </if>
+        <if test="ysfs != null and ysfs != ''">
+            #{ysfs},
+        </if>
+        <if test="zt != null and zt != ''">
+            #{zt},
+        </if>
+        
+        '0',LOCALTIMESTAMP)
+    </insert>
+    <select id="getPagedDtoList" parameterType="FhglDto" resultType="FhglDto">
+        SELECT
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm jsrmc,
+        fhgl.kh,
+        xs.csmc xslxmc,
+        jg.jgmc xsbmmc,
+        khgl.khmc khmc,
+        to_char(fhgl.djrq,'yyyy-mm-dd') djrq,
+        fhgl.ddh,
+        xsgl.oaxsdh xsdd,
+        fhgl.shdz,
+        fhgl.bz,fhgl.zt,fhgl.u8fhdh,xsgl.xsid,
+        case when fhgl.zt='00' then '未提交' when fhgl.zt='15' then '审核未通过' when fhgl.zt='80' then '审核通过' else '审核中' end ztmc
+        FROM
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr and xtyh.scbj='0'
+        left join matridx_jcsj xs on xs.csid=fhgl.xslx and xs.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=fhgl.xsbm and jg.scbj='0'
+        left join igams_khgl khgl on khgl.khid=fhgl.kh and khgl.scbj='0'
+        left join igams_xsgl xsgl on xsgl.xsid =fhgl.ddh and  xsgl.scbj = '0'
+        <where>
+            fhgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                fhgl.fhdh ILIKE '%' ||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or fhgl.shdz ILIKE '%' ||#{entire}||'%'
+                or fhgl.fhid in (
+                    select fhmx.fhid from igams_fhmx fhmx
+                    left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                    left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                    where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{entire}||'%')
+                or fhgl.fhid in (
+                    select fhmx.fhid from igams_fhmx fhmx
+                    left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                    left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                    where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{entire}||'%')
+
+                or fhgl.ddh in (
+                    select xsglxx.xsid from igams_xsgl xsglxx
+                    where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{entire}||'%')
+                )
+            </if>
+            <if test="fhdh != null and fhdh != ''">
+                and fhgl.fhdh ILIKE '%' ||#{fhdh}||'%'
+            </if>
+            <if test="jsr != null and jsr != ''">
+                and xtyh.zsxm ILIKE '%' ||#{jsr}||'%'
+            </if>
+            <if test="xsdd != null and xsdd != ''">
+                and fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{xsdd}||'%')
+            </if>
+            <if test="kh != null and kh != ''">
+                and khgl.khmc ILIKE '%' ||#{kh}||'%'
+            </if>
+            <if test="shdz != null and shdz != ''">
+                and fhgl.shdz ILIKE '%' ||#{shdz}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{wlmc}||'%')
+            </if>
+            <if test="fhsjstart != null and fhsjstart != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &gt;= #{fhsjstart}
+            </if>
+            <if test="fhsjend != null and fhsjend != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &lt;= #{fhsjend}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getPagedAuditDevice" parameterType="FhglDto" resultType="FhglDto">
+        SELECT
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm jsrmc,
+        fhgl.kh,
+        xs.csmc xslxmc,
+        jg.jgmc xsbmmc,
+        khgl.khmc khmc,
+        to_char(fhgl.djrq,'yyyy-mm-dd') djrq,
+        fhgl.ddh,
+        xsgl.oaxsdh xsdd,
+        fhgl.shdz,
+        fhgl.bz,fhgl.zt
+        FROM
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr and xtyh.scbj='0'
+        left join matridx_jcsj xs on xs.csid=fhgl.xslx and xs.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=fhgl.xsbm and jg.scbj='0'
+        left join igams_khgl khgl on khgl.khid=fhgl.kh and khgl.scbj='0'
+        left join igams_xsgl xsgl on xsgl.xsid =fhgl.ddh and  xsgl.scbj = '0'
+        <where>
+            fhgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                fhgl.fhdh ILIKE '%' ||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or fhgl.shdz ILIKE '%' ||#{entire}||'%'
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{entire}||'%')
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{entire}||'%')
+
+                or fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{entire}||'%')
+                )
+            </if>
+            <if test="fhdh != null and fhdh != ''">
+                and fhgl.fhdh ILIKE '%' ||#{fhdh}||'%'
+            </if>
+            <if test="jsr != null and jsr != ''">
+                and xtyh.zsxm ILIKE '%' ||#{jsr}||'%'
+            </if>
+            <if test="xsdd != null and xsdd != ''">
+                and fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{xsdd}||'%')
+            </if>
+            <if test="kh != null and kh != ''">
+                and khgl.khmc ILIKE '%' ||#{kh}||'%'
+            </if>
+            <if test="shdz != null and shdz != ''">
+                and fhgl.shdz ILIKE '%' ||#{shdz}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{wlmc}||'%')
+            </if>
+            <if test="fhsjstart != null and fhsjstart != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &gt;= #{fhsjstart}
+            </if>
+            <if test="fhsjend != null and fhsjend != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &lt;= #{fhsjend}
+            </if>
+            <if test="zt != null and zt != ''">
+                and fhgl.zt = #{zt}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getAuditListDevice" parameterType="List" resultType="FhglDto">
+
+        SELECT
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm jsrmc,
+        fhgl.kh,
+        fhgl.ckid,
+        xs.csmc xslxmc,
+        xsgl.oaxsdh xsdd,
+        jg.jgmc xsbmmc,
+        khgl.khmc khmc,
+        khgl.khdm khdm,
+        to_char(fhgl.djrq,'yyyy-mm-dd') djrq,
+        fhgl.ddh,
+        fhgl.shdz,
+        fhgl.bz,xs.csdm as xslxdm,jg.jgdm as xsbmdm,xtyh_lrry.zsxm,khgl.khdm,khgl.khmc
+        ,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        FROM
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.fhid} fhid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp 
+        left join igams_fhgl fhgl on fhgl.fhid = tmp.fhid 
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr and xtyh.scbj='0'
+        left join igams_xsgl xsgl on xsgl.xsid =fhgl.ddh and  xsgl.scbj = '0'
+        left join matridx_jcsj xs on xs.csid=fhgl.xslx and xs.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=fhgl.xsbm and jg.scbj='0'
+        left join igams_khgl khgl on khgl.khid=fhgl.kh and khgl.scbj='0'
+        left join matridx_xtyh xtyh_lrry on xtyh_lrry.yhid=fhgl.lrry
+        where fhgl.scbj!='1'
+        order by tmp.rownum
+    </select>
+
+
+    <select id="getDtoListByFhdh" parameterType="FhglDto" resultType="FhglDto">
+        SELECT
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm jsrmc,
+        fhgl.kh,
+        xs.csmc xslxmc,
+        jg.jgmc xsbmmc,
+        khgl.khmc khmc,
+        khgl.khdm khdm,
+        to_char(fhgl.djrq,'yyyy-mm-dd') djrq,
+        fhgl.ddh,
+        fhgl.shdz,
+        fhgl.bz,xs.csdm as xslxdm,jg.jgdm as xsbmdm,xtyh_lrry.zsxm,khgl.khdm,khgl.khmc
+        FROM
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr and xtyh.scbj='0'
+        left join matridx_jcsj xs on xs.csid=fhgl.xslx and xs.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=fhgl.xsbm and jg.scbj='0'
+        left join igams_khgl khgl on khgl.khid=fhgl.kh and khgl.scbj='0'
+        left join matridx_xtyh xtyh_lrry on xtyh_lrry.yhid=fhgl.lrry
+        where fhgl.scbj!='1' and fhgl.fhdh = #{fhdh}
+    </select>
+
+    <select id="getDtoByid" parameterType="FhglDto" resultType="FhglDto">
+        SELECT
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm jsrmc,
+        fhgl.kh,
+        fhgl.ckid,
+        xs.csmc xslxmc,
+        xsgl.oaxsdh xsdd,
+        jg.jgmc xsbmmc,
+        khgl.khmc khmc,
+        khgl.khdm khdm,
+        to_char(fhgl.djrq,'yyyy-mm-dd') djrq,
+        fhgl.ddh,
+        fhgl.shdz,fhgl.u8fhdh,
+        fhgl.bz,xs.csdm as xslxdm,jg.jgdm as xsbmdm,xtyh_lrry.zsxm,khgl.khdm,khgl.khmc,yhssjg.jgid as ssjg,
+        xsgl.suil,fhgl.wlxx,ywy.grouping,fhgl.sfqr,fhgl.kdxx,fhgl.zt,xsgl.xsid
+        FROM
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr and xtyh.scbj='0'
+        left join igams_xsgl xsgl on xsgl.xsid =fhgl.ddh and  xsgl.scbj = '0'
+        left join matridx_jcsj xs on xs.csid=fhgl.xslx and xs.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=fhgl.xsbm and jg.scbj='0'
+        left join igams_khgl khgl on khgl.khid=fhgl.kh and khgl.scbj='0'
+        left join matridx_xtyh xtyh_lrry on xtyh_lrry.yhid=fhgl.lrry
+        left join matridx_yhssjg yhssjg on yhssjg.yhid = fhgl.lrry
+        left join matridx_xtyh ywy on ywy.yhid=xsgl.ywy
+        <where>
+            fhgl.scbj!='1'and fhgl.fhid=#{fhid}
+        </where>
+    </select>
+    
+    <select id="getPagedDtoKThList" parameterType="FhglDto" resultType="FhglDto">
+    	select fhgl.fhid,fhgl.fhdh,fhgl.djrq,xtyh.zsxm as jsrmc,khgl.khmc as khmc,jgxx.jgmc as xsbmmc,fhgl.kh
+    	from igams_fhgl fhgl
+    	left join igams_khgl khgl on khgl.khid=fhgl.kh
+    	left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr
+    	left join matridx_jgxx jgxx on jgxx.jgid=fhgl.xsbm
+    	<where>
+    		<include refid="SEARCH_TERMS"></include>
+       	</where>
+    </select>
+    
+    <select id="getDtoById" parameterType="String" resultType="FhglDto">
+    	select fhgl.fhid,fhgl.fhdh,fhgl.djrq,xtyh.zsxm as jsrmc,khgl.khmc as khmc,jgxx.jgmc as xsbmmc,fhgl.kh,fhgl.xsbm,fhgl.sfqr,fhgl.kdxx
+    	from igams_fhgl fhgl
+    	left join igams_khgl khgl on khgl.khid=fhgl.kh
+    	left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr
+    	left join matridx_jgxx jgxx on jgxx.jgid=fhgl.xsbm
+    	<where>
+    		fhgl.scbj!='1' and fhgl.fhid=#{fhid}
+       	</where>
+    </select>
+
+    <select id="getDtoList" parameterType="FhglDto" resultType="FhglDto">
+        select fhgl.fhid,fhgl.fhdh,fhgl.djrq,xtyh.zsxm as jsrmc,khgl.khmc as khmc,jgxx.jgmc as xsbmmc,fhgl.kh,fhgl.xsbm,fhgl.sfqr,fhgl.kdxx
+        from igams_fhgl fhgl
+        left join igams_khgl khgl on khgl.khid=fhgl.kh
+        left join matridx_xtyh xtyh on xtyh.yhid=fhgl.jsr
+        left join matridx_jgxx jgxx on jgxx.jgid=fhgl.xsbm
+        <where>
+            fhgl.scbj!='1' and fhgl.fhid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    
+    <update id="update" parameterType="FhglDto">
+			update igams_fhgl
+		<set>
+		<trim prefixOverrides=",">
+            <if test="scbj != null and scbj != ''">
+                ,scbj=#{scbj}
+            </if>
+            <if test="scry != null and scry != ''">
+                ,scry=#{scry},scsj=LOCALTIMESTAMP
+            </if>
+            <if test="xgry != null and xgry != ''">
+                ,xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            </if>
+			<if test="glid != null and glid != ''">
+				,glid=#{glid}
+			</if>
+            <if test="fhdh != null and fhdh != ''">
+                ,fhdh = #{fhdh}
+            </if>
+            <if test="u8fhdh  != null and u8fhdh  != ''">
+                ,u8fhdh  = #{u8fhdh }
+            </if>
+            <if test="jsr != null and jsr != ''">
+                ,jsr = #{jsr}
+            </if>
+            <if test="xslx != null and xslx != ''">
+                ,xslx =  #{xslx}
+            </if>
+            <if test="djrq != null and djrq != ''">
+                , djrq = cast(#{djrq} as date)
+            </if>
+            <if test="xsbm != null and xsbm != ''">
+                , xsbm =  #{xsbm}
+            </if>
+            <if test="ddh != null and ddh != ''">
+                , ddh = #{ddh}
+            </if>
+            <if test="kh != null and kh != ''">
+                ,kh = #{kh}
+            </if>
+            <if test="shdz != null and shdz != ''">
+                ,shdz = #{shdz}
+            </if>
+            <if test="sfbj != null and sfbj != ''">
+                ,sfbj = #{sfbj}
+            </if>
+            <if test="bz != null and bz != ''">
+                , bz = #{bz}
+            </if>
+            <if test="ckid != null and ckid != ''">
+                , ckid = #{ckid}
+            </if>
+            <if test="zt != null and zt != ''">
+                ,zt = #{zt}
+            </if>
+            <if test="wlxx != null and wlxx != ''">
+                ,wlxx = #{wlxx}
+            </if>
+            <if test="shry != null and shry != ''">
+                ,shry = #{shry}
+            </if>
+            <if test="shsj != null and shsj != ''">
+                ,shsj = cast(#{shsj} as timestamp )
+            </if>
+        </trim>
+		</set>
+		<where>
+			fhid=#{fhid}
+		</where>
+	</update>
+    <update id="updateWlxx" parameterType="FhglDto">
+        update igams_fhgl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfqr=#{sfqr},kdxx=#{kdxx}
+        </set>
+        <where>
+            fhid=#{fhid}
+        </where>
+    </update>
+    <select id="getFhztByXsids" parameterType="FhglDto" resultType="FhglDto">
+        SELECT xs.xsid ddh,CASE WHEN fh.sl>=xs.sl THEN '02' WHEN fh.sl &lt; xs.sl AND fh.sl > 0 THEN '01' ELSE '00' end fhzt,LOCALTIMESTAMP xgsj FROM
+        (SELECT xsgl.xsid,SUM(COALESCE(xsmx.sl,0)) sl FROM
+        igams_xsgl xsgl
+        left join igams_xsmx xsmx on xsgl.xsid = xsmx.xsid and xsmx.scbj ='0'
+        where xsgl.scbj ='0' and xsgl.xsid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        GROUP BY xsgl.xsid) xs LEFT JOIN (SELECT fhgl.ddh,SUM(COALESCE(fhmx.fhsl,0)) sl FROM
+        igams_fhgl fhgl
+        left join igams_fhmx fhmx on fhmx.fhid = fhgl.fhid and fhmx.scbj ='0'
+        where fhgl.scbj ='0' and fhgl.zt = '80' and fhgl.ddh in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+        GROUP BY fhgl.ddh) fh ON xs.xsid = fh.ddh
+    </select>
+    <select id="getFhAutoDkjl" parameterType="FhglDto" resultType="FhglDto">
+        select fhgl.fhid,fhmx.xsmxid,
+        case when coalesce(tmp.dkzje)-sum(coalesce (dkjejl_fh.dkje,0)) &gt; 0 then '1' else '0' end dkjlbj,
+        case when coalesce(fhmx.fhsl,0)*coalesce(coalesce(tmp.hsdj,0)) &gt; coalesce(tmp.dkzje)-sum(coalesce (dkjejl_fh.dkje,0)) then
+        coalesce(tmp.dkzje)-sum(coalesce (dkjejl_fh.dkje,0)) else coalesce(fhmx.fhsl,0)*coalesce(coalesce(tmp.hsdj,0)) end dkje
+        from igams_fhgl fhgl
+        left join (select fhmx.xsmxid,fhmx.fhid,sum(coalesce(fhmx.fhsl)) fhsl from
+        igams_fhmx fhmx where fhmx.scbj='0' and fhmx.fhid = #{fhid} group by fhmx.xsmxid,fhmx.fhid
+        ) fhmx on fhmx.fhid = fhgl.fhid
+        left join igams_dkjejl dkjejl_fh on fhmx.xsmxid = dkjejl_fh.fywid and dkjejl_fh.scbj ='0' and dkjejl_fh.lb in ('1','2')
+        left join (
+        select xsmx.xsmxid,xsmx.hsdj,sum(coalesce(dkjejl_xs.dkje,0)) dkzje
+        from igams_xsmx xsmx
+        left join igams_dkjejl dkjejl_xs on dkjejl_xs.ywid = xsmx.xsmxid and dkjejl_xs.scbj ='0'
+        where xsmx.scbj ='0' and xsmx.xsid = #{ddh}
+        group by xsmx.xsmxid
+        ) tmp on tmp.xsmxid = fhmx.xsmxid
+        where fhgl.scbj ='0' and fhgl.fhid = #{fhid}
+        group by fhgl.fhid,fhmx.xsmxid,fhmx.fhsl,tmp.hsdj,tmp.dkzje
+    </select>
+
+    <select id="getCountForSearchExp" parameterType="FhglDto"  resultType="java.lang.Integer">
+        select count(tmp.fhid)from(
+        select fhgl.fhid
+        from
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on
+        xtyh.yhid = fhgl.jsr
+        and xtyh.scbj = '0'
+        left join matridx_jcsj xs on
+        xs.csid = fhgl.xslx
+        and xs.scbj = '0'
+        left join matridx_jgxx jg on
+        jg.jgid = fhgl.xsbm
+        and jg.scbj = '0'
+        left join igams_khgl khgl on
+        khgl.khid = fhgl.kh
+        and khgl.scbj = '0'
+        left join igams_xsgl xsgl on
+        xsgl.xsid = fhgl.ddh
+        and xsgl.scbj = '0'
+
+
+
+        left join	igams_fhmx fhmx on
+        fhmx.fhid=fhgl.fhid
+        left join igams_hwxx hwxx on
+        hwxx.hwid = fhmx.hwid
+        left join igams_wlgl wlgl on
+        wlgl.wlid = hwxx.wlid
+        left join igams_xsmx xsmx on
+        xsmx.xsmxid =fhmx.xsmxid
+
+        left join igams_yxht yxht
+        on yxht.htid =xsgl.htdh
+        <where>
+            fhgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                fhgl.fhdh ILIKE '%' ||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or fhgl.shdz ILIKE '%' ||#{entire}||'%'
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{entire}||'%')
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{entire}||'%')
+
+                or fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{entire}||'%')
+                )
+            </if>
+            <if test="fhdh != null and fhdh != ''">
+                and fhgl.fhdh ILIKE '%' ||#{fhdh}||'%'
+            </if>
+            <if test="jsr != null and jsr != ''">
+                and xtyh.zsxm ILIKE '%' ||#{jsr}||'%'
+            </if>
+            <if test="xsdd != null and xsdd != ''">
+                and fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{xsdd}||'%')
+            </if>
+            <if test="kh != null and kh != ''">
+                and khgl.khmc ILIKE '%' ||#{kh}||'%'
+            </if>
+            <if test="shdz != null and shdz != ''">
+                and fhgl.shdz ILIKE '%' ||#{shdz}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{wlmc}||'%')
+            </if>
+            <if test="fhsjstart != null and fhsjstart != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &gt;= #{fhsjstart}
+            </if>
+            <if test="fhsjend != null and fhsjend != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &lt;= #{fhsjend}
+            </if>
+        </where>
+        group by
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm ,
+        fhgl.kh,
+        xs.csmc ,
+        jg.jgmc ,
+        khgl.khmc ,
+        to_char(fhgl.djrq,
+        'yyyy-mm-dd') ,
+        fhgl.ddh,
+        xsgl.oaxsdh ,
+        fhgl.shdz,
+        fhgl.bz,
+        fhgl.zt,
+        fhgl.u8fhdh,
+        xsgl.xsid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        wlgl.gg,
+
+        xsmx.hsdj,
+        xsmx.jsze,
+        xsmx.sl ,
+        yxht.htbh,fhzt
+        )as tmp
+    </select>
+
+    <select id="getListForSearchExp" parameterType="FhglDto" resultType="FhglDto">
+        select fhgl.fhid ${sqlParam}
+        from
+        igams_fhgl fhgl
+        left join matridx_xtyh xtyh on
+        xtyh.yhid = fhgl.jsr
+        and xtyh.scbj = '0'
+        left join matridx_jcsj xs on
+        xs.csid = fhgl.xslx
+        and xs.scbj = '0'
+        left join matridx_jgxx jg on
+        jg.jgid = fhgl.xsbm
+        and jg.scbj = '0'
+        left join igams_khgl khgl on
+        khgl.khid = fhgl.kh
+        and khgl.scbj = '0'
+        left join igams_xsgl xsgl on
+        xsgl.xsid = fhgl.ddh
+        and xsgl.scbj = '0'
+
+
+
+        left join	igams_fhmx fhmx on
+        fhmx.fhid=fhgl.fhid
+        left join igams_hwxx hwxx on
+        hwxx.hwid = fhmx.hwid
+        left join igams_wlgl wlgl on
+        wlgl.wlid = hwxx.wlid
+        left join igams_xsmx xsmx on
+        xsmx.xsmxid =fhmx.xsmxid
+
+        left join igams_yxht yxht
+        on yxht.htid =xsgl.htdh
+        <where>
+            fhgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                fhgl.fhdh ILIKE '%' ||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or fhgl.shdz ILIKE '%' ||#{entire}||'%'
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{entire}||'%')
+                or fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{entire}||'%')
+
+                or fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{entire}||'%')
+                )
+            </if>
+            <if test="fhdh != null and fhdh != ''">
+                and fhgl.fhdh ILIKE '%' ||#{fhdh}||'%'
+            </if>
+            <if test="jsr != null and jsr != ''">
+                and xtyh.zsxm ILIKE '%' ||#{jsr}||'%'
+            </if>
+            <if test="xsdd != null and xsdd != ''">
+                and fhgl.ddh in (
+                select xsglxx.xsid from igams_xsgl xsglxx
+                where xsglxx.scbj = '0' and xsglxx.oaxsdh ILIKE '%'||#{xsdd}||'%')
+            </if>
+            <if test="kh != null and kh != ''">
+                and khgl.khmc ILIKE '%' ||#{kh}||'%'
+            </if>
+            <if test="shdz != null and shdz != ''">
+                and fhgl.shdz ILIKE '%' ||#{shdz}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlbm ILIKE '%'||#{wlbm}||'%')
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and fhgl.fhid in (
+                select fhmx.fhid from igams_fhmx fhmx
+                left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+                left join igams_wlgl wl on wl.wlid=hwxx.wlid
+                where fhmx.fhid=fhgl.fhid and wl.wlmc ILIKE '%'||#{wlmc}||'%')
+            </if>
+            <if test="fhsjstart != null and fhsjstart != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &gt;= #{fhsjstart}
+            </if>
+            <if test="fhsjend != null and fhsjend != ''">
+                and to_char(fhgl.djrq,'yyyy-mm-dd') &lt;= #{fhsjend}
+            </if>
+        </where>
+        group by
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm ,
+        fhgl.kh,
+        xs.csmc ,
+        jg.jgmc ,
+        khgl.khmc ,
+        to_char(fhgl.djrq,
+        'yyyy-mm-dd') ,
+        fhgl.ddh,
+        xsgl.oaxsdh ,
+        fhgl.shdz,
+        fhgl.bz,
+        fhgl.zt,
+        fhgl.u8fhdh,
+        xsgl.xsid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        wlgl.gg,
+
+        xsmx.hsdj,
+        xsmx.jsze,
+        xsmx.sl ,
+        yxht.htbh,fhzt
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="FhglDto" resultType="FhglDto">
+        select fhgl.fhid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} fhid,#{index} ordernum
+        </foreach>
+        ) tmp
+
+        left join igams_fhgl fhgl on fhgl.fhid=tmp.fhid
+        left join matridx_xtyh xtyh on
+        xtyh.yhid = fhgl.jsr
+        and xtyh.scbj = '0'
+        left join matridx_jcsj xs on
+        xs.csid = fhgl.xslx
+        and xs.scbj = '0'
+        left join matridx_jgxx jg on
+        jg.jgid = fhgl.xsbm
+        and jg.scbj = '0'
+        left join igams_khgl khgl on
+        khgl.khid = fhgl.kh
+        and khgl.scbj = '0'
+        left join igams_xsgl xsgl on
+        xsgl.xsid = fhgl.ddh
+        and xsgl.scbj = '0'
+
+
+
+        left join	igams_fhmx fhmx on
+        fhmx.fhid=fhgl.fhid
+        left join igams_hwxx hwxx on
+        hwxx.hwid = fhmx.hwid
+        left join igams_wlgl wlgl on
+        wlgl.wlid = hwxx.wlid
+        left join igams_xsmx xsmx on
+        xsmx.xsmxid =fhmx.xsmxid
+
+        left join igams_yxht yxht
+        on yxht.htid =xsgl.htdh
+        group by
+        fhgl.fhid,
+        fhgl.fhdh,
+        fhgl.jsr,
+        fhgl.xslx,
+        fhgl.xsbm,
+        xtyh.zsxm ,
+        fhgl.kh,
+        xs.csmc ,
+        jg.jgmc ,
+        khgl.khmc ,
+        to_char(fhgl.djrq,
+        'yyyy-mm-dd') ,
+        fhgl.ddh,
+        xsgl.oaxsdh ,
+        fhgl.shdz,
+        fhgl.bz,
+        fhgl.zt,
+        fhgl.u8fhdh,
+        xsgl.xsid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        wlgl.gg,
+
+        xsmx.hsdj,
+        xsmx.jsze,
+        xsmx.sl ,
+        yxht.htbh,
+        fhzt,
+        tmp.ordernum
+        order by tmp.ordernum
+    </select>
+</mapper>

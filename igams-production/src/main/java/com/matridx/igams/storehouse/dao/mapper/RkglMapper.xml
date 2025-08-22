@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IRkglDao" >
+	<sql id="SEARCH_TERMS">
+		rkgl.scbj!='1'
+		<if test="entire != null and entire != ''">
+			and (rkgl.rkdh like '%'||#{entire}||'%')
+			or (wlgl.wlmc like '%'||#{entire}||'%')
+			or (wlgl.wlbm like '%'||#{entire}||'%')
+			or (hwxx.u8rkdh like '%'||#{entire}||'%')
+			or (xtyh_l.zsxm like '%'||#{entire}||'%')
+		</if>
+		<if test="rkdh != null and rkdh != ''">
+		   and rkgl.rkdh ILIKE '%' || #{rkdh} || '%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+		   and wlgl.wlmc ILIKE '%' || #{wlmc} || '%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+		   and wlgl.wlbm ILIKE '%' || #{wlbm} || '%'
+		</if>
+		<if test="lrrymc != null and lrrymc != ''">
+			and xtyh_l.zsxm ILIKE '%' || #{lrrymc} || '%'
+		</if>
+		<if test="shsjstart != null and shsjstart != ''">
+			and to_char(rkgl.rkrq,'yyyy-mm-dd') &gt;= #{shsjstart}
+		</if>
+		<if test="shsjend != null and shsjend != ''">
+			and to_char(rkgl.rkrq,'yyyy-mm-dd') &lt;= #{shsjend}
+		</if>
+		<if test = "scbjs != null and scbjs.length > 0 "  >
+			and rkgl.scbj in 
+			<foreach collection="scbjs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="u8rkdh != null and u8rkdh != ''">
+			and hwxx.u8rkdh ILIKE '%'||#{u8rkdh}||'%'
+		</if>
+	</sql>
+	
+	<select id="getDtoById" parameterType="String" resultType="RkglDto">
+		select rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,jc_rklb.csdm as rklxdm,
+			jc_rklb.csmc as rklxmc,gysxx.gysmc,gysxx.gysdm,jgxx.jgmc as sqbmmc,jgxx.jgdm,jc_cglx.csmc as cglxmc,ckxx.ckdm,ckxx.ckmc,rkgl.lrry,
+			yh.zsxm lrrymc,jc_rklb.cskz1,ckxx.ckqxlx,
+			case when rkgl.zt='00' then '未提交' when rkgl.zt='15'then '审核中' when rkgl.zt='80' then '审核通过' end ztmc
+			from igams_rkgl rkgl
+			left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+			left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+			left join matridx_jgxx jgxx on jgxx.jgid = rkgl.bm
+			left join matridx_jcsj jc_cglx on jc_cglx.csid = rkgl.cglx
+			left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+			left join matridx_xtyh yh on yh.yhid=rkgl.lrry
+		<where>
+			rkgl.scbj!='1' and rkgl.rkid=#{rkid}
+		</where>	
+	</select>
+	
+	<select id="getDtoList" parameterType="RkglDto" resultType="RkglDto">
+		select rkgl.rkdh,htgl.htnbbh,xtyh.zsxm as htfzr,htmx.suil as htmxsl,jc_biz.csmc as htbz,rkgl.rkid,rkgl.rkdh,rkgl.rkrq,
+		rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,jc_rklb.csdm as rklxdm,
+		jc_rklb.csmc as rklxmc,gysxx.gysmc,gysxx.gysdm,jgxx.jgmc as sqbmmc,jgxx.jgdm,jc_cglx.csmc as cglxmc,ckxx.ckdm,ckxx.ckmc,
+		xtyh_q.zsxm as qgsqr,qggl.jlbh,htgl.u8poid,xtyh_l.zsxm as lrrymc,jc_rklb.cskz1,htgl.htlx,htgl.hl,htgl.u8omid
+		from igams_rkgl rkgl
+			left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+			left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+			left join matridx_jgxx jgxx on jgxx.jgid = rkgl.bm
+			left join matridx_jcsj jc_cglx on jc_cglx.csid = rkgl.cglx
+			left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+			left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+			left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+			left join igams_htgl htgl on htgl.htid = htmx.htid
+			left join matridx_xtyh xtyh on xtyh.yhid=htgl.fzr
+			left join matridx_jcsj jc_biz on jc_biz.csid = htgl.biz
+			left join igams_qgmx qgmx on qgmx.qgmxid= hwxx.qgmxid
+			left join igams_qggl qggl on qggl.qgid=qgmx.qgid
+			left join matridx_xtyh xtyh_q on xtyh_q.yhid=qggl.sqr
+			left join matridx_xtyh xtyh_l on xtyh_l.yhid=rkgl.lrry
+		<where>
+			rkgl.scbj!='1'
+			<if test="rkid != null and rkid != ''">
+				and rkgl.rkid = #{rkid}
+			</if>
+			<if test="ids !=null and ids.size >0" >
+				and rkgl.rkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>	
+	</select>
+	<!-- 显示入库列表列表 -->
+	<select id="getPagedDtoList" parameterType="RkglDto" resultType="RkglDto">
+	    select rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,
+		       ckxx.ckmc ,jc_rklb.csmc as rklxmc, gysxx.gysmc,rkgl.scbj,jc_rklb.csdm as rklxdm,xtyh_l.zsxm as lrrymc
+		from igams_rkgl rkgl
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb 
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		left join matridx_xtyh xtyh_l on xtyh_l.yhid=rkgl.lrry
+		<if test="(wlmc != null and wlmc != '')or(entire != null and entire != '')or(wlbm != null and wlbm != '')or(u8rkdh != null and u8rkdh != '')">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		<if test="(wlmc != null and wlmc != '')or(entire != null and entire != '')or(wlbm != null and wlbm != '')or(u8rkdh != null and u8rkdh != '')">
+        group by rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,ckxx.ckmc,jc_rklb.csmc, gysxx.gysmc,rkgl.scbj,jc_rklb.csdm,xtyh_l.zsxm
+		</if>
+	</select>
+	<!-- 显示入库列表列表钉钉 -->
+	<select id="getPagedDtoListDingTalk" parameterType="RkglDto" resultType="RkglDto">
+		select rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,
+		ckxx.ckmc ,jc_rklb.csmc as rklxmc, gysxx.gysmc,rkgl.scbj
+		from igams_rkgl rkgl
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		<where>
+			rkgl.scbj='0'
+			<if test="entire != null and entire != ''">
+				and (hwxx.u8rkdh like '%'||#{entire}||'%'
+				or wlgl.wlbm like '%'||#{entire}||'%'
+				or wlgl.wlmc like '%'||#{entire}||'%'
+				or ckxx.ckmc like '%'||#{entire}||'%')
+			</if>
+			<if test = "rklxs != null and rklxs.length > 0 "  >
+				and rkgl.rklb in
+				<foreach collection="rklxs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and rkgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+		
+	<!-- getDto取入库列表中选中的一条数据 -->
+	<select id="getDto" parameterType="RkglDto" resultType="RkglDto">
+	    select rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,
+	           ckxx.ckmc ,jc_rklb.csmc as rklxmc, gysxx.gysmc, wlgl.wlmc, wlgl.wlbm
+	    from igams_rkgl rkgl
+	    left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb 
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		left join igams_hwxx hwxx on rkgl.rkid = hwxx.rkid
+		left join igams_wlgl wlgl on hwxx.wlid = wlgl.wlid
+		<where>
+		   rkgl.rkid = #{rkid}
+		</where>
+	</select>
+	
+	<select id="getRkdhSerial" parameterType="String" resultType="String">
+		SELECT lpad(cast((CAST(coalesce(MAX(substring(rkdh,LENGTH(rkdh)-strpos(reverse(rkdh),'-')+2,LENGTH(rkdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_rkgl
+			<where> 
+				scbj != '1' AND rkdh like #{prefix}||'%'
+			</where>
+	</select>
+	
+	<select id="queryByRkdh" parameterType="RkglDto" resultType="RkglDto">
+	   select rkgl.rkid,rkgl.rkdh,rkgl.zt,jc_rklb.cskz1,jc_rklb.csdm as rklxdm
+		from igams_rkgl rkgl
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+		<where>
+			rkgl.scbj!='1'
+			<if test="rkdh != null and rkdh != ''">
+			   and rkgl.rkdh = #{rkdh}
+			</if>
+			<if test="rkid != null and rkid != ''">
+			   and rkgl.rkid != #{rkid}
+			</if>
+			<if test="ids !=null and ids.size >0" >
+				and rkgl.rkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	
+	<!-- 新增入库信息 -->
+	<insert id="insert" parameterType="rkglDto">
+		insert into igams_rkgl(rkid
+		<if test="rkdh !=null and rkdh != ''">
+			,rkdh
+		</if>
+		<if test="rkrq !=null and rkrq != ''">
+			,rkrq
+		</if>
+		<if test="rklb !=null and rklb != ''">
+			,rklb
+		</if>
+		<if test="cglx !=null and cglx != ''">
+			,cglx
+		</if>
+		<if test="bm !=null and bm != ''">
+			,bm
+		</if>
+		<if test="ckid !=null and ckid != ''">
+			,ckid
+		</if>
+		<if test="gysid !=null and gysid != ''">
+			,gysid
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>		
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="jcghid !=null and jcghid != ''">
+			,jcghid
+		</if>
+		,lrry,lrsj,scbj) values(#{rkid}
+		<if test="rkdh !=null and rkdh != ''">
+			,#{rkdh}
+		</if>
+		<if test="rkrq !=null and rkrq != ''">
+			,cast(#{rkrq} as timestamp)
+		</if>
+		<if test="rklb !=null and rklb != ''">
+			,#{rklb}
+		</if>
+		<if test="cglx !=null and cglx != ''">
+			,#{cglx}
+		</if>
+		<if test="bm !=null and bm != ''">
+			,#{bm}
+		</if>
+		<if test="ckid !=null and ckid != ''">
+			,#{ckid}
+		</if>
+		<if test="gysid !=null and gysid != ''">
+			,#{gysid}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="jcghid !=null and jcghid != ''">
+			,#{jcghid}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<update id="update" parameterType="rkglDto">
+			update igams_rkgl
+		<set>
+		 xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="rkdh != null and rkdh != ''">
+				,rkdh=#{rkdh}
+			</if>
+			<if test="rkrq != null and rkrq != ''">
+				,rkrq=cast(#{rkrq} as timestamp)
+			</if>
+			<if test="rklb != null and rklb != ''">
+				,rklb=#{rklb}
+			</if>
+			<if test="cglx != null and cglx != ''">
+				,cglx=#{cglx}
+			</if>
+			<if test="bm != null and bm != ''">
+				,bm=#{bm}
+			</if>
+			<if test="ckid != null and ckid != ''">
+				,ckid=#{ckid}
+			</if>
+			<if test="gysid !=null and gysid !=''">
+				,gysid=#{gysid}
+			</if>
+			<if test="bz !=null and bz !=''">
+				,bz=#{bz}
+			</if>
+			<if test="glid !=null and glid !=''">
+				,glid=#{glid}
+			</if>
+			<if test="zt !=null and  zt !=''">
+				,zt=#{zt}
+			</if>
+		</set>
+		<where>
+			rkid=#{rkid}
+		</where>
+	</update>
+	
+			<!-- 查询所有消息 -->
+	<select id="getPagedAuditRkgl" parameterType="RkglDto" resultType="RkglDto">
+		select rkgl.rkid,rkgl.lrsj
+		from igams_rkgl rkgl
+		<where>
+			rkgl.scbj!='1'
+			<if test="zt !=null and zt !=''">
+					and rkgl.zt = #{zt}
+			</if>
+			<if test="rkdh !=null and rkdh !=''">
+					and rkgl.rkdh ILIKE '%'||#{rkdh}||'%'
+			</if>
+		</where>		
+	</select>
+
+			<!-- 入库审核列表-->
+	<select id="getAuditListRkgl" parameterType="List" resultType="RkglDto">
+	 select rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.rklb,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.gysid,rkgl.bz,rkgl.glid,rkgl.zt,
+	       ckxx.ckmc ,jc_rklb.csmc as rklxmc, gysxx.gysmc,jc_rklb.csdm as rklxdm,
+	       shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+				item="item" index="index">
+			select #{item.rkid} rkid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+		</foreach> tmp
+		left join igams_rkgl rkgl on rkgl.rkid = tmp.rkid 
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb 
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid 
+		order by tmp.rownum
+	</select>
+	
+	<!-- 废弃 -->
+	<update id="delete" parameterType="RkglDto">
+		update igams_rkgl set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj} 
+		<where>
+			<if test="rkid !=null and rkid != ''">
+				rkid = #{rkid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or rkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="RkglDto"
+		resultType="java.lang.Integer">
+		select count(rkgl.rkid) from igams_rkgl rkgl
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+		left join matridx_jcsj jc_rkcg on jc_rkcg.csid = rkgl.cglx
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = rkgl.bm
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		<if test="wlmc != null and wlmc != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	<select id="getListForSearchExp" parameterType="RkglDto" resultType="RkglDto">
+		select rkgl.rkid ${sqlParam}
+		from igams_rkgl rkgl
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+		left join matridx_jcsj jc_rkcg on jc_rkcg.csid = rkgl.cglx
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = rkgl.bm
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		<if test="wlmc != null and wlmc != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="RkglDto" resultType="RkglDto">
+		select rkgl.rkid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} rkid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_rkgl rkgl on tmp.rkid = rkgl.rkid
+		left join igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid = rkgl.rklb
+		left join matridx_jcsj jc_rkcg on jc_rkcg.csid = rkgl.cglx
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = rkgl.bm
+		left join igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+		<if test="wlmc != null and wlmc != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+		   left join igams_hwxx hwxx on hwxx.rkid=rkgl.rkid
+		   left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+		</if>
+		order by tmp.ordernum
+	</select>
+	
+	<!-- 根据到货ids获取到货信息（共通页面） -->
+	<select id="getCommonDtoListByRkids" parameterType="RkglDto" resultType="RkglDto">
+		SELECT
+			rkgl.rkid,rkgl.rkdh,rkgl.rkrq,rkgl.cglx,rkgl.bm,rkgl.ckid,rkgl.bz,rkgl.glid,rkgl.zt,rkgl.scbj,
+			rklb.csmc rklbmc,
+			ckxx.ckmc,
+			gysxx.gysmc,
+			hwxx.hwid,hwxx.htmxid,hwxx.qgmxid,hwxx.wlid,hwxx.zsh,hwxx.scrq,hwxx.sl,hwxx.yxq,hwxx.dhid,hwxx.dhsl,hwxx.cythsl,hwxx.dhbz,hwxx.zjthsl,hwxx.qyl,hwxx.qyrq,hwxx.bgdh,hwxx.zjrq,hwxx.zjry,hwxx.jybz,hwxx.dhjyid,hwxx.rkid,hwxx.ckid,hwxx.kwbh,hwxx.rkry,hwxx.rkbz,hwxx.kcl,hwxx.yds,hwxx.glid,hwxx.kcglid,hwxx.scph
+		FROM
+			igams_rkgl rkgl
+			LEFT JOIN matridx_jcsj rklb on rklb.csid = rkgl.rklb
+			LEFT JOIN igams_ckxx ckxx on rkgl.ckid = ckxx.ckid
+			LEFT JOIN igams_gysxx gysxx on gysxx.gysid = rkgl.gysid
+			LEFT JOIN igams_hwxx hwxx on hwxx.rkid = rkgl.rkid and hwxx.scbj != '1'
+		<where>
+			rkgl.scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and rkgl.rkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 更新入库单的调拨关联ID -->
+	<update id="updateGldb" parameterType="RkglDto" >
+		update igams_rkgl set dbglid=#{dbglid},qtrkglid=#{qtrkglid},qtckglid=#{qtckglid}
+		where rkid=#{rkid}
+	</update>
+	
+	<select id="getRktzList" parameterType="RkglDto" resultType="RkglDto">
+	    select rkgl.rkdh, rkgl.rkrq, qggl.sqr sqry, qggl.djh, rkgl.rkid, yh.ddid,yh.yhm sqryhm
+		from igams_rkgl rkgl
+		left join igams_hwxx hwxx on rkgl.rkid = hwxx.rkid and hwxx.scbj='0'
+		left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid and qgmx.scbj='0'
+		left join igams_qggl qggl on qggl.qgid=qgmx.qgid and qggl.scbj='0'
+		left join matridx_xtyh yh on qggl.sqr = yh.yhid and yh.scbj='0' and yh.sfsd='0'
+		<where>
+		   rkgl.rkid=#{rkid}
+		</where>
+		group by (rkgl.rkdh, rkgl.rkrq, qggl.sqr, qggl.djh, rkgl.rkid, yh.ddid,yh.yhm)
+	</select>
+</mapper>

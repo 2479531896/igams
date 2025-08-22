@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IWlxxDao" >
+    <select id="getDtoListById" parameterType="WlxxDto" resultType="WlxxDto">
+        select wlxx.wldh,wlxx.lrsj,wlxx.sfqr,wlxx.kdgs,wlxx.qsrq,wlxx.ywid,wlxx.wlxxid,case when fj.zywid is not null then '0' else '1' end fjbj,wlxx.fhrq,wlxx.yf
+        from igams_wlxx wlxx
+        left join matridx_fjcfb fj on fj.zywid=wlxx.wlxxid
+        where
+        wlxx.ywid = #{ywid}
+        group by wlxx.wldh,wlxx.lrsj,wlxx.sfqr,wlxx.kdgs,wlxx.qsrq,wlxx.ywid,wlxx.wlxxid,fj.zywid,wlxx.fhrq,wlxx.yf
+        ORDER BY wlxx.qsrq desc
+    </select>
+    <delete id="delete" parameterType="WlxxDto">
+        delete from igams_wlxx
+        where
+        ywid = #{ywid}
+    </delete>
+    <insert id="insertList" parameterType="List">
+        insert into igams_wlxx(
+        wlxxid,
+        wldh,
+        sfqr,
+        kdgs,
+        qsrq,
+        ywid,
+        fhrq,
+        yf,
+        lrsj
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.wlxxid},
+                #{item.wldh},
+                #{item.sfqr},
+                #{item.kdgs},
+                case when #{item.qsrq} = null or  #{item.qsrq} = '' then null else cast(#{item.qsrq} as timestamp) end,
+                #{item.ywid},
+                cast(#{item.fhrq} as date),
+                case when #{item.yf} = null or  #{item.yf} = '' then null else cast(#{item.yf} as numeric ) end,
+                cast(#{item.lrsj} as timestamp)
+                )
+            </foreach>
+        </if>
+    </insert>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_wlxx
+                <set>
+                    <trim prefixOverrides=",">
+                        <if test="item.wldh != null and item.wldh != ''">
+                            ,wldh=#{item.wldh}
+                        </if>
+                        <if test="item.sfqr != null and item.sfqr != ''">
+                            ,sfqr=#{item.sfqr}
+                        </if>
+                        <if test="item.kdgs != null and item.kdgs != ''">
+                            ,kdgs=#{item.kdgs}
+                        </if>
+                        <if test="item.fhrq != null and item.fhrq != ''">
+                            ,fhrq=cast(#{item.fhrq} as date )
+                        </if>
+                        <if test="item.yf != null and item.yf != ''">
+                            ,yf=cast(#{item.yf} as numeric )
+                        </if>
+                            ,qsrq= case when #{item.qsrq} = null or  #{item.qsrq} = '' then null else cast(#{item.qsrq} as timestamp) end
+                    </trim>
+                </set>
+                <where>
+                    wlxxid=#{item.wlxxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+</mapper>

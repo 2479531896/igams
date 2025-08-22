@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.ISbpdDao" >
+
+    <select id="getDepartments" resultType="Map">
+        SELECT sbpd.bm,jgxx.jgmc as bmmc
+        from igams_sbpd sbpd
+        left join matridx_jgxx jgxx on jgxx.jgid=sbpd.bm
+        where sbpd.scbj='0' and jgxx.jgmc is not null
+        group by sbpd.bm,jgxx.jgmc
+    </select>
+
+    <select id="getPagedDtoList" parameterType="SbpdDto" resultType="SbpdDto">
+        select sbpd.sbpdid _key,sbpd.sbpdid,sbpd.fqsj,sbpd.pdry,sbpd.fqry,sbpd.bm,sbpd.zt,pdry.zsxm as pdrymc,fqry.zsxm as fqrymc,jg.jgmc as bmmc
+        from igams_sbpd sbpd
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        <where>
+            sbpd.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (fqry.zsxm like '%'||#{entire}||'%'
+                or pdry.zsxm like '%'||#{entire}||'%')
+            </if>
+            <if test="fqrymc != null and fqrymc != ''">
+                and fqry.zsxm like '%'||#{fqrymc}||'%'
+            </if>
+            <if test="pdrymc != null and pdrymc != ''">
+                and pdry.zsxm like '%'||#{pdrymc}||'%'
+            </if>
+            <if test = "bms != null and bms.length > 0 "  >
+                and sbpd.bm in
+                <foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zts!=null and zts.length > 0">
+                and sbpd.zt in
+                <foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fqsjstart != null and fqsjstart != ''">
+                and to_char(sbpd.fqsj,'YYYY-MM-dd') &gt;= #{fqsjstart}
+            </if>
+            <if test="fqsjend != null and fqsjend != ''">
+                and to_char(sbpd.fqsj,'YYYY-MM-dd') &lt;= #{fqsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="SbpdDto" resultType="SbpdDto">
+        select sbpd.sbpdid,sbpd.fqsj,sbpd.pdry,sbpd.fqry,sbpd.bm,sbpd.zt,pdry.zsxm as pdrymc,fqry.zsxm as fqrymc,jg.jgmc as bmmc
+        from igams_sbpd sbpd
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        <where>
+            sbpd.scbj='0' and sbpd.sbpdid=#{sbpdid}
+        </where>
+    </select>
+
+    <select id="getPagedAuditEquipmentInventory" parameterType="SbpdDto" resultType="SbpdDto">
+        select sbpd.sbpdid,sbpd.fqsj,sbpd.pdry,sbpd.fqry,sbpd.bm,sbpd.zt,pdry.zsxm as pdrymc,fqry.zsxm as fqrymc,jg.jgmc as bmmc
+        from igams_sbpd sbpd
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        <where>
+            sbpd.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (fqry.zsxm like '%'||#{entire}||'%'
+                or pdry.zsxm like '%'||#{entire}||'%')
+            </if>
+            <if test="fqrymc != null and fqrymc != ''">
+                and fqry.zsxm like '%'||#{fqrymc}||'%'
+            </if>
+            <if test="pdrymc != null and pdrymc != ''">
+                and pdry.zsxm like '%'||#{pdrymc}||'%'
+            </if>
+        </where>
+    </select>
+    <!-- 审核列表-->
+    <select id="getAuditListEquipmentInventory" parameterType="List" resultType="SbpdDto">
+        select sbpd.sbpdid,sbpd.fqsj,sbpd.pdry,sbpd.fqry,sbpd.bm,sbpd.zt,pdry.zsxm as pdrymc,fqry.zsxm as fqrymc,jg.jgmc as bmmc
+        ,shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.sbpdid} sbpdid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach>
+        tmp
+        left join igams_sbpd sbpd on sbpd.sbpdid = tmp.sbpdid
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        order by shxx_shsj desc, rownum desc
+    </select>
+
+    <update id="delete" parameterType="SbpdDto">
+        update igams_sbpd set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            sbpdid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_sbpd(sbpdid,fqsj,pdry,fqry,bm,zt,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" item="item" separator="," index="index">
+            (#{item.sbpdid},cast(#{item.fqsj} as date),#{item.pdry},#{item.fqry},#{item.bm},#{item.zt},#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="SbpdDto">
+        update igams_sbpd set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="fqsj !=null and fqsj != ''">
+            ,fqsj = cast(#{fqsj} as date )
+        </if>
+        <if test="pdry !=null and pdry != ''">
+            ,pdry = #{pdry}
+        </if>
+        <if test="fqry !=null and fqry != ''">
+            ,fqry = #{fqry}
+        </if>
+        <if test="bm !=null and bm != ''">
+            ,bm = #{bm}
+        </if>
+        <if test="zt !=null and zt != ''">
+            ,zt = #{zt}
+        </if>
+        <where>
+            sbpdid = #{sbpdid}
+        </where>
+    </update>
+</mapper>

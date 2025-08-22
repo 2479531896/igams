@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.ICpxqjhDao">
+    <select id="getPagedDtoList" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,'cp' as lx
+        <if test="czbs !=null and czbs != ''">
+        ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,xqjhmx.xqjhmxid,(COALESCE(ckhwxx.kcl,0)-COALESCE(ckhwxx.yds,0)) kcl,wlgl.wlid,case when xqjhmx.sfsc='1' then '1' else'0' end sczt
+        </if>
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        <if test="czbs !=null and czbs != ''">
+        left join igams_xqjhmx xqjhmx on xqjhmx.xqjhid = cpxqjh.cpxqid and xqjhmx.scbj = '0' and xqjhmx.sfsc is not null
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join (select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = wlgl.wlid
+        </if>
+        <where>
+            cpxqjh.scbj='0'
+            <if test="czbs !=null and czbs != ''">
+                and cpxqjh.zt  = '80'
+                and xqjhmx.scsl  is not null and xqjhmx.scsl &lt;xqjhmx.sl
+
+            </if>
+            <if test="entire != null and entire != ''">
+                and (
+                cpxqjh.xqdh ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or cpxqjh.cpxqid in (
+                        select xqjh.xqjhid from igams_xqjhmx xqjh
+                        left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                        where
+                        xqjh.scbj !='1' and
+                        (
+                            wl.wlmc ILIKE '%'||#{entire}||'%' or wl.wlbm ILIKE '%'||#{entire}||'%'
+                        )
+                    )
+                )
+            </if>
+            <if test="xqdh !=null and xqdh != ''">
+                and cpxqjh.xqdh ILIKE '%'||#{xqdh}||'%'
+            </if>
+            <if test="wlbm !=null and wlbm != ''">
+                and cpxqjh.cpxqid in (
+                    select xqjh.xqjhid from igams_xqjhmx xqjh
+                    left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                    where xqjh.scbj !='1' and wl.wlbm ILIKE '%'||#{wlbm}||'%'
+                )
+            </if>
+            <if test="wlmc !=null and wlmc != ''">
+                and cpxqjh.cpxqid in (
+                select xqjh.xqjhid from igams_xqjhmx xqjh
+                left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                where xqjh.scbj !='1' and wl.wlmc ILIKE '%'||#{wlmc}||'%'
+                )
+            </if>
+            <if test="sqbmmc !=null and sqbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="sqrmc !=null and sqrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="xqrqstart != null and xqrqstart != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &gt;= #{xqrqstart}
+            </if>
+            <if test="xqrqend != null and xqrqend != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &lt;= #{xqrqend}
+            </if>
+            <if test="sczts != null and sczts.length > 0 ">
+                and (select case when xqjhmx.sfsc='1' then '1'  when xqjhmx.sfsc='0' then '0' end sczt) in
+                <foreach collection="sczts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        union all
+        select xsgl.xsid cpxqid,xsgl.oaxsdh xqdh,xsgl.lrry sqr,xsgl.xsbm sqbm,xsgl.ddrq xqrq,'' as yjyt,xsgl.bz,xsgl.zt,xsgl.lrry,
+        xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,xtyh.zsxm sqrmc,jgxx.jgmc sqbmmc,'xs' as lx
+        <if test="czbs !=null and czbs != ''">
+            ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,xsmx.sl,xsmx.sl as scsl,'' as yq,xsmx.xsmxid as xqjhmxid,(COALESCE(ckhwxx.kcl,0)-COALESCE(ckhwxx.yds,0)) kcl,wlgl.wlid,case when xsmx.sczt='1' then '1' else'0' end sczt
+        </if>
+        from igams_xsgl xsgl
+        left join matridx_xtyh xtyh on xtyh.yhid=xsgl.lrry
+        left join matridx_yhssjg yhjg on yhjg.yhid=xsgl.lrry
+        left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+        left join igams_khgl khgl on khgl.khid=xsgl.khjc
+        left join igams_xsmx xsmx on xsmx.xsid = xsgl.xsid and xsmx.scbj = '0'and xsmx.sczt is not null
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid and wlgl.scbj = '0'
+        left join (select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = wlgl.wlid
+        <where>
+            xsgl.scbj='0' and khgl.sfsc='1'
+            <if test="czbs !=null and czbs != ''">
+                and xsgl.zt  = '80'
+                and xsmx.sl  is not null
+
+            </if>
+            <if test="entire != null and entire != ''">
+                and (
+                xsgl.oaxsdh ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or xsmx.xsid in (
+                select xsmx.xsid from igams_xsmx xsmx
+                left join igams_wlgl wl on wl.wlid = xsmx.wlid and wl.scbj = '0'
+                where
+                xsmx.scbj !='1' and
+                (
+                wl.wlmc ILIKE '%'||#{entire}||'%' or wl.wlbm ILIKE '%'||#{entire}||'%'
+                )
+                )
+                )
+            </if>
+            <if test="xqdh !=null and xqdh != ''">
+                and xsgl.oaxsdh ILIKE '%'||#{xqdh}||'%'
+            </if>
+            <if test="wlbm !=null and wlbm != ''">
+                and xsmx.xsid in (
+                select xsmx.xsid from igams_xsmx xsmx
+                left join igams_wlgl wl on wl.wlid = xsmx.wlid and wl.scbj = '0'
+                where xsmx.scbj !='1' and wl.wlbm ILIKE '%'||#{wlbm}||'%'
+                )
+            </if>
+            <if test="wlmc !=null and wlmc != ''">
+                and xsmx.xsid in (
+                select xsmx.xsid from igams_xsmx xsmx
+                left join igams_wlgl wl on wl.wlid = xsmx.wlid and wl.scbj = '0'
+                where xsmx.scbj !='1' and wl.wlmc ILIKE '%'||#{wlbm}||'%'
+                )
+            </if>
+            <if test="sqbmmc !=null and sqbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="sqrmc !=null and sqrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="xqrqstart != null and xqrqstart != ''">
+                and to_char(xsgl.ddrq,'yyyy-mm-dd') &gt;= #{xqrqstart}
+            </if>
+            <if test="xqrqend != null and xqrqend != ''">
+                and to_char(xsgl.ddrq,'yyyy-mm-dd') &lt;= #{xqrqend}
+            </if>
+            <if test="sczts != null and sczts.length > 0 ">
+                and (select case when xsmx.sczt='1' then '1' else '0' end sczt) in
+                <foreach collection="sczts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getPagedXqjhDtoList" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,'cp' as lx,cpxqjh.rkzt
+        <if test="flag !=null and flag != ''">
+            ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,xqjhmx.xqjhmxid,wlgl.wlid,case when xqjhmx.sfsc='1' then '1' else'0' end sczt,
+            ckhwxx.kcl
+        </if>
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        <if test="flag !=null and flag != ''">
+            left join igams_xqjhmx xqjhmx on xqjhmx.xqjhid = cpxqjh.cpxqid and xqjhmx.scbj = '0' and xqjhmx.sfsc is not null
+            left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+            left join (select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = wlgl.wlid
+        </if>
+        <where>
+            cpxqjh.scbj='0'
+            <if test="flag !=null and flag != ''">
+                and cpxqjh.zt  = '80'
+                and xqjhmx.xqjhmxid is not null
+
+            </if>
+            <if test="entire != null and entire != ''">
+                and (
+                cpxqjh.xqdh ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or cpxqjh.cpxqid in (
+                select xqjh.xqjhid from igams_xqjhmx xqjh
+                left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                where
+                xqjh.scbj !='1' and
+                (
+                wl.wlmc ILIKE '%'||#{entire}||'%' or wl.wlbm ILIKE '%'||#{entire}||'%'
+                )
+                )
+                )
+            </if>
+            <if test="xqdh !=null and xqdh != ''">
+                and cpxqjh.xqdh ILIKE '%'||#{xqdh}||'%'
+            </if>
+            <if test="wlbm !=null and wlbm != ''">
+                and cpxqjh.cpxqid in (
+                select xqjh.xqjhid from igams_xqjhmx xqjh
+                left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                where xqjh.scbj !='1' and wl.wlbm ILIKE '%'||#{wlbm}||'%'
+                )
+            </if>
+            <if test="wlmc !=null and wlmc != ''">
+                and cpxqjh.cpxqid in (
+                select xqjh.xqjhid from igams_xqjhmx xqjh
+                left join igams_wlgl wl on wl.wlid = xqjh.wlid and wl.scbj = '0'
+                where xqjh.scbj !='1' and wl.wlmc ILIKE '%'||#{wlmc}||'%'
+                )
+            </if>
+            <if test="sqbmmc !=null and sqbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="sqrmc !=null and sqrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="xqrqstart != null and xqrqstart != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &gt;= #{xqrqstart}
+            </if>
+            <if test="xqrqend != null and xqrqend != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &lt;= #{xqrqend}
+            </if>
+            <if test="sczts != null and sczts.length > 0 ">
+                and (select case when xqjhmx.sfsc='1' then '1'  when xqjhmx.sfsc='0' then '0' end sczt) in
+                <foreach collection="sczts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDto" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+       select cpxqid,scps from igams_cpxqjh where cpxqid = #{cpxqid}
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="CpxqjhDto">
+        select tmp.cpxqid,tmp.xqdh,tmp.sqr,tmp.sqbm,tmp.xqrq,tmp.yjyt,tmp.bz,tmp.zt,tmp.lrry,
+        tmp.lrsj,tmp.xgry,tmp.xgsj,tmp.scry,tmp.scsj,tmp.scbj,tmp.sqrmc,tmp.sqbmmc,tmp.ddslid,tmp.scps
+        from
+       (select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,cpxqjh.ddslid,cpxqjh.scps
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        union all
+        select xsgl.xsid cpxqid,xsgl.oaxsdh xqdh,xsgl.lrry sqr,xsgl.xsbm sqbm,xsgl.ddrq xqrq,'' as yjyt,xsgl.bz,xsgl.zt,xsgl.lrry,
+        xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,xtyh.zsxm sqrmc,jgxx.jgmc sqbmmc,'' as ddslid,'' as scps
+        from igams_xsgl xsgl
+        left join matridx_xtyh xtyh on xtyh.yhid=xsgl.lrry
+        left join matridx_yhssjg yhjg on yhjg.yhid=xsgl.lrry
+        left join matridx_jgxx jgxx on jgxx.jgid=yhjg.jgid
+        )tmp
+        <where>
+            tmp.scbj='0'
+            and tmp.cpxqid=#{cpxqid}
+        </where>
+    </select>
+
+    <select id="getDtoByDdslid" parameterType="String" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,cpxqjh.ddslid
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        <where>
+            cpxqjh.scbj!='1'
+            <if test="_parameter != null and _parameter != ''">
+                and cpxqjh.ddslid=#{ddslid}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取审批人信息 -->
+    <select id="getSprxxByDdid" parameterType="String" resultType="CpxqjhDto">
+        select yhid as sprid,zsxm as sprxm,ddid as sprddid,yhm as spryhm
+        from matridx_xtyh
+        <where>
+            scbj!='1' and ddid=#{ddid}
+        </where>
+    </select>
+
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="CpxqjhDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+
+    <select id="getXqdhSerial" parameterType="String" resultType="String">
+        SELECT   lpad(cast((CAST(coalesce(MAX(substring(xqdh,13)),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_cpxqjh
+        <where>
+            scbj = '0' AND xqdh like #{prefix}||'%'
+        </where>
+    </select>
+
+
+    <select id="getDtoList" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        <where>
+            cpxqjh.scbj='0'
+            <if test="xqdh !=null and xqdh != ''">
+                and cpxqjh.xqdh = #{xqdh}
+            </if>
+            <if test="cpxqid !=null and cpxqid != ''">
+                and cpxqjh.cpxqid ={cpxqid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and cpxqjh.cpxqid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insert" parameterType="CpxqjhDto">
+        INSERT INTO igams_cpxqjh(
+        <if test="cpxqid != null and cpxqid != ''">
+            cpxqid,
+        </if>
+        <if test="xqdh != null and xqdh != ''">
+            xqdh,
+        </if>
+        <if test="sqr != null and sqr != ''">
+            sqr,
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            sqbm,
+        </if>
+        <if test="xqrq != null and xqrq != ''">
+            xqrq,
+        </if>
+        <if test="yjyt != null and yjyt != ''">
+            yjyt,
+        </if>
+        <if test="bz != null and bz != ''">
+            bz,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        <if test="zt != null and zt != ''">
+            zt,
+        </if>
+        <if test="ddslid !=null and  ddslid !=''">
+            ddslid,
+        </if>
+        scbj,lrsj )
+
+        VALUES (
+        <if test="cpxqid != null and cpxqid != ''">
+            #{cpxqid},
+        </if>
+        <if test="xqdh != null and xqdh != ''">
+            #{xqdh},
+        </if>
+        <if test="sqr != null and sqr != ''">
+            #{sqr},
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            #{sqbm},
+        </if>
+        <if test="xqrq != null and xqrq != ''">
+            cast(#{xqrq} as date),
+        </if>
+        <if test="yjyt != null and yjyt != ''">
+            #{yjyt},
+        </if>
+        <if test="bz != null and bz != ''">
+            #{bz},
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        <if test="zt != null and zt != ''">
+            #{zt},
+        </if>
+        <if test="ddslid !=null and  ddslid !=''">
+            #{ddslid},
+        </if>
+        '0',LOCALTIMESTAMP)
+    </insert>
+
+    <update id="update" parameterType="CpxqjhDto">
+        update igams_cpxqjh
+        <set>
+            <trim prefixOverrides=",">
+                <if test="xqdh != null and xqdh != ''">
+                    ,xqdh=#{xqdh}
+                </if>
+                <if test="sqr != null and sqr != ''">
+                    ,sqr=#{sqr}
+                </if>
+                <if test="xgry != null and xgry != ''">
+                    ,xgry=#{xgry}
+                </if>
+                <if test="sqbm != null and sqbm != ''">
+                    ,sqbm=#{sqbm}
+                </if>
+                <if test="xqrq != null and xqrq != ''">
+                    ,xqrq =  cast(#{xqrq} as date)
+                </if>
+                <if test="yjyt  != null and yjyt  != ''">
+                    ,yjyt  = #{yjyt }
+                </if>
+                <if test="bz != null and bz != ''">
+                    ,bz = #{bz}
+                </if>
+                <if test="zt != null and zt != ''">
+                    ,zt =  #{zt}
+                </if>
+                <if test="ddslid !=null and  ddslid !=''">
+                    ,ddslid=#{ddslid}
+                </if>
+                <if test="shsj != null and shsj != ''">
+                    ,shsj =  cast(#{shsj} as timestamp)
+                </if>
+                <if test="rkzt !=null and  rkzt !=''">
+                    ,rkzt=#{rkzt}
+                </if>
+                <if test="scps !=null and  scps !=''">
+                    ,scps=#{scps}
+                </if>
+                ,xgsj=LOCALTIMESTAMP
+            </trim>
+        </set>
+        <where>
+            cpxqid=#{cpxqid}
+        </where>
+    </update>
+    <select id="getPagedAuditDevice" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc
+        from igams_cpxqjh cpxqjh
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        <where>
+            cpxqjh.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (
+                cpxqjh.xqdh ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="xqdh !=null and xqdh != ''">
+                and cpxqjh.xqdh ILIKE '%'||#{xqdh}||'%'
+            </if>
+            <if test="sqbmmc !=null and sqbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="sqrmc !=null and sqrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="xqrqstart != null and xqrqstart != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &gt;= #{xqrqstart}
+            </if>
+            <if test="xqrqend != null and xqrqend != ''">
+                and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &lt;= #{xqrqend}
+            </if>
+            <if test="zt != null and zt != ''">
+                and cpxqjh.zt = #{zt}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getAuditListDevice" parameterType="List" resultType="CpxqjhDto">
+        select cpxqjh.cpxqid,cpxqjh.xqdh,cpxqjh.sqr,cpxqjh.sqbm,cpxqjh.xqrq,cpxqjh.yjyt,cpxqjh.bz,cpxqjh.zt,cpxqjh.lrry,
+        cpxqjh.lrsj,cpxqjh.xgry,cpxqjh.xgsj,cpxqjh.scry,cpxqjh.scsj,cpxqjh.scbj,xtyh.zsxm as sqrmc,jgxx.jgmc as sqbmmc,
+        shxx_sqsj, shxx_gwmc, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.cpxqid} cpxqid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc, #{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = tmp.cpxqid
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid=cpxqjh.sqbm and jgxx.scbj='0'
+        where cpxqjh.scbj!='1'
+        order by tmp.rownum
+    </select>
+    <!-- 将钉钉实例ID设置为空 -->
+    <update id="updateDdslidToNull" parameterType="CpxqjhDto">
+        update igams_cpxqjh set ddslid = null
+        <where>
+            scbj !='1' and cpxqid =#{cpxqid}
+        </where>
+    </update>
+
+    <update id="updateRkzt" parameterType="CpxqjhDto">
+        update igams_cpxqjh set rkzt = #{rkzt} ,xgry=#{xgry},xgsj = LOCALTIMESTAMP
+        <where>
+            cpxqid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="deleteByIds" parameterType="CpxqjhDto">
+        update igams_cpxqjh set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+        <where>
+            scbj = '0' and
+            cpxqid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="getHwxxByWlid" parameterType="CpxqjhDto" resultType="CpxqjhDto">
+        select hwxx.scph,hwxx.kcl,hwxx.scrq,hwxx.yxq,ckxx.ckmc
+        from igams_wlgl wlgl
+        left join igams_hwxx hwxx on hwxx.wlid=wlgl.wlid
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+        where wlgl.wlid=#{wlid} and hwxx.scbj='0' and hwxx.kcl &gt;0
+        group by hwxx.scph,hwxx.scrq,hwxx.yxq,ckxx.ckmc,hwxx.kcl
+    </select>
+    <select id="getXqslByCpxqid" parameterType="String" resultType="CpxqjhDto">
+        SELECT
+            COALESCE( SUM ( xqjhmx.sl ), '0' ) xqsl
+        FROM
+            igams_cpxqjh cpxq
+                LEFT JOIN igams_xqjhmx xqjhmx ON cpxq.cpxqid = xqjhmx.xqjhid AND xqjhmx.scbj='0'
+        WHERE
+            cpxq.scbj = '0' AND cpxq.cpxqid = #{cpxqid}
+    </select>
+    <select id="getRkslByCpxqid" parameterType="String" resultType="CpxqjhDto">
+        SELECT
+            COALESCE( SUM ( hwxx.dhsl ), '0' ) rksl
+        FROM
+            igams_cpxqjh cpxq
+                LEFT JOIN igams_xqjhmx xqjhmx ON cpxq.cpxqid = xqjhmx.xqjhid AND xqjhmx.scbj='0'
+                LEFT JOIN igams_sczlmx sczlmx ON xqjhmx.xqjhmxid = sczlmx.xqjhmxid AND sczlmx.scbj = '0'
+                LEFT JOIN igams_hwxx hwxx ON hwxx.sczlmxid = sczlmx.sczlmxid AND hwxx.scbj = '0'
+                LEFT JOIN igams_rkgl rkgl ON rkgl.rkid = hwxx.rkid AND rkgl.scbj = '0'
+        WHERE
+            cpxq.scbj = '0' AND rkgl.zt = '80' AND cpxq.cpxqid = #{cpxqid}
+    </select>
+</mapper>

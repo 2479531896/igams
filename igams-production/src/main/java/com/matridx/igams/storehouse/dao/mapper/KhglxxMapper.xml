@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IKhglxxDao" >
+    <!-- 客户管理列表 -->
+    <select id="getPagedDtoList" parameterType="KhglDto" resultType="KhglDto">
+        SELECT khgl.khid,khgl.khdm,khgl.khmc,khgl.khjc,khgl.fzrq,khgl.sf,khgl.biz,khgl.khgllx,sjcsj.csmc sfmc,bjcsj.csmc bizmc,kjcsj.csmc khgllxmc,khgl.lrry,xtyh.zsxm lrrymc,khgl.lrsj,
+        khgl.lxr,khgl.lxfs,khlb.csmc khlbmc,khgl.yb,khgl.lxdz,khgl.sfsc,khgl.zdkh,khgl.zdlxfs
+        from igams_khgl khgl
+        left join matridx_jcsj sjcsj on sjcsj.csid = khgl.sf
+        left join matridx_jcsj bjcsj on bjcsj.csid = khgl.biz
+        left join matridx_jcsj kjcsj on kjcsj.csid = khgl.khgllx
+        left join matridx_xtyh xtyh on xtyh.yhid = khgl.lrry
+        left join matridx_jcsj khlb on khlb.csid=khgl.khlb
+        <where>
+            khgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (sjcsj.csmc like '%'||#{entire}||'%'
+                or khgl.khdm like '%'||#{entire}||'%'
+                or khgl.khmc like '%'||#{entire}||'%'
+                or khgl.khjc like '%'||#{entire}||'%'
+                or khgl.lxr like '%'||#{entire}||'%'
+                or khgl.lxfs like '%'||#{entire}||'%'
+                or khgl.yb like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="sfmc !=null and sfmc != ''">
+                and sjcsj.csmc ILIKE '%'||#{sfmc}||'%'
+            </if>
+            <if test="khdm !=null and khdm != ''">
+                and khgl.khdm ILIKE '%'||#{khdm}||'%'
+            </if>
+            <if test="khmc !=null and khmc != ''">
+                and khgl.khmc ILIKE '%'||#{khmc}||'%'
+            </if>
+            <if test="khjc !=null and khjc != ''">
+                and khgl.khjc ILIKE '%'||#{khjc}||'%'
+            </if>
+            <if test="lxr !=null and lxr != ''">
+                and khgl.lxr ILIKE '%'||#{lxr}||'%'
+            </if>
+            <if test="lxfs !=null and lxfs != ''">
+                and khgl.lxfs ILIKE '%'||#{lxfs}||'%'
+            </if>
+            <if test="fzrqstart != null and fzrqstart != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &gt;= #{fzrqstart}
+            </if>
+            <if test="fzrqend != null and fzrqend != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &lt;= #{fzrqend}
+            </if>
+            <if test = "khlbs != null and khlbs.length > 0 "  >
+                and khgl.khlb in
+                <foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yb !=null and yb != ''">
+                and khgl.yb ILIKE '%'||#{yb}||'%'
+            </if>
+        </where>
+    </select>
+    <!--客户管理新增-->
+    <insert id="insert" parameterType="KhglDto">
+        insert into igams_khgl(khid,khdm,fzrq
+        <if test="khmc != null and khmc != ''">
+            ,khmc
+        </if>
+        <if test="khjc != null and khjc != ''">
+            ,khjc
+        </if>
+        <if test="sf != null and sf != ''">
+            ,sf
+        </if>
+        <if test="khgllx != null and khgllx != ''">
+            ,khgllx
+        </if>
+        <if test="biz != null and biz != ''">
+            ,biz
+        </if>
+        <if test="khlb != null and khlb != ''">
+            ,khlb
+        </if>
+        <if test="lxr != null and lxr != ''">
+            ,lxr
+        </if>
+        <if test="lxfs != null and lxfs != ''">
+            ,lxfs
+        </if>
+        <if test="yb != null and yb != ''">
+            ,yb
+        </if>
+        <if test="lxdz != null and lxdz != ''">
+            ,lxdz
+        </if>
+        <if test="zdkh != null and zdkh != ''">
+            ,zdkh
+        </if>
+        <if test="zdlxfs != null and zdlxfs != ''">
+            ,zdlxfs
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{khid},#{khdm},cast(#{fzrq} as date)
+        <if test="khmc != null and khmc != ''">
+            ,#{khmc}
+        </if>
+        <if test="khjc != null and khjc != ''">
+            ,#{khjc}
+        </if>
+        <if test="sf != null and sf != ''">
+            ,#{sf}
+        </if>
+        <if test="khgllx != null and khgllx != ''">
+            ,#{khgllx}
+        </if>
+        <if test="biz != null and biz != ''">
+           ,#{biz}
+        </if>
+        <if test="khlb != null and khlb != ''">
+            ,#{khlb}
+        </if>
+        <if test="lxr != null and lxr != ''">
+            ,#{lxr}
+        </if>
+        <if test="lxfs != null and lxfs != ''">
+            ,#{lxfs}
+        </if>
+        <if test="yb != null and yb != ''">
+            ,#{yb}
+        </if>
+        <if test="lxdz != null and lxdz != ''">
+            ,#{lxdz}
+        </if>
+        <if test="zdkh != null and zdkh != ''">
+            ,#{zdkh}
+        </if>
+        <if test="zdlxfs != null and zdlxfs != ''">
+            ,#{zdlxfs}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <!-- 获取客户编码最大值 -->
+    <select id="countMax" parameterType="KhglDto" resultType="java.lang.Integer">
+		select max(khdm) as num from igams_khgl
+		where length(khdm)=9 and khdm like #{khdm}||'%'
+	</select>
+
+    <!-- 根据客户id删除客户管理信息 -->
+    <update id="deleteByIds" parameterType="KhglDto">
+        update igams_khgl set scbj='1',scsj=LOCALTIMESTAMP
+        <if test="scry!=null and scry!=''">
+            ,scry=#{scry}
+        </if>
+        <where>
+            <if test="khid !=null and khid !=''">
+                or khid = #{khid}
+            </if>
+            <if test="ids !=null and ids.size>0">
+                or khid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <!--通过客户代码查询-->
+    <select id="getKhglDtoByKhdm" parameterType="java.lang.String" resultType="KhglDto">
+        select khdm,khid from igams_khgl where khdm = #{khdm}
+    </select>
+    <!--通过客户简称查询-->
+    <select id="getKhglDtoByKhjc" parameterType="java.lang.String" resultType="KhglDto">
+        select khjc,khid from igams_khgl where khjc = #{khjc} and scbj!='1'
+    </select>
+    <!--通过客户id查询-->
+    <select id="getDtoById" parameterType="java.lang.String" resultType="KhglDto">
+        SELECT khgl.khid,khgl.khdm,khgl.khmc,khgl.khjc,khgl.fzrq,khgl.sf,khgl.biz,khgl.khgllx,sjcsj.csmc sfmc,bjcsj.csmc bizmc,kjcsj.csmc khgllxmc,khgl.lrry,xtyh.zsxm lrrymc,khgl.lrsj,
+        khgl.lxr,khgl.lxfs,khlb.csmc khlbmc,khgl.khlb,khgl.yb,khgl.lxdz,khgl.sfsc,khgl.zdkh,khgl.zdlxfs
+        from igams_khgl khgl
+        left join matridx_jcsj sjcsj on sjcsj.csid = khgl.sf
+        left join matridx_jcsj bjcsj on bjcsj.csid = khgl.biz
+        left join matridx_jcsj kjcsj on kjcsj.csid = khgl.khgllx
+        left join matridx_xtyh xtyh on xtyh.yhid = khgl.lrry
+        left join matridx_jcsj khlb on khlb.csid=khgl.khlb
+        where khgl.khid = #{khid}
+    </select>
+
+    <!-- 修改管理信息 -->
+    <update id="update" parameterType="KhglDto">
+        update igams_khgl set xgsj=LOCALTIMESTAMP,xgry=#{xgry}
+        <if test="khmc!=null and khmc!=''">
+            ,khmc=#{khmc}
+        </if>
+        <if test="khjc!=null and khjc!=''">
+            ,khjc=#{khjc}
+        </if>
+        <if test="khdm!=null and khdm!=''">
+            ,khdm=#{khdm}
+        </if>
+        <if test="sf!=null and sf!=''">
+            ,sf=#{sf}
+        </if>
+        <if test="fzrq!=null and fzrq!=''">
+            ,fzrq=cast(#{fzrq} as date)
+        </if>
+        <if test="biz!=null and biz!=''">
+            ,biz=#{biz}
+        </if>
+        <if test="khgllx!=null and khgllx!=''">
+            ,khgllx=#{khgllx}
+        </if>
+        <if test="lxr!=null and lxr!=''">
+            ,lxr=#{lxr}
+        </if>
+        <if test="lxfs!=null and lxfs!=''">
+            ,lxfs=#{lxfs}
+        </if>
+        <if test="khlb!=null and khlb!=''">
+            ,khlb=#{khlb}
+        </if>
+        <if test="yb!=null and yb!=''">
+            ,yb=#{yb}
+        </if>
+        <if test="lxdz!=null and lxdz!=''">
+            ,lxdz=#{lxdz}
+        </if>
+        <if test="sfsc!=null and sfsc!=''">
+            ,sfsc=#{sfsc}
+        </if>
+        <if test="zdkh!=null and zdkh!=''">
+            ,zdkh=#{zdkh}
+        </if>
+        <if test="zdlxfs!=null and zdlxfs!=''">
+            ,zdlxfs=#{zdlxfs}
+        </if>
+        <where>
+            scbj!='1'
+                and khid=#{khid}
+        </where>
+    </update>
+
+    <!-- 导出条数 -->
+    <select id="getCountForSearchExp" parameterType="KhglDto"
+            resultType="java.lang.Integer">
+        select count(khgl.khid) from igams_khgl khgl
+        left join matridx_jcsj sjcsj on sjcsj.csid = khgl.sf
+        left join matridx_jcsj bjcsj on bjcsj.csid = khgl.biz
+        left join matridx_jcsj kjcsj on kjcsj.csid = khgl.khgllx
+        left join matridx_jcsj khlb on khlb.csid=khgl.khlb
+        <where>
+            khgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (
+                khgl.khdm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or khgl.khjc ILIKE '%' ||#{entire}||'%'
+                or sjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or bjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or kjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or khgl.yb ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="khmc != null and khmc != ''">
+                and khgl.khmc ILIKE '%' ||#{khmc}||'%'
+            </if>
+            <if test="khjc != null and khjc != ''">
+                and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+            </if>
+            <if test="fzrq != null and fzrq != ''">
+                and khgl.fzrq ILIKE '%' ||#{fzrq}||'%'
+            </if>
+            <if test="sfmc != null and sfmc != ''">
+                and sjcsj.csmc ILIKE '%' ||#{sfmc}||'%'
+            </if>
+            <if test="bizmc != null and bizmc != ''">
+                and bjcsj.csmc ILIKE '%' ||#{bizmc}||'%'
+            </if>
+            <if test="khgllxmc != null and khgllxmc != ''">
+                and kjcsj.csmc ILIKE '%' ||#{khgllxmc}||'%'
+            </if>
+            <if test="fzrqstart != null and fzrqstart != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &gt;= #{fzrqstart}
+            </if>
+            <if test="fzrqend != null and fzrqend != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &lt;= #{fzrqend}
+            </if>
+            <if test="yb != null and yb != ''">
+                and khgl.yb ILIKE '%' ||#{yb}||'%'
+            </if>
+            <if test = "khlbs != null and khlbs.length > 0 "  >
+                and khgl.khlb in
+                <foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <!--搜索导出-->
+    <select id="getListForSearchExp" parameterType="KhglDto" resultType="KhglDto">
+        select khgl.khid ${sqlParam}
+        from igams_khgl khgl
+        left join matridx_jcsj sjcsj on sjcsj.csid = khgl.sf
+        left join matridx_jcsj bjcsj on bjcsj.csid = khgl.biz
+        left join matridx_jcsj kjcsj on kjcsj.csid = khgl.khgllx
+        left join matridx_jcsj khlb on khlb.csid=khgl.khlb
+        <where>
+            khgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (
+                khgl.khdm ILIKE '%' ||#{entire}||'%'
+                or khgl.khmc ILIKE '%' ||#{entire}||'%'
+                or khgl.khjc ILIKE '%' ||#{entire}||'%'
+                or sjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or bjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or kjcsj.csmc ILIKE '%' ||#{entire}||'%'
+                or khgl.yb ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="khmc != null and khmc != ''">
+                and khgl.khmc ILIKE '%' ||#{khmc}||'%'
+            </if>
+            <if test="khjc != null and khjc != ''">
+                and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+            </if>
+            <if test="fzrq != null and fzrq != ''">
+                and khgl.fzrq ILIKE '%' ||#{fzrq}||'%'
+            </if>
+            <if test="sfmc != null and sfmc != ''">
+                and sjcsj.csmc ILIKE '%' ||#{sfmc}||'%'
+            </if>
+            <if test="bizmc != null and bizmc != ''">
+                and bjcsj.csmc ILIKE '%' ||#{bizmc}||'%'
+            </if>
+            <if test="khgllxmc != null and khgllxmc != ''">
+                and kjcsj.csmc ILIKE '%' ||#{khgllxmc}||'%'
+            </if>
+            <if test="fzrqstart != null and fzrqstart != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &gt;= #{fzrqstart}
+            </if>
+            <if test="fzrqend != null and fzrqend != ''">
+                and to_char(khgl.fzrq,'yyyy-mm-dd') &lt;= #{fzrqend}
+            </if>
+            <if test="yb != null and yb != ''">
+                and khgl.yb ILIKE '%' ||#{yb}||'%'
+            </if>
+            <if test = "khlbs != null and khlbs.length > 0 "  >
+                and khgl.khlb in
+                <foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <!--选中导出-->
+    <select id="getListForSelectExp" parameterType="KhglDto" resultType="KhglDto">
+        select khgl.khid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} khid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_khgl khgl on khgl.khid = tmp.khid
+        left join matridx_jcsj sjcsj on sjcsj.csid = khgl.sf
+        left join matridx_jcsj bjcsj on bjcsj.csid = khgl.biz
+        left join matridx_jcsj kjcsj on kjcsj.csid = khgl.khgllx
+        left join matridx_jcsj khlb on khlb.csid=khgl.khlb
+        order by tmp.ordernum
+    </select>
+    <update id="updateList" parameterType="KhglDto">
+        update igams_khgl khgl
+        set sfsc=#{sfsc}
+        where khgl.khid in(
+        <foreach item="item" index="index" collection="ids"
+                  separator=" union all ">
+        select #{item}
+    </foreach>)
+    </update>
+</mapper>

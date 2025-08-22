@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IZlxyDao">
+    <sql id="selectWhere">
+        zlxy.scbj='0'
+        <if test="entire !=null and entire!=''">
+            and (zlxybh like '%'||#{entire}||'%'
+            or gysxx.gysmc like '%'||#{entire}||'%'
+            or gysxx.gfbh like '%'||#{entire}||'%'
+            or wlgl.wlbm like '%'||#{entire}||'%'
+            or wlgl.wlmc like '%'||#{entire}||'%'
+            or wlgl.scs like '%'||#{entire}||'%'
+            or zlxymx.sjxmh like '%'||#{entire}||'%'
+            or zlxymx.jszb like '%'||#{entire}||'%'
+            or zlxymx.zlyq like '%'||#{entire}||'%'
+            or zlxymx.ysbz like '%'||#{entire}||'%'
+            or wlgl.bctj like '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="zlxybh!=null and zlxybh!=''">
+            and zlxybh like '%'||#{zlxybh}||'%'
+        </if>
+        <if test="gysmc!=null and gysmc!=''">
+            and gysxx.gysmc like '%'||#{gysmc}||'%'
+        </if>
+        <if test="gfbh!=null and gfbh!=''">
+            and gfbh like '%'||#{gfbh}||'%'
+        </if>
+        <if test="wlbm!=null and wlbm!=''">
+            and wlgl.wlbm like '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc!=null and wlmc!=''">
+            and wlgl.wlmc like '%'||#{wlmc}||'%'
+        </if>
+        <if test="sccj!=null and sccj!=''">
+            and wlgl.scs like '%'||#{sccj}||'%'
+        </if>
+        <if test="sjxmh!=null and sjxmh!=''">
+            and zlxymx.sjxmh like '%'||#{sjxmh}||'%'
+        </if>
+        <if test="jszb!=null and jszb!=''">
+            and zlxymx.jszb like '%'||#{jszb}||'%'
+        </if>
+        <if test="zlyq!=null and zlyq!=''">
+            and zlxymx.zlyq like '%'||#{zlyq}||'%'
+        </if>
+        <if test="ysbz!=null and ysbz!=''">
+            and zlxymx.ysbz like '%'||#{ysbz}||'%'
+        </if>
+        <if test="bctj!=null and bctj!=''">
+            and wlgl.bctj like '%'||#{bctj}||'%'
+        </if>
+        <if test = "gfgllbs != null and gfgllbs.length > 0 "  >
+            and gysxx.gfgllb in
+            <foreach collection="gfgllbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "htxjs != null and htxjs.length > 0 "  >
+            and zlxy.htxj in
+            <foreach collection="htxjs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "sjxmhs != null and sjxmhs.length > 0 "  >
+            and
+            <foreach collection="sjxmhs" separator="or" open="(" close=") "
+                     item="item" index="index">
+                position(#{item} in zlxymx.sjxmh) > 0
+            </foreach>
+        </if>
+        <if test = "szbjs != null and szbjs.length > 0 "  >
+            and zlxy.szbj in
+            <foreach collection="szbjs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="cjsjstart != null and cjsjstart != ''">
+            and to_char(zlxy.cjsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+        </if>
+        <if test="cjsjend != null and cjsjend != ''">
+            and to_char(zlxy.cjsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+        </if>
+        <if test="kssjstart != null and kssjstart != ''">
+            and to_char(zlxy.kssj,'yyyy-mm-dd') &gt;= #{kssjstart}
+        </if>
+        <if test="kssjend != null and kssjend != ''">
+            and to_char(zlxy.kssj,'yyyy-mm-dd') &lt;= #{kssjend}
+        </if>
+        <if test="dqsjstart != null and dqsjstart != ''">
+            and to_char(zlxy.dqsj,'yyyy-mm-dd') &gt;= #{dqsjstart}
+        </if>
+        <if test="dqsjend != null and dqsjend != ''">
+            and to_char(zlxy.dqsj,'yyyy-mm-dd') &lt;= #{dqsjend}
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="ZlxyDto" resultType="ZlxyDto">
+    select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+    zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,zlxy.zt,case when to_char(LOCALTIMESTAMP,'yyyy-mm-dd')&gt;to_char(zlxy.dqsj,'yyyy-mm-dd') then '已过期' else '' end sfgq,
+    zlxy.szbj,zlxy.wbxybh,zlxy.htlx,htlx.csmc htlxmc
+    from igams_zlxy zlxy
+    <if test="(entire !=null and entire!='')or(wlbm!=null and wlbm!='')or(wlmc!=null and wlmc!='')or(sccj!=null and sccj!='')or(sjxmh!=null and sjxmh!='')
+    or(jszb!=null and jszb!='')or(zlyq!=null and zlyq!='')or(ysbz!=null and ysbz!='')or(bctj!=null and bctj!='')or(sjxmhs != null and sjxmhs.length > 0)">
+        left join igams_zlxymx zlxymx on zlxymx.zlxyid=zlxy.zlxyid
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+    </if>
+    left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+    left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+    left join matridx_jcsj htlx on htlx.csid=zlxy.htlx
+    left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+    left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+    left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+
+    <where>
+        <include refid="selectWhere"></include>
+    </where>
+        <if test="(entire !=null and entire!='')or(wlbm!=null and wlbm!='')or(wlmc!=null and wlmc!='')or(sccj!=null and sccj!='')or(sjxmh!=null and sjxmh!='')
+    or(jszb!=null and jszb!='')or(zlyq!=null and zlyq!='')or(ysbz!=null and ysbz!='')or(bctj!=null and bctj!='')or(sjxmhs != null and sjxmhs.length > 0)">
+            group by zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm,xgry.zsxm,
+            zlxy.lrry,zlxy.xgry,gfgllb.csmc,zlxy.zlxybh,fzr.zsxm,gysxx.gysmc,gysxx.gfbh,zlxy.wbxybh,zlxy.htlx,htlx.csmc
+        </if>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+        zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,yhssjg.jgid sqbm,zlxy.ddslid,zlxy.wbxybh,zlxy.htlx,htlx.csmc htlxmc,
+        bczlxy.zlxybh yyxybh
+        from igams_zlxy zlxy
+        left join igams_zlxy bczlxy on bczlxy.zlxyid=zlxy.bchtid
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_jcsj htlx on htlx.csid=zlxy.htlx
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=zlxy.fzr
+        <where>
+            zlxy.zlxyid=#{zlxyid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+        zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,zlxy.wbxybh,zlxy.htlx,htlx.csmc htlxmc
+        from igams_zlxy zlxy
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_jcsj htlx on htlx.csid=zlxy.htlx
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+        <where>
+            zlxy.scbj='0'
+            <if test="gysid!=null and gysid!=''">
+                and zlxy.gysid =#{gysid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and zlxy.zlxyid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <insert id="insert"  parameterType="ZlxyDto">
+        insert into igams_zlxy(
+        zlxyid
+        <if test="gysid != '' and gysid != null">
+            ,gysid
+        </if>
+        <if test="fzr != '' and fzr != null">
+            ,fzr
+        </if>
+        <if test="zlxybh != '' and zlxybh != null">
+            ,zlxybh
+        </if>
+        <if test="cjsj != '' and cjsj != null">
+            ,cjsj
+        </if>
+        <if test="kssj != '' and kssj != null">
+            ,kssj
+        </if>
+        <if test="dqsj != '' and dqsj != null">
+            ,dqsj
+        </if>
+        <if test="bz != '' and bz != null">
+            ,bz
+        </if>
+        <if test="zt != '' and zt != null">
+            ,zt
+        </if>
+        <if test="htxj != '' and htxj != null">
+            ,htxj
+        </if>
+        <if test="wbxybh != '' and wbxybh != null">
+            ,wbxybh
+        </if>
+        <if test="htlx != '' and htlx != null">
+            ,htlx
+        </if>
+        <if test="bchtid != '' and bchtid != null">
+            ,bchtid
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(
+        #{zlxyid}
+        <if test="gysid != '' and gysid != null">
+            ,#{gysid}
+        </if>
+        <if test="fzr != '' and fzr != null">
+            ,#{fzr}
+        </if>
+        <if test="zlxybh != '' and zlxybh != null">
+            ,#{zlxybh}
+        </if>
+        <if test="cjsj != '' and cjsj != null">
+            , CAST(#{cjsj} AS DATE)
+        </if>
+        <if test="kssj != '' and kssj != null">
+            ,CAST(#{kssj} AS DATE)
+        </if>
+        <if test="dqsj != '' and dqsj != null">
+            ,CAST(#{dqsj} AS DATE)
+        </if>
+        <if test="bz != '' and bz != null">
+            ,#{bz}
+        </if>
+        <if test="zt != '' and zt != null">
+            ,#{zt}
+        </if>
+        <if test="htxj != '' and htxj != null">
+            ,#{htxj}
+        </if>
+        <if test="wbxybh != '' and wbxybh != null">
+            ,#{wbxybh}
+        </if>
+        <if test="htlx != '' and htlx != null">
+            ,#{htlx}
+        </if>
+        <if test="bchtid != '' and bchtid != null">
+            ,#{bchtid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+
+    <update id="modHtxjByGysid" parameterType="ZlxyDto">
+        update igams_zlxy
+        set
+        xgry=#{xgry}
+        ,xgsj=LOCALTIMESTAMP
+        ,htxj=#{htxj}
+        <where>
+            gysid = #{gysid}
+        </where>
+    </update>
+
+    <update id="update" parameterType="ZlxyDto">
+        UPDATE igams_zlxy set
+        xgry = #{scry},xgsj = LOCALTIMESTAMP
+        <if test="gysid != '' and gysid != null">
+            ,gysid=#{gysid}
+        </if>
+        <if test="fzr != '' and fzr != null">
+            ,fzr=#{fzr}
+        </if>
+        <if test="zlxybh != '' and zlxybh != null">
+            ,zlxybh=#{zlxybh}
+        </if>
+        <if test="cjsj != '' and cjsj != null">
+            , cjsj=CAST(#{cjsj} AS DATE)
+        </if>
+        <if test="kssj != '' and kssj != null">
+            ,kssj=CAST(#{kssj} AS DATE)
+        </if>
+        <if test="dqsj != '' and dqsj != null">
+            ,dqsj=CAST(#{dqsj} AS DATE)
+        </if>
+        <if test="bz != '' and bz != null">
+            ,bz=#{bz}
+        </if>
+        <if test="zt != '' and zt != null">
+            ,zt=#{zt}
+        </if>
+        <if test="htxj != '' and htxj != null">
+            ,htxj=#{htxj}
+        </if>
+        <if test="ddslid != '' and ddslid != null">
+            ,ddslid=#{ddslid}
+        </if>
+        <if test="szbj != '' and szbj != null">
+            ,szbj=#{szbj}
+        </if>
+        <if test="wbxybh != '' and wbxybh != null">
+            ,wbxybh=#{wbxybh}
+        </if>
+        <if test="htlx != '' and htlx != null">
+            ,htlx=#{htlx}
+        </if>
+        where zlxyid= #{zlxyid}
+    </update>
+
+    <update id="delete" parameterType="ZlxyDto">
+        update igams_zlxy
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zlxyid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="getPagedAuditAgreement" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+        zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,zlxy.zt,zlxy.htlx,htlx.csmc htlxmc
+        from igams_zlxy zlxy
+        <if test="(entire !=null and entire!='')or(wlbm!=null and wlbm!='')or(wlmc!=null and wlmc!='')or(sccj!=null and sccj!='')or(sjxmh!=null and sjxmh!='')
+    or(jszb!=null and jszb!='')or(zlyq!=null and zlyq!='')or(ysbz!=null and ysbz!='')or(bctj!=null and bctj!='')">
+            left join igams_zlxymx zlxymx on zlxymx.zlxyid=zlxy.zlxyid
+            left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        </if>
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_jcsj htlx on htlx.csid=zlxy.htlx
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+        <if test="(entire !=null and entire!='')or(wlbm!=null and wlbm!='')or(wlmc!=null and wlmc!='')or(sccj!=null and sccj!='')or(sjxmh!=null and sjxmh!='')
+    or(jszb!=null and jszb!='')or(zlyq!=null and zlyq!='')or(ysbz!=null and ysbz!='')or(bctj!=null and bctj!='')">
+            group by zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm,xgry.zsxm,
+            zlxy.lrry,zlxy.xgry,gfgllb.csmc,zlxy.zlxybh,fzr.zsxm,gysxx.gysmc,gysxx.gfbh,zlxy.htlx,htlx.csmc
+        </if>
+    </select>
+    <select id="getAuditListAgreemen" parameterType="list" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+        zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,zlxy.zt,zlxy.htlx,htlx.csmc htlxmc,
+        shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.zlxyid} zlxyid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach>
+        tmp
+        left join igams_zlxy zlxy on zlxy.zlxyid=tmp.zlxyid
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_jcsj htlx on htlx.csid=zlxy.htlx
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+    </select>
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="ZlxyDto"
+            resultType="java.lang.Integer">
+        select count(zlxy.zlxyid) from igams_zlxy zlxy
+        left join igams_zlxymx zlxymx on zlxymx.zlxyid=zlxy.zlxyid
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid ${sqlParam}
+        from igams_zlxy zlxy
+        left join igams_zlxymx zlxymx on zlxymx.zlxyid=zlxy.zlxyid
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} zlxyid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_zlxy zlxy on zlxy.zlxyid=tmp.zlxyid
+        left join igams_zlxymx zlxymx on zlxymx.zlxyid=zlxy.zlxyid
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+        order by tmp.ordernum
+    </select>
+    <select id="getDtoByDdslid" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.gysid,zlxy.fzr,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxy.bz,zlxy.htxj,lrry.zsxm lrrymc,xgry.zsxm xgrymc,
+        zlxy.lrry,zlxy.xgry,gfgllb.csmc gfgllbmc,zlxy.zlxybh,fzr.zsxm fzrmc,gysxx.gysmc,gysxx.gfbh,gysxx.gfbh
+        from igams_zlxy zlxy
+        left join igams_gysxx gysxx on gysxx.gysid=zlxy.gysid
+        left join matridx_jcsj gfgllb on gfgllb.csid=gysxx.gfgllb
+        left join matridx_xtyh fzr on fzr.yhid=zlxy.fzr
+        left join matridx_xtyh lrry on lrry.yhid=zlxy.lrry
+        left join matridx_xtyh xgry on xgry.yhid=zlxy.xgry
+        <where>
+            zlxy.ddslid=#{ddslid}
+        </where>
+    </select>
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="ZlxyDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+    <update id="updateDdslidToNull" parameterType="ZlxyDto">
+        update igams_zlxy set ddslid=null
+        <where>
+            zlxyid=#{zlxyid}
+        </where>
+    </update>
+    <select id="getContractMap" parameterType="ZlxyDto" resultType="Map">
+        select zlxy.zlxyid,zlxy.gysid,gysxx.gysmc AS seller,gysxx.dh,gysxx.yx email,gysxx.dq,gysxx.lxr man,zlxy.kssj,zlxy.dqsj,zlxy.zlxybh as number,fj.wjlj,to_char(zlxy.cjsj,'yyyy-mm-dd') cjsj,
+        gysxx.fddbr
+        FROM igams_zlxy zlxy
+        LEFT JOIN igams_gysxx gysxx ON gysxx.gysid = zlxy.gysid and gysxx.scbj!='1'
+        left join matridx_fjcfb fj on fj.ywid=gysxx.gysid and fj.ywlx='IMP_FORMWORKSUBSUPPLIER' and fj.scbj='0'
+        <where>
+            zlxy.zlxyid=#{zlxyid}
+        </where>
+    </select>
+    <select id="getContractListMap"  parameterType="ZlxyDto" resultType="Map">
+        select zlxymx.zlxymxid,zlxymx.zlxyid,wlgl.wlbm,case when wlgl.wlmc is not null then wlgl.wlmc else zlxymx.fwmc end wlmc,zlxymx.fwmc,wlgl.scs,sjxmh,zlxymx.jszb,zlxymx.zlyq,zlxymx.ysbz,zlxy.zlxybh,zlxy.cjsj,zlxy.kssj,zlxy.dqsj,zlxymx.zt,zlxymx.wlid,
+        wlgl.bctj,wlgl.bzq,wlgl.gg
+        from igams_zlxymx zlxymx
+        left join igams_wlgl wlgl on wlgl.wlid=zlxymx.wlid
+        left join igams_zlxy zlxy on zlxy.zlxyid=zlxymx.zlxyid and zlxy.scbj='0'
+        <where>
+            zlxymx.scbj='0'
+            <if test="zlxyid!=null and zlxyid!=''">
+                and zlxymx.zlxyid=#{zlxyid}
+            </if>
+        </where>
+    </select>
+    <select id="selectLastDto" resultType="ZlxyDto" parameterType="String">
+        select zlxyid,kssj,cjsj
+        from igams_zlxy
+        where gysid=#{gysid} and scbj='0'
+        order by kssj desc ,cjsj desc limit 1
+    </select>
+    <select id="selectGysids" parameterType="ZlxyDto" resultType="String">
+        select gysid
+        from igams_zlxy
+        where scbj='0'
+        <if test="ids !=null and ids.size >0" >
+            and zlxyid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        group by gysid
+    </select>
+    <select id="selectZlxyDtos" parameterType="String" resultType="ZlxyDto">
+        select zlxyid, rown,'1' as htxj from(
+        select zlxyid, ROW_NUMBER ( ) OVER ( PARTITION BY gysid order by kssj desc ,cjsj desc ) rown  from igams_zlxy
+        where scbj='0'
+        <if test="list !=null and list.size >0" >
+            and gysid in
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item})
+            </foreach>
+        </if>
+        )tt where tt.rown=1
+    </select>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_zlxy zlxy
+            set xgsj=LOCALTIMESTAMP,
+            htxj=tmp.htxj
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.zlxyid} zlxyid,#{item.htxj} htxj
+            </foreach>
+            )
+            tmp
+            where
+            zlxy.zlxyid=tmp.zlxyid
+        </if>
+    </update>
+    <select id="getAgreementContractSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(zlxybh,LENGTH(zlxybh)-strpos(reverse(zlxybh),'-')+2,cast(#{num} as integer ))),'0') AS numeric) + 1) as VARCHAR),cast(#{num} as integer), '0') serial
+        FROM igams_zlxy
+        where
+            scbj != '1' AND zlxybh like #{prefix}||'%'
+        <if test="num !=null and num != '' and num == '2'.toString">
+            and bchtid is null
+        </if>
+    </select>
+    <select id="getListByZlxybh" parameterType="ZlxyDto" resultType="ZlxyDto">
+        select zlxy.zlxyid,zlxy.zlxybh
+        from igams_zlxy zlxy
+        <where>
+            zlxy.scbj ='0'
+            <if test="zlxybh != null and zlxybh != ''">
+                and zlxy.zlxybh = #{zlxybh}
+            </if>
+            <if test="zlxyid != null and zlxyid != ''">
+                and zlxy.zlxyid != #{zlxyid}
+            </if>
+        </where>
+    </select>
+</mapper>

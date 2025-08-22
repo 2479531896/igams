@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IPdjlDao" >
+	<sql id="SEARCH_TERMS">
+		pdjl.pdryid=#{lrry}
+	<if test="entire != null and entire != ''">
+		and (
+		khgl.khmc ILIKE '%'||#{entire}||'%'
+		or djry.zsxm ILIKE '%'||#{entire}||'%'
+		)
+	</if>
+		<if test="jd!='' and jd!='null'">
+			and shfkdj.jd=#{jd}
+		</if>
+	</sql>
+    <select id="getPagedDtoList" resultType="PdjlDto" parameterType="PdjlDto">
+		SELECT
+		djry.zsxm djry,
+		khgl.khmc,
+		shfkdj.wtms,
+		to_char(shfkdj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,
+		pdjl.pdzt,
+		shfkdj.shfkid,
+		pdjl.pdjlid,
+		CASE
+		WHEN pdjl.pdzt = '0' THEN
+		'已取消' ELSE'正常'
+		END ztmc
+		FROM
+		igams_pdjl pdjl
+		LEFT JOIN igams_shfkdj shfkdj ON shfkdj.shfkid = pdjl.shfkid
+		LEFT JOIN matridx_xtyh djry ON shfkdj.lrry = djry.yhid
+		LEFT JOIN igams_khgl khgl ON khgl.khid = shfkdj.khid
+	<where>
+		<include refid="SEARCH_TERMS"></include>
+	</where>
+    </select>
+	<insert id="insert" parameterType="PdjlDto" >
+		insert into igams_pdjl(pdjlid,pdryid,pdzt,shfkid)
+		values (#{pdjlid},#{pdryid},#{pdzt},#{shfkid})
+	</insert>
+	<update id="update" parameterType="PdjlDto">
+		update igams_pdjl set
+		<trim prefixOverrides=",">
+			<if test="pdryid !=null and pdryid !=''">
+				,pdryid=#{pdryid}
+			</if>
+			<if test="pdzt !=null and pdzt !=''">
+				,pdzt=#{pdzt}
+			</if>
+		</trim>
+		<where>
+			shfkid = #{shfkid}
+		</where>
+	</update>
+	<select id="getDtoById" parameterType="PdjlDto" resultType="PdjlDto">
+		SELECT
+		djry.zsxm djry,
+		khgl.khmc,
+		shfkdj.wtms,
+        to_char(shfkdj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,
+		pdjl.pdzt,
+		shfkdj.shfkid,
+		CASE
+		WHEN pdjl.pdzt = '0' THEN
+		'已取消' ELSE'正常'
+		END ztmc,shfkdj.xlh,shfkdj.yqmc,shfkdj.lxr
+		FROM
+		igams_pdjl pdjl
+		LEFT JOIN igams_shfkdj shfkdj ON shfkdj.shfkid = pdjl.shfkid
+		LEFT JOIN matridx_xtyh djry ON shfkdj.lrry = djry.yhid
+		LEFT JOIN igams_khgl khgl ON khgl.khid = shfkdj.khid
+		where pdjl.pdjlid=#{pdjlid}
+	</select>
+</mapper>

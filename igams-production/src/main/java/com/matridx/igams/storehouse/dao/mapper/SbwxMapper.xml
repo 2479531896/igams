@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ISbwxDao" >
+    <insert id="insert" parameterType="SbwxDto">
+        insert into igams_sbwx(sbwxid,sbysid
+        <if test="gzms != null and gzms != ''">
+            ,gzms
+        </if>
+        <if test="sqr != null and sqr != ''">
+            ,sqr
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,sqbm
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,sqrq
+        </if>
+        <if test="lb != null and lb != ''">
+            ,lb
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            ,jlbh
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(#{sbwxid},#{sbysid}
+        <if test="gzms != null and gzms != ''">
+            ,#{gzms}
+        </if>
+        <if test="sqr != null and sqr != ''">
+            ,#{sqr}
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,#{sqbm}
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,cast(#{sqrq} as date )
+        </if>
+        <if test="lb != null and lb != ''">
+            ,#{lb}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        <if test="jlbh != null and jlbh != ''">
+            ,#{jlbh}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+    <select id="getPagedDtoList" parameterType="SbwxDto" resultType="SbwxDto">
+        SELECT
+        sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+        sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+        sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+        sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+        sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,
+        sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc,sbwx.sjbf,sbwx.bfcs,sbys.sblx,sblx.csmc sblxmc,
+        sbys.xsyr,syry.zsxm syrymc,sbys.xsybm,xsybm.jgmc xsybmmc,sbys.bmsbfzr,bmsbfzr.zsxm bmsbfzrmc
+        FROM
+        igams_sbwx sbwx
+        LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+        LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+        SELECT MAX(lrsj)
+        FROM igams_hwxx
+        WHERE scbj ='0' and sbysid = sbys.sbysid
+        )
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+        LEFT JOIN matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm
+        left join matridx_xtyh glry on glry.yhid=sbys.glry
+        left join matridx_xtyh syry on syry.yhid=sbys.xsyr
+        left join matridx_xtyh bmsbfzr on bmsbfzr.yhid=sbys.bmsbfzr
+        left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+        WHERE sbwx.scbj ='0'
+        <include refid="selectWhere"></include>
+    </select>
+    <sql id="selectWhere">
+        <if test="entire != null and entire != ''">
+            and (
+            sbys.sbbh ILIKE '%'||#{entire}||'%'
+            or sbys.sbmc ILIKE '%'||#{entire}||'%'
+            or sbys.gdzcbh ILIKE '%' ||#{entire}||'%'
+            or sbys.ggxh ILIKE '%' ||#{entire}||'%'
+            or sbys.sbccbh ILIKE '%' ||#{entire}||'%'
+            or sbys.xlh ILIKE '%' ||#{entire}||'%'
+            or glry.zsxm ILIKE '%' ||#{entire}||'%'
+            or sbys.sydd ILIKE '%' ||#{entire}||'%'
+            or syry.zsxm ILIKE '%' ||#{entire}||'%'
+            or bmsbfzr.zsxm ILIKE '%' ||#{entire}||'%'
+            or xtyh.zsxm ILIKE '%' ||#{entire}||'%'
+            or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+            or sbwx.wxdw ILIKE '%' ||#{entire}||'%'
+            or sbwx.wbry ILIKE '%' ||#{entire}||'%'
+            )
+        </if>
+        <if test = "sblxs != null and sblxs.length > 0 "  >
+            and sbys.sblx in
+            <foreach collection="sblxs" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "xsybms != null and xsybms.length > 0 "  >
+            and sbys.xsybm in
+            <foreach collection="xsybms" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "glrys != null and glrys.length > 0 "  >
+            and sbys.glry in
+            <foreach collection="glrys" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "wxqqwfss != null and wxqqwfss.length > 0 "  >
+            and sbwx.wxqqwfs in
+            <foreach collection="wxqqwfss" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "wxhqwfss != null and wxhqwfss.length > 0 "  >
+            and sbwx.wxhqwfs in
+            <foreach collection="wxhqwfss" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "zts != null and zts.length > 0 ">
+            and sbwx.zt in
+            <foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="lb != null and lb != ''">
+            and sbwx.lb = #{lb}
+        </if>
+        <if test="sfcsfy != null and sfcsfy != ''">
+            and sbwx.sfcsfy = #{sfcsfy}
+        </if>
+        <if test="sfcsfy != null and sfcsfy != ''">
+            and sbwx.sfcsfy = #{sfcsfy}
+        </if>
+        <if test="sjbf != null and sjbf != ''">
+            and sbwx.sjbf = #{sjbf}
+        </if>
+        <if test="sfyz != null and sfyz != ''">
+            and sbwx.sfyz = #{sfyz}
+        </if>
+        <if test="sqrqstart != null and sqrqstart != ''">
+            and to_char(sbwx.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+        </if>
+        <if test="sqrqend != null and sqrqend != ''">
+            and to_char(sbwx.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+        </if>
+        <if test="wxsjstart != null and wxsjstart != ''">
+            and to_char(sbwx.wxsj,'YYYY-MM-dd') &gt;= #{wxsjstart}
+        </if>
+        <if test="wxsjend != null and wxsjend != ''">
+            and to_char(sbwx.wxsj,'YYYY-MM-dd') &lt;= #{wxsjend}
+        </if>
+        <if test="yzrqstart != null and yzrqstart != ''">
+            and to_char(sbwx.yzrq,'YYYY-MM-dd') &gt;= #{yzrqstart}
+        </if>
+        <if test="yzrqend != null and yzrqend != ''">
+            and to_char(sbwx.yzrq,'YYYY-MM-dd') &lt;= #{yzrqend}
+        </if>
+        <if test="hfsyrqstart != null and hfsyrqstart != ''">
+            and to_char(sbwx.hfsyrq,'YYYY-MM-dd') &gt;= #{hfsyrqstart}
+        </if>
+        <if test="hfsyrqend != null and hfsyrqend != ''">
+            and to_char(sbwx.hfsyrq,'YYYY-MM-dd') &lt;= #{hfsyrqend}
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            and sbwx.sqbm = #{sqbm}
+        </if>
+        <if test="sqr != null and sqr != ''">
+            and sbwx.sqr = #{sqr}
+        </if>
+        <if test="sbbh != null and sbbh != ''">
+            and sbys.sbbh ILIKE '%' ||#{sbbh}||'%'
+        </if>
+        <if test="sbmc != null and sbmc != ''">
+            and sbys.sbmc ILIKE '%' ||#{sbmc}||'%'
+        </if>
+        <if test="gdzcbh != null and gdzcbh != ''">
+            and sbys.gdzcbh ILIKE '%' ||#{gdzcbh}||'%'
+        </if>
+        <if test="ggxh != null and ggxh != ''">
+            and sbys.ggxh ILIKE '%' ||#{ggxh}||'%'
+        </if>
+        <if test="sbccbh != null and sbccbh != ''">
+            and sbys.sbccbh ILIKE '%' ||#{sbccbh}||'%'
+        </if>
+        <if test="xlh != null and xlh != ''">
+            and sbys.xlh ILIKE '%' ||#{xlh}||'%'
+        </if>
+        <if test="glrymc != null and glrymc != ''">
+            and glry.zsxm ILIKE '%' ||#{glrymc}||'%'
+        </if>
+        <if test="syrymc != null and syrymc != ''">
+            and syry.zsxm ILIKE '%' ||#{syrymc}||'%'
+        </if>
+        <if test="bmsbfzrmc != null and bmsbfzrmc != ''">
+            and bmsbfzr.zsxm ILIKE '%' ||#{bmsbfzrmc}||'%'
+        </if>
+        <if test="sqrmc != null and sqrmc != ''">
+            and xtyh.zsxm ILIKE '%' ||#{sqrmc}||'%'
+        </if>
+         <if test="sqbmmc != null and sqbmmc != ''">
+            and jgxx.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+        </if>
+        <if test="wxdw != null and wxdw != ''">
+            and sbwx.wxdw ILIKE '%' ||#{wxdw}||'%'
+        </if>
+        <if test="wbry != null and wbry != ''">
+            and sbwx.wbry ILIKE '%' ||#{wbry}||'%'
+        </if>
+    </sql>
+    <select id="getDepartmentList"  resultType="SbwxDto">
+        SELECT
+        sbys.xsybm,
+        xsybm.jgmc xsybmmc
+        FROM
+        igams_sbwx sbwx
+        left join igams_sbys sbys on sbys.sbysid=sbwx.sbysid and sbys.scbj='0'
+        LEFT JOIN matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm
+        <where>
+            sbwx.scbj='0' and sbys.xsybm is not null and xsybm.jgmc is not null
+            group by sbys.xsybm,xsybm.jgmc
+        </where>
+    </select>
+    <select id="getGlryList"  resultType="SbwxDto">
+        select glry.yhid glry,glry.zsxm glrymc
+        from igams_sbwx sbwx
+        left join igams_sbys sbys on sbys.sbysid=sbwx.sbysid and sbys.scbj='0'
+        left join matridx_xtyh glry on glry.yhid=sbys.glry and glry.scbj='0'
+        <where>
+            sbwx.scbj='0' and glry.zsxm is not null
+            group by glry.yhid,glry.zsxm
+        </where>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="SbwxDto">
+        SELECT
+            sbwx.fyje,sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+            sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+            sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+            sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+            sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,
+            sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc,
+	        sbys.sccjlxfs,sybm.jgmc xsybmmc,sbwx.sjbf,sbwx.bfcs,sbys.sblx,sblx.csmc sblxmc,
+            sbys.xsyr,syry.zsxm syrymc,sbys.bmsbfzr,bmsbfzr.zsxm bmsbfzrmc,sbys.gzsj,sbys.sccj,
+            yzr.zsxm yzrmc,glry.zsxm glrymc,case when wxqqwfs.csmc is null then '1' else '0' end wxqqwbj,case when wxhqwfs.csmc is null then '1' else '0' end wxhqwbj,
+            sbwx.jlbh,sbwx.pzcs,sbwx.yzqk,sbwx.sjbf,sbwx.bfcs,sbwx.sjbf,sbwx.bfcs,sbwx.pzcs,sbwx.yzqk,sbwx.jlbh,
+            wxqqwfs.csmc wxqqwfsmc,wxhqwfs.csmc wxhqwfsmc,sbys.gdzcbh,sbys.sbzt,sbys.ysbzt
+        FROM
+            igams_sbwx sbwx
+            LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+            LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+            SELECT MAX(lrsj)
+            FROM igams_hwxx
+            WHERE scbj ='0' and sbysid = sbys.sbysid
+            )
+            LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+            LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+            left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+            left join matridx_jcsj wxqqwfs on wxqqwfs.csid=sbwx.wxqqwfs
+            left join matridx_jcsj wxhqwfs on wxhqwfs.csid=sbwx.wxhqwfs
+            left join matridx_xtyh bmsbfzr on bmsbfzr.yhid=sbys.bmsbfzr
+            left join matridx_xtyh syry on syry.yhid=sbys.xsyr
+			left join matridx_jgxx sybm on sybm.jgid=sbys.xsybm
+			left join matridx_xtyh yzr on yzr.yhid=sbwx.yzr
+			left join matridx_xtyh glry on glry.yhid=sbys.glry
+        WHERE sbwx.sbwxid = #{sbwxid}
+    </select>
+    <select id="getDtoList" parameterType="SbwxDto" resultType="SbwxDto">
+        SELECT
+            sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+            sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+            sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+            sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+            sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,
+            sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc,sbwx.sjbf,sbwx.bfcs,sbys.sblx,sblx.csmc sblxmc,
+        sbys.xsyr,syry.zsxm syrymc,sbys.bmsbfzr,bmsbfzr.zsxm bmsbfzrmc,sbys.gzsj,sbys.sccj,
+        yzr.zsxm yzrmc,glry.zsxm glrymc,case when wxqqwfs.csmc is null then '1' else '0' end wxqqwbj,case when wxhqwfs.csmc is null then '1' else '0' end wxhqwbj,
+        sbwx.jlbh,sbwx.yzqk,sbwx.pzcs,
+        wxqqwfs.csmc wxqqwfsmc,wxhqwfs.csmc wxhqwfsmc,sbys.gdzcbh,sbys.sbzt,sbys.ysbzt,sbys.jlbh
+
+        FROM
+            igams_sbwx sbwx
+                LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+                LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+                SELECT MAX(lrsj)
+                FROM igams_hwxx
+                WHERE scbj ='0' and sbysid = sbys.sbysid
+                )
+                LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+                LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+                left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+                left join matridx_jcsj wxqqwfs on wxqqwfs.csid=sbwx.wxqqwfs
+                left join matridx_jcsj wxhqwfs on wxhqwfs.csid=sbwx.wxhqwfs
+                left join matridx_xtyh bmsbfzr on bmsbfzr.yhid=sbys.bmsbfzr
+                left join matridx_xtyh syry on syry.yhid=sbys.xsyr
+                left join matridx_jgxx sybm on sybm.jgid=sbys.xsybm
+                left join matridx_xtyh yzr on yzr.yhid=sbwx.yzr
+                left join matridx_xtyh glry on glry.yhid=sbys.glry
+        WHERE sbwx.scbj = '0'
+        <if test="ids != null and ids.size() > 0">
+            AND sbwx.sbwxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sbysid!=null and sbysid!=''">
+            and sbwx.sbysid=#{sbysid}
+        </if>
+    </select>
+    <select id="getDtoByDdslid" parameterType="String" resultType="SbwxDto">
+        SELECT
+            sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+            sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+            sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+            sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+            sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,
+            sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc
+        FROM
+            igams_sbwx sbwx
+                LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+                LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+                SELECT MAX(lrsj)
+                FROM igams_hwxx
+                WHERE scbj ='0' and sbysid = sbys.sbysid
+                )
+                LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+                LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+        WHERE sbwx.ddslid = #{ddslid}
+    </select>
+    <update id="update" parameterType="SbwxDto">
+        update igams_sbwx set
+        <if test="gzms != null and gzms != ''">
+            gzms = #{gzms},
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            sqrq = cast(#{sqrq} as date),
+        </if>
+        <if test="lb != null and lb != ''">
+            lb = #{lb},
+        </if>
+        <if test="sqr != null and sqr != ''">
+            sqr=#{sqr},
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            sqbm=#{sqbm},
+        </if>
+        <if test="tjsj != null and tjsj != ''">
+            tjsj =  cast(#{tjsj} as date),
+        </if>
+        <if test="zt != null and zt != ''">
+            zt = #{zt},
+        </if>
+        <if test="ddslid != null and ddslid != ''">
+            ddslid = #{ddslid},
+        </if>
+        <if test="sfcsfy != null and sfcsfy != ''">
+            sfcsfy = #{sfcsfy},
+        </if>
+        <if test="fyje != null and fyje != ''">
+            fyje = cast(#{fyje} as numeric),
+        </if>
+        <if test="wxqqwfs != null and wxqqwfs != ''">
+            wxqqwfs = #{wxqqwfs},
+        </if>
+        <if test="wxdw != null and wxdw != ''">
+            wxdw = #{wxdw},
+        </if>
+        <if test="wbry != null and wbry != ''">
+            wbry = #{wbry},
+        </if>
+        <if test="wxsj != null and wxsj != ''">
+            wxsj = cast(#{wxsj} as date),
+        </if>
+        <if test="jl != null and jl != ''">
+            jl = #{jl},
+        </if>
+        <if test="bz != null and bz != ''">
+            bz = #{bz},
+        </if>
+        <if test="wxhqwfs != null and wxhqwfs != ''">
+            wxhqwfs = #{wxhqwfs},
+        </if>
+        <if test="sjbf != null and sjbf != ''">
+            sjbf = #{sjbf},
+        </if>
+        <if test="bfcs != null and bfcs != ''">
+            bfcs = #{bfcs},
+        </if>
+        <if test="pzcs != null and pzcs != ''">
+            pzcs = #{pzcs},
+        </if>
+        <if test="yzqk != null and yzqk != ''">
+            yzqk = #{yzqk},
+        </if>
+        <if test="sfyz != null and sfyz != ''">
+            sfyz = #{sfyz},
+        </if>
+        <if test="yzr != null and yzr != ''">
+            yzr = #{yzr},
+        </if>
+        <if test="yzrq != null and yzrq != ''">
+            yzrq = cast(#{yzrq} as date),
+        </if>
+        <if test="hfsyrq != null and hfsyrq != ''">
+            hfsyrq = cast(#{hfsyrq} as date),
+        </if>
+        <if test="yzfs != null and yzfs != ''">
+            yzfs = #{yzfs},
+        </if>
+        <if test="yzjl != null and yzjl != ''">
+            yzjl = #{yzjl},
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where sbwxid = #{sbwxid}
+    </update>
+    <update id="updateDdslidToNull" parameterType="SbwxDto">
+        update igams_sbwx set ddslid=null
+        <where>
+            sbwxid=#{sbwxid}
+        </where>
+    </update>
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="SbwxDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+    <delete id="delete" parameterType="SbwxDto">
+        update igams_sbwx set scbj ='1' , scry = #{scry}
+        where sbwxid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="getPagedAuditUpkeepDevice" parameterType="SbwxDto" resultType="SbwxDto">
+        SELECT
+        sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+        sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+        sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+        sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+        sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,
+        sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc,sbwx.sjbf,sbwx.bfcs
+        FROM
+        igams_sbwx sbwx
+        LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+        LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+        SELECT MAX(lrsj)
+        FROM igams_hwxx
+        WHERE scbj ='0' and sbysid = sbys.sbysid
+        )
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+        left join matridx_xtyh glry on glry.yhid=sbys.glry
+        left join matridx_xtyh syry on syry.yhid=sbys.xsyr
+        left join matridx_xtyh bmsbfzr on bmsbfzr.yhid=sbys.bmsbfzr
+        WHERE sbwx.scbj ='0'
+        <include refid="selectWhere"></include>
+    </select>
+    <select id="getAuditListUpkeepDevice" resultType="SbwxDto" parameterType="List">
+        select
+        sbwx.sbwxid,sbwx.sbysid,sbwx.gzms,sbwx.sqr,sbwx.sqbm,sbwx.sqrq,
+        sbwx.tjsj,sbwx.sfcsfy,sbwx.fyje,sbwx.wxqqwfs,sbwx.wxdw,sbwx.wbry,
+        sbwx.wxsj,sbwx.jl,sbwx.lb,sbwx.bz,sbwx.wxhqwfs,sbwx.kdx,sbwx.sfyz,
+        sbwx.yzr,sbwx.yzrq,sbwx.hfsyrq,sbwx.yzfs,sbwx.ddslid,sbwx.yzjl,
+        sbwx.zt,sbwx.lrry,sbwx.scbj,sbys.sbbh,sbys.ggxh,sbys.sbmc,sbwx.sjbf,sbwx.bfcs,
+        sbys.xlh,sbys.sydd,jgxx.jgmc sqbmmc,xtyh.zsxm sqrmc,sbys.sblx,sblx.csmc sblxmc,
+        sbys.xsyr,syry.zsxm syrymc,sbys.xsybm,xsybm.jgmc xsybmmc,sbys.bmsbfzr,bmsbfzr.zsxm bmsbfzrmc,shxx_sqsj, shxx_gwmc, shxx_sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.sbwxid} sbwxid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} shxx_sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+            #{item.shxx_gwmc} shxx_gwmc, #{item.shxx_shyj} shxx_shyj, #{index} rownum
+        </foreach> tmp
+        LEFT JOIN igams_sbwx sbwx on sbwx.sbwxid = tmp.sbwxid
+        LEFT JOIN igams_sbys sbys on sbys.sbysid = sbwx.sbysid
+        LEFT JOIN igams_hwxx hwxx on hwxx.sbysid = sbys.sbysid AND hwxx.lrsj = (
+        SELECT MAX(lrsj)
+        FROM igams_hwxx
+        WHERE scbj ='0' and sbysid = sbys.sbysid
+        )
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = sbwx.sqr
+        LEFT JOIN matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = sbwx.sqbm
+        left join matridx_xtyh glry on glry.yhid=sbys.glry
+        left join matridx_xtyh syry on syry.yhid=sbys.xsyr
+        left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+        left join matridx_xtyh bmsbfzr on bmsbfzr.yhid=sbys.bmsbfzr
+        order by tmp.rownum
+    </select>
+    <select id="getSbwxSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_sbwx
+        <where>
+            scbj != '1' AND jlbh like #{prefix}||'%'
+        </where>
+    </select>
+</mapper>

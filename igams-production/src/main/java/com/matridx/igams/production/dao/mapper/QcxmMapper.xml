@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQcxmDao" >
+
+    <select id="getDtoList" parameterType="QcxmDto" resultType="QcxmDto">
+        select
+        qcxm.qcxmid,qcxm.qcjlid,qcxm.xmid,qcxm.jg,xm.csmc as xmmc , xm.cskz1 as xmcskz1
+        from igams_qcxm qcxm
+        left join matridx_jcsj xm on xm.csid=qcxm.xmid and xm.scbj='0'
+        <where>
+            qcxm.scbj='0'
+            <if test="qcjlid != null and qcjlid != ''">
+                and qcxm.qcjlid=#{qcjlid}
+            </if>
+            <if test="ids != null and ids != ''">
+                and qcjl.qcjlid in (
+                <foreach collection="ids"  separator="," item="item">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+    </select>
+
+    <update id="delete" parameterType="QcxmDto">
+        update igams_qcxm
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            qcjlid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <delete id="delAbandonedData" parameterType="QcxmDto">
+        delete from igams_qcxm
+        <where>
+            scbj='1'
+            and qcjlid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_qcxm(qcxmid,qcjlid,xmid,jg,zt,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.qcxmid},#{item.qcjlid},#{item.xmid},#{item.jg},#{item.zt},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+</mapper>

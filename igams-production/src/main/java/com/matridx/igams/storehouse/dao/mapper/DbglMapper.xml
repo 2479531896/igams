@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IDbglDao" >
+	<select id="queryByDbdh" parameterType="DbglDto" resultType="DbglDto">
+	   select dbgl.dbid,dbgl.dbdh
+		from igams_dbgl dbgl
+		<where>
+			dbgl.scbj!='1'
+			<if test="dbdh != null and dbdh != ''">
+			   and dbgl.dbdh = #{dbdh}
+			</if>
+			<if test="dbid != null and dbid != ''">
+			   and dbgl.dbid != #{dbid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 新增调拨信息 -->
+	<insert id="insert" parameterType="DbglDto">
+		insert into igams_dbgl(dbid
+		<if test="dbdh !=null and dbdh != ''">
+			,dbdh
+		</if>
+		<if test="zcck !=null and zcck != ''">
+			,zcck
+		</if>
+		<if test="zrck !=null and zrck != ''">
+			,zrck
+		</if>
+		<if test="cklb !=null and cklb != ''">
+			,cklb
+		</if>
+		<if test="rklb !=null and rklb != ''">
+			,rklb
+		</if>
+		<if test="dbrq !=null and dbrq != ''">
+			,dbrq
+		</if>
+		<if test="jsr !=null and jsr != ''">
+			,jsr
+		</if>
+		<if test="glid !=null and glid != ''">
+			,glid
+		</if>		
+		<if test="qtckglid !=null and qtckglid != ''">
+			,qtckglid
+		</if>
+		<if test="qtrkglid !=null and qtrkglid != ''">
+			,qtrkglid
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		,lrry,lrsj,scbj) values(#{dbid}
+		<if test="dbdh !=null and dbdh != ''">
+			,#{dbdh}
+		</if>
+		<if test="zcck !=null and zcck != ''">
+			,#{zcck}
+		</if>
+		<if test="zrck !=null and zrck != ''">
+			,#{zrck}
+		</if>
+		<if test="cklb !=null and cklb != ''">
+			,#{cklb}
+		</if>
+		<if test="rklb !=null and rklb != ''">
+			,#{rklb}
+		</if>
+		<if test="dbrq !=null and dbrq != ''">
+			,cast(#{dbrq} as timestamp)
+		</if>
+		<if test="jsr !=null and jsr != ''">
+			,#{jsr}
+		</if>
+		<if test="glid !=null and glid != ''">
+			,#{glid}
+		</if>
+		<if test="qtckglid !=null and qtckglid != ''">
+			,#{qtckglid}
+		</if>
+		<if test="qtrkglid !=null and qtrkglid != ''">
+			,#{qtrkglid}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<select id="getDtoById" parameterType="String" resultType="DbglDto">
+	   select dbgl.dbid,dbgl.dbdh,ckxx_zc.ckdm as zcckdm,ckxx_zr.ckdm as zrckdm,xtyh.zsxm as lrrymc,ckxx_zc.ckqxlx as zcckqxlx,ckxx_zr.ckqxlx as zrckqxlx,ckxx_zc.ckid zcckid,ckxx_zr.ckid zrckid
+		from igams_dbgl dbgl
+		left join igams_ckxx ckxx_zc on ckxx_zc.ckid=dbgl.zcck and ckxx_zc.scbj='0'
+		left join igams_ckxx ckxx_zr on ckxx_zr.ckid=dbgl.zrck and ckxx_zr.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid=dbgl.lrry and xtyh.scbj='0'
+		<where>
+			dbgl.scbj!='1' and dbgl.dbid = #{dbid}
+		</where>
+	</select>
+	
+	<update id="update" parameterType="dbglDto">
+			update igams_dbgl
+		<set>
+		 xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="glid != null and glid != ''">
+				,glid=#{glid}
+			</if>
+			<if test="qtckglid != null and qtckglid != ''">
+				,qtckglid=#{qtckglid}
+			</if>
+			<if test="qtrkglid != null and qtrkglid != ''">
+				,qtrkglid=#{qtrkglid}
+			</if>
+		</set>
+		<where>
+			dbid=#{dbid}
+		</where>
+	</update>
+	
+	<select id="getDbdhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(dbdh,LENGTH(dbdh)-strpos(reverse(dbdh),'-')+2,LENGTH(dbdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_dbgl
+			<where> 
+				scbj = '0' AND dbdh like #{prefix}||'%'
+			</where>	 
+	</select>
+
+	<!-- 分页查询 -->
+	<select id="getPagedDtoList" parameterType="DbglDto" resultType="DbglDto">
+		select dbgl.dbid,dbgl.dbdh,dbgl.zcck,zcck.ckmc as zcckmc,dbgl.zrck,zrck.ckmc as zrckmc,dbgl.cklb,cklb.csmc as cklbmc,dbgl.rklb,rklb.csmc as rklbmc,dbgl.dbrq,dbgl.jsr,jsr.zsxm as jsrmc,dbgl.bz
+		from igams_dbgl dbgl
+		left join igams_ckxx zcck on zcck.ckid=dbgl.zcck and zcck.scbj='0'
+		left join igams_ckxx zrck on zrck.ckid=dbgl.zrck and zrck.scbj='0'
+		left join matridx_xtyh jsr on jsr.yhid=dbgl.jsr and jsr.scbj='0'
+		left join matridx_jcsj cklb on cklb.csid=dbgl.cklb
+		left join matridx_jcsj rklb on rklb.csid=dbgl.rklb
+		<where>
+			dbgl.scbj!='1'
+			<if test="entire!=null and entire!=''">
+				and dbgl.dbdh like '%'||#{entire}||'%'
+				or zcck.ckmc like '%'||#{entire}||'%'
+				or zrck.ckmc like '%'||#{entire}||'%'
+				or cklb.csmc like '%'||#{entire}||'%'
+				or rklb.csmc like '%'||#{entire}||'%'
+			</if>
+			<if test="dbdh!=null and dbdh!=''">
+				and dbgl.dbdh like '%'||#{dbdh}||'%'
+			</if>
+			<if test="zrckmc!=null and zrckmc!=''">
+				and zrck.ckmc like '%'||#{zrckmc}||'%'
+			</if>
+			<if test="zcckmc!=null and zcckmc!=''">
+				and zcck.ckmc like '%'||#{zcckmc}||'%'
+			</if>
+			<if test="rklbmc!=null and rklbmc!=''">
+				and rklb.csmc like '%'||#{rklbmc}||'%'
+			</if>
+			<if test="cklbmc!=null and cklbmc!=''">
+				and cklb.csmc like '%'||#{cklbmc}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 分页查询 -->
+	<select id="getDtoByDbid" parameterType="DbglDto" resultType="DbglDto">
+		select dbgl.dbid,dbgl.dbdh,dbgl.zcck,zcck.ckmc as zcckmc,dbgl.zrck,zrck.ckmc as zrckmc,dbgl.cklb,cklb.csmc as cklbmc,dbgl.rklb,rklb.csmc as rklbmc,dbgl.dbrq,dbgl.jsr,jsr.zsxm as jsrmc,dbgl.bz
+		from igams_dbgl dbgl
+		left join igams_ckxx zcck on zcck.ckid=dbgl.zcck and zcck.scbj='0'
+		left join igams_ckxx zrck on zrck.ckid=dbgl.zrck and zrck.scbj='0'
+		left join matridx_xtyh jsr on jsr.yhid=dbgl.jsr and jsr.scbj='0'
+		left join matridx_jcsj cklb on cklb.csid=dbgl.cklb
+		left join matridx_jcsj rklb on rklb.csid=dbgl.rklb
+		<where>
+			dbgl.scbj!='1'
+			and dbgl.dbid=#{dbid}
+		</where>
+	</select>
+	<update id="delete" parameterType="DbglDto">
+		update igams_dbgl set
+		scbj='1',
+		scry=#{scry},
+		scsj=LOCALTIMESTAMP
+		where
+		dbid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+
+	<select id="getDtoList" parameterType="DbglDto" resultType="DbglDto">
+		select dbgl.dbid,dbgl.dbdh,dbgl.zcck,zcck.ckmc as zcckmc,dbgl.zrck,zrck.ckmc as zrckmc,dbgl.cklb,cklb.csmc as cklbmc,dbgl.rklb,rklb.csmc as rklbmc,dbgl.dbrq,dbgl.jsr,jsr.zsxm as jsrmc,dbgl.bz
+		from igams_dbgl dbgl
+		left join igams_ckxx zcck on zcck.ckid=dbgl.zcck and zcck.scbj='0'
+		left join igams_ckxx zrck on zrck.ckid=dbgl.zrck and zrck.scbj='0'
+		left join matridx_xtyh jsr on jsr.yhid=dbgl.jsr and jsr.scbj='0'
+		left join matridx_jcsj cklb on cklb.csid=dbgl.cklb
+		left join matridx_jcsj rklb on rklb.csid=dbgl.rklb
+		<where>
+			dbgl.scbj!='1'
+			and dbid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+</mapper>

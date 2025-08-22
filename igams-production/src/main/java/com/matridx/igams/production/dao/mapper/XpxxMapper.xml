@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IXpxxDao" >
+
+    <!-- 芯片信息列表数据 -->
+	<select id="getPagedDtoList" parameterType="XpxxDto" resultType="XpxxDto">
+	    select	xpxx.xpid,
+				xpxx.xpm,
+				to_char(xpxx.cxkssj,'yyyy-MM-dd hh24:mi:ss') cxkssj, to_char(xpxx.cxjssj,'yyyy-MM-dd hh24:mi:ss') cxjssj,
+				xpxx.sfsdcx,
+		case xpxx.sfsdcx WHEN '1' THEN '是' WHEN '0' THEN '否' else '-' end sfsdcxmc,
+				xpxx.dc,
+				xpxx.czry,
+				xpxx.cxmd,
+				to_char(xpxx.fxkssj,'yyyy-MM-dd hh24:mi:ss') fxkssj, to_char(xpxx.fxjssj,'yyyy-MM-dd hh24:mi:ss') fxjssj,
+				xpxx.sftx,
+				xpxx.ygxjs,
+				xpxx.cxyid,
+				xpxx.totalcycle,
+				xpxx.thiscycle,
+				xpxx.wksm,
+				xpxx.fxjd,
+				xpxx.zt,
+		case xpxx.zt WHEN '50' THEN '测序中' WHEN '51' THEN '测序完成' WHEN '52' THEN '数据分析中' WHEN '53' THEN '分析完成' WHEN '54' THEN '审核完成' else '-' end ztmc,
+				xpxx.bz,
+				xpxx.fm,
+				xpxx.density,
+				xpxx.intensity,
+				xpxx.q30,
+		cxy.csmc as cxymc
+		from igams_xpxx xpxx
+		left  join matridx_jcsj cxy on cxy.csid = xpxx.cxyid
+		<where>
+		    xpxx.scbj = '0'
+			<if test="xpm != null and xpm != ''">
+				and xpxx.xpm ILIKE '%'||#{xpm}||'%'
+			</if>
+			<if test="cxymc != null and cxymc != ''">
+				and cxy.csmc ILIKE '%'||#{cxymc}||'%'
+			</if>
+		</where>
+	</select>	
+	
+	<!-- 查看一条芯片的信息 -->
+	<select id="getDto" parameterType="XpxxDto" resultType="XpxxDto">
+		select	xpxx.xpid,
+		xpxx.xpm,
+		to_char(xpxx.cxkssj,'yyyy-MM-dd hh24:mi:ss') cxkssj, to_char(xpxx.cxjssj,'yyyy-MM-dd hh24:mi:ss') cxjssj,
+		xpxx.sfsdcx,
+		case xpxx.sfsdcx WHEN '1' THEN '是' WHEN '0' THEN '否' else '-' end sfsdcxmc,
+		xpxx.dc,
+		xpxx.czry,
+		xpxx.cxmd,
+		case xpxx.cxmd WHEN '1' THEN '加分析' WHEN '0' THEN '进测序' else '-' end cxmdmc,
+		to_char(xpxx.fxkssj,'yyyy-MM-dd hh24:mi:ss') fxkssj, to_char(xpxx.fxjssj,'yyyy-MM-dd hh24:mi:ss') fxjssj,
+		xpxx.sftx,
+		xpxx.ygxjs,
+		xpxx.cxyid,
+		xpxx.totalcycle,
+		xpxx.thiscycle,
+		xpxx.wksm,
+		xpxx.fxjd,
+		xpxx.zt,
+		case xpxx.zt WHEN '50' THEN '测序中' WHEN '51' THEN '测序完成' WHEN '52' THEN '数据分析中' WHEN '53' THEN '分析完成' WHEN '54' THEN '审核完成' else '-' end ztmc,
+		xpxx.bz,
+		xpxx.fm,
+		xpxx.density,
+		xpxx.intensity,
+		xpxx.q30,
+		cxy.csmc as cxymc
+		from igams_xpxx xpxx
+		left  join matridx_jcsj cxy on cxy.csid = xpxx.cxyid
+	    <where>
+	    	xpxx.scbj='0' and
+	       xpxx.xpid=#{xpid}
+	    </where>
+	</select>
+
+	<insert id="insert" parameterType="XpxxDto">
+		insert into igams_xpxx(
+		xpid
+		<if test="xpm != null and xpm != ''">
+			,xpm
+		</if>
+		<if test="cxjssj != null and cxjssj != ''">
+			,cxjssj
+		</if>
+		<if test="cxkssj != null and cxkssj != ''">
+			,cxkssj
+		</if>
+		<if test="sfsdcx != null and sfsdcx != ''">
+			,sfsdcx
+		</if>
+		<if test="dc != null and dc != ''">
+			,dc
+		</if>
+		<if test="czry != null and czry != ''">
+			,czry
+		</if>
+		<if test="cxmd != null and cxmd != ''">
+			,cxmd
+		</if>
+		<if test="fxkssj != null and fxkssj != ''">
+			,fxkssj
+		</if>
+		<if test="fxjssj != null and fxjssj != ''">
+			,fxjssj
+		</if>
+		<if test="sftx != null and sftx != ''">
+			,sftx
+		</if>
+		<if test="ygxjs != null and ygxjs != ''">
+			,ygxjs
+		</if>
+		<if test="cxyid != null and cxyid != ''">
+			,cxyid
+		</if>
+		<if test="totalcycle != null and totalcycle != ''">
+			,totalcycle
+		</if>
+		<if test="thiscycle != null and thiscycle != ''">
+			,thiscycle
+		</if>
+		<if test="wksm != null and wksm != ''">
+			,wksm
+		</if>
+		<if test="fxjd != null and fxjd != ''">
+			,fxjd
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="lrry != null and lrry != ''">
+			,lrry
+		</if>
+			,lrsj
+			,scbj
+		<if test="fm != null and fm != ''">
+			,fm
+		</if>
+		<if test="density != null and density != ''">
+			,density
+		</if>
+		<if test="intensity != null and intensity != ''">
+			,intensity
+		</if>
+		<if test="q30 != null and q30 != ''">
+			,q30
+		</if>
+
+		)
+		values
+		(
+		#{xpid}
+		<if test="xpm != null and xpm != ''">
+			,#{xpm}
+		</if>
+		<if test="cxjssj != null and cxjssj != ''">
+			,cast(#{cxjssj} as TIMESTAMP)
+		</if>
+		<if test="cxkssj != null and cxkssj != ''">
+			,cast(#{cxkssj} as TIMESTAMP)
+		</if>
+		<if test="sfsdcx != null and sfsdcx != ''">
+			,#{sfsdcx}
+		</if>
+		<if test="dc != null and dc != ''">
+			,cast(#{dc} as numeric )
+		</if>
+		<if test="czry != null and czry != ''">
+			,#{czry}
+		</if>
+		<if test="cxmd != null and cxmd != ''">
+			,#{cxmd}
+		</if>
+		<if test="fxkssj != null and fxkssj != ''">
+			,cast(#{fxkssj} as TIMESTAMP)
+		</if>
+		<if test="fxjssj != null and fxjssj != ''">
+			,cast(#{fxjssj} as TIMESTAMP)
+		</if>
+		<if test="sftx != null and sftx != ''">
+			,#{sftx}
+		</if>
+		<if test="ygxjs != null and ygxjs != ''">
+			,#{ygxjs}
+		</if>
+		<if test="cxyid != null and cxyid != ''">
+			,#{cxyid}
+		</if>
+		<if test="totalcycle != null and totalcycle != ''">
+			,#{totalcycle}
+		</if>
+		<if test="thiscycle != null and thiscycle != ''">
+			,#{thiscycle}
+		</if>
+		<if test="wksm != null and wksm != ''">
+			,#{wksm}
+		</if>
+		<if test="fxjd != null and fxjd != ''">
+			,#{fxjd}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="lrry != null and lrry != ''">
+			,#{lrry}
+		</if>
+		,LOCALTIMESTAMP
+		,'0'
+		<if test="fm != null and fm != ''">
+			,#{fm}
+		</if>
+		<if test="density != null and density != ''">
+			,#{density}
+		</if>
+		<if test="intensity != null and intensity != ''">
+			,#{intensity}
+		</if>
+		<if test="q30 != null and q30 != ''">
+			,#{q30}
+		</if>
+		)
+	</insert>
+
+
+	<update id="update" parameterType="XpxxDto">
+		update igams_xpxx
+		<set>
+			xgry=#{xgry},
+			xgsj=LOCALTIMESTAMP
+			<if test="xpm != null and xpm != ''">
+				,xpm=#{xpm}
+			</if>
+			<if test="cxjssj != null and cxjssj != ''">
+				,cxjssj=cast(#{cxjssj} as TIMESTAMP)
+			</if>
+			<if test="cxkssj != null and cxkssj != ''">
+				,cxkssj=cast(#{cxkssj} as TIMESTAMP)
+			</if>
+			<if test="sfsdcx != null and sfsdcx != ''">
+				,sfsdcx=#{sfsdcx}
+			</if>
+			<if test="dc != null and dc != ''">
+				,dc=cast(#{dc} as numeric )
+			</if>
+			<if test="czry != null and czry != ''">
+				,czry=#{czry}
+			</if>
+			<if test="cxmd != null and cxmd != ''">
+				,cxmd=#{cxmd}
+			</if>
+			<if test="fxkssj != null and fxkssj != ''">
+				,fxkssj=cast(#{fxkssj} as TIMESTAMP)
+			</if>
+			<if test="fxjssj != null and fxjssj != ''">
+				,fxjssj=cast(#{fxjssj} as TIMESTAMP)
+			</if>
+			<if test="sftx != null and sftx != ''">
+				,sftx=#{sftx}
+			</if>
+			<if test="ygxjs != null and ygxjs != ''">
+				,ygxjs=#{ygxjs}
+			</if>
+			<if test="cxyid != null and cxyid != ''">
+				,cxyid=#{cxyid}
+			</if>
+			<if test="totalcycle != null and totalcycle != ''">
+				,totalcycle=#{totalcycle}
+			</if>
+			<if test="thiscycle != null and thiscycle != ''">
+				,thiscycle=#{thiscycle}
+			</if>
+			<if test="wksm != null and wksm != ''">
+				,wksm=#{wksm}
+			</if>
+			<if test="fxjd != null and fxjd != ''">
+				,fxjd=#{fxjd}
+			</if>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="fm != null and fm != ''">
+				,fm=#{fm}
+			</if>
+			<if test="density != null and density != ''">
+				,density=#{density}
+			</if>
+			<if test="intensity != null and intensity != ''">
+				,intensity=#{intensity}
+			</if>
+			<if test="q30 != null and q30 != ''">
+				,q30=#{q30}
+			</if>
+		</set>
+		<where>
+			xpid=#{xpid}
+		</where>
+	</update>
+
+	<select id="getUnUpdateChips" resultType="XpxxDto" parameterType="XpxxDto">
+		select xpxx.xpid,xpxx.xpm,xpxx.cxkssj,xpxx.cxjssj,xpxx.sfsdcx,xpxx.dc,xpxx.czry,xpxx.cxmd,xpxx.fxkssj,xpxx.fxjssj,xpxx.sftx,
+		xpxx.ygxjs,xpxx.cxyid,xpxx.totalcycle,xpxx.thiscycle,xpxx.wksm,xpxx.fxjd,xpxx.zt,xpxx.bz,xpxx.lrry,xpxx.lrsj,xpxx.xgry,
+		xpxx.xgsj,xpxx.scry,xpxx.scsj,xpxx.scbj,xpxx.fm,xpxx.density,xpxx.intensity,xpxx.q30,xpxx.qcjson,xpxx.sfgx
+		from igams_xpxx xpxx
+		where xpxx.scbj = '0' and (xpxx.sfgx is null or xpxx.sfgx != '1')
+<!--		<if test="timeOffset != null and timeOffset != ''">-->
+<!--			and to_char(xpxx.lrsj, 'YYYY-MM-DD') >= to_char(current_date + INTERVAL #{timeOffset}, 'YYYY-MM-DD')-->
+<!--		</if>-->
+		and to_char(xpxx.lrsj, 'YYYY-MM-DD') >= to_char(current_date + INTERVAL '-3 days', 'YYYY-MM-DD')
+    </select>
+
+	<update id="updateChipQcScore" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			update igams_xpxx xpxx
+			set sfgx = tmp.sfgx, xgsj = localtimestamp,qcjson = cast(tmp.qcjson as json)
+			from (
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.qcjson} as qcjson, #{item.sfgx} as sfgx, #{item.xpid} as xpid
+			</foreach>
+			) tmp
+			where  xpxx.xpid = tmp.xpid
+		</if>
+	</update>
+</mapper>

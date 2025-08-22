@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IFpglDao" >
+	<select id="getPagedDtoList" parameterType="FpglDto" resultType="FpglDto">
+		select fpgl.fph,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,gys.gysmc gysmc,dddw.gysmc dddwmc,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,fpgl.fpid,fpgl.scbj,xtyh.zsxm lrrymc,to_char(fpgl.lrsj,'yyyy-mm-dd') lrsj,fpgl.kpje,fpgl.fpdm,ywy.zsxm ywymc,
+		fpgl.sl,fpgl.hl,biz.csmc bizmc,tmp.u8rkdh,tmp.htnbbh
+		from igams_fpgl fpgl
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		left join(SELECT
+		fpmx.fpid,
+		string_agg (distinct  htgl.htnbbh, '/' ) htnbbh,
+		string_agg (	DISTINCT hwxx.u8rkdh|| '(' || COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 ) || ')' || '-' || COALESCE ( rkgl.rkid , '' ) || '-' || COALESCE ( dhxx.dhid , '' ) || '-' || COALESCE ( zllb.cskz1, '' ) ,',' ) u8rkdh
+		from igams_fpmx fpmx
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid and htmx.scbj='0'
+		LEFT JOIN igams_htgl htgl on htmx.htid = htgl.htid and htgl.scbj = '0'
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left join igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		where
+		fpmx.scbj = '0'
+		GROUP BY
+		fpmx.fpid
+		) tmp on tmp.fpid=fpgl.fpid
+		<where>
+			fpgl.scbj='0'
+			<if test="entire != null and entire != ''">
+				and (fpgl.fph like '%'||#{entire}||'%'
+				or gys.gysmc like '%'||#{entire}||'%'
+				or ywy.zsxm like '%'||#{entire}||'%'
+				or tmp.htnbbh like '%'||#{entire}||'%')
+			</if>
+			<if test="fph !=null and fph != ''">
+				and fpgl.fph ILIKE '%'||#{fph}||'%'
+			</if>
+			<if test="gysmc !=null and gysmc != ''">
+				and gys.gysmc ILIKE '%'||#{gysmc}||'%'
+			</if>
+			<if test="ywymc !=null and ywymc != ''">
+				and ywy.zsxm ILIKE '%'||#{ywymc}||'%'
+			</if>
+			<if test="htnbbh !=null and htnbbh != ''">
+				and tmp.htnbbh ILIKE '%'||#{htnbbh}||'%'
+			</if>
+			<if test="dddwmc !=null and dddwmc != ''">
+				and dddw.gysmc ILIKE '%'||#{dddwmc}||'%'
+			</if>
+			<if test="bmmc !=null and bmmc != ''">
+				and jgxx.jgmc ILIKE '%'||#{bmmc}||'%'
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and fpgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fplxs != null and fplxs.length > 0 "  >
+				and fpgl.fplx in
+				<foreach collection="fplxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fpzls != null and fpzls.length > 0 "  >
+				and fpgl.fpzl in
+				<foreach collection="fpzls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="kprqstart != null and kprqstart != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &gt;= #{kprqstart}
+			</if>
+			<if test="kprqend != null and kprqend != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &lt;= #{kprqend}
+			</if>
+		</where>
+  	</select>
+
+	<select id="getDtoById" parameterType="String" resultType="FpglDto">
+		select fpgl.fph,fpgl.fplx,fpgl.fpzl,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,fpgl.gys,gys.gysmc gysmc,fpgl.dddw,dddw.gysmc dddwmc,fpgl.bm,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,yh.zsxm ywymc,fpgl.ywy,fpgl.sl,fpgl.hl,fpgl.biz,biz.csmc bizmc,fpgl.fpid,fpgl.kpje,fpgl.fpdm
+		from igams_fpgl fpgl
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh yh on yh.yhid=fpgl.ywy
+		<where>
+			fpgl.scbj='0'
+			and fpgl.fpid=#{fpid}
+		</where>
+	</select>
+
+	<select id="getDto" parameterType="FpglDto" resultType="FpglDto">
+		select fpgl.fph,fpgl.fplx,fpgl.fpzl,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,fpgl.gys,gys.gysmc gysmc,fpgl.dddw,dddw.gysmc dddwmc,fpgl.bm,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,yh.zsxm ywymc,fpgl.ywy,fpgl.sl,fpgl.hl,fpgl.biz,biz.csmc bizmc,fpgl.fpid,fpgl.kpje,fpgl.fpdm
+		from igams_fpgl fpgl
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh yh on yh.yhid=fpgl.ywy
+		<where>
+			fpgl.scbj='0'
+			and fpgl.fpid=#{fpid}
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="FpglDto" resultType="FpglDto">
+		select fpgl.fph,fpgl.fplx,fpgl.fpzl,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,fpgl.gys,gys.gysmc gysmc,fpgl.dddw,dddw.gysmc dddwmc,fpgl.bm,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,yh.zsxm ywymc,fpgl.ywy,fpgl.sl,fpgl.hl,fpgl.biz,biz.csmc bizmc,fpgl.fpid,fpgl.kpje,fpgl.fpdm
+		from igams_fpgl fpgl
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh yh on yh.yhid=fpgl.ywy
+		<where>
+			fpgl.scbj='0'
+			and fpgl.fpid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="FpglDto">
+		insert into igams_fpgl(fpid
+		<if test="fph != null and fph != ''">
+			,fph
+		</if>
+		<if test="fplx != null and fplx != ''">
+			,fplx
+		</if>
+		<if test="fpzl != null and fpzl != ''">
+			,fpzl
+		</if>
+		<if test="kprq != null and kprq != ''">
+			,kprq
+		</if>
+		<if test="gys != null and gys != ''">
+			,gys
+		</if>
+		<if test="dddw != null and dddw != ''">
+			,dddw
+		</if>
+		<if test="bm != null and bm != ''">
+			,bm
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		<if test="ywy != null and ywy != ''">
+			,ywy
+		</if>
+		<if test="sl != null and sl != ''">
+			,sl
+		</if>
+		<if test="hl != null and hl != ''">
+			,hl
+		</if>
+		<if test="biz != null and biz != ''">
+			,biz
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="kpje != null and kpje != ''">
+			,kpje
+		</if>
+		<if test="fpdm != null and fpdm != ''">
+			,fpdm
+		</if>
+		,lrry,lrsj,scbj)
+		values(#{fpid}
+		<if test="fph != null and fph != ''">
+			,#{fph}
+		</if>
+		<if test="fplx != null and fplx != ''">
+			,#{fplx}
+		</if>
+		<if test="fpzl != null and fpzl != ''">
+			,#{fpzl}
+		</if>
+		<if test="kprq != null and kprq != ''">
+			,cast(#{kprq} as timestamp)
+		</if>
+		<if test="gys != null and gys != ''">
+			,#{gys}
+		</if>
+		<if test="dddw != null and dddw != ''">
+			,#{dddw}
+		</if>
+		<if test="bm != null and bm != ''">
+			,#{bm}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="ywy != null and ywy != ''">
+			,#{ywy}
+		</if>
+		<if test="sl != null and sl != ''">
+			,cast(#{sl} as numeric)
+		</if>
+		<if test="hl != null and hl != ''">
+			,cast(#{hl} as numeric)
+		</if>
+		<if test="biz != null and biz != ''">
+			,#{biz}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="kpje != null and kpje != ''">
+			,cast(#{kpje} as numeric)
+		</if>
+		<if test="fpdm != null and fpdm != ''">
+			,#{fpdm}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<update id="update" parameterType="FpglDto">
+		update igams_fpgl
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="fph != null and fph != ''">
+				,fph=#{fph}
+			</if>
+			<if test="fplx != null and fplx != ''">
+				,fplx=#{fplx}
+			</if>
+			<if test="fpzl != null and fpzl != ''">
+				,fpzl=#{fpzl}
+			</if>
+			<if test="kprq != null and kprq != ''">
+				,kprq=cast(#{kprq} as timestamp)
+			</if>
+			<if test="gys != null and gys != ''">
+				,gys=#{gys}
+			</if>
+			<if test="dddw != null and dddw != ''">
+				,dddw=#{dddw}
+			</if>
+			<if test="bm != null and bm != ''">
+				,bm=#{bm}
+			</if>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="ywy != null and ywy != ''">
+				,ywy=#{ywy}
+			</if>
+			<if test="sl != null and sl != ''">
+				,sl=cast(#{sl} as numeric)
+			</if>
+			<if test="hl != null and hl != ''">
+				,hl=cast(#{hl} as numeric)
+			</if>
+			<if test="biz != null and biz != ''">
+				,biz=#{biz}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="kpje != null and kpje != ''">
+				,kpje=cast(#{kpje} as numeric)
+			</if>
+			<if test="fpdm != null and fpdm != ''">
+				,fpdm=#{fpdm}
+			</if>
+		</set>
+		<where>
+			fpid=#{fpid}
+		</where>
+	</update>
+
+
+	<select id="getPagedAuditInvoice" parameterType="FpglDto" resultType="FpglDto">
+		select fpgl.fph,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,gys.gysmc gysmc,dddw.gysmc dddwmc,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,fpgl.fpid,fpgl.scbj,xtyh.zsxm lrrymc,to_char(fpgl.lrsj,'yyyy-mm-dd') lrsj,fpgl.kpje,fpgl.fpdm,ywy.zsxm ywymc,
+		fpgl.sl,fpgl.hl,biz.csmc bizmc,fpu8.u8rkdh
+		from igams_fpgl fpgl
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		left join(SELECT
+		fpmx.fpid,
+		string_agg (	DISTINCT hwxx.u8rkdh|| '(' || COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 ) || ')' || '-' || COALESCE ( rkgl.rkid , '' ) || '-' || COALESCE ( dhxx.dhid , '' ) || '-' || COALESCE ( zllb.cskz1, '' ) ,',' ) u8rkdh
+		from igams_fpmx fpmx
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid and htmx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left join igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		where
+		fpmx.scbj = '0'
+		GROUP BY
+		fpmx.fpid
+		) fpu8 on fpu8.fpid=fpgl.fpid
+		<where>
+			fpgl.scbj='0'
+			<if test="fph !=null and fph != ''">
+				and fpgl.fph ILIKE '%'||#{fph}||'%'
+			</if>
+			<if test="gysmc !=null and gysmc != ''">
+				and gys.gysmc ILIKE '%'||#{gysmc}||'%'
+			</if>
+			<if test="dddwmc !=null and dddwmc != ''">
+				and dddw.gysmc ILIKE '%'||#{dddwmc}||'%'
+			</if>
+			<if test="bmmc !=null and bmmc != ''">
+				and jgxx.jgmc ILIKE '%'||#{bmmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 审核列表-->
+	<select id="getAuditListInvoice" parameterType="List" resultType="FpglDto">
+		select fpgl.fph,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,gys.gysmc gysmc,dddw.gysmc dddwmc,
+		jgxx.jgmc bmmc,fpgl.bz,fpgl.zt,fpgl.fpid,fpgl.scbj,xtyh.zsxm lrrymc,to_char(fpgl.lrsj,'yyyy-mm-dd') lrsj,fpgl.kpje,fpgl.fpdm,ywy.zsxm ywymc,
+		fpgl.sl,fpgl.hl,biz.csmc bizmc,fpu8.u8rkdh,shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.fpid} fpid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach>
+		tmp
+		left join igams_fpgl fpgl on fpgl.fpid = tmp.fpid
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		left join(SELECT
+		fpmx.fpid,
+		string_agg (	DISTINCT hwxx.u8rkdh|| '(' || COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 ) || ')' || '-' || COALESCE ( rkgl.rkid , '' ) || '-' || COALESCE ( dhxx.dhid , '' ) || '-' || COALESCE ( zllb.cskz1, '' ) ,',' ) u8rkdh
+		from igams_fpmx fpmx
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid and htmx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left join igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		where
+		fpmx.scbj = '0'
+		GROUP BY
+		fpmx.fpid
+		) fpu8 on fpu8.fpid=fpgl.fpid 
+		order by tmp.rownum,fpgl.lrsj desc
+	</select>
+
+	<update id="delete" parameterType="FpglDto">
+		update igams_fpgl
+		<set>
+			scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				or fpid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="tgids !=null and tgids.size > 0">
+				or fpid in
+				<foreach collection="tgids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<select id="verifyDmAndFph" parameterType="FpglDto" resultType="FpglDto">
+		select fpid
+		from igams_fpgl
+		<where>
+			scbj='0'
+			and  fph=#{fph}
+			<if test="fpid !=null and fpid != ''">
+				and fpid !=#{fpid}
+			</if>
+		</where>
+	</select>
+
+</mapper>

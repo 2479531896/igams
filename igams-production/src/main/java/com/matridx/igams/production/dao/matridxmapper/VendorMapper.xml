@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.VendorDao" >
+	<insert id="insert" parameterType="VendorDto">
+		insert into Vendor(cVenCode
+		<if test="cVenName != null and cVenName != ''">
+			,cVenName
+		</if>
+		<if test="cVenAbbName != null and cVenAbbName != ''">
+			,cVenAbbName
+		</if>
+		<if test="cVCCode != null and cVCCode != ''">
+			,cVCCode
+		</if>
+		<if test="cVenExch_name != null and cVenExch_name != ''">
+			,cVenExch_name
+		</if>
+		<if test="dVenDevDate != null and dVenDevDate != ''">
+			,dVenDevDate
+		</if>
+		<if test="cVenHeadCode != null and cVenHeadCode != ''">
+			,cVenHeadCode
+		</if>
+		<if test="dVenCreateDatetime != null and dVenCreateDatetime != ''">
+			,dVenCreateDatetime
+		</if>
+			,iVenDisRate,iVenCreLine,iVenCreDate,iAPMoney,iLastMoney,iLRMoney,iFrequency,bVenTax,bLicenceDate
+			,bProxyDate,bPassGMP,bVenCargo,bProxyForeign,bVenService,iVenGSPType,bVenOverseas,bVenAccPeriodMng
+			,bVenHomeBranch,bRetail	
+		)values(#{cVenCode}
+		<if test="cVenName != null and cVenName != ''">
+			,#{cVenName}
+		</if>
+		<if test="cVenAbbName != null and cVenAbbName != ''">
+			,#{cVenAbbName}
+		</if>
+		<if test="cVCCode != null and cVCCode != ''">
+			,#{cVCCode}
+		</if>
+		<if test="cVenExch_name != null and cVenExch_name != ''">
+			,#{cVenExch_name}
+		</if>
+		<if test="dVenDevDate != null and dVenDevDate != ''">
+			,cast(#{dVenDevDate} as date)
+		</if>
+		<if test="cVenHeadCode != null and cVenHeadCode != ''">
+			,#{cVenHeadCode}
+		</if>
+		<if test="dVenCreateDatetime != null and dVenCreateDatetime != ''">
+			,#{dVenCreateDatetime}
+		</if>
+		,'0','0','0','0','0','0','0','0','0','0','0','1','0','0','0','0','0','0','0')
+	</insert>
+
+	<!-- 同步修改方法 -->
+	<update id="update" parameterType="VendorDto">
+		update Vendor
+		<set>
+			<if test="cVenCode != null and cVenCode != ''">
+				cVenCode = #{cVenCode}
+			</if>
+			<if test="cVenName != null and cVenName != ''">
+				,cVenName = #{cVenName}
+			</if>
+			<if test="cVenAbbName != null and cVenAbbName != ''">
+				,cVenAbbName = #{cVenAbbName}
+			</if>
+			<if test="cVCCode != null and cVCCode != ''">
+				,cVCCode = #{cVCCode}
+			</if>
+			<if test="cVenExch_name != null and cVenExch_name != ''">
+				,cVenExch_name = #{cVenExch_name}
+			</if>
+			<if test="dVenDevDate != null and dVenDevDate != ''">
+				,dVenDevDate = cast(#{dVenDevDate} as date)
+			</if>
+			<if test="cVenHeadCode != null and cVenHeadCode != ''">
+				,cVenHeadCode = #{cVenHeadCode}
+			</if>
+			<if test="dModifyDate != null and dModifyDate != ''">
+				,dModifyDate = #{dModifyDate}
+			</if>
+				,iVenDisRate = '0',iVenCreLine = '0',iVenCreDate='0',iAPMoney='0',iLastMoney='0'
+				,iLRMoney='0',iFrequency='0',bVenTax='0',bLicenceDate='0'
+				,bProxyDate='0',bPassGMP='0',bVenCargo='1',bProxyForeign='0',bVenService='0'
+				,iVenGSPType='0',bVenOverseas='0',bVenAccPeriodMng='0',bVenHomeBranch='0',bRetail='0'
+		</set>
+		<where>
+			cVenCode = #{gysdm}
+		</where>
+	</update>
+	<!-- 停用或启用供应商 -->
+	<update id="disableOrEnableVendor" parameterType="VendorDto">
+		update Vendor
+		<set>
+			<if test="dEndDate != null and dEndDate != ''">
+				,dEndDate = cast(#{dEndDate} as date)
+			</if>
+			<if test="dEndDate == null or dEndDate == ''">
+				,dEndDate = null
+			</if>
+		</set>
+		<where>
+			cVenCode = #{cVenCode}
+		</where>
+	</update>
+	
+	
+	<!-- 查找去重 -->
+    <select id="queryByCVenCode" parameterType="VendorDto" resultType="VendorDto">
+    	select cVenCode
+    	from Vendor
+    	<where>
+    		cVenCode=#{cVenCode}
+    	</where>
+    </select>
+    
+    <!-- 获取供应商编码最大值 -->
+	<select id="countMax" parameterType="VendorDto" resultType="java.lang.Integer">
+		select max(cVenCode) as num from Vendor
+		where len(cVenCode)=7 and cVenCode like #{cVenCode}+'%'
+	</select>
+	
+		<!-- 查找去重 -->
+    <select id="queryByMcAndJc" parameterType="VendorDto" resultType="VendorDto">
+    select tmp.cVenCode,tmp.cVenName,tmp.cVenAbbName
+    	from(select ven.cVenCode,ven.cVenName,ven.cVenAbbName
+    		from Vendor ven
+    		<where>
+	    		<if test="cVenCode!=null and cVenCode!=''">
+				 ven.cVenCode!=#{cVenCode}
+				</if>
+    		</where>
+    	)tmp
+    		<where>
+	    		<if test="cVenName!=null and cVenName!=''">
+					tmp.cVenName=#{cVenName}
+				</if>
+				<if test="cVenAbbName!=null and cVenAbbName!=''">
+					or tmp.cVenAbbName=#{cVenAbbName}
+				</if>   		
+    		</where>			
+    </select>
+</mapper> 

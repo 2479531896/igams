@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzqgfkmxDao" >
+    <insert id="insertDtoList" parameterType="List">
+        insert into igams_xzqgfkmx(fkmxid,fkid,xh,hwmc,hwgg,hwjldw,sl,jg,lrry,lrsj,qrid,qrmxid,qgid,qgmxid,scbj
+        )
+        values
+       <foreach collection="list" item="item" separator=",">
+           (#{item.fkmxid},#{item.fkid},(select (select coalesce(max(xh),0)+1 from igams_xzqgfkmx where fkid=#{item.fkid}))
+           ,#{item.hwmc},#{item.hwgg},#{item.hwjldw},cast(#{item.sl} as numeric),cast(#{item.jg} as numeric ),#{item.lrry},LOCALTIMESTAMP,#{item.qrid},#{item.qrmxid},#{item.qgid},#{item.qgmxid},'0')
+       </foreach>
+    </insert>
+
+    <select id="getListByFkid" parameterType="String" resultType="XzqgfkmxDto">
+        select fkmx.fkmxid, qggl.djh qgdh, fkmx.xh, fkmx.hwmc, fkmx.hwgg, fkmx.sl, fkmx.jg, fkmx.hwjldw,fkmx.qgid,fkmx.qgmxid,fkmx.qrid,fkmx.qrmxid,qrgl.qrdh
+        from igams_xzqgfkmx fkmx
+        left join igams_qggl qggl on qggl.qgid = fkmx.qgid
+        left join igams_xzqgqrgl qrgl on qrgl.qrid=fkmx.qrid
+        <where>
+            fkmx.scbj='0' and
+            fkmx.fkid = #{fkid}
+        </where>
+    </select>
+
+    <update id="updateBatch"  parameterType="List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update igams_xzqgfkmx set  xgry=#{item.xgry} , xgsj=LOCALTIMESTAMP
+            <if test="item.fkid != null and item.fkid!=''">
+                ,fkid = #{item.fkid}
+            </if>
+            <if test="item.xh != null and item.xh!=''">
+                ,xh = cast (#{item.xh} as numeric)
+            </if>
+            <if test="item.hwmc != null and item.hwmc!=''">
+                ,hwmc = #{item.hwmc}
+            </if>
+            <if test="item.hwgg != null and item.hwgg!=''">
+                ,hwgg = #{item.hwgg}
+            </if>
+            <if test="item.sl != null and item.sl!=''">
+                ,sl = cast (#{item.sl} as numeric)
+            </if>
+            <if test="item.jg != null and item.jg!=''">
+                ,jg = cast (#{item.jg} as numeric)
+            </if>
+            <if test="item.hwjldw != null and item.hwjldw!=''">
+                ,hwjldw = #{item.hwjldw}
+            </if>
+            <if test="item.qrid != null and item.qrid!=''">
+                ,qrid = #{item.qrid}
+            </if>
+            <if test="item.qrmxid != null and item.qrmxid!=''">
+                ,qrmxid = #{item.qrmxid}
+            </if>
+            <if test="item.qgid != null and item.qgid!=''">
+                ,qgid = #{item.qgid}
+            </if>
+            <if test="item.qgmxid != null and item.qgmxid!=''">
+                ,qgmxid = #{item.qgmxid}
+            </if>
+            <where>
+                fkmxid = #{item.fkmxid}
+            </where>
+        </foreach>
+    </update>
+
+    <update id="updateBatchFkbj"  parameterType="List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update igams_qgmx set  xgry=#{item.xgry} , xgsj=LOCALTIMESTAMP, fkbj ='1'
+            <where>
+                qgmxid = #{item.qgmxid}
+            </where>
+        </foreach>
+    </update>
+
+    <select id="getDtoList" parameterType="XzqgfkmxDto" resultType="XzqgfkmxDto">
+        select fkmx.fkmxid, qggl.djh qgdh, fkmx.xh, fkmx.hwmc, fkmx.hwgg, fkmx.sl, fkmx.jg, fkmx.hwjldw,fkmx.qgid,fkmx.qgmxid,fkmx.qrid,fkmx.qrmxid
+        from igams_xzqgfkmx fkmx
+        left join igams_qggl qggl on qggl.qgid = fkmx.qgid
+        <where>
+            fkmx.scbj='0'
+            <if test="fkid != null and fkid != ''">
+               and fkmx.fkid = #{fkid}
+            </if>
+            <if test="qrid != null and qrid != ''">
+                and fkmx.qrid = #{qrid}
+            </if>
+            <if test="ids != null and ids.size >0">
+                and fkmx.fkid in
+                <foreach collection="ids" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="delDtoList" parameterType="List">
+        <foreach collection="list" item="item" open="" close="" separator=";">
+            update igams_xzqgfkmx set
+            scry=#{item.scry},scsj=LOCALTIMESTAMP,scbj='1'
+            where fkmxid =#{item.fkmxid}
+        </foreach>
+    </update>
+
+    <select id="getNeedFkxx" parameterType="XzqgfkmxDto" resultType="XzqgfkmxDto">
+        select qgmx.qgid ,count(qgmx.qgmxid) mxsl,sum(cast(qgmx.fkbj as numeric)) fksl
+        from igams_qgmx qgmx
+        where qgmx.qgid in
+        <foreach collection="ids" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+          and qgmx.zt='80' and qgmx.scbj='0' and qgmx.qxqg!='1'
+        group by qgmx.qgid
+    </select>
+
+    <update id="modQgglSffk" parameterType="List">
+        update igams_qggl set wcbj='1',fkbj='1'
+        where scbj='0' and qgid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item.qgid}
+        </foreach>
+    </update>
+    <select id="getDtoById" resultType="XzqgfkmxDto" parameterType="String">
+SELECT
+	xzfkgl.fkdh,
+	jc_dzfs.csmc dzfsmc,
+	xzfkgl.fkrq,
+	jc_fkf.csmc fkfmc,
+	jc_fkfs.csmc fkfsmc,
+	xzfkgl.zfdx,
+	xzfkgl.zffkhh,
+	xzfkgl.zffyhzh,
+	xzfkgl.fkje,
+	to_char( xzfkgl.zwfkrq, 'yyyy-MM-dd hh:mi:ss' ) zwfkrq,
+	sq_yh.zsxm sqrmc,
+	xzfkmx.fygs,
+	xzfkgl.fksy,
+	xzfkgl.bz,
+	xzfkmx.hwmc,
+	xzfkmx.sl,
+	xzfkmx.jg,
+	xzfkmx.hwjldw,
+	xzfkmx.hwgg
+FROM
+	igams_xzqgfkmx xzfkmx
+	LEFT JOIN igams_xzqgfkgl xzfkgl ON xzfkmx.fkid = xzfkgl.fkid
+	LEFT JOIN matridx_jcsj jc_dzfs ON jc_dzfs.csid = xzfkgl.dzfs
+	LEFT JOIN matridx_jcsj jc_fkf ON jc_fkf.csid = xzfkgl.fkf
+	LEFT JOIN matridx_jcsj jc_fkfs ON jc_fkfs.csid = xzfkgl.fkfs
+	left join matridx_xtyh sq_yh on sq_yh.yhid=xzfkgl.sqr
+	where xzfkmx.scbj!='1' and xzfkmx.fkmxid=#{fkmxid}
+    </select>
+</mapper>

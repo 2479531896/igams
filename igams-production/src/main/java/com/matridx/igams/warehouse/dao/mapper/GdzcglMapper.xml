@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGdzcglDao" >
+    <select id="getPagedDtoList" parameterType="GdzcglDto" resultType="GdzcglDto">
+        select hwxx.hwid,hwxx.u8rkdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,lb.csmc lbmc,sbys.sydd,sbys.gdzcbh,sbys.sbccbh,jg.jgmc bmmc,
+        gdzc.kpbh,gdzc.syzk,gdzc.synx,yh.zsxm lrrymc,to_char(gdzc.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,gdzc.gdzcid,hwxx.htmxid,syzk.csmc syzkmc
+        from igams_hwxx hwxx
+        left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+        left join igams_sbys sbys on sbys.sbysid=hwxx.sbysid and sbys.scbj='0' and sbys.ysjg='1' and sbys.zt='80'
+        left join igams_gdzcgl gdzc on gdzc.hwid=hwxx.hwid and gdzc.scbj='0'
+        left join matridx_jcsj lb on lb.csid=gdzc.lb
+        left join matridx_jgxx jg on jg.jgid=gdzc.bm
+        left join matridx_xtyh yh on yh.yhid=gdzc.lrry
+        LEFT JOIN matridx_jcsj syzk ON syzk.csid = gdzc.syzk
+        left join igams_htgl htgl on htgl.htid=htmx.htid and htgl.scbj='0'
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid and qgmx.scbj='0'
+        left join igams_qggl qggl on qggl.qgid=qgmx.qgid and qggl.scbj='0'
+        left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and dhxx.scbj='0'
+        <where>
+            hwxx.scbj!='1'and htmx.scbj='0'and htmx.sfgdzc='1'
+            <if test="entire != null and entire != ''">
+                and (wlgl.wlbm ILIKE '%'||#{entire}||'%'
+                or sbys.gdzcbh ILIKE '%'||#{entire}||'%'
+                or wlgl.gg ILIKE '%'||#{entire}||'%'
+                or jg.jgmc ILIKE '%'||#{entire}||'%'
+                or sbys.sydd ILIKE '%'||#{entire}||'%'
+                or sbys.sbccbh ILIKE '%'||#{entire}||'%'
+                or gdzc.kpbh ILIKE '%'||#{entire}||'%'
+                or htgl.htnbbh ILIKE '%'||#{entire}||'%'
+                or qggl.djh ILIKE '%'||#{entire}||'%'
+                or dhxx.dhdh ILIKE '%'||#{entire}||'%'
+                or hwxx.u8rkdh ILIKE '%'||#{entire}||'%'
+                or hwxx.scph ILIKE '%'||#{entire}||'%'
+                or hwxx.zsh ILIKE '%'||#{entire}||'%'
+                or wlgl.wlmc ILIKE '%'||#{entire}||'%')
+            </if>
+
+            <if test="wlbm != null and wlbm != ''">
+                and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+            </if>
+            <if test="gdzcbh != null and gdzcbh != ''">
+                and sbys.gdzcbh ILIKE '%'||#{gdzcbh}||'%'
+            </if>
+            <if test="gg != null and gg != ''">
+                and wlgl.gg ILIKE '%'||#{gg}||'%'
+            </if>
+            <if test="bmmc != null and bmmc != ''">
+                and jg.jgmc ILIKE '%'||#{bmmc}||'%'
+            </if>
+            <if test="sydd != null and sydd != ''">
+                and sbys.sydd ILIKE '%'||#{sydd}||'%'
+            </if>
+            <if test="sbccbh != null and sbccbh != ''">
+                and sbys.sbccbh ILIKE '%'||#{sbccbh}||'%'
+            </if>
+            <if test="kpbh != null and kpbh != ''">
+                and gdzc.kpbh ILIKE '%'||#{kpbh}||'%'
+            </if>
+            <if test="htnbbh != null and htnbbh != ''">
+                and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+            </if>
+            <if test="djh != null and djh != ''">
+                and qggl.djh ILIKE '%'||#{djh}||'%'
+            </if>
+            <if test="dhdh != null and dhdh != ''">
+                and dhxx.dhdh ILIKE '%'||#{dhdh}||'%'
+            </if>
+            <if test="u8rkdh != null and u8rkdh != ''">
+                and hwxx.u8rkdh ILIKE '%'||#{u8rkdh}||'%'
+            </if>
+            <if test="scph != null and scph != ''">
+                and hwxx.scph ILIKE '%'||#{scph}||'%'
+            </if>
+            <if test="zsh != null and zsh != ''">
+                and hwxx.zsh ILIKE '%'||#{zsh}||'%'
+            </if>
+            <if test = "lbs != null and lbs.length > 0 "  >
+                and gdzc.lb in
+                <foreach collection="lbs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "syzks != null and syzks.length > 0 "  >
+                and gdzc.syzk in
+                <foreach collection="syzks" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "zjfss != null and zjfss.length > 0 "  >
+                and gdzc.zjfs in
+                <foreach collection="zjfss" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "zjffs != null and zjffs.length > 0 "  >
+                and gdzc.zjff in
+                <foreach collection="zjffs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(gdzc.lrsj,'yyyy-mm-dd hh24:mi:ss') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(gdzc.lrsj,'yyyy-mm-dd hh24:mi:ss') &lt;= #{lrsjend}
+            </if>
+            <if test="kssyrqstart != null and kssyrqstart != ''">
+                and to_char(gdzc.kssyrq,'yyyy-mm-dd') &gt;= #{kssyrqstart}
+            </if>
+            <if test="kssyrqend != null and kssyrqend != ''">
+                and to_char(gdzc.kssyrq,'yyyy-mm-dd') &lt;= #{kssyrqend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="GdzcglDto" resultType="GdzcglDto">
+        SELECT
+        hwxx.hwid,
+        hwxx.htmxid,
+        gdzc.kpbh,
+        to_char( gdzc.lrsj, 'yyyy-mm-dd hh24:mi:ss' ) lrsj,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        lb.csdm lbdm,
+        lb.csmc lbmc,
+        zcz.csmc zczmc,
+        wlgl.gg,
+        jg.jgmc bmmc,
+        zjfs.csmc zjfsmc,
+        sbys.sydd,
+        syzk.csmc syzkmc,
+        gdzc.synx,
+        zjff.csmc zjffmc,
+        to_char( gdzc.kssyrq, 'yyyy-mm-dd' ) kssyrq,
+        gdzc.yjtyf,
+        biz.csmc bizmc,
+        gdzc.yz,
+        gdzc.jczl,
+        gdzc.jcz,
+        gdzc.ljzj,
+        gdzc.yzjl,
+        gdzc.byjtzje,
+        gdzc.jz,
+        dyzjkm.csmc dyzjkmmc,
+        yh.zsxm lrrymc,
+        jc_wllb.csmc wllbmc,
+        jc_wlzlb.csmc wlzlbmc,
+        jc_wlzlbtc.csmc wlzlbtcmc,
+        wlgl.jwlbm,
+        lbjc.csmc wl_lbmc,
+        wlgl.scs,
+        wlgl.ychh,
+        wlgl.jldw,
+        wlgl.bctj,
+        wlgl.bzq,
+        wlgl.sfwxp,
+        wlgl.qdl,
+        wlgl.hq,
+        wlgl.aqkc,
+        wlgl.scbj,
+        sscplb.csmc sscplbmc,
+        wlgl.bz wlbz,
+        <!--
+         fpzl.csmc fpzlmc,
+          gys.gysmc fpgysmc,
+        ywy.zsxm ywymc,
+        fpbiz.csmc fpbizmc,
+        fpgl.fph,
+         fpgl.kprq,
+        to_char( fpgl.lrsj, 'yyyy-mm-dd hh24:mi:ss' ) fplrsj,
+        fpgl.sl,
+        fpmx.fpsl,
+        fpgl.kpje,
+        fpgl.bz fpbz,
+        -->
+        htgl.htnbbh,
+        qggl.djh,
+        hwxx.u8rkdh,
+        dhxx.dhdh,
+        rklb.csmc rklbmc,
+        to_char( dhxx.dhrq, 'yyyy-mm-dd' ) dhrq,
+        dhgys.gysmc dhgysmc,
+        kw.ckmc kwmc,
+        ck.ckmc,
+        hwxx.dhsl,
+        hwxx.cythsl,
+        hwxx.scph,
+        hwxx.zsh,
+        hwxx.scrq,
+        hwxx.yxq,
+        dhxx.bz dhbz,
+        sbys.sbysdh,
+        sbys.yssl,
+        sbys.gdzcbh,
+        sbys.sbccbh,
+        ssyfxm.csmc ssyfxmmc,
+        sbys.ysrq,
+        sbys.ysjg,
+        rkgl.rkdh,
+        rkgl.rkrq,
+        rkgys.gysmc rkgysmc,
+        rkck.ckmc rkckmc,
+        rkkw.ckmc rkkwmc,
+        hwxx.sl rksl,
+        rkgl.bz rkbz,
+        qggl.sqbm,
+        jgxx.jgmc sqbmmc,
+        jgxx.jgdm sqbmdm,
+        sfwxp.csmc sfwxpmc
+        FROM
+        igams_hwxx hwxx
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+        LEFT JOIN igams_sbys sbys ON sbys.sbysid = hwxx.sbysid and sbys.scbj='0'
+        LEFT JOIN igams_gdzcgl gdzc ON gdzc.hwid = hwxx.hwid
+        AND gdzc.scbj = '0'
+        LEFT JOIN matridx_jcsj lb ON lb.csid = gdzc.lb
+        LEFT JOIN matridx_jcsj zcz ON zcz.csid = gdzc.zcz
+        LEFT JOIN matridx_jcsj zjfs ON zjfs.csid = gdzc.zjfs
+        LEFT JOIN matridx_jcsj syzk ON syzk.csid = gdzc.syzk
+        LEFT JOIN matridx_jcsj zjff ON zjff.csid = gdzc.zjff
+        LEFT JOIN matridx_jcsj biz ON biz.csid = gdzc.biz
+        LEFT JOIN matridx_jcsj dyzjkm ON dyzjkm.csid = gdzc.dyzjkm
+        LEFT JOIN matridx_jcsj jc_wllb ON jc_wllb.csid = wlgl.wllb
+        LEFT JOIN matridx_jcsj jc_wlzlb ON jc_wlzlb.csid = wlgl.wlzlb
+        LEFT JOIN matridx_jcsj jc_wlzlbtc ON jc_wlzlbtc.csid = wlgl.wlzlbtc
+        LEFT JOIN matridx_jcsj lbjc ON wlgl.lb = lbjc.csid
+        LEFT JOIN matridx_jcsj sscplb ON sscplb.csid = wlgl.sscplb
+        LEFT JOIN matridx_jcsj sfwxp ON sfwxp.csid = wlgl.sfwxp
+        LEFT JOIN matridx_jgxx jg ON jg.jgid = gdzc.bm
+        LEFT JOIN matridx_xtyh yh ON yh.yhid = gdzc.lrry
+        <!--LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = hwxx.htmxid
+        LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid
+        AND fpgl.zt = '80'-->
+        LEFT JOIN igams_htmx htmx ON htmx.htmxid = hwxx.htmxid
+        AND htmx.scbj = '0'
+        LEFT JOIN igams_htgl htgl ON htgl.htid = htmx.htid
+        AND htgl.scbj = '0'
+        LEFT JOIN igams_qgmx qgmx ON qgmx.qgmxid = hwxx.qgmxid
+        AND qgmx.scbj = '0'
+        LEFT JOIN igams_qggl qggl ON qggl.qgid = qgmx.qgid
+        AND qggl.scbj = '0'
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = qggl.sqbm
+        LEFT JOIN igams_dhxx dhxx ON dhxx.dhid = hwxx.dhid
+        AND dhxx.scbj = '0'
+        <!--
+        LEFT JOIN matridx_jcsj fpzl ON fpzl.csid = fpgl.fpzl
+        LEFT JOIN igams_gysxx gys ON gys.gysid = fpgl.gys and gys.scbj='0'
+        LEFT JOIN matridx_xtyh ywy ON ywy.yhid = fpgl.ywy
+        LEFT JOIN matridx_jcsj fpbiz ON fpbiz.csid = fpgl.biz
+        -->
+        LEFT JOIN matridx_jcsj rklb ON rklb.csid = dhxx.rklb
+        LEFT JOIN igams_gysxx dhgys ON dhgys.gysid = dhxx.gysid  and dhgys.scbj!='1'
+        LEFT JOIN igams_ckxx rkkw ON rkkw.ckid = hwxx.kwbh and rkkw.scbj='0'
+        LEFT JOIN igams_ckxx kw ON kw.ckid = hwxx.cskw and kw.scbj='0'
+        LEFT JOIN igams_ckxx ck ON ck.ckid = dhxx.ckid and ck.scbj='0'
+        LEFT JOIN matridx_jcsj ssyfxm ON ssyfxm.csid = qggl.ssyfxm
+        LEFT JOIN igams_rkgl rkgl ON rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+        LEFT JOIN igams_gysxx rkgys ON rkgys.gysid = rkgl.gysid and rkgys.scbj!='1'
+        LEFT JOIN igams_ckxx rkck ON rkck.ckid = rkgl.ckid and rkck.scbj='0'
+        <where>
+            hwxx.scbj!='1' and hwxx.hwid=#{hwid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="GdzcglDto">
+        insert into igams_gdzcgl(gdzcid,hwid
+        <if test="kpbh != null and kpbh != ''">
+            ,kpbh
+        </if>
+        <if test="zjfs != null and zjfs != ''">
+            ,zjfs
+        </if>
+        <if test="syzk != null and syzk != ''">
+            ,syzk
+        </if>
+        <if test="lb != null and lb != ''">
+            ,lb
+        </if>
+        <if test="zcz != null and zcz != ''">
+            ,zcz
+        </if>
+        <if test="synx != null and synx != ''">
+            ,synx
+        </if>
+        <if test="zjff != null and zjff != ''">
+            ,zjff
+        </if>
+        <if test="kssyrq != null and kssyrq != ''">
+            ,kssyrq
+        </if>
+        <if test="yjtyf != null and yjtyf != ''">
+            ,yjtyf
+        </if>
+        <if test="biz != null and biz != ''">
+            ,biz
+        </if>
+        <if test="yz != null and yz != ''">
+            ,yz
+        </if>
+        <if test="jczl != null and jczl != ''">
+            ,jczl
+        </if>
+        <if test="jcz != null and jcz != ''">
+            ,jcz
+        </if>
+        <if test="ljzj != null and ljzj != ''">
+            ,ljzj
+        </if>
+        <if test="yzjl != null and yzjl != ''">
+            ,yzjl
+        </if>
+        <if test="byjtzje != null and byjtzje != ''">
+            ,byjtzje
+        </if>
+        <if test="jz != null and jz != ''">
+            ,jz
+        </if>
+        <if test="dyzjkm != null and dyzjkm != ''">
+            ,dyzjkm
+        </if>
+        <if test="xm != null and xm != ''">
+            ,xm
+        </if>
+        <if test="bm != null and bm != ''">
+            ,bm
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{gdzcid},#{hwid}
+        <if test="kpbh != null and kpbh != ''">
+            ,#{kpbh}
+        </if>
+        <if test="zjfs != null and zjfs != ''">
+            ,#{zjfs}
+        </if>
+        <if test="syzk != null and syzk != ''">
+            ,#{syzk}
+        </if>
+        <if test="lb != null and lb != ''">
+            ,#{lb}
+        </if>
+        <if test="zcz != null and zcz != ''">
+            ,#{zcz}
+        </if>
+        <if test="synx != null and synx != ''">
+            ,#{synx}
+        </if>
+        <if test="zjff != null and zjff != ''">
+            ,#{zjff}
+        </if>
+        <if test="kssyrq != null and kssyrq != ''">
+            ,cast (#{kssyrq} as date )
+        </if>
+        <if test="yjtyf != null and yjtyf != ''">
+            ,#{yjtyf}
+        </if>
+        <if test="biz != null and biz != ''">
+            ,#{biz}
+        </if>
+        <if test="yz != null and yz != ''">
+            ,cast (#{yz} as numeric )
+        </if>
+        <if test="jczl != null and jczl != ''">
+            ,cast (#{jczl} as numeric )
+        </if>
+        <if test="jcz != null and jcz != ''">
+            ,cast (#{jcz} as numeric )
+        </if>
+        <if test="ljzj != null and ljzj != ''">
+            ,cast (#{ljzj} as numeric )
+        </if>
+        <if test="yzjl != null and yzjl != ''">
+            ,cast (#{yzjl} as numeric )
+        </if>
+        <if test="byjtzje != null and byjtzje != ''">
+            ,cast (#{byjtzje} as numeric )
+        </if>
+        <if test="jz != null and jz != ''">
+            ,cast (#{jz} as numeric )
+        </if>
+        <if test="dyzjkm != null and dyzjkm != ''">
+            ,#{dyzjkm}
+        </if>
+        <if test="xm != null and xm != ''">
+            ,#{xm}
+        </if>
+        <if test="bm != null and bm != ''">
+            ,#{bm}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="delete" parameterType="GdzcglDto">
+        update igams_gdzcgl
+        <set>
+            scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            gdzcid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

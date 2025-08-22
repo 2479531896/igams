@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.CurrentStockDao" >
+	<insert id="insert" parameterType="CurrentStockDto" useGeneratedKeys="true" keyProperty="AutoID"  keyColumn="AutoID">
+		insert into CurrentStock(
+		iExpiratDateCalcu
+		<if test="cWhCode != null and cWhCode != ''">
+			,cWhCode
+		</if>
+		<if test="cInvCode != null and cInvCode != ''">
+			,cInvCode
+		</if>
+		<if test="ItemId != null and ItemId != ''">
+			,ItemId
+		</if>
+		<if test="cBatch != null and cBatch != ''">
+			,cBatch
+		</if>
+		<if test="iQuantity != null and iQuantity != ''">
+			,iQuantity
+		</if>
+		<if test="dVDate != null and dVDate != ''">
+			,dVDate
+		</if>
+		<if test="dMdate != null and dMdate != ''">
+			,dMdate
+		</if>
+		<if test="iMassDate != null and iMassDate != ''">
+			,iMassDate
+		</if>
+		<if test="cMassUnit != null and cMassUnit != ''">
+			,cMassUnit
+		</if>
+		,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		)values(
+			#{iExpiratDateCalcu}
+		<if test="cWhCode != null and cWhCode != ''">
+			,#{cWhCode}
+		</if>
+		<if test="cInvCode != null and cInvCode != ''">
+			,#{cInvCode}
+		</if>
+		<if test="ItemId != null and ItemId != ''">
+			,#{ItemId}
+		</if>
+		<if test="cBatch != null and cBatch != ''">
+			,#{cBatch}
+		</if>
+		<if test="iQuantity != null and iQuantity != ''">
+			,#{iQuantity}
+		</if>
+		<if test="dVDate != null and dVDate != ''">
+			,cast(#{dVDate} as datetime)
+		</if>
+		<if test="dMdate != null and dMdate != ''">
+			,cast(#{dMdate} as datetime)
+		</if>
+		<if test="iMassDate != null and iMassDate != ''">
+			,#{iMassDate}
+		</if>
+		<if test="cMassUnit != null and cMassUnit != ''">
+			,#{cMassUnit}
+		</if>
+		,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0
+		)
+	</insert>
+	
+	<update id="update" parameterType="CurrentStockDto">
+		update CurrentStock set 
+		<trim prefixOverrides=",">
+		<if test="cWhCode != null and cWhCode != ''">
+			,cWhCode=#{cWhCode}
+		</if>
+		<if test="cInvCode != null and cInvCode != ''">
+			,cInvCode=#{cInvCode}
+		</if>
+		<if test="ItemId != null and ItemId != ''">
+			,ItemId=#{ItemId}
+		</if>
+		<if test="cBatch != null and cBatch != ''">
+			,cBatch=#{cBatch}
+		</if>
+		<if test="iQuantity != null and iQuantity != ''">
+			,iQuantity=#{iQuantity}
+		</if>
+		<if test="dVDate != null and dVDate != ''">
+			,dVDate=#{dVDate}
+		</if>
+		<if test="dMdate != null and dMdate != ''">
+			,dMdate=#{dMdate}
+		</if>
+		<if test="iMassDate != null and iMassDate != ''">
+			,iMassDate=#{iMassDate}
+		</if>
+		<if test="cMassUnit != null and cMassUnit != ''">
+			,cMassUnit=#{cMassUnit}
+		</if>
+		</trim>
+		<where>
+			AutoID=#{AutoID}
+		</where>
+	</update>
+	
+	<!-- 获取ItemId最大值 -->
+	<select id="getMaxItemId" resultType="java.lang.Integer">
+		select COALESCE(max(ItemId),0) as num from CurrentStock
+	</select>
+	
+	<select id="queryBycInvCode" parameterType="CurrentStockDto" resultType="CurrentStockDto">
+		select AutoID,iExpiratDateCalcu,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit
+		,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from CurrentStock
+		<where>
+			cInvCode in
+			<foreach collection="ids" separator="," open="(" close=")" item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+	<!-- 根据autoids获取库存信息 -->
+	<select id="getCurrentStockByAutoIDs" parameterType="List" resultType="CurrentStockDto">
+		select AutoID,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from dbo.CurrentStock 
+		<where>
+			AutoID in 
+			<foreach collection="list" index="index" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<!-- 根据autoids获取库存信息 -->
+	<select id="getCurrentStockByAutoID" parameterType="CurrentStockDto" resultType="CurrentStockDto">
+		select AutoID,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from dbo.CurrentStock
+		<where>
+			AutoID = #{AutoID}
+		</where>
+	</select>
+	
+	<!-- 批量更新U8仓库库存表的数量信息 -->
+	<update id="updateKwAndSl" parameterType="List">
+		<foreach collection="list" item="item" index="index" separator=";">
+			update  dbo.CurrentStock set iQuantity=#{item.iQuantity}
+			<where>
+				cInvCode=#{item.cInvCode} and cWhCode=#{item.cWhCode} and cBatch=#{item.cBatch}
+			</where>
+		</foreach>
+	</update>
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update CurrentStock
+			<set>
+				iQuantity=iQuantity - #{item.iQuantity}
+			</set>
+			<where>
+				cInvCode=#{item.cInvCode} and cWhCode=#{item.cWhCode} and cBatch=#{item.cBatch}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateIQuantityList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update CurrentStock
+				<set>
+					<trim prefixOverrides=",">
+						<if test="item.iQuantitybj == '0'.toString()">
+							,iQuantity=iQuantity - #{item.iQuantity}
+						</if>
+						<if test="item.iQuantitybj == '1'.toString()">
+							,iQuantity=iQuantity + #{item.iQuantity}
+						</if>
+					</trim>
+				</set>
+				<where>
+					cInvCode=#{item.cInvCode} and cWhCode=#{item.cWhCode} and cBatch=#{item.cBatch}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateListByAutoID" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update CurrentStock
+				<set>
+					iQuantity=iQuantity - #{item.iQuantity}
+				</set>
+				<where>
+					AutoID=#{item.AutoID}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+
+	<select id="addCurrentStocks"  parameterType="List"  resultType="String">
+		insert into CurrentStock(
+		iExpiratDateCalcu,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit
+		,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		)
+		output inserted.AutoID
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.iExpiratDateCalcu},#{item.cWhCode},#{item.cInvCode},#{item.ItemId},#{item.cBatch}
+				,#{item.iQuantity},cast(#{item.dVDate} as datetime),cast(#{item.dMdate} as datetime)
+				,#{item.iMassDate},#{item.cMassUnit}
+				,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0)
+			</foreach>
+		</if>
+	</select>
+	
+	<!-- 根据追溯号，物料编码，库位查询库存信息 -->
+	<select id="getCurrentStocksByDto" parameterType="CurrentStockDto" resultType="CurrentStockDto">
+		select AutoID,iExpiratDateCalcu,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit
+		,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from CurrentStock
+		<where>
+			cWhCode=#{cWhCode} and cInvCode=#{cInvCode} and cBatch=#{cBatch}
+		</where>		 
+	</select>
+	<update id="updateByHwxx" parameterType="CurrentStockDto">
+		update CurrentStock
+		<set>
+			iQuantity=#{iQuantity}
+		</set>
+		<where>
+			cInvCode=#{cInvCode} and 	cBatch=#{cBatch} and 	cWhCode=#{cWhCode}
+		</where>
+	</update>
+	
+	<select id="getDtoAll" resultType="CurrentStockDto">
+		select AutoID,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from CurrentStock 
+	</select>
+	<select id="getDtoAllBySl" resultType="CurrentStockDto">
+		select AutoID,cWhCode,cInvCode,ItemId,cBatch,iQuantity,dVDate,dMdate,iMassDate,cMassUnit,fStopNum,fStopQuantity,fAvaNum,fAvaQuantity,fDisableNum,fDisableQuantity
+		,fPlanNum,fPlanQuantity,fTransOutNum,fTransOutQuantity,fTransInNum,fTransInQuantity
+		,fInNum,fInQuantity,fOutNum,fOutQuantity,iSodid,iNum
+		from CurrentStock
+		where iQuantity>0
+	</select>
+</mapper>

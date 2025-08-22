@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJcghglDao">
+
+    <select id="getPagedDtoList" parameterType="JcghglDto" resultType="JcghglDto">
+        select
+        jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,jcghgl.u8ghdh,
+        jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+        jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+        bm.jgmc as bmmc,bm.jgdm as bmdm
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+        left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+        left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        where jcghgl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcghgl.ghdh ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%')
+        </if>
+        <if test="ghdh != null and ghdh != ''">
+            and jcghgl.ghdh ILIKE '%'||#{ghdh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="ghrqstart != null and ghrqstart != ''">
+            and to_char(jcghgl.ghrq,'yyyy-mm-dd') &gt;= #{ghrqstart}
+        </if>
+        <if test="ghrqend !=null and ghrqend !=''">
+            and to_char(jcghgl.ghrq,'yyyy-mm-dd') &lt;= #{ghrqend}
+        </if>
+        <if test="sfzfyf != null and sfzfyf != '' and sfzfyf=='1'.toString">
+            and jcghgl.sfzfyf ='1'
+        </if>
+        <if test="sfzfyf != null and sfzfyf != '' and sfzfyf=='0'.toString">
+            and (jcghgl.sfzfyf ='0' or jcghgl.sfzfyf is null)
+        </if>
+        <if test = "zts != null and zts.length > 0 "  >
+            and jcghgl.zt in
+            <foreach collection="zts" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDto" parameterType="JcghglDto" resultType="JcghglDto">
+        select
+         jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,
+        jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+        jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+        bm.jgmc as bmmc,bm.jgdm as bmdm
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+        left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+        left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        where jcghgl.scbj = '0'
+          and jcghgl.jcghid=#{jcghid}
+    </select>
+
+    <select id="getDtoList" parameterType="JcghglDto" resultType="JcghglDto">
+        select
+            jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,
+            jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+            jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+            bm.jgmc as bmmc,bm.jgdm as bmdm
+        from igams_jcghgl jcghgl
+                 left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+                 left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+                 left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+                 left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+                 left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        where jcghgl.scbj = '0'
+            and jcghgl.jcghid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="JcghglDto">
+        select
+        jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,
+        jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+        jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+        bm.jgmc as bmmc,bm.jgdm as bmdm,yh.grouping as usercode
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+        left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+        left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        left join igams_jcjygl jc on jc.jcjyid=jcghgl.jcjyid
+		left join matridx_xtyh yh on yh.yhid=jc.ywy
+        where jcghgl.scbj = '0'
+          and jcghgl.jcghid=#{jcghid}
+    </select>
+
+    <select id="getPagedAuditRepaid" parameterType="JcghglDto" resultType="JcghglDto">
+        select
+        jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,
+        jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+        jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+        bm.jgmc as bmmc,bm.jgdm as bmdm
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+        left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+        left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        where jcghgl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (jcghgl.ghdh ILIKE '%'||#{entire}||'%'
+            or bm.jgmc ILIKE '%'||#{entire}||'%')
+        </if>
+        <if test="ghdh != null and ghdh != ''">
+            and jcghgl.ghdh ILIKE '%'||#{ghdh}||'%'
+        </if>
+        <if test="bmmc != null and bmmc != ''">
+            and bm.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="ghrqstart != null and ghrqstart != ''">
+            and to_char(jcghgl.ghrq,'yyyy-mm-dd') &gt;= #{ghrqstart}
+        </if>
+        <if test="ghrqend !=null and ghrqend !=''">
+            and to_char(jcghgl.ghrq,'yyyy-mm-dd') &lt;= #{ghrqend}
+        </if>
+        <if test="sfzfyf != null and sfzfyf != '' and sfzfyf=='1'.toString">
+            and jcghgl.sfzfyf ='1'
+        </if>
+        <if test="sfzfyf != null and sfzfyf != '' and sfzfyf=='0'.toString">
+            and (jcghgl.sfzfyf ='0' or jcghgl.sfzfyf is null)
+        </if>
+        <if test = "zts != null and zts.length > 0 "  >
+            and jcghgl.zt in
+            <foreach collection="zts" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    <select id="getRepaidAuditList" parameterType="List" resultType="JcghglDto">
+        select
+        jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx ,dwlx.csmc as dwlxmc,dwlx.csdm as dwlxdm,
+        jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,
+        jg.jgid,jg.jgmc,jg.jgdm,gysxx.gysid,gysxx.gysdm,gysxx.gysmc,khgl.khid,khgl.khmc,khgl.khdm,
+        bm.jgmc as bmmc,bm.jgdm as bmdm,
+        shxx_sqsj, shxx_gwmc, sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx jg on jg.jgid = jcghgl.dwid
+        left join igams_gysxx gysxx on gysxx.gysid = jcghgl.dwid
+        left join igams_khgl khgl on khgl.khid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+        left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        join
+        <foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+            select #{item.jcghid} jcghid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg, #{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_gwmc} shxx_gwmc, #{index} rownum
+        </foreach> tmp on tmp.jcghid = jcghgl.jcghid
+        order by tmp.rownum
+    </select>
+    <select id="getDtoByGhdh" parameterType="String" resultType="JcghglDto">
+        select
+        jcghgl.jcghid ,jcghgl.jcjyid ,jcghgl.ghdh , jcghgl.bm ,jcghgl.dwlx,dwlx.csmc as dwlxmc ,jcghgl.dwid ,to_char(jcghgl.ghrq,'YYYY-MM-dd') ghrq,jcghgl.sfzfyf ,jcghgl.glid ,jcghgl.bz ,jcghgl.zt ,dw.jgdm as dwdm,dw.jgmc as dwmc,bm.jgmc as bmmc,bm.jgdm as bmdm
+        from igams_jcghgl jcghgl
+        left join matridx_jgxx dw on dw.jgid = jcghgl.dwid
+        left join matridx_jgxx bm on bm.jgid = jcghgl.bm
+         left join matridx_jcsj dwlx on dwlx.csid = jcghgl.dwlx
+        where jcghgl.scbj = '0'  and jcghgl.ghdh = #{ghdh}
+    </select>
+
+    <insert id="insert" parameterType="JcghglDto">
+        insert into igams_jcghgl(jcghid
+        <if test="jcjyid != null and jcjyid != ''">
+            ,jcjyid
+        </if>
+        <if test="ghdh != null and ghdh != ''">
+            ,ghdh
+        </if>
+        <if test="bm != null and bm != ''">
+            ,bm
+        </if>
+        <if test="dwlx != null and dwlx != ''">
+            ,dwlx
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,dwid
+        </if>
+        <if test="ghrq != null and ghrq != ''">
+            ,ghrq
+        </if>
+        <if test="sfzfyf != null and sfzfyf != ''">
+            ,sfzfyf
+        </if>
+        <if test="glid != null and glid != ''">
+            ,glid
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{jcghid}
+        <if test="jcjyid != null and jcjyid != ''">
+            ,#{jcjyid}
+        </if>
+        <if test="ghdh != null and ghdh != ''">
+            ,#{ghdh}
+        </if>
+        <if test="bm != null and bm != ''">
+            ,#{bm}
+        </if>
+        <if test="dwlx != null and dwlx != ''">
+            ,#{dwlx}
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,#{dwid}
+        </if>
+        <if test="ghrq != null and ghrq != ''">
+            ,cast(#{ghrq} as timestamp)
+        </if>
+        <if test="sfzfyf != null and sfzfyf != ''">
+            ,#{sfzfyf}
+        </if>
+        <if test="glid != null and glid != ''">
+            ,#{glid}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="JcghglDto">
+        UPDATE igams_jcghgl
+        SET
+        xgry=#{xgry}
+        ,xgsj=LOCALTIMESTAMP
+        <if test="jcjyid != null and jcjyid != ''">
+            ,jcjyid=#{jcjyid}
+        </if>
+        <if test="ghdh != null and ghdh != ''">
+            ,ghdh=#{ghdh}
+        </if>
+        <if test="bm != null and bm != ''">
+            ,bm=#{bm}
+        </if>
+        <if test="dwlx != null and dwlx != ''">
+            ,dwlx=#{dwlx}
+        </if>
+        <if test="dwid != null and dwid != ''">
+            ,dwid=#{dwid}
+        </if>
+        <if test="ghrq != null and ghrq != ''">
+            ,ghrq=cast(#{ghrq} as timestamp)
+        </if>
+        <if test="sfzfyf != null and sfzfyf != ''">
+            ,sfzfyf=#{sfzfyf}
+        </if>
+        <if test="glid != null and glid != ''">
+            ,glid=#{glid}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz=#{bz}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt=#{zt}
+        </if>
+        <if test="u8ghdh != null and u8ghdh != ''">
+            ,u8ghdh=#{u8ghdh}
+        </if>
+        <if test="qydh != null and qydh != ''">
+            ,qydh=#{qydh}
+        </if>
+        <where>
+            jcghid = #{jcghid}
+        </where>
+    </update>
+
+    <select id="getGhdhSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(ghdh,LENGTH(ghdh)-strpos(reverse(ghdh),'-')+2,LENGTH(ghdh))),'0')
+        AS numeric) + 1) as VARCHAR), 3, '0') serial
+        FROM igams_jcghgl
+        <where>
+            ghdh like #{prefix}||'%'
+        </where>
+    </select>
+
+
+    <update id="delete" parameterType="JcghglDto">
+        update igams_jcghgl
+        <set>
+            scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            jcghid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="generteQydh" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(qydh,LENGTH(qydh)-strpos(reverse(qydh),'-')+2,LENGTH(qydh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_jcghgl
+        <where>
+            scbj = '0' AND qydh like #{prefix}||'%'
+        </where>
+    </select>
+</mapper>

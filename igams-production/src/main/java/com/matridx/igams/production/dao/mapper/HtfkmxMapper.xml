@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IHtfkmxDao" >
+
+    <select id="getPagedDtoList" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select fkmx.htfkmxid,fkmx.htfkid,fkmx.htid,fkmx.fkje,fkmx.fkbfb,
+        fkqk.fkdh,fkqk.fkrq,htgl.htnbbh,yh.zsxm lrrymc,htgl.htwbbh
+        ,htgl.yfje,(COALESCE(htgl.zje,0)-COALESCE(htgl.yfje,0)) wfje,htgl.fkzje,htgl.zje,gys.gysmc zfdxmc,fkqk.zt
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_gysxx gys on gys.gysid = fkqk.zfdx
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_xtyh yh on yh.yhid=fkmx.lrry
+        <where>
+            fkmx.scbj != '1'
+            <if test="htnbbh !=null and htnbbh != ''">
+                and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+            </if>
+            <if test="lrrymc != null and lrrymc != ''">
+                and yh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="fksjstart != null and fksjstart != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+            </if>
+            <if test="fksjend != null and fksjend != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="HtfkmxDto">
+        select fkmx.htfkmxid,fkmx.htfkid,fkmx.htid,fkmx.fkje,
+        case when COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) >100 then '100'
+        when COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) &lt; cast('-100' as decimal) then '-100'
+        else COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) end as fkbfb,
+        fkqk.fkdh,fkqk.fkrq,htgl.htnbbh,yh.zsxm lrrymc,htgl.htwbbh
+        ,htgl.yfje,(COALESCE(htgl.xzje,htgl.zje)-COALESCE(htgl.yfje,0)) wfje,htgl.fkzje,htgl.zje,gys.gysmc zfdxmc,fkqk.zt,
+        case when COALESCE (round((COALESCE(htgl.xzje,htgl.zje)-COALESCE(htgl.yfje,0)) * 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )>100 then '100'
+        when COALESCE (round((COALESCE(htgl.xzje,htgl.zje)-COALESCE(htgl.yfje,0)) * 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )&lt;cast('-100' as decimal) then '-100'
+        else COALESCE (round((COALESCE(htgl.xzje,htgl.zje)-COALESCE(htgl.yfje,0)) * 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 ) end as wfbfb,
+        case when COALESCE (round(htgl.yfje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )>100 then '100'
+        when COALESCE (round(htgl.yfje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )&lt; cast('-100' as decimal) then '-100'
+        else COALESCE (round(htgl.yfje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 ) end as yfbfb,
+        case when COALESCE (round(htgl.fkzje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )>100 then '100'
+        when COALESCE (round(htgl.fkzje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 )&lt; cast('-100' as decimal) then '-100'
+        else COALESCE (round(htgl.fkzje* 100.0 / COALESCE(htgl.xzje,htgl.zje), 2 ), 0 ) end as fkzbfb,htgl.xzje
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_gysxx gys on gys.gysid = fkqk.zfdx
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_xtyh yh on yh.yhid=fkmx.lrry
+        <where>
+            fkmx.scbj != '1'and fkmx.htfkmxid=#{htfkmxid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select fkmx.htfkmxid,fkmx.htfkid,fkmx.htid,fkmx.fkje,
+        case when COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) >100 then '100'
+        when COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) &lt; cast('-100' as decimal) then '-100'
+        else COALESCE(round(COALESCE(fkmx.fkje,0)*100.0/COALESCE(htgl.xzje,htgl.zje),2) ,0) end as fkbfb,
+       fkqk.fkdh,fkqk.fkrq,htgl.htnbbh,yh.zsxm lrrymc,htgl.htwbbh,htgl.ddrq,jc_ywlx.csmc as ywlxmc
+        ,htgl.yfje,(COALESCE(htgl.xzje,htgl.zje)-COALESCE(htgl.yfje,0)) wfje,htgl.fkzje,htgl.zje,gys.gysmc zfdxmc,
+        htgl.ddslid htddslid,fkqk.zt,htgl.xzje
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+	    left join matridx_jcsj jc_ywlx on jc_ywlx.csid = htgl.ywlx
+        left join matridx_xtyh yh on yh.yhid=fkqk.lrry
+        left join igams_gysxx gys on gys.gysid=fkqk.zfdx
+        <where>
+            fkmx.scbj='0'
+            <if test="htid !=null and htid != ''">
+            and fkmx.htid=#{htid}
+            </if>
+            <if test="htfkid !=null and htfkid != ''">
+                and fkmx.htfkid=#{htfkid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and fkmx.htfkid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getListByHtid" parameterType="String" resultType="HtfkmxDto">
+        select fkmx.htfkmxid,fkmx.htfkid,fkmx.htid,fkmx.fkje,
+        round(COALESCE(fkmx.fkje,0)*100.00/COALESCE(htgl.xzje,htgl.zje),2)as fkbfb,
+        htgl.xzje, fkqk.fkdh,fkqk.fkrq,htgl.htnbbh,yh.zsxm lrrymc,htgl.htwbbh,htgl.ddrq,jc_ywlx.csmc as ywlxmc,htgl.yfje,(COALESCE(COALESCE(htgl.xzje,htgl.zje),0)-COALESCE(htgl.yfje,0)) wfje,htgl.fkzje,htgl.zje,to_char(fkqk.lrsj,'yyyy-mm-dd hh24:mi') as lrsj
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_jcsj jc_ywlx on jc_ywlx.csid = htgl.ywlx
+        left join matridx_xtyh yh on yh.yhid=fkqk.lrry
+        <where>
+            fkmx.scbj='0'and fkmx.htid=#{htid}
+        </where>
+    </select>
+
+    <select id="getHtfkqkMessage" parameterType="List" resultType="HtfkmxDto">
+        select htgl.htid,htgl.htnbbh ,htgl.zje,htgl.yfje,htgl.fkzje,(coalesce(coalesce(htgl.xzje,htgl.zje),0)-coalesce(htgl.yfje,0)-coalesce(htgl.fkzje,0)) wfkje ,tmp_t.zfkje
+        from igams_htgl htgl
+                 left join (select tmp.htid,sum(cast(tmp.fkje as numeric)) zfkje from
+                (
+                <foreach collection="list" item="item" separator="union all">
+                    select #{item.htid} htid,#{item.fkje} fkje
+                </foreach>
+                ) tmp  group by tmp.htid
+        ) tmp_t on tmp_t.htid=htgl.htid
+        where htgl.scbj='0' and htgl.htid in
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item.htid}
+            </foreach>
+    </select>
+
+    <insert id="insertDtoList" parameterType="List">
+        insert into igams_htfkmx(htfkmxid,htfkid,htid,fkje,fkbfb,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.htfkmxid},#{item.htfkid},#{item.htid},cast(#{item.fkje} as numeric),cast(#{item.fkbfb} as numeric ),#{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="HtfkmxDto">
+        update igams_htfkmx set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="fkbfb !=null and fkbfb != ''">
+            ,fkbfb = cast(#{fkbfb} as numeric )
+        </if>
+        <if test="fkje !=null and fkje != ''">
+            ,fkje = cast(#{fkje} as numeric)
+        </if>
+        <where>
+            htfkmxid = #{htfkmxid}
+        </where>
+    </update>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_htfkmx
+                <set>
+                    xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+                    <if test="item.fkbfb !=null and item.fkbfb != ''">
+                        ,fkbfb = cast(#{item.fkbfb} as numeric )
+                    </if>
+                    <if test="item.fkje !=null and item.fkje != ''">
+                        ,fkje = cast(#{item.fkje} as numeric)
+                    </if>
+                </set>
+                <where>
+                    htfkmxid = #{item.htfkmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="delete" parameterType="HtfkmxDto">
+        update igams_htfkmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            htfkid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateContractFkzje" parameterType="List">
+        with recursive t(htid,htfkid,fkzje) as (
+        select tmp.htid,tmp.htfkid,tmp.fkzje from
+        <foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+            select
+            #{item.htid} htid,#{item.htfkid} htfkid,#{item.fkzje} fkzje
+        </foreach>
+        left join igams_htgl htgl on htgl.htid=tmp.htid and htgl.scbj='0'
+        )
+        update igams_htgl htgl set fkzje=cast((select fkzje from t where htid=htgl.htid) as numeric )
+        where htgl.htid in (
+        select htid from t
+        )
+    </update>
+
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="HtfkmxDto"
+            resultType="java.lang.Integer">
+        select count(fkmx.htfkmxid)  from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_gysxx gys on gys.gysid = fkqk.zfdx
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_xtyh yh on yh.yhid=fkmx.lrry
+        <where>
+            fkmx.scbj != '1'
+            <if test="htnbbh !=null and htnbbh != ''">
+                and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+            </if>
+            <if test="lrrymc != null and lrrymc != ''">
+                and yh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="fksjstart != null and fksjstart != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+            </if>
+            <if test="fksjend != null and fksjend != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+            </if>
+        </where>
+    </select>
+    <select id="getListForSearchExp" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select fkmx.htfkmxid ${sqlParam}
+        from  igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_gysxx gys on gys.gysid = fkqk.zfdx
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_xtyh yh on yh.yhid=fkmx.lrry
+        <where>
+            fkmx.scbj != '1'
+            <if test="htnbbh !=null and htnbbh != ''">
+                and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+            </if>
+            <if test="lrrymc != null and lrrymc != ''">
+                and yh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="fksjstart != null and fksjstart != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+            </if>
+            <if test="fksjend != null and fksjend != ''">
+                and to_char(fkqk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+            </if>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select fkmx.htfkmxid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} htfkmxid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left outer join igams_htfkmx fkmx on tmp.htfkmxid = fkmx.htfkmxid
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_gysxx gys on gys.gysid = fkqk.zfdx
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_xtyh yh on yh.yhid=fkmx.lrry
+        order by tmp.ordernum
+    </select>
+
+    <select id="queryHtddslid" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select htgl.ddslid htddslid
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        where
+            fkmx.scbj='0'
+            <if test="htid !=null and htid != ''">
+                and fkmx.htid=#{htid}
+            </if>
+            <if test="htfkid !=null and htfkid != ''">
+                and fkmx.htfkid=#{htfkid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and fkmx.htfkid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        group by htgl.ddslid
+    </select>
+
+    <select id="getListGroupByHt" parameterType="HtfkmxDto" resultType="HtfkmxDto">
+        select htgl.yfje,sum(fkmx.fkje) fkje,htgl.zje,htgl.htid
+        from igams_htfkmx fkmx
+        left join igams_htfkqk fkqk on fkqk.htfkid=fkmx.htfkid
+        left join igams_htgl htgl on htgl.htid=fkmx.htid
+        left join matridx_jcsj jc_ywlx on jc_ywlx.csid = htgl.ywlx
+        left join matridx_xtyh yh on yh.yhid=fkqk.lrry
+        left join igams_gysxx gys on gys.gysid=fkqk.zfdx
+        <where>
+            fkmx.scbj='0'
+            <if test="htid !=null and htid != ''">
+                and fkmx.htid=#{htid}
+            </if>
+            <if test="htfkid !=null and htfkid != ''">
+                and fkmx.htfkid=#{htfkid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and fkmx.htfkid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by htgl.htid
+    </select>
+
+
+</mapper>

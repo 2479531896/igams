@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzqgqrmxDao" >
+    <insert id="insertDtoList" parameterType="List">
+        insert into igams_xzqgqrmx(qrid,qrmxid,qgmxid,qgid,xh,hwmc,hwgg,sl,jg,hwjldw,lrry,lrsj,scbj)
+        values
+           <foreach collection="list" item="item" separator="," index="index">
+               (
+               #{item.qrid},#{item.qrmxid},#{item.qgmxid},#{item.qgid}
+                   ,(select (select coalesce(max(xh),0)+1+#{index} from igams_xzqgqrmx where qrid=#{item.qrid})),#{item.hwmc}
+                   ,#{item.hwgg},cast(#{item.sl} as numeric ),cast(#{item.jg} as numeric ),#{item.hwjldw}, #{item.lrry},LOCALTIMESTAMP,'0')
+           </foreach>
+    </insert>
+    
+    <select id="getDtoList" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrmxid,qrmx.qrid,qrmx.qrid,qrmx.qgmxid,qrmx.xh,qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw,qggl.djh qgdh,qrmx.qgid
+        from igams_xzqgqrmx qrmx
+        left join igams_qggl qggl on qggl.qgid=qrmx.qgid
+        where qrmx.scbj='0'
+        <if test="qrid != null and qrid != ''">
+            and qrmx.qrid=#{qrid}
+        </if>
+        <if test="ids != null and ids.size > 0">
+            and qrmx.qrmxid in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrid,qrmx.qrmxid,qrmx.qgid,qrmx.qgmxid,qrmx.xh,qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw,qggl.djh qgdh
+        from igams_xzqgqrmx qrmx
+        left join igams_qggl qggl on qrmx.qgid=qggl.qgid
+        where qrmx.scbj='0'
+          <if test="qrid != null and qrid != ''">
+              and qrmx.qrid=#{qrid}
+          </if>
+    </select>
+
+    <!--根据qrids删除确认明细-->
+    <update id="delDtoByQrid" parameterType="XzqgqrmxDto">
+        update igams_xzqgqrmx set
+        scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        <where>
+            qrid in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <!--根据qrmxid-->
+    <update id="delByList" parameterType="List">
+        update igams_xzqgqrmx set
+        scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        where
+        qrmxid in
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item.qrmxid}
+        </foreach>
+    </update>
+
+    <update id="updateDtoList" parameterType="List">
+    <foreach collection="list" item="item" separator=";" open="" close="">
+        update igams_xzqgqrmx set
+        xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+        <if test="item.qrid != null and item.qrid != ''">
+            ,qrid=#{item.qrid}
+        </if>
+        <if test="item.qgmxid != null and item.qgmxid != ''">
+            ,qgmxid=#{item.qgmxid}
+        </if>
+        <if test="item.hwmc != null and item.hwmc != ''">
+            ,hwmc=#{item.hwmc}
+        </if>
+        <if test="item.hwgg != null and item.hwgg != ''">
+            ,hwgg=#{item.hwgg}
+        </if>
+        <if test="item.sl != null and item.sl != ''">
+            ,sl=cast(#{item.sl} as numeric )
+        </if>
+        <if test="item.jg != null and item.jg != ''">
+            ,jg=cast(#{item.jg} as numeric )
+        </if>
+        <if test="item.hwjldw != null and item.hwjldw != ''">
+            ,hwjldw=#{item.hwjldw}
+        </if>
+        <where>
+            scbj!='1' and qrmxid=#{item.qrmxid}
+        </where>
+    </foreach>
+    </update>
+
+    <select id="getNeedQrxx" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrid,qgmx.qgid ,count(qgmx.qgmxid) mxsl,sum(cast(qgmx.sfqr as numeric)) qrsl
+        from igams_xzqgqrmx qrmx
+        left join igams_qgmx qgmx on qgmx.qgmxid=qrmx.qgmxid
+        where qrmx.qrid=#{qrid}
+          and qgmx.zt='80' and qgmx.scbj='0'
+        group by qgmx.qgid,qrmx.qrid
+    </select>
+
+    <update id="modQgglSfqr" parameterType="List">
+        update igams_qggl set sfqr='1'
+        where scbj='0' and qgid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item.qgid}
+        </foreach>
+    </update>
+
+    <select id="getNeedFkData" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrmxid,qrmx.qrid,qrmx.qrid,qrmx.qgmxid,qrmx.xh,qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw,qggl.djh qgdh,qrmx.qgid,
+               fkmx.fkmxid
+        from igams_xzqgqrmx qrmx
+        left join igams_qggl qggl on qggl.qgid=qrmx.qgid
+        left join igams_xzqgfkmx fkmx on fkmx.qrmxid=qrmx.qrmxid and fkmx.scbj='0'
+        where qrmx.scbj='0' and fkmx.fkmxid is null and qrmx.qrid=#{qrid}
+    </select>
+
+    <select id="getNotFinishQrMsg" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrmxid,qrmx.qrid,qrmx.qrid,qrmx.qgmxid,qrmx.xh,qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw,qggl.djh qgdh,qrmx.qgid
+        from igams_xzqgqrmx qrmx
+        left join igams_qggl qggl on qggl.qgid=qrmx.qgid
+        left join igams_xzqgfkmx fkmx on fkmx.qrmxid=qrmx.qrmxid and fkmx.scbj='0'
+        where qrmx.scbj='0' and fkmx.fkmxid is null
+        and qrid in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+    
+    <select id="getFkwcDtoList" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select tmp.qrid,sum(tmp.wfsl) wfsl,sum(tmp.yfsl) yfsl from (
+           select qrmx.qrid,case when fkmx.fkid is null then count(qrmx.qrmxid) else 0 end wfsl,
+                  case when fkmx.fkid is not null then count(qrmx.qrmxid)  end yfsl
+           from igams_xzqgqrmx qrmx
+           left join igams_xzqgfkmx fkmx on fkmx.qrmxid=qrmx.qrmxid and fkmx.scbj='0'
+           where qrmx.qrid in
+           <foreach collection="ids" item="item" separator="," open="(" close=")">
+               #{item}
+           </foreach>
+           group by qrmx.qrid,fkmx.fkid) tmp
+        group by tmp.qrid
+    </select>
+
+    <update id="modQgmxsfrk" parameterType="List">
+        <foreach collection="list" item="item" separator=";">
+            update igams_qgmx set sfrk=#{item.sfrk}
+            where qgmxid = #{item.qgmxid}
+        </foreach>
+    </update>
+
+    <select id="getMxlistByQrid" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrmxid,qrmx.qrid,qrmx.qrid,qrmx.qgmxid,qrmx.xh,qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw,qrmx.qgid
+        from igams_xzqgqrmx qrmx
+        <where>
+            qrmx.scbj='0' and qrmx.qrid=#{qrid}
+        </where>
+    </select>
+
+    <update id="updateBatchFkbj"  parameterType="List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update igams_qgmx set  xgry=#{item.xgry} , xgsj=LOCALTIMESTAMP, fkbj ='1'
+            <where>
+                qgmxid = #{item.qgmxid}
+            </where>
+        </foreach>
+    </update>
+
+    <select id="getNeedXzqgQrxx" parameterType="XzqgqrmxDto" resultType="XzqgqrmxDto">
+        select qrmx.qrid,qgmx.qgid ,count(qgmx.qgmxid) mxsl,sum(cast(qgmx.fkbj as numeric)) fksl
+        from igams_xzqgqrmx qrmx
+        left join igams_qgmx qgmx on qgmx.qgmxid=qrmx.qgmxid
+        where qrmx.scbj='0' and qrmx.qrid=#{qrid}
+              and qgmx.zt='80' and qgmx.scbj='0'
+        group by qgmx.qgid,qrmx.qrid
+    </select>
+
+    <select id="getFkwcQgidList" parameterType="XzqgqrmxDto" resultType="String">
+        select tmp.qgid
+        from (
+        select qgmx.qgid, count(qgmx.qgmxid) zsl, sum(coalesce(cast(qgmx.fkbj as numeric),0)) fksl
+        from igams_qgmx qgmx
+        where qgmx.qgid in
+        <foreach collection="qrmxlist" item="item" separator="," open="(" close=")">
+            #{item.qgid}
+        </foreach>
+        group by qgmx.qgid
+        )tmp
+        where tmp.zsl = tmp.fksl
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="XzqgqrmxDto">
+        select qrmx.hwmc,qrmx.hwgg,qrmx.sl,qrmx.jg,qrmx.hwjldw
+         from igams_xzqgqrmx qrmx
+        <where>
+            qrmx.scbj!='1'
+            and qrmx.qrmxid=#{qrmxid}
+        </where>
+    </select>
+
+</mapper>

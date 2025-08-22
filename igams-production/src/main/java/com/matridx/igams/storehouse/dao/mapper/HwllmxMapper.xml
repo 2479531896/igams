@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IHwllmxDao" >
+	<select id="getMaxXh"  resultType="java.lang.Integer">
+		select max(xh) from igams_hwllmx
+	</select>
+	
+	<insert id="insertHwllmxs" parameterType="List">
+		insert into igams_hwllmx(llmxid,llid,hwllid,hwid,xh,qlsl,yxsl,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.llmxid},#{item.llid},#{item.hwllid},#{item.hwid},cast(#{item.xh} as numeric),cast(#{item.qlsl} as numeric),cast(#{item.yxsl} as numeric),'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	<select id="getDtoList" parameterType="HwllmxDto" resultType="HwllmxDto">
+		select hwllmx.llmxid,hwllmx.hwllid,hwllmx.llid,wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,hwllmx.slsl,jcsj_dl.csdm as Xmdlcsdm,
+		jcsj_dl.csmc as xmdlcsmc,jcsj_bm.csdm as xmbmcsdm,jcsj_bm.csmc as xmbmcsmc,hwxx.yxq,hwxx.scrq,ckxx.ckdm,
+		hwllxx.bz as hwllbz,hwxx.zsh,hwllmx.yxsl,htmx.wsdj,htmx.hjje,htmx.suil,hwxx.zsh,hwxx.yxq,hwxx.kwbh,hwxx.scrq,
+		llgl.glid as sqglid,hwxx.kcglid,hwllmx.glid,ckxx_kw.ckdm as kwbhcsdm,hwxx.scph,htmx.hsdj,hwxx.hwid,hwllmx.qlsl,
+		llgl.zt,llgl.ckzt,jc_dhlx.csdm as dhlxdm,dhxx.dhdh,jcsj_lb.cskz1 lbcskz1,hwxx.sbysid,hwxx.tkbj,wlgl.wlmc,wlgl.wlid,wlgl.gg,wlgl.jldw,wlgl.ychh,jcsj_lb.csmc lbcsmc
+		from igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid 
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid and hwxx.scbj='0'
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid and hwxx.scbj='0'
+		left join matridx_jcsj jc_dhlx on jc_dhlx.csid=dhxx.dhlx
+		left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+		left join matridx_jcsj jcsj_lb on jcsj_lb.csid = wlgl.lb
+		left join matridx_jcsj jcsj_dl on jcsj_dl.csid = hwllxx.xmdl
+		left join matridx_jcsj jcsj_bm on jcsj_bm.csid = hwllxx.xmbm
+		left join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid and ckxx.scbj='0'
+		left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid and htmx.scbj='0'
+		left join igams_llgl llgl on llgl.llid = hwllmx.llid and llgl.scbj='0'
+		left join igams_ckxx ckxx_kw on ckxx_kw.ckid=hwxx.kwbh and ckxx_kw.scbj='0'
+		<where>	
+			hwllmx.scbj!='1'	
+			<if test="llid != null and llid != ''">
+				and hwllmx.llid = #{llid}
+			</if>
+			<if test="ckid != null and ckid != ''">
+				and hwllmx.ckid = #{ckid}
+			</if>
+			<if test="ids != null and ids.size >0">
+				and hwllmx.llid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="llmxids != null and llmxids.size >0">
+				and hwllmx.llmxid in
+				<foreach collection="llmxids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateHwllmxs" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_hwllmx
+			<set>
+			<trim prefixOverrides=",">
+			<if test="item.slsl != null and item.slsl != ''">
+					,slsl=cast(#{item.slsl} as numeric)
+			</if>
+			<if test="item.yxsl != null and item.yxsl != ''">
+					,yxsl=cast(#{item.yxsl} as numeric)
+			</if>
+			<if test="item.qlsl != null and item.qlsl != ''">
+					,qlsl=cast(#{item.qlsl} as numeric)
+			</if>
+			<if test="item.ckid != null and item.ckid != ''">
+					,ckid=#{item.ckid}
+			</if>
+			</trim>
+			</set>
+			<where>
+				llid=#{item.llid} and hwllid=#{item.hwllid} and hwid=#{item.hwid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<!-- 根据hwllid查询货物领料明细 -->
+	<select id="getDtoHwllmxListByHwllid" parameterType="String" resultType="HwllmxDto">
+		SELECT hwllmx.hwllid,hwllmx.llid,hwllmx.qlsl,hwllmx.slsl,hwllmx.hwid,hwllmx.llmxid,hwllmx.yxsl,
+wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.ychh,dhxx.dhdh,hwxx.sl,hwxx.rkrq,hwxx.zsh,hwxx.scph,hwxx.kwbh,ckxx.ckmc,kw.ckmc as kwmc,hwxx.kcl
+		FROM igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_ckxx ckxx on hwxx.ckid = ckxx.ckid
+		left join igams_ckxx kw on hwxx.kwbh = kw.ckid
+		<where>
+			hwllmx.scbj!='1' and hwllmx.hwllid=#{hwllid}
+		</where>
+		order by hwllxx.xh
+	</select>
+
+	<select id="getPagedDtoList" parameterType="HwllmxDto" resultType="HwllmxDto">
+		SELECT hwllmx.hwllid,hwllmx.llid,hwllmx.qlsl,hwllmx.slsl,hwllmx.hwid,hwllmx.llmxid,hwllmx.yxsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.ychh,hwxx.sl,hwxx.rkrq,hwxx.zsh,hwxx.scph,hwxx.kwbh,khgl.khmc,wlgl.wlid,khgl.khid
+		FROM igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid and wlgl.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid and hwxx.scbj='0'
+		left join igams_llgl llgl on llgl.llid = hwllmx.llid and llgl.scbj='0'
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		<where>
+			hwllmx.scbj!='1'
+			<if test="wlmc !=null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+			</if>
+			<if test="wlbm !=null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+			</if>
+			<if test="khmc !=null and khmc != ''">
+				and khgl.khmc ILIKE '%'||#{khmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 根据llid查询货物领料明细 -->
+	<select id="getDtoHwllmxByLlid" parameterType="String" resultType="HwllmxDto">
+		SELECT hwllmx.hwllid,hwllmx.llid,hwllmx.qlsl,hwllmx.slsl,hwllmx.hwid,hwllmx.llmxid,hwllmx.yxsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.ychh,dhxx.dhdh,hwxx.sl,hwxx.rkrq,hwxx.zsh,hwxx.scph,hwxx.kwbh,ckxx.ckmc,kw.ckmc as kwmc,ckgl.ckdh,ckgl.u8ckdh,ckgl.ckrq,
+		SUM ( COALESCE ( hwllxx.slsl, 0 ) ) AS cksl,llr.zsxm llrmc,flr.zsxm flrmc,xmdl.csmc xmdl,jcsj_bm.csmc xmbm,ckhwxx.kcl,qgmx.bz qgmxbz,ckqx.csmc ckqxmc
+		FROM igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join igams_qgmx qgmx on qgmx.qgmxid = hwxx.qgmxid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_ckxx ckxx on hwxx.ckid = ckxx.ckid
+		left join igams_ckxx kw on hwxx.kwbh = kw.ckid
+		left join igams_ckgl ckgl on hwllmx.ckid=ckgl.ckid
+		left join matridx_xtyh llr on llr.yhid=ckgl.llr
+		left join matridx_xtyh flr on flr.yhid=ckgl.flr
+		left join matridx_jcsj xmdl on xmdl.csid = hwllxx.xmdl
+		left join matridx_jcsj jcsj_bm on jcsj_bm.csid = hwllxx.xmbm
+		left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = hwllxx.ckhwid
+		left join matridx_jcsj ckqx on ckqx.csid=ckxx.ckqxlx
+		where hwllmx.llid=#{llid}
+		group by hwllmx.hwllid,hwllmx.llid,hwllmx.slsl,hwllmx.hwid,hwllmx.llmxid,hwllmx.yxsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.ychh,dhxx.dhdh,hwxx.sl,hwxx.rkrq,hwxx.zsh,hwxx.scph,hwxx.kwbh,ckxx.ckmc,kw.ckmc,ckgl.ckdh,ckgl.u8ckdh,ckgl.ckrq,llr.zsxm,flr.zsxm,
+		xmdl.csmc,jcsj_bm.csmc,ckhwxx.kcl,qgmx.bz,ckqx.csmc
+	</select>
+	<select id="getDtoHwllmxGroupByHwid" parameterType="HwllmxDto" resultType="HwllmxDto">
+		select hwllmx.hwid,hwxx.kcl,sum(hwllmx.slsl) as zyds,sum(hwllmx.yxsl) as zyxsl,llgl.ckzt,llgl.qybj
+		from igams_hwllmx hwllmx
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid
+		left join igams_llgl llgl on llgl.llid=hwllmx.llid
+		<where>
+			hwllmx.scbj!='1' and hwllmx.llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+			</foreach>
+		</where>
+		group by hwllmx.hwid,hwxx.kcl,llgl.ckzt,llgl.qybj
+	</select>
+	
+	<delete id="delete" parameterType="HwllmxDto">
+		delete from igams_hwllmx
+		<where>
+			llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+			</foreach>
+		</where>
+	</delete>
+	
+	<select id="getDtoByLlid" parameterType="HwllmxDto" resultType="HwllmxDto">
+		select hwllmx.llmxid,hwllmx.hwllid,hwllmx.llid,wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,hwllmx.slsl,jcsj_dl.csdm as
+		xmdlcsdm,jcsj_dl.csmc as xmdlcsmc,
+		jcsj_bm.csdm as xmbmcsdm,jcsj_bm.csmc as
+		xmbmcsmc,hwxx.yxq,hwxx.scrq,ckxx.ckdm,hwllxx.bz as hwllbz,
+		hwxx.scph,hwllmx.yxsl,hwxx.zsh,jcsj_lb.csdm lbdm,jcsj_lb.cskz1 lbcskz1,sbys.sbysid,hwxx.hwid,sbys.sbzt
+		from igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid 
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid and hwxx.scbj='0'
+		left join igams_sbys sbys on hwxx.sbysid=sbys.sbysid and sbys.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+		left join matridx_jcsj jcsj_dl on jcsj_dl.csid = hwllxx.xmdl
+		left join matridx_jcsj jcsj_bm on jcsj_bm.csid = hwllxx.xmbm
+		LEFT JOIN matridx_jcsj jcsj_lb on wlgl.lb = jcsj_lb.csid
+		left join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid and ckxx.scbj='0'
+		<where>
+		hwllmx.scbj!='1' and hwllmx.llid=#{llid} and hwllmx.yxsl!='0'
+		</where>
+	</select>
+	
+	<update id="updateMxList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_hwllmx
+			<set>
+			<trim prefixOverrides=",">
+			<if test="item.glid != null and item.glid != ''">
+					,glid=#{item.glid}
+			</if>
+			<if test="item.ckglid != null and item.ckglid != ''">
+					,ckglid=#{item.ckglid}
+			</if>
+			</trim>
+			</set>
+			<where>
+				llmxid=#{item.llmxid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<select id="getDtoGroupByLlid" parameterType="String" resultType="HwllmxDto">	
+	select hwllxx.hwllid,sum(hwllmx.yxsl) as zyxsl,sum(hwllmx.slsl) as zslsl,hwllxx.qlsl as hwllqlsl,ckhwxx.ckhwid,ckhwxx.yds as ckyds,ckhwxx.kcl as ckkcl
+		from igams_hwllmx hwllmx 
+		left join igams_hwllxx hwllxx on hwllxx.hwllid=hwllmx.hwllid
+		left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = hwllxx.ckhwid
+		<where>
+			hwllmx.scbj!='1' and hwllmx.llid=#{llid}
+		</where>
+		group by hwllxx.hwllid,ckhwxx.ckhwid
+	</select>
+	<select id="getDtoGroupByLlxx" parameterType="String" resultType="HwllmxDto">
+		select hwllxx.hwllid,sum(hwllmx.yxsl) as zyxsl,sum(hwllmx.slsl) as zslsl,hwllxx.qlsl as hwllqlsl,ckhwxx.ckhwid,COALESCE(ckhwxx.yds,'0') as ckyds,ckhwxx.kcl as ckkcl
+		from igams_hwllxx hwllxx
+		left join igams_hwllmx hwllmx on hwllxx.hwllid=hwllmx.hwllid and hwllmx.scbj!='1'
+		left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid = hwllxx.ckhwid
+		<where>
+			hwllxx.scbj ='0' and hwllxx.llid=#{llid}
+		</where>
+		group by hwllxx.hwllid,ckhwxx.ckhwid
+	</select>
+	<update id="updateqlsl" parameterType="HwllmxDto">
+		update igams_hwllmx
+		<set>
+			<trim prefixOverrides=",">
+				<if test="qlsl != null and qlsl != ''">
+					,qlsl=cast(#{qlsl} as numeric)
+				</if>
+			</trim>
+		</set>
+		<where>
+			llmxid=#{llmxid}
+		</where>
+	</update>
+	
+	<!-- 根据hwllid查询货物领料明细 -->
+	<select id="queryByHwllid" parameterType="HwllmxDto" resultType="HwllmxDto">
+		SELECT hwllmx.hwllid,hwllmx.llid,hwllmx.qlsl,hwllmx.slsl,hwllmx.hwid,hwllmx.llmxid,hwllmx.yxsl,
+			wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.ychh,dhxx.dhdh,hwxx.sl,hwxx.rkrq,hwxx.zsh,hwxx.scph,hwxx.kwbh,ckxx.ckmc,kw.ckmc as kwmc
+			FROM igams_hwllmx hwllmx
+			left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+			left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+			left join igams_ckxx ckxx on hwxx.ckid = ckxx.ckid
+			left join igams_ckxx kw on hwxx.kwbh = kw.ckid
+		<where>
+			hwllmx.scbj!='1' and hwllmx.hwllid in 
+			<foreach collection="ids" separator="," open="(" close=")" item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+	<delete id="deleteByHwllid" parameterType="HwllmxDto">
+		delete from igams_hwllmx
+		<where>
+			llmxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+			</foreach>
+		</where>
+	</delete>
+	
+	<select id="groupByCkid" parameterType="HwllmxDto" resultType="HwllmxDto">
+		select hwxx.ckid as ck
+			from igams_hwllmx hwllmx
+			left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid
+			<where>
+				hwllmx.scbj!='1' and hwllmx.slsl!='0' and hwllmx.llid=#{llid}
+			</where>
+			group by hwxx.ckid		
+	</select>
+	
+		<!-- 根据llid查询货物领料信息 -->
+	<select id="getDtoHwllmxListByLlid" parameterType="String" resultType="HwllmxDto">
+		select hwllxx.llid,hwllxx.wlid,hwllmx.qlsl,hwllmx.slsl,flry.zsxm flry,hwllxx.flrq,hwllxx.bz,hwllxx.zt,hwllxx.hwllid,llry.zsxm llry,xmbm.csmc xmbmcsmc,xmbm.csdm xmbmcsdm,xmdl.csmc xmdl,hwllmx.yxsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.jldw,wlgl.gg,ckxx.ckmc hw,hwxx.scph,hwxx.zsh,hwllmx.glid as llmxglid,hwxx.yds,hwxx.hwid,hwllmx.llmxid,llgl.sqry
+		from igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+		left join igams_llgl llgl on llgl.llid = hwllmx.llid
+		left join matridx_xtyh flry on flry.yhid = hwllxx.flry
+		left join matridx_xtyh llry on llry.yhid = hwllxx.llry
+		left join matridx_jcsj xmbm on xmbm.csid = hwllxx.xmbm
+		left join matridx_jcsj xmdl on xmdl.csid = hwllxx.xmdl
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join igams_ckxx ckxx on ckxx.ckid = hwxx.kwbh
+		<where>
+			hwllmx.scbj!='1' and hwllmx.llid=#{llid} and COALESCE(hwllmx.yxsl,0)!='0'
+		</where>
+		order by hwllxx.xh
+	</select>
+	<select id="getDtoHwllmxListByPrint" parameterType="String" resultType="HwllmxDto">
+		select hwllxx.llid,hwllxx.wlid,hwllmx.qlsl,hwllmx.slsl,flry.zsxm flry,hwllxx.flrq,hwllxx.bz,hwllxx.zt,hwllxx.hwllid,llry.zsxm llry,xmbm.csmc xmbmcsmc,xmbm.csdm xmbmcsdm,xmdl.csmc xmdl,hwllxx.yxsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.jldw,wlgl.gg,ckxx.ckmc hw,hwxx.scph,hwxx.zsh,hwllmx.glid as llmxglid,hwxx.yds,hwxx.hwid,hwllmx.llmxid
+		from igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+		left join matridx_xtyh flry on flry.yhid = hwllxx.flry
+		left join matridx_xtyh llry on llry.yhid = hwllxx.llry
+		left join matridx_jcsj xmbm on xmbm.csid = hwllxx.xmbm
+		left join matridx_jcsj xmdl on xmdl.csid = hwllxx.xmdl
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join igams_ckxx ckxx on ckxx.ckid = hwxx.kwbh
+		<where>
+			hwllmx.scbj!='1' and hwllmx.llid=#{llid} and COALESCE(hwllmx.yxsl,0)!='0'
+		</where>
+	</select>
+	
+	<select id="queryHwllmxs" parameterType="HwllmxDto" resultType="HwllmxDto">
+		select hwllmx.llmxid,hwllxx.bz hwllbz
+		from igams_hwllmx hwllmx
+		left join igams_hwllxx hwllxx on hwllxx.hwllid=hwllmx.hwllid
+		where hwllmx.hwid=#{hwid} and hwllmx.hwllid=#{hwllid} and hwllmx.llid=#{llid} and hwllmx.scbj!='1'
+	</select>
+	
+	<update id="deleteByllid" parameterType="HwllmxDto">
+		update igams_hwllmx set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getSumGroup" parameterType="String" resultType="HwllmxDto">
+	select COALESCE(tmp.zslsl,0) zslsl,tmp.wlid,tmp.scph,tmp.scrq,tmp.yxq,lykcxx.lykcid,COALESCE(lykcxx.kcl,0) kcl from (SELECT SUM
+		( hwllmx.slsl ) zslsl,
+		hwxx.wlid,
+		hwxx.scph,
+		hwxx.scrq,
+		hwxx.yxq
+	FROM
+		igams_hwllmx hwllmx
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = hwllmx.hwid
+		AND hwxx.scbj = '0'
+	WHERE
+		hwllmx.scbj = '0'
+		AND hwllmx.llid = #{llid}
+	GROUP BY
+		hwxx.wlid,
+		hwxx.scph,
+		hwxx.scrq,
+		hwxx.yxq)tmp
+	left join igams_lykcxx lykcxx on lykcxx.wlid=tmp.wlid and lykcxx.scph=tmp.scph
+	</select>
+
+	<select id="getScphAndSlByHwllid" parameterType="String" resultType="HwllmxDto">
+		select hwxx.sl,hwxx.scph,hwllmx.hwllid from igams_hwllmx hwllmx left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+			AND hwxx.scbj = '0'
+		where hwllmx.hwllid = #{hwllid}
+	</select>
+</mapper>

@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzqgfkglDao" >
+
+    <select id="getPagedDtoList" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx
+             , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,fkgl.zt,jc_dzfs.csmc dzfsmc,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc
+        ,jc_fygs.csmc fygsmc,fkgl.scbj,yh_sqr.zsxm sqrmc,jg_sqbm.jgmc sqbmmc,jc_dzfs.csdm dzfsdm,
+        case when fkgl.zt='00' then '未提交' when fkgl.zt='15' then '审核未通过' when fkgl.zt='80' then '审核通过' else '审核中' end ztmc,fylb.csmc fylbmc,fkgl.fylb
+        from igams_xzqgfkgl fkgl
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh_sqr on yh_sqr.yhid=fkgl.sqr
+        left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=fkgl.sqbm
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        <where>
+            fkgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (fkgl.fkdh ILIKE '%'||#{entire}||'%'
+                or jc_dzfs.csmc ILIKE '%'||#{entire}||'%'
+                or zfdx ILIKE '%'||#{entire}||'%'
+                or yh_sqr.zsxm ILIKE '%'||#{entire}||'%'
+                or jg_sqbm.jgmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="fkdh !=null and fkdh !=''">
+                and fkgl.fkdh ILIKE '%'||#{fkdh}||'%'
+            </if>
+            <if test="dzfsmc != null and dzfsmc != ''">
+                and jc_dzfs.csmc ILIKE '%'||#{dzfsmc}||'%'
+            </if>
+            <if test="zfdx != null and zfdx != ''">
+                and zfdx ILIKE '%'||#{zfdx}||'%'
+            </if>
+            <if test="sqrmc != null and sqrmc != ''">
+                and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="sqbmmc != null and sqbmmc != ''">
+                and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend != null and fkrqend != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="fylbs != null and fylbs.length>0">
+                and fkgl.fylb in
+                <foreach collection="fylbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fkfss != null and fkfss.length>0">
+                and fkgl.fkfs in
+                <foreach collection="fkfss" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char( fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx, fkgl.zfdx
+             , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,zt,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc,jc_dzfs.csmc dzfsmc,jc_fygs.csmc fygsmc,fylb.csmc fylbmc
+        ,fkgl.ddslid,yh.zsxm sqrmc,jg.jgmc sqbmmc
+        from igams_xzqgfkgl fkgl
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh on yh.yhid=fkgl.sqr
+        left join matridx_jgxx jg on jg.jgid=fkgl.sqbm
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        <where>
+            fkgl.fkid = #{fkid}
+        </where>
+    </select>
+
+    <update id="delete" parameterType="XzqgfkglDto">
+        update igams_xzqgfkgl set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        <where>
+
+            <choose>
+                <when test="ids !=null and ids.size>0">
+                    or fkid in
+                    <foreach collection="ids" open="(" close=")" separator="," item="item">
+                        #{item}
+                    </foreach>
+                </when>
+                <otherwise>
+                    or fkid = #{fkid}
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
+    <select id="getDjhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(fkdh,LENGTH(fkdh)-strpos(reverse(fkdh),'-')+2,LENGTH(fkdh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_xzqgfkgl
+        <where>
+            scbj = '0' AND fkdh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="XzqgfkglDto">
+        insert into igams_xzqgfkgl(fkid
+        <if test="dzfs != null and dzfs!=''">
+            ,dzfs
+        </if>
+        <if test="fkdh != null and fkdh!=''">
+            ,fkdh
+        </if>
+        <if test="zwfkrq != null and zwfkrq!=''">
+            ,zwfkrq
+        </if>
+        <if test="fkje != null and fkje!=''">
+            ,fkje
+        </if>
+        <if test="fkf != null and fkf!=''">
+            ,fkf
+        </if>
+        <if test="fkfs != null and fkfs!=''">
+            ,fkfs
+        </if>
+        <if test="zfdx != null and zfdx!=''">
+            ,zfdx
+        </if>
+        <if test="zffkhh != null and zffkhh!=''">
+            ,zffkhh
+        </if>
+        <if test="zffyhzh != null and zffyhzh!=''">
+            ,zffyhzh
+        </if>
+        <if test="bz != null and bz!=''">
+            ,bz
+        </if>
+        <if test="fygs != null and fygs!=''">
+            ,fygs
+        </if>
+        <if test="fksy != null and fksy!=''">
+            ,fksy
+        </if>
+        <if test="sqr != null and sqr!=''">
+            ,sqr
+        </if>
+        <if test="sqbm != null and sqbm!=''">
+            ,sqbm
+        </if>
+        <if test="djcdfs !=null and djcdfs != ''">
+            ,djcdfs
+        </if>
+        <if test="fylb !=null and fylb != ''">
+            ,fylb
+        </if>
+        <if test="zfdxid !=null and zfdxid != ''">
+            ,zfdxid
+        </if>
+        ,lrry,lrsj,scbj,zt)
+        values(#{fkid}
+        <if test="dzfs != null and dzfs!=''">
+            ,#{dzfs}
+        </if>
+        <if test="fkdh != null and fkdh!=''">
+            ,#{fkdh}
+        </if>
+        <if test="zwfkrq != null and zwfkrq!=''">
+            ,cast(#{zwfkrq} as timestamp)
+        </if>
+        <if test="fkje != null and fkje!=''">
+            ,cast(#{fkje} as numeric )
+        </if>
+        <if test="fkf != null and fkf!=''">
+            ,#{fkf}
+        </if>
+        <if test="fkfs != null and fkfs!=''">
+            ,#{fkfs}
+        </if>
+        <if test="zfdx != null and zfdx!=''">
+            ,#{zfdx}
+        </if>
+        <if test="zffkhh != null and zffkhh!=''">
+            ,#{zffkhh}
+        </if>
+        <if test="zffyhzh != null and zffyhzh!=''">
+           ,#{zffyhzh}
+        </if>
+        <if test="bz != null and bz!=''">
+            ,#{bz}
+        </if>
+        <if test="fygs != null and fygs!=''">
+            ,#{fygs}
+        </if>
+        <if test="fksy != null and fksy!=''">
+            ,#{fksy}
+        </if>
+        <if test="sqr != null and sqr!=''">
+            ,#{sqr}
+        </if>
+        <if test="sqbm != null and sqbm!=''">
+            ,#{sqbm}
+        </if>
+        <if test="djcdfs !=null and djcdfs != ''">
+            ,#{djcdfs}
+        </if>
+        <if test="fylb !=null and fylb != ''">
+            ,#{fylb}
+        </if>
+        <if test="zfdxid !=null and zfdxid != ''">
+            ,#{zfdxid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0',#{zt})
+    </insert>
+
+    <select id="getDtoById" parameterType="String" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx, fkgl.zfdx
+               , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,fkgl.zt, fkgl.fkdh djh,fkgl.sqr,fkgl.sqbm,yh.zsxm sqrmc,jg.jgmc sqbmmc,jg.jgdm sqbmdm,
+        jc_dzfs.csdm dzfsdm,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc,jc_fygs.csmc fygsmc,fkgl.ddslid,jc_djcdfs.csmc djcdfsmc,fkgl.djcdfs,fkgl.fylb,fylb.csmc fylbmc,fylb.csdm fylbdm
+        ,fkgl.zfdxid,gys.ywbm
+        from igams_xzqgfkgl fkgl
+        left join igams_gysxx gys on gys.gysid = fkgl.zfdxid
+        left join matridx_xtyh yh on yh.yhid=fkgl.sqr
+        left join matridx_jgxx jg on jg.jgid=fkgl.sqbm
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_jcsj jc_djcdfs on jc_djcdfs.csid = fkgl.djcdfs and jc_djcdfs.scbj='0'
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        <where>
+            fkgl.fkid = #{fkid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx, fkgl.zfdx
+        , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,fkgl.zt, fkgl.fkdh djh,fkgl.sqr,fkgl.sqbm,yh.zsxm sqrmc,jg.jgmc sqbmmc,jg.jgdm sqbmdm,
+        jc_dzfs.csdm dzfsdm,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc,jc_fygs.csmc fygsmc,fkgl.ddslid,jc_djcdfs.csmc djcdfsmc,fkgl.djcdfs,fkgl.fylb,fylb.csmc fylbmc,fylb.csdm fylbdm
+        ,fkgl.zfdxid,gys.ywbm
+        from igams_xzqgfkgl fkgl
+        left join igams_gysxx gys on gys.gysid = fkgl.zfdxid
+        left join matridx_xtyh yh on yh.yhid=fkgl.sqr
+        left join matridx_jgxx jg on jg.jgid=fkgl.sqbm
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_jcsj jc_djcdfs on jc_djcdfs.csid = fkgl.djcdfs and jc_djcdfs.scbj='0'
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        <where>
+            fkgl.scbj = '0' and
+            fkgl.fkid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <update id="update" parameterType="XzqgfkglDto">
+        update igams_xzqgfkgl set  xgry=#{xgry} , xgsj=LOCALTIMESTAMP
+        <if test="dzfs != null and dzfs!=''">
+            ,dzfs = #{dzfs}
+        </if>
+        <if test="fkdh != null and fkdh!=''">
+            ,fkdh = #{fkdh}
+        </if>
+        <if test="zwfkrq != null and zwfkrq!=''">
+            ,zwfkrq = cast (#{zwfkrq} as timestamp )
+        </if>
+        <if test="fkje != null and fkje!=''">
+            ,fkje = cast (#{fkje} as numeric)
+        </if>
+        <if test="fkf != null and fkf!=''">
+            ,fkf = #{fkf}
+        </if>
+        <if test="fkfs != null and fkfs!=''">
+            ,fkfs = #{fkfs}
+        </if>
+        <if test="zfdx != null and zfdx!=''">
+            ,zfdx = #{zfdx}
+        </if>
+        <if test="zffkhh != null and zffkhh!=''">
+            ,zffkhh = #{zffkhh}
+        </if>
+        <if test="zffyhzh != null and zffyhzh!=''">
+            ,zffyhzh = #{zffyhzh}
+        </if>
+        <if test="bz != null and bz!=''">
+            ,bz = #{bz}
+        </if>
+        <if test="fygs != null and fygs!=''">
+            ,fygs = #{fygs}
+        </if>
+        <if test="fksy != null and fksy!=''">
+            ,fksy = #{fksy}
+        </if>
+        <if test="zt != null and zt!=''">
+            ,zt = #{zt}
+        </if>
+        <if test="sqr != null and sqr!=''">
+            ,sqr = #{sqr}
+        </if>
+        <if test="sqbm != null and sqbm!=''">
+            ,sqbm = #{sqbm}
+        </if>
+        <if test="djcdfs != null and djcdfs!=''">
+            ,djcdfs = #{djcdfs}
+        </if>
+        <if test="fylb != null and fylb!=''">
+            ,fylb = #{fylb}
+        </if>
+        <if test="zfdxid != null and zfdxid!=''">
+            ,zfdxid = #{zfdxid}
+        </if>
+        <where>
+            fkid = #{fkid}
+        </where>
+    </update>
+
+    <select id="getPagedAuditIdList" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx
+        , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,fkgl.zt,jc_dzfs.csmc dzfsmc,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc,yh.zsxm sqrmc
+        ,jc_fygs.csmc fygsmc
+        from igams_xzqgfkgl fkgl
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh on yh.yhid=fkgl.sqr
+        <where>
+            fkgl.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (fkgl.fkdh like '%'||#{entire}||'%')
+            </if>
+            <if test="fkdh !=null and fkdh !=''">
+                and fkgl.fkdh ILIKE '%'||#{fkdh}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getAuditListByIds" parameterType="List" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx, fkgl.zfdx
+        , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,zt, fkgl.fkdh djh,yh.zsxm sqrmc,jc_dzfs.csmc dzfsmc,jc_fkf.csmc fkfmc,jc_fkfs.csmc fkfsmc
+        ,jc_fygs.csmc fygsmc,shxx_shxxid,shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_shyj,shxx_sftg,shxx_gwmc
+        from 
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.fkid} fkid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach> tmp
+        left join igams_xzqgfkgl fkgl on fkgl.fkid = tmp.fkid    
+        left join matridx_xtyh yh on yh.yhid=fkgl.sqr
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        <where>
+            fkgl.fkid in
+            <foreach collection="list" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item.fkid}
+            </foreach>
+        </where>
+        order by tmp.rownum
+    </select>
+
+    <update id="updateDdslid" parameterType="XzqgfkglDto">
+        update igams_xzqgfkgl set ddslid=#{ddslid}
+        where scbj='0' and fkid=#{fkid}
+    </update>
+
+    <select id="getDtoByDdslid" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        select fkgl.fkid, fkgl.dzfs, fkgl.fkdh, to_char(fkgl.zwfkrq,'yyyy-MM-dd hh:mi:ss') zwfkrq, fkgl.fkje, fkgl.fkf, fkgl.lrry, fkgl.fkfs, fkgl.zfdx, fkgl.zfdx
+        , fkgl.zffkhh, fkgl.zffyhzh, fkgl.bz, fkgl.fygs, fkgl.ddslid, fkgl.fksy,zt, fkgl.fkdh djh,fkgl.ddslid
+        from igams_xzqgfkgl fkgl
+        <where>
+            scbj='0' and ddslid=#{ddslid}
+        </where>
+    </select>
+
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="XzqgfkglDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+    <!-- 选中导出  -->
+    <select id="getListForSelectExp" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        SELECT  fkgl.fkid ${sqlParam}
+        FROM (
+        <foreach collection="ids" separator=" union all "  index="index" item="item">
+            select #{item, jdbcType=VARCHAR} fkid, #{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_xzqgfkgl fkgl on fkgl.fkid=tmp.fkid
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh_sqr on yh_sqr.yhid=fkgl.sqr
+        left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=fkgl.sqbm
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        left join igams_xzqgfkmx fkmx on fkmx.fkid=fkgl.fkid
+        left join igams_qggl qggl on qggl.qgid=fkmx.qgid
+        ORDER BY tmp.ordernum
+    </select>
+
+    <!-- 获取搜索导出的条数 -->
+    <select id="getCountForSearchExp"  parameterType="XzqgfkglDto" resultType="java.lang.Integer">
+        select  count (fkgl.fkid)
+        from igams_xzqgfkgl fkgl
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh_sqr on yh_sqr.yhid=fkgl.sqr
+        left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=fkgl.sqbm
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+		left join igams_xzqgfkmx fkmx on fkmx.fkid=fkgl.fkid
+		left join igams_qggl qggl on qggl.qgid=fkmx.qgid
+        <where>
+            fkgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (fkgl.fkdh ILIKE '%'||#{entire}||'%'
+                or jc_dzfs.csmc ILIKE '%'||#{entire}||'%'
+                or zfdx ILIKE '%'||#{entire}||'%'
+                or yh_sqr.zsxm ILIKE '%'||#{entire}||'%'
+                or jg_sqbm.jgmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="fkdh !=null and fkdh !=''">
+                and fkgl.fkdh ILIKE '%'||#{fkdh}||'%'
+            </if>
+            <if test="dzfsmc != null and dzfsmc != ''">
+                and jc_dzfs.csmc ILIKE '%'||#{dzfsmc}||'%'
+            </if>
+            <if test="zfdx != null and zfdx != ''">
+                and zfdx ILIKE '%'||#{zfdx}||'%'
+            </if>
+            <if test="sqrmc != null and sqrmc != ''">
+                and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="sqbmmc != null and sqbmmc != ''">
+                and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend != null and fkrqend != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="fylbs != null and fylbs.length>0">
+                and fkgl.fylb in
+                <foreach collection="fylbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fkfss != null and fkfss.length>0">
+                and fkgl.fkfs in
+                <foreach collection="fkfss" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 搜索导出 -->
+    <select id="getListForSearchExp" parameterType="XzqgfkglDto" resultType="XzqgfkglDto">
+        SELECT  fkgl.fkid  ${sqlParam}
+        FROM igams_xzqgfkgl fkgl
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=fkgl.dzfs
+        left join matridx_jcsj jc_fkf on jc_fkf.csid=fkgl.fkf
+        left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fkgl.fkfs
+        left join matridx_jcsj jc_fygs on jc_fygs.csid=fkgl.fygs
+        left join matridx_xtyh yh_sqr on yh_sqr.yhid=fkgl.sqr
+        left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=fkgl.sqbm
+        left join matridx_jcsj fylb on fylb.csid=fkgl.fylb
+        left join igams_xzqgfkmx fkmx on fkmx.fkid=fkgl.fkid
+        left join igams_qggl qggl on qggl.qgid=fkmx.qgid
+        <where>
+            fkgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (fkgl.fkdh ILIKE '%'||#{entire}||'%'
+                or jc_dzfs.csmc ILIKE '%'||#{entire}||'%'
+                or zfdx ILIKE '%'||#{entire}||'%'
+                or yh_sqr.zsxm ILIKE '%'||#{entire}||'%'
+                or jg_sqbm.jgmc ILIKE '%'||#{entire}||'%')
+            </if>
+            <if test="fkdh !=null and fkdh !=''">
+                and fkgl.fkdh ILIKE '%'||#{fkdh}||'%'
+            </if>
+            <if test="dzfsmc != null and dzfsmc != ''">
+                and jc_dzfs.csmc ILIKE '%'||#{dzfsmc}||'%'
+            </if>
+            <if test="zfdx != null and zfdx != ''">
+                and zfdx ILIKE '%'||#{zfdx}||'%'
+            </if>
+            <if test="sqrmc != null and sqrmc != ''">
+                and yh_sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="sqbmmc != null and sqbmmc != ''">
+                and jg_sqbm.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="fkrqstart != null and fkrqstart != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &gt;= #{fkrqstart}
+            </if>
+            <if test="fkrqend != null and fkrqend != ''">
+                and to_char(fkgl.zwfkrq,'yyyy-mm-dd') &lt;= #{fkrqend}
+            </if>
+            <if test="fylbs != null and fylbs.length>0">
+                and fkgl.fylb in
+                <foreach collection="fylbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fkfss != null and fkfss.length>0">
+                and fkgl.fkfs in
+                <foreach collection="fkfss" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+</mapper>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IYsglDao" >
+
+    <select id="getPagedDtoList" parameterType="YsglDto" resultType="YsglDto">
+        select ysgl.ysglid,ysgl.nd,ysgl.bm,jg.jgmc as bmmc,yh.zsxm as lrrymc,to_char(ysgl.lrsj,'yyyy-MM-dd') as lrsj
+        from igams_ysgl ysgl
+        left join matridx_jgxx jg on jg.jgid=ysgl.bm
+        left join matridx_xtyh yh on yh.yhid=ysgl.lrry and yh.scbj='0'
+        <where>
+            ysgl.scbj='0'
+            <if test="nds!=null and nds.length > 0">
+                and ysgl.nd in
+                <foreach collection="nds" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="bms!=null and bms.length > 0">
+                and ysgl.bm in
+                <foreach collection="bms" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="YsglDto" resultType="YsglDto">
+        select ysgl.ysglid,ysgl.nd,ysgl.bm,jg.jgmc as bmmc,yh.zsxm as lrrymc,to_char(ysgl.lrsj,'yyyy-MM-dd') as lrsj
+        from igams_ysgl ysgl
+        left join matridx_jgxx jg on jg.jgid=ysgl.bm
+        left join matridx_xtyh yh on yh.yhid=ysgl.lrry and yh.scbj='0'
+        <where>
+            ysgl.scbj='0'
+            and ysgl.ysglid=#{ysglid}
+        </where>
+    </select>
+
+    <select id="saveVerification" parameterType="YsglDto" resultType="YsglDto">
+        select ysgl.ysglid,ysgl.nd,ysgl.bm,jg.jgmc as bmmc,yh.zsxm as lrrymc,to_char(ysgl.lrsj,'yyyy-MM-dd') as lrsj
+        from igams_ysgl ysgl
+        left join matridx_jgxx jg on jg.jgid=ysgl.bm
+        left join matridx_xtyh yh on yh.yhid=ysgl.lrry and yh.scbj='0'
+        <where>
+            ysgl.scbj='0'
+            and ysgl.nd=#{nd} and ysgl.bm=#{bm}
+            <if test="ysglid !=null and ysglid != ''">
+                and ysgl.ysglid!=#{ysglid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDepartments" resultType="Map">
+        SELECT ysgl.bm,jgxx.jgmc as bmmc
+        from igams_ysgl ysgl
+        left join matridx_jgxx jgxx on jgxx.jgid=ysgl.bm
+        where ysgl.scbj='0' and jgxx.jgmc is not null
+        group by ysgl.bm,jgxx.jgmc
+    </select>
+
+    <select id="getYears" resultType="Map">
+        SELECT ysgl.nd
+        from igams_ysgl ysgl
+        where ysgl.scbj='0' and ysgl.nd is not null
+        group by ysgl.nd
+    </select>
+
+    <insert id="insert" parameterType="YsglDto">
+        insert into igams_ysgl(ysglid
+        <if test="nd !=null and nd != ''">
+            ,nd
+        </if>
+        <if test="bm !=null and bm != ''">
+            ,bm
+        </if>
+        ,lrry,lrsj,scbj) values(#{ysglid}
+        <if test="nd !=null and nd != ''">
+            ,#{nd}
+        </if>
+        <if test="bm !=null and bm != ''">
+            ,#{bm}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="YsglDto">
+        update igams_ysgl
+        <set>
+            <if test="nd !=null and nd != ''">
+                ,nd=#{nd}
+            </if>
+            <if test="bm !=null and bm != ''">
+                ,bm=#{bm}
+            </if>
+        </set>
+        <where>
+            ysglid=#{ysglid}
+        </where>
+    </update>
+
+
+    <update id="delete" parameterType="YsglDto">
+        update igams_ysgl
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            ysglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <!--预算支出-->
+    <select id="getBudgetExpenses" parameterType="YsglDto" resultType="double">
+        select coalesce(sum(ysmx.ysje ),0)
+        from igams_ysgl ysgl
+        left join igams_ysmx ysmx on ysmx.ysglid = ysgl.ysglid and ysgl.scbj ='0'
+        where ysgl.scbj='0' and ysgl.nd=#{nd}
+    </select>
+    <!--部门预算支出-->
+    <select id="getBudgetExpensesGroupByDepartment" parameterType="YsglDto" resultType="Map">
+        select coalesce(sum(ysmx.ysje ),0) budget,jgxx.jgmc departmentname,jgxx.jgid
+        from igams_ysgl ysgl
+        left join igams_ysmx ysmx on ysmx.ysglid = ysgl.ysglid and ysgl.scbj ='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = ysgl.bm
+        where ysgl.scbj='0' and ysgl.nd=#{nd}
+        group by jgxx.jgmc,jgxx.jgid
+    </select>
+    <!--获取科目预算费用-->
+    <select id="getBudgetExpensesGroupBySubject" parameterType="YsglDto" resultType="Map">
+        select coalesce(sum(ysmx.ysje ),0) budget,kmdl.csmc subjectname
+        from igams_ysgl ysgl
+        left join igams_ysmx ysmx on ysmx.ysglid = ysgl.ysglid and ysgl.scbj ='0'
+        left join matridx_jcsj kmdl on ysmx.kmdl = kmdl.csid
+        where ysgl.scbj='0' and ysgl.nd=#{nd}
+        group by kmdl.csmc
+    </select>
+    <!--获取科目预算费用明细信息-->
+    <select id="getSubjectBudgetExpenseDetail" parameterType="YsglDto" resultType="Map">
+        select coalesce(sum(ysmx.ysje ),0) budget,kmdl.csmc subjectname,kmfl.csmc subjectchildname
+        from igams_ysgl ysgl
+        left join igams_ysmx ysmx on ysmx.ysglid = ysgl.ysglid and ysgl.scbj ='0'
+        left join matridx_jcsj kmdl on ysmx.kmdl = kmdl.csid
+        left join matridx_jcsj kmfl on ysmx.kmfl = kmfl.csid
+        where ysgl.scbj='0' and ysgl.nd=#{nd}
+        group by kmdl.csmc,kmfl.csmc
+    </select>
+    <!--获取科目预算费用明细信息-->
+    <select id="getDepartmentSubjectBudgetDetail" parameterType="YsglDto" resultType="Map">
+        select coalesce(sum(ysmx.ysje ),0) budget,jgxx.jgmc departmentname,jgxx.jgid,kmdl.csmc subjectname,kmfl.csmc subjectchildname
+        from igams_ysgl ysgl
+                 left join igams_ysmx ysmx on ysmx.ysglid = ysgl.ysglid and ysgl.scbj ='0'
+                 left join matridx_jgxx jgxx on jgxx.jgid = ysgl.bm
+                 left join matridx_jcsj kmdl on ysmx.kmdl = kmdl.csid
+                 left join matridx_jcsj kmfl on ysmx.kmfl = kmfl.csid
+        where ysgl.scbj='0' and ysgl.nd=#{nd}
+        group by jgxx.jgmc,jgxx.jgid,kmdl.csmc,kmfl.csmc
+    </select>
+</mapper>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IWjqxDao" >
+
+	<!-- 查询没有学习、查看权限角色-->
+	<select id="getUnSelectedJs" parameterType="WjglDto" resultType="WjglDto">
+		select js.jsid,js.jsmc
+		from matridx_xtjs js
+		where not exists (select 1 from igams_wjqx qx where js.jsid=qx.jsid and qx.wjid = #{wjid} and (qx.qxlx='STUDY' or qx.qxlx='VIEW'))
+		order by js.jsmc
+	</select>
+	
+	<!-- 查询已有学习、查看权限角色-->
+	<select id="getSelectedJs" parameterType="WjglDto" resultType="WjglDto">
+		select qx.qxid,qx.jsid,js.jsmc
+		from igams_wjqx qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		where qx.wjid = #{wjid} and (qx.qxlx='STUDY' or qx.qxlx='VIEW')
+		order by js.jsmc
+	</select>
+	
+	<!-- 查询已有学习权限角色-->
+	<select id="getStudyJs" parameterType="WjglDto" resultType="WjglDto">
+		select qx.qxid,qx.jsid,js.jsmc,js.jsmc as studyjsmc
+		from igams_wjqx qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		where qx.wjid = #{wjid} and qx.qxlx = 'STUDY'
+		order by js.jsmc
+	</select>
+	<!-- 查询已有查看权限角色-->
+	<select id="getViewJs" parameterType="WjglDto" resultType="WjglDto">
+		select qx.qxid,qx.jsid,js.jsmc,js.jsmc as viewjsmc
+		from igams_wjqx qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		where qx.wjid = #{wjid} and qx.qxlx = 'VIEW'
+		order by js.jsmc
+	</select>
+	<!-- 查询已有下载权限角色-->
+	<select id="getDownloadJs" parameterType="WjglDto" resultType="WjglDto">
+		select qx.qxid,qx.jsid,js.jsmc,js.jsmc as downloadjsmc
+		from igams_wjqx qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		where qx.wjid = #{wjid} and qx.qxlx = 'DOWNLOAD'
+		order by js.jsmc
+	</select>
+	<!-- 查询没有下载权限角色-->
+	<select id="getUndownloadJs" parameterType="WjglDto" resultType="WjglDto">
+		select js.jsid,js.jsmc
+		from matridx_xtjs js
+		where not exists (select 1 from igams_wjqx qx where js.jsid=qx.jsid and qx.wjid = #{wjid} and qx.qxlx='DOWNLOAD')
+		order by js.jsmc
+	</select>
+	
+	<!--根据文件ID删除权限信息-->
+	<delete id="deleteByWjid" parameterType="WjglDto">
+		delete from igams_wjqx
+		<where>
+			<if test="wjid !=null and wjid != ''">
+				or wjid = #{wjid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or wjid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 新增文件权限 -->
+	<insert  id="insertByWjid" parameterType="list">
+		insert into igams_wjqx (qxid, wjid, jsid, qxlx)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.qxid},#{item.wjid},#{item.jsid},#{item.qxlx})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 查询已有权限用户-->
+	<select id="selectXtyhByWjid" parameterType="WjglDto" resultType="WjglDto">
+		select yhjs.yhid,ssjg.jgid,yh.ddid,yh.yhm
+		from igams_wjqx qx
+		left outer join matridx_yhjs yhjs on qx.jsid = yhjs.jsid
+		left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+		left outer join matridx_xtyh yh on yh.yhid = yhjs.yhid and yh.scbj = '0' and yh.sfsd = '0'
+		where yh.scbj ='0' and qx.wjid = #{wjid} and yhjs.yhid is not null and qx.qxlx = 'STUDY'
+		group by yhjs.yhid,ssjg.jgid,yh.ddid,yh.yhm
+	</select>
+	<!-- 根据文件ID获取文件权限信息-->
+	<select id="selectWjqxlist" parameterType="WjglDto" resultType="WjqxDto">
+		select qx.qxid,qx.jsid,qx.wjid,qx.qxlx
+		from igams_wjqx qx
+		where qx.wjid = #{wjid}
+	</select>
+	<!-- 查询角色下载权限-->
+	<select id="getXzCountByJs" parameterType="WjglDto" resultType="int">
+		select count(*)
+		from igams_wjqx qx
+		where qx.wjid = #{wjid} and qx.jsid= #{jsid} and qx.qxlx='DOWNLOAD'
+	</select>
+	<!-- 查询角色文件权限信息 -->
+	<select id="getPermission" parameterType="WjglDto" resultType="WjglDto">
+		select temp.jsid,temp.jsmc,case when viewqx.wjid is not null then 1 else 0 end ckflg, case when studyqx.wjid is not null then 1 else 0 end xxflg,
+			case when downloadqx.wjid is not null then 1 else 0 end xzflg from
+			matridx_xtjs temp
+			left outer join igams_wjqx viewqx on viewqx.qxlx = 'VIEW' and viewqx.jsid =temp.jsid and viewqx.wjid =#{wjid}
+			left outer join igams_wjqx studyqx on studyqx.qxlx = 'STUDY' and studyqx.jsid =temp.jsid  and studyqx.wjid =#{wjid}
+			left outer join igams_wjqx downloadqx on downloadqx.qxlx = 'DOWNLOAD' and downloadqx.jsid =temp.jsid  and downloadqx.wjid =#{wjid}
+			where temp.scbj='0'
+			order by temp.jsmc
+	</select>
+	<select id="getPagedRoles"  parameterType="WjglDto" resultType="WjglDto">
+		select xtjs.jsid,xtjs.jsmc,xtjs.lrsj
+		from matridx_xtjs xtjs
+		WHERE xtjs.scbj ='0'
+		<if test="jsmc !=null and jsmc != ''">
+			and xtjs.jsmc ILIKE '%' ||#{jsmc}||'%'
+		</if>
+		<if test="njsids !=null and njsids.size > 0">
+			and xtjs.jsid not in
+			<foreach collection="njsids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+</mapper>

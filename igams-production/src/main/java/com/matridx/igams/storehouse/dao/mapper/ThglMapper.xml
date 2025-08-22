@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IThglDao">
+    <select id="getPagedDtoList" parameterType="ThglDto" resultType="ThglDto">
+        select thgl.thid,thgl.thdh,thgl.u8thdh,xtyh.zsxm jsrmc,jcsj.csmc xslxmc,thgl.djrq,jgxx.jgmc
+        xsbmmc,xsgl.oaxsdh ddh,thgl.kh,thgl.shdz,thgl.zt,thgl.bz,thgl.lrsj,khgl.khjc,thgl.scbj
+        from igams_thgl thgl
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        <where>
+            thgl.scbj != '1'
+            <if test="entire != null and entire != ''">
+                and (thgl.thdh like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or jcsj.csmc like '%'||#{entire}||'%'
+                or jgxx.jgmc like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="thdh !=null and thdh != ''">
+                and thgl.thdh ILIKE '%'||#{thdh}||'%'
+            </if>
+            <if test="jsrmc !=null and jsrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{jsrmc}||'%'
+            </if>
+            <if test="xslxmc !=null and xslxmc != ''">
+                and jcsj.csmc ILIKE '%'||#{xslxmc}||'%'
+            </if>
+            <if test="xsbmmc !=null and xsbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{xsbmmc}||'%'
+            </if>
+            <if test="djrqstart != null and djrqstart != ''">
+                and to_char(thgl.djrq,'yyyy-mm-dd') &gt;= #{djrqstart}
+            </if>
+            <if test="djrqend != null and djrqend != ''">
+                and to_char(thgl.djrq,'yyyy-mm-dd') &lt;= #{djrqend}
+            </if>
+        </where>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="ThglDto">
+        select thgl.thid,thgl.thdh,thgl.u8thdh,xtyh.zsxm jsrmc,jcsj.csmc xslxmc,thgl.djrq,jgxx.jgmc
+        xsbmmc,xsgl.oaxsdh ddh,thgl.kh,thgl.shdz,thgl.zt,thgl.bz,thgl.lrsj,khgl.khjc,thgl.xslx,thgl.ywy,xtyh_yw.zsxm ywymc,thgl.biz,jcsj_bz.csmc bizmc
+        ,thgl.xsbm,jgxx.jgmc xsbmdm
+        from igams_thgl thgl
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_jcsj jcsj_bz on jcsj_bz.csid = thgl.biz
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_xtyh xtyh_yw on xtyh_yw.yhid = thgl.ywy
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        <where>
+            thgl.scbj != '1'
+            and thgl.thid = #{thid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="ThglDto" resultType="ThglDto">
+        select thgl.thid,thgl.thdh,thgl.u8thdh,xtyh.zsxm jsrmc,jcsj.csmc xslxmc,thgl.djrq,jgxx.jgmc
+        xsbmmc,xsgl.oaxsdh ddh,thgl.kh,thgl.shdz,thgl.zt,thgl.bz,thgl.lrsj,khgl.khjc,thgl.xslx,thgl.ywy,xtyh_yw.zsxm ywymc,thgl.biz,jcsj_bz.csmc bizmc
+        ,thgl.xsbm,jgxx.jgmc xsbmdm
+        from igams_thgl thgl
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_jcsj jcsj_bz on jcsj_bz.csid = thgl.biz
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_xtyh xtyh_yw on xtyh_yw.yhid = thgl.ywy
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        <where>
+            thgl.scbj != '1'
+            and thgl.thid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="ThglDto" resultType="ThglDto">
+        select thgl.thid,thgl.thdh,thgl.u8thdh,xtyh.zsxm jsrmc,jcsj.csmc xslxmc,thgl.djrq,jgxx.jgmc
+        xsbmmc,xsgl.oaxsdh ddh,thgl.kh,thgl.shdz,thgl.zt,thgl.bz,thgl.lrsj,khgl.khjc,thgl.jsr,thgl.xsbm
+        ,jcsj.csdm xslxdm,khgl.khdm,khgl.khmc,jgxx.jgdm xsbmdm
+        from igams_thgl thgl
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        <where>
+            thgl.scbj != '1'
+            and thgl.thid = #{thid}
+        </where>
+    </select>
+    <update id="update" parameterType="ThglDto">
+        update igams_thgl set
+        <if test="thdh != null and thdh != ''">
+            thdh = #{thdh},
+        </if>
+        <if test="djrq != null and djrq != ''">
+            djrq = cast(#{djrq} as date),
+        </if>
+        <if test="xsbm != null and xsbm != ''">
+            xsbm = #{xsbm},
+        </if>
+        <if test="jsr != null and jsr != ''">
+            jsr=#{jsr},
+        </if>
+        <if test="kh != null and kh != ''">
+            kh=#{kh},
+        </if>
+        <if test="xslx != null and xslx != ''">
+            xslx = #{xslx},
+        </if>
+        <if test="biz != null and biz != ''">
+            biz = #{biz},
+        </if>
+        <if test="ywy != null and ywy != ''">
+            ywy = #{ywy},
+        </if>
+        <if test="zt != null and zt != ''">
+            zt = #{zt},
+        </if>
+        <if test="bz != null and bz != ''">
+            bz=#{bz},
+        </if>
+        <if test="u8glid != null and u8glid != ''">
+            u8glid=#{u8glid},
+        </if>
+        <if test="u8thdh != null and u8thdh != ''">
+            u8thdh=#{u8thdh},
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where thid = #{thid}
+    </update>
+    <select id="getThdhSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(thdh,LENGTH(thdh)-strpos(reverse(thdh),'-')+2,LENGTH(thdh))),'0')
+        AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_thgl
+        <where>
+            scbj = '0' AND thdh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <!-- 校验领料单号是否重复 -->
+    <select id="getDtoByThdh" parameterType="ThglDto" resultType="ThglDto">
+        select thgl.thdh
+        from igams_thgl thgl
+        <where>
+            thgl.scbj='0'
+            and thgl.thdh=#{thdh}
+        </where>
+    </select>
+    <insert id="insert" parameterType="ThglDto">
+        insert into igams_thgl(
+        thid
+        ,thdh
+        ,u8thdh
+        ,jsr
+        ,xslx
+        ,djrq
+        ,xsbm
+        ,ddh
+        ,kh
+        ,shdz
+        ,zt
+        ,bz
+        ,biz
+        ,ywy
+        ,lrry
+        ,lrsj,scbj
+        ) values(#{thid}
+        ,#{thdh}
+        ,#{u8thdh}
+        ,#{jsr}
+        ,#{xslx}
+        ,cast(#{djrq} as date)
+        ,#{xsbm}
+        ,#{ddh}
+        ,#{kh}
+        ,#{shdz}
+        ,#{zt}
+        ,#{bz}
+        ,#{biz}
+        ,#{ywy}
+        ,#{lrry}
+        ,LOCALTIMESTAMP,'0'
+        )
+    </insert>
+    <select id="getPagedAuditReturnManagement" parameterType="ThglDto" resultType="ThglDto">
+        select  thgl.thdh,thgl.thid,thgl.lrsj,thgl.u8thdh,thgl.djrq,jgxx.jgmc xsbmmc,xsgl.oaxsdh ddh
+        from igams_thgl thgl
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        <where>
+            thgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (thgl.thdh like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or jcsj.csmc like '%'||#{entire}||'%'
+                or jgxx.jgmc like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="thdh !=null and thdh != ''">
+                and thgl.thdh ILIKE '%'||#{thdh}||'%'
+            </if>
+            <if test="jsrmc !=null and jsrmc != ''">
+                and xtyh.zsxm ILIKE '%'||#{jsrmc}||'%'
+            </if>
+            <if test="xslxmc !=null and xslxmc != ''">
+                and jcsj.csmc ILIKE '%'||#{xslxmc}||'%'
+            </if>
+            <if test="xsbmmc !=null and xsbmmc != ''">
+                and jgxx.jgmc ILIKE '%'||#{xsbmmc}||'%'
+            </if>
+        </where>
+    </select>
+    <select id="getAuditListReturnManagement" parameterType="List" resultType="ThglDto">
+        select thgl.thid,thgl.thdh,thgl.u8thdh,xtyh.zsxm jsrmc,jcsj.csmc xslxmc,thgl.djrq,jgxx.jgmc
+        xsbmmc,xsgl.oaxsdh ddh,thgl.kh,thgl.shdz,thgl.zt,thgl.bz,thgl.lrsj,khgl.khjc,
+        shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.thid} thid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,${index} rownum
+        </foreach>
+        tmp
+        left join igams_thgl thgl on tmp.thid=thgl.thid
+        left join matridx_jcsj jcsj on jcsj.csid = thgl.xslx
+        left join matridx_xtyh xtyh on xtyh.yhid = thgl.jsr
+        left join matridx_jgxx jgxx on jgxx.jgid = thgl.xsbm
+        left join igams_khgl khgl on khgl.khid = thgl.kh
+        left join igams_xsgl xsgl on xsgl.xsid=thgl.ddh
+        order by tmp.rownum
+    </select>
+    <delete id="delete" parameterType="ThglDto">
+        update igams_thgl set scbj ='1' , scry = #{scry}
+        where thid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>
+

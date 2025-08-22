@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.gmsql.IGMAppVouchDao" >
+	
+	<select id="insertPUAppVouch" parameterType="Map" resultType="PU_AppVouchDto">
+		insert into PU_AppVouch(ID,iVTid,cCode,dDate,cPTCode,cBusType,iverifystateex
+		<if test="_parameter.containsKey('cDepCode')">  
+			,cDepCode
+		</if>
+		<if test="_parameter.containsKey('cMaker')">  
+			,cMaker
+		</if>
+		<if test="_parameter.containsKey('cVerifier')">  
+			,cVerifier
+		</if>
+		<if test="_parameter.containsKey('cDefine1')">  
+			,cDefine1
+		</if>
+		<if test="_parameter.containsKey('IsWfControlled')">  
+			,IsWfControlled
+		</if>
+		<if test="_parameter.containsKey('cMakeTime')">  
+			,cMakeTime
+		</if>
+		<if test="_parameter.containsKey('iPrintCount')">  
+			,iPrintCount
+		</if>
+		<if test="_parameter.containsKey('csysbarcode')">  
+			,csysbarcode
+		</if>
+		<if test="_parameter.containsKey('cMemo')">  
+			,cMemo
+		</if>
+		<if test="_parameter.containsKey('cAuditTime')">
+			,cAuditTime
+		</if>
+		<if test="_parameter.containsKey('cAuditDate')">
+			,cAuditDate
+		</if>
+		)output inserted.ID
+		values((select case when MAX(ID) IS NULL then '1' else MAX(ID)+1 end ID from PU_AppVouch)
+		,#{iVTid},#{cCode},cast(#{dDate} AS datetime),'01',#{cBusType},'2'
+		<if test="_parameter.containsKey('cDepCode')">  
+			,#{cDepCode}
+		</if>
+		<if test="_parameter.containsKey('cMaker')">  
+			,#{cMaker}
+		</if>
+		<if test="_parameter.containsKey('cVerifier')">  
+			,#{cVerifier}
+		</if>
+		<if test="_parameter.containsKey('cDefine1')">  
+			,#{cDefine1}
+		</if>
+		<if test="_parameter.containsKey('IsWfControlled')">  
+			,#{IsWfControlled}
+		</if>
+		<if test="_parameter.containsKey('cMakeTime')">  
+			,getdate()
+		</if>
+		<if test="_parameter.containsKey('iPrintCount')">  
+			,#{iPrintCount}
+		</if>
+		<if test="_parameter.containsKey('csysbarcode')">  
+			,#{csysbarcode}
+		</if>
+		<if test="_parameter.containsKey('cMemo')">  
+			,#{cMemo}
+		</if>
+		<if test="_parameter.containsKey('cAuditTime')">
+			,cast(#{cAuditTime} as datetime)
+		</if>
+		<if test="_parameter.containsKey('cAuditDate')">
+			,cast(#{cAuditDate} as datetime)
+		</if>
+		) 
+	</select>
+	
+	<select id="insertPUAppVouchs" parameterType="PU_AppVouchsDto" resultType="PU_AppVouchsDto">
+		insert into PU_AppVouchs(AutoID,ID,cInvCode,fQuantity,iPerTaxRate,dRequirDate,dArriveDate
+			,iReceivedQTY,bTaxCost,cexch_name,iExchRate,ivouchrowno,cbsysbarcode,cbMemo,cItem_class,cItemCode,CItemName
+			)output inserted.AutoID values
+			((select case when MAX(AutoID) IS NULL then '1' else MAX(AutoID)+1 end AutoID from PU_AppVouchs),#{ID},#{cInvCode},#{fQuantity},#{iPerTaxRate},cast(#{dRequirDate} AS datetime)
+			,CONVERT(varchar(100),getdate(),23),#{iReceivedQTY},#{bTaxCost},#{cexch_name}
+			,#{iExchRate} ,#{ivouchrowno},#{cbsysbarcode},#{cbMemo},#{cItem_class},#{cItemCode},#{CItemName}
+		) 
+	</select>
+	
+	
+	<!-- 更新U8采购单信息 -->
+	<update id="updatePUAppVouch" parameterType="PU_AppVouchDto">
+		update PU_AppVouch
+		<set>
+			cModifyTime=getdate(),cModifyDate=CONVERT(varchar(100),getdate(),23)
+		<if test="cAuditTime != null and cAuditTime != ''">  
+			,cAuditTime=cast(#{cAuditTime} as datetime)
+		</if>
+		<if test="cAuditDate != null and cAuditDate != ''">  
+			,cAuditDate=cast(#{cAuditDate} as datetime)
+		</if>
+		<if test="cDepCode != null and cDepCode != ''">  
+			,cDepCode=#{cDepCode}
+		</if>
+		<if test="cMaker != null and cMaker != ''">  
+			,cMaker=#{cMaker}
+		</if>
+		<if test="cVerifier != null and cVerifier != ''">  
+			,cVerifier=#{cVerifier}
+		</if>
+		<if test="cDefine1 != null and cDefine1 !=''">  
+			,cDefine1=#{cDefine1}
+		</if>
+		<if test="cMakeTime != null and cMakeTime != ''">  
+			,cMakeTime=#{cMakeTime}
+		</if>
+		<if test="csysbarcode != null and csysbarcode != ''">  
+			,csysbarcode=#{csysbarcode}
+		</if>
+		<if test="cMemo != null and cMemo != ''">  
+			,cMemo=#{cMemo}
+		</if>
+		</set>
+		<where>
+			ID=#{ID}
+		</where>
+	</update>
+	
+	<update id="updatePUAppVouchs" parameterType="PU_AppVouchsDto">
+		update PU_AppVouchs 
+		<set>
+			cInvCode=#{cInvCode}
+		<if test="fQuantity != null and fQuantity != ''">
+			,fQuantity=#{fQuantity}
+		</if>
+		<if test="iPerTaxRate != null and iPerTaxRate != ''">
+			,iPerTaxRate=#{iPerTaxRate}
+		</if>
+		<if test="dRequirDate != null and dRequirDate != ''">
+			,dRequirDate=#{dRequirDate}
+		</if>
+		<if test="dArriveDate != null and dArriveDate != ''">
+			,dArriveDate=#{dArriveDate}
+		</if>
+		<if test="iReceivedQTY != null and iReceivedQTY != ''">
+			,iReceivedQTY=#{iReceivedQTY}
+		</if>
+		<if test="bTaxCost != null and bTaxCost != ''">
+			,bTaxCost=#{bTaxCost}
+		</if>
+		<if test="cexch_name != null and cexch_name != ''">
+			,cexch_name=#{cexch_name}
+		</if>
+		<if test="iExchRate != null and iExchRate != ''">
+			,iExchRate=#{iExchRate}
+		</if>
+		<if test="ivouchrowno != null and ivouchrowno != ''">
+			,ivouchrowno=#{ivouchrowno}
+		</if>
+		<if test="cbsysbarcode != null and cbsysbarcode != ''">
+			,cbsysbarcode=#{cbsysbarcode}
+		</if>
+		<if test="cbMemo != null and cbMemo != ''">
+			,cbMemo=#{cbMemo}
+		</if>
+		<if test="cItem_class != null and cItem_class != ''">
+			,cItem_class=#{cItem_class}
+		</if>
+		<if test="CItemName != null and CItemName != ''">
+			,CItemName=#{CItemName}
+		</if>
+		<if test="cItemCode != null and cItemCode != ''">
+			,cItemCode=#{cItemCode}
+		</if>
+		</set>
+		<where>
+			AutoID=#{AutoID}
+		</where>
+	</update>
+    
+</mapper>

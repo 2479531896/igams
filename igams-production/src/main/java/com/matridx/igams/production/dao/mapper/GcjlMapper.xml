@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IGcjlDao" >
+    <insert id="insertGcjlDtos" parameterType="List">
+        insert into igams_gcjl(gcjlid,
+        lykcid,
+        gcyq,
+        gcjg,
+        bz,
+        lrry,lrsj
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.gcjlid},#{item.lykcid},#{item.gcyq},#{item.gcjg},#{item.bz},#{item.lrry},LOCALTIMESTAMP
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getDtolistGcSampleStock" resultType="GcjlDto" parameterType="GcjlDto">
+        SELECT
+        gcjl.gcjlid,
+        gcjl.lykcid,
+        jc_gcjl.csmc gcyq,
+        xtyh.zsxm gcry,
+        CASE
+
+        WHEN gcjl.gcjg = '0' THEN
+        '合格' ELSE'不合格'
+        END gcjg,
+        gcjl.bz,
+        to_char(gcjl.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj
+        FROM
+        igams_gcjl gcjl
+        LEFT JOIN matridx_jcsj jc_gcjl ON jc_gcjl.csid = gcjl.gcyq
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = gcjl.lrry
+        <where>
+            <if test="lykcid !=null and lykcid!=''">
+                gcjl.lykcid=#{lykcid}
+            </if>
+        </where>
+    </select>
+</mapper>

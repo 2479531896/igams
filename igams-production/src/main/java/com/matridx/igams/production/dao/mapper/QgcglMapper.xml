@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQgcglDao" >
+	<!-- 采购车列表 -->
+	<select id="getQgcDtoList" parameterType="QgcglDto" resultType="QgcglDto">
+		select qgc.wlid,qgc.ryid,qgc.lrsj,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,wl.zt,wl.bzqflg
+			,wl.jwlbm,wl.lb,wl.aqkc,wl.qdl,wl.hq,wl.zdcgl,wl.wlzlbtc,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,wlzlbtc.csmc wlzlbtcmc,wlzlb.cskz1 cskz1,wlzlb.cskz2 cskz2
+			,coalesce(tmp.kcl,0) wlkcl,wl.cpzch
+			from igams_qgcgl qgc
+			left join igams_wlgl wl on wl.wlid=qgc.wlid
+			left join matridx_jcsj wllb on wl.wllb=wllb.csid
+			left join matridx_jcsj wlzlb on wl.wlzlb=wlzlb.csid
+			left join matridx_jcsj wlzlbtc on wl.wlzlbtc=wlzlbtc.csid
+			left outer join ( SELECT wlid, SUM ( kcl ) kcl FROM
+			igams_hwxx hwxx
+			LEFT JOIN igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+			LEFT JOIN matridx_jcsj jcsj ON jcsj.csid = dhxx.rklb
+			WHERE hwxx.scbj = '0'  AND hwxx.zt = '99' AND hwxx.kcl != 0 AND jcsj.csdm!='cghz'
+			GROUP BY
+			hwxx.wlid
+			) tmp ON tmp.wlid = wl.wlid
+			<where>
+				qgc.ryid=#{ryid}
+				<if test="wlbm != null and wlbm != ''">
+					and wlbm like '%'||#{wlbm}||'%'
+				</if>
+				<if test="wlmc != null and wlmc != ''">
+					and wlmc like '%'||#{wlmc}||'%'
+				</if>
+				<if test="scs != null and scs != ''">
+					and scs like '%'||#{scs}||'%'
+				</if>
+				<if test="ychh != null and ychh != ''">
+					and ychh like '%'||#{ychh}||'%'
+				</if>
+			</where>
+	</select>
+	
+	<insert id="insert" parameterType="QgcglDto">
+		insert into igams_qgcgl(wlid,lrsj,ryid)
+		values(#{wlid},LOCALTIMESTAMP,#{ryid})
+	</insert>
+	
+	<delete id="delete" parameterType="QgcglDto">
+		delete from igams_qgcgl
+		<where>
+			wlid=#{wlid}
+		</where>
+	</delete>
+	
+	<!-- 查询当前用户采购车中数据 -->
+	<select id="getQgcList" parameterType="QgcglDto" resultType="QgcglDto">
+		select qgc.wlid,qgc.ryid,qgc.lrsj,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,wl.bz,wl.zt,wl.bzqflg
+			,wl.jwlbm,wl.lb,wl.aqkc,wl.qdl,wl.hq,wl.zdcgl
+			from igams_qgcgl qgc
+			left join igams_wlgl wl on wl.wlid=qgc.wlid
+			<where>
+				qgc.ryid=#{ryid}
+			</where>
+	</select>
+	
+	<!-- 根据用户和物料编码查询采购车信息 -->
+	<select id="getQgcDtoByWlbmAndYhid" parameterType="QgcglDto" resultType="QgcglDto">
+		select qgc.wlid,qgc.ryid,qgc.lrsj,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,wl.bz,wl.zt,wl.bzqflg
+			,wl.jwlbm,wl.lb,wl.aqkc,wl.qdl,wl.hq,wl.zdcgl
+			from igams_qgcgl qgc
+			left join igams_wlgl wl on wl.wlid=qgc.wlid
+			<where>
+				qgc.ryid=#{ryid} and wl.wlbm=#{wlbm}
+			</where>
+	</select>
+	
+	<!-- 清空采购车 -->
+	<delete id="cleanShoppingCar" parameterType="QgcglDto">
+		delete from igams_qgcgl 
+		<where>
+			ryid=#{ryid}
+		</where>
+	</delete>
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ICpjgmxDao" >
+    <select id="getPagedDtoList" parameterType="CpjgmxDto" resultType="CpjgmxDto">
+        select cpjgmx.zjhh,cpjgmx.gxhh,round(cpjgmx.jbyl,2)jbyl,round(cpjgmx.jcsl,2) jcsl,round(cpjgmx.zjshl,2) zjshl,cpjgmx.gylx,round(cpjgmx.sysl,2) sysl,cpjgmx.scrq,cpjgmx.sxrq,cpjgmx.llbm,gylx.csmc gylxmc,cclx.csmc cclxmc,jgxx.jgmc llbmmc,cpjgmx.cclx,cpjgmx.cbxg,cpjgmx.bz,ckxx.ckmc ckmc,wlgl.wlbm wlbm,wlgl.wlmc wlmc,
+        case when cpjgmx.gdyl='1' then '是'when cpjgmx.gdyl='0' then '否' end gdylmc,
+        case when cpjgmx.ccp='1' then '是' when cpjgmx.ccp='0' then '否' end ccpmc,
+        case when cpjgmx.cbxg='1' then '是' when cpjgmx.cbxg='0' then '否' end cbxgmc
+        from igams_cpjgmx cpjgmx
+		left join matridx_jcsj gylx on cpjgmx.gylx=gylx.csid
+		left join matridx_jcsj cclx on cpjgmx.cclx=cclx.csid
+		left join matridx_jgxx jgxx on jgxx.jgid=cpjgmx.llbm
+		left join igams_ckxx ckxx on ckxx.ckid=cpjgmx.ckid
+		left join igams_wlgl wlgl on wlgl.wlid=cpjgmx.zjwlid
+        where cpjgmx.scbj!='1' and cpjgmx.cpjgid=#{cpjgid}
+    </select>
+
+
+    <select id="getDtoList" parameterType="CpjgmxDto" resultType="CpjgmxDto">
+        select cpjgmx.zjhh,cpjgmx.gxhh,round(cpjgmx.jbyl,2)jbyl,round(cpjgmx.jcsl,2) jcsl,round(cpjgmx.zjshl,2) zjshl,cpjgmx.gylx,round(cpjgmx.sysl,2) sysl
+        ,cpjgmx.scrq,cpjgmx.sxrq,cpjgmx.llbm,gylx.csmc gylxmc,cclx.csmc cclxmc,jgxx.jgmc llbmmc,cpjgmx.cclx,cpjgmx.cbxg,cpjgmx.bz,cpjgmx.opcomponentoptid,
+        ckxx.ckmc ckmc,wlgl.wlbm wlbm,wlgl.wlmc wlmc,cpjgmx.zjwlid,wlgl.gg,wlgl.jldw,cpjgmx.gylx,cpjgmx.cclx,cpjgmx.gdyl,wlgl.wlid,cpjgmx.sxrq as yxq,
+        cpjgmx.ccp,cpjgmx.cbxg,cpjgmx.ckid,
+        case when cpjgmx.gdyl='1' then '是'when cpjgmx.gdyl='0' then '否' end gdylmc,
+        case when cpjgmx.ccp='1' then '是' when cpjgmx.ccp='0' then '否' end ccpmc,
+        case when cpjgmx.cbxg='1' then '是' when cpjgmx.cbxg='0' then '否' end cbxgmc
+        from igams_cpjgmx cpjgmx
+		left join matridx_jcsj gylx on cpjgmx.gylx=gylx.csid
+		left join matridx_jcsj cclx on cpjgmx.cclx=cclx.csid
+		left join matridx_jgxx jgxx on jgxx.jgid=cpjgmx.llbm
+		left join igams_ckxx ckxx on ckxx.ckid=cpjgmx.ckid
+		left join igams_wlgl wlgl on wlgl.wlid=cpjgmx.zjwlid
+        where cpjgmx.scbj!='1' and cpjgmx.cpjgid=#{cpjgid}
+    </select>
+    
+    <insert id="batchInsertDtoList" parameterType="List">
+        insert into igams_cpjgmx(
+        cpjgmxid,cpjgid,zjwlid,zjhh,gxhh,jbyl,jcsl,zjshl,gdyl,gylx,sysl,scrq,sxrq,ckid,llbm,
+        ccp,cclx,cbxg,bz,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.cpjgmxid},#{item.cpjgid},#{item.zjwlid},#{item.zjhh},#{item.gxhh},cast(#{item.jbyl} as numeric),
+                cast(#{item.jcsl} as numeric),cast(#{item.zjshl} as numeric),#{item.gdyl},#{item.gylx},cast(#{item.sysl} as numeric),
+                cast(#{item.scrq} as date),cast(#{item.sxrq} as date),#{item.ckid},#{item.llbm},#{item.ccp},#{item.cclx},
+                #{item.cbxg},#{item.bz},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="update" parameterType="CpjgmxDto">
+        update igams_cpjgmx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="scbj != null and scbj != ''">
+                    ,scbj=#{scbj}
+                </if>
+                <if test="scry != null and scry != ''">
+                    ,scry=#{scry},scsj=LOCALTIMESTAMP
+                </if>
+                <if test="xgry != null and xgry != ''">
+                    ,xgry=#{xgry},xgsj=LOCALTIMESTAMP
+                </if>
+            </trim>
+        </set>
+        <where>
+            <if test="cpjgid != null and cpjgid != ''">
+                cpjgid=#{cpjgid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and cpjgid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_cpjgmx set xgsj=LOCALTIMESTAMP, u8cpjgmxid=#{item.u8cpjgmxid} , opcomponentoptid=#{item.opcomponentoptid} where  cpjgmxid=#{item.cpjgmxid}
+            </foreach>
+        </if>
+    </update>
+</mapper>

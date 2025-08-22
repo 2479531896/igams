@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ILyrkxxDao" >
+	<sql id="SEARCH_TERMS">
+		lyrkxx.scbj!='1'
+		<if test="entire !=null and entire !=''">
+			and wlgl.wlbm ILIKE '%'||#{entire}||'%'
+			or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+			or hwxx.scph ILIKE '%'||#{entire}||'%'
+			or wlgl.ychh ILIKE '%'||#{entire}||'%'
+			or llgl.lldh ILIKE '%'||#{entire}||'%'
+			or lyry.zsxm ILIKE '%'||#{entire}||'%'
+			or llgl.jlbh ILIKE '%'||#{entire}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+		</if>
+		<if test="scph != null and scph != ''">
+			and hwxx.scph ILIKE '%'||#{scph}||'%'
+		</if>
+		<if test="ychh != null and ychh != ''">
+			and wlgl.ychh ILIKE '%'||#{ychh}||'%'
+		</if>
+		<if test="lldh != null and lldh != ''">
+			and llgl.lldh ILIKE '%'||#{lldh}||'%'
+		</if>
+		<if test="lyry != null and lyry != ''">
+			and lyry.zsxm ILIKE '%'||#{lyry}||'%'
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			and llgl.jlbh ILIKE '%'||#{jlbh}||'%'
+		</if>
+		<if test="lysjstart != null and lysjstart != ''">
+			and to_char(lyrkxx.lrsj,'yyyy-mm-dd') &gt;= #{lysjstart}
+		</if>
+		<if test="lysjend != null and lysjend != ''">
+			and to_char(lyrkxx.lrsj,'yyyy-mm-dd') &lt;= #{lysjend}
+		</if>
+	</sql>
+	<insert id="insertList" parameterType="List">
+		insert into igams_lyrkxx(
+		lyrkid,
+		llid,
+		hwid,
+		sl,
+		lrry,
+		lrsj,
+		scbj
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.lyrkid},#{item.llid},#{item.hwid},cast(#{item.sl} as numeric),#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<select id="getDtoList" parameterType="LyrkxxDto" resultType="LyrkxxDto">
+	select lyrk.sl,lykcxx.kcl,llgl.lldh,lyrk.llid,lykcxx.lykcid,lyrk.lyrkid
+	from igams_lyrkxx lyrk
+	LEFT JOIN igams_llgl llgl ON llgl.llid = lyrk.llid AND llgl.scbj = '0'
+	LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = lyrk.hwid AND hwxx.scbj = '0'
+	left join igams_lykcxx lykcxx on lykcxx.wlid=hwxx.wlid and lykcxx.scph=hwxx.scph
+		<where>
+			lyrk.llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<update id="delete" parameterType="List">
+		update igams_lyrkxx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+				llid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+		</where>
+	</update>
+
+	<update id="update" parameterType="LyrkxxDto">
+		update igams_lyrkxx set lrsj = cast(#{lrsj} as timestamp),xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<where>
+			lyrkid = #{lyrkid}
+		</where>
+	</update>
+
+	<select id="getPagedDtoList" resultType="LyrkxxDto" parameterType="LyrkxxDto">
+		SELECT
+		lyrkxx.lyrkid,
+		wlgl.wlid,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		hwxx.scph,
+		wlgl.gg,
+		wlgl.jldw,
+		wlgl.ychh,
+		lyrkxx.sl,
+		llgl.lldh,
+		lyrkxx.lrry,
+		lyry.zsxm lyry,
+		llgl.jlbh,
+		hwxx.scrq,
+		hwxx.yxq,
+		wlgl.bctj,
+		to_char(lyrkxx.lrsj,'YYYY-MM-DD') lrsj,
+		lyrkxx.llid
+		FROM
+		igams_lyrkxx lyrkxx
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = lyrkxx.hwid
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN igams_llgl llgl ON llgl.llid = lyrkxx.llid
+		LEFT JOIN matridx_xtyh lyry ON lyry.yhid = lyrkxx.lrry
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	<select id="getDtoById" resultType="LyrkxxDto" parameterType="String">
+	SELECT
+		lyrkxx.lyrkid,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		hwxx.scph,
+		wlgl.gg,
+		wlgl.jldw,
+		wlgl.ychh,
+		lyrkxx.sl,
+		llgl.lldh,
+		lyrkxx.lrsj,
+		lyry.zsxm lyry,
+		llgl.jlbh,
+		hwxx.scrq,
+		hwxx.yxq,
+		wlgl.bctj,
+		to_char(lyrkxx.lrsj,'YYYY-MM-DD') lrsj
+	FROM
+		igams_lyrkxx lyrkxx
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = lyrkxx.hwid
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN igams_llgl llgl ON llgl.llid = lyrkxx.llid
+		LEFT JOIN matridx_xtyh lyry ON lyry.yhid = lyrkxx.lrry
+		where lyrkxx.lyrkid=#{lyrkid}
+	</select>
+</mapper>

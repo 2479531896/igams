@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.ISczlmxDao">
+    <insert id="insertList" parameterType="List">
+        insert into igams_sczlmx(sczlmxid,sczlid,wlid,xqjhmxid,cpxqid,scsl,xlh,zt,lrry,lrsj,scbj,yjwcsj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.sczlmxid},#{item.sczlid},#{item.wlid},#{item.xqjhmxid},#{item.cpxqid},cast(#{item.scsl} as numeric),#{item.xlh},'00'
+                ,#{item.lrry},LOCALTIMESTAMP,'0',cast(#{item.yjwcsj} as date)
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="delete" parameterType="SczlmxDto">
+        update igams_sczlmx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="scry != null and scry != ''">
+                    ,scry = #{scry},scsj = LOCALTIMESTAMP
+                </if>
+                <if test="scbj != null and scbj != ''">
+                    ,scbj = #{scbj}
+                </if>
+            </trim>
+        </set>
+        where sczlmxid = #{sczlmxid}
+    </delete>
+    <delete id="getDto" parameterType="SczlmxDto">
+        select  cplx.csdm,sczlmx.sczlid as cpdm from igams_sczlmx sczlmx
+        left join igams_sczlgl sczlgl on sczlgl.sczlid = sczlmx.sczlid
+        left join matridx_jcsj cplx on cplx.csid = sczlgl.cplx and cplx.scbj = '0'
+        where sczlmx.scbj = '0' and  sczlmxid= #{sczlmxid}
+    </delete>
+    <select id="getDtoList" parameterType="SczlmxDto" resultType="SczlmxDto">
+        select
+        sczlmx.sczlmxid,sczlmx.zt,coalesce(cpxqjh.xqdh,'') xqdh,sczlmx.xlh,sczlmx.cpxqid,sczlmx.scsl,sczlmx.sczlid,(COALESCE(sczlmx.scsl,0)-COALESCE(sczlmx.yysl,0)) as kyysl
+        ,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.wlid,wlgl.scs,wlgl.jldw,sczlmx.xqjhmxid
+        ,sczlgl.zldh,sczlgl.zlrq,sczlgl.cpbh,sczlgl.jhcl,sczlgl.cplx,zllb.csmc as lbcsmc,wlgl.ychh,
+        cast (round(CAST(to_char((case when (SELECT EXTRACT(EPOCH FROM to_timestamp(split_part( split_part( TEMP, ',', 3 ), '!', 2 ), 'yyyy-MM-dd HH24:mi:ss') - to_timestamp(to_char(  tj.tjsj, 'yyyy-MM-dd HH24:mi:ss' ), 'yyyy-MM-dd HH24:mi:ss')::timestamp)/(60*60) )>0 then (SELECT EXTRACT(EPOCH FROM to_timestamp(split_part( split_part( TEMP, ',', 3 ), '!', 2 ), 'yyyy-MM-dd HH24:mi:ss') - to_timestamp(to_char(  tj.tjsj, 'yyyy-MM-dd HH24:mi:ss' ), 'yyyy-MM-dd HH24:mi:ss')::timestamp)/(60*60) ) else 0 end), 'FM99990.00') as DECIMAL(18,2)), 0) as numeric) scgs,
+        cast (round(CAST(to_char((case when (SELECT EXTRACT(EPOCH FROM to_timestamp(split_part( split_part( temp_t, ',', 1 ), '!', 2 ), 'yyyy-MM-dd HH24:mi:ss') - to_timestamp(to_char(  tj_t.tjsj, 'yyyy-MM-dd HH24:mi:ss' ), 'yyyy-MM-dd HH24:mi:ss')::timestamp)/(60*60) )>0 then (SELECT EXTRACT(EPOCH FROM to_timestamp(split_part( split_part( temp_t, ',', 1 ), '!', 2 ), 'yyyy-MM-dd HH24:mi:ss') - to_timestamp(to_char(  tj_t.tjsj, 'yyyy-MM-dd HH24:mi:ss' ), 'yyyy-MM-dd HH24:mi:ss')::timestamp)/(60*60) ) else 0 end), 'FM99990.00') as DECIMAL(18,2)), 0) as numeric) zjgs,substr(split_part(split_part( temp, ',', 3), '!', 2), 1,16)sjwcsj,ckhwxx.kcl,
+        substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10)sjwctime,hwxx.dhsl,case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+        when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' when sczlmx.zt='00' then '待生产' end ztmc,
+        case when substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) is null and  to_char(sczlmx.yjwcsj,'yyyy-dd-mm')&lt;to_char(LOCALTIMESTAMP,'yyyy-dd-mm') then '超时' when
+        substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) is null and  to_char(sczlmx.yjwcsj,'yyyy-dd-mm')&gt;=to_char(LOCALTIMESTAMP,'yyyy-dd-mm') then '未超时'
+        when substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) is not null and to_char(sczlmx.yjwcsj,'yyyy-dd-mm')&lt;substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) then '超时'
+        when substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) is not null and to_char(sczlmx.yjwcsj,'yyyy-dd-mm')&gt;=substr(split_part(split_part( temp, ',', 3), '!', 2), 1,10) then '未超时'
+        end sfcs
+        from igams_sczlmx sczlmx
+        left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid and sczlgl.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid = sczlmx.wlid and wlgl.scbj = '0'
+        left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = sczlmx.cpxqid and cpxqjh.scbj = '0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+        left join (select wlid,sum(COALESCE(kcl,0)) kcl  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = hwxx.wlid
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join (
+        select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp
+        from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+        from matridx_shxx sh
+        left join matridx_spgw gw on gw.gwid=sh.gwid
+        where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+        group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+        group by tmp.ywid
+        ) tmp on tmp.ywid=sczlmx.sczlmxid
+        left join (
+        select ywid,max(shsj) tjsj
+        from matridx_shxx
+        where lcxh is null    and sftg is null
+        group by ywid
+        )tj on tj.ywid=sczlmx.sczlmxid
+        left join (
+        select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp_t
+        from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+        from matridx_shxx sh
+        left join matridx_spgw gw on gw.gwid=sh.gwid
+        where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+        group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+        group by tmp.ywid
+        ) tmp_t on tmp_t.ywid=hwxx.dhjyid
+        left join (
+        select ywid,max(shsj) tjsj
+        from matridx_shxx
+        where lcxh is null    and sftg is null
+        group by ywid
+        )tj_t on tj_t.ywid=hwxx.dhjyid
+        <where>
+            sczlmx.scbj='0'
+            <if test="sczlid !=null and sczlid != ''">
+                and sczlmx.sczlid = #{sczlid}
+            </if>
+            <if test="ids !=null and ids.size >0" >
+                and sczlmx.sczlmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <update id="update" parameterType="SczlmxDto">
+        update igams_sczlmx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="xgry != null and xgry != ''">
+                    ,xgry=#{xgry},xgsj=LOCALTIMESTAMP
+                </if>
+                <if test="zt != null and zt != ''">
+                    ,zt =  #{zt}
+                </if>
+                <if test="shsj != null and shsj != ''">
+                    ,shsj =  cast (#{shsj} as timestamp)
+                </if>
+                <if test="jlbh != null and jlbh != ''">
+                    ,jlbh =  #{jlbh}
+                </if>
+            </trim>
+        </set>
+        <where>
+            sczlmxid=#{sczlmxid}
+        </where>
+    </update>
+    <update id="updateDto" parameterType="SczlmxDto">
+        update igams_sczlmx
+        <set>
+                <if test="shsj != null and shsj != ''">
+                    ,shsj =  cast (#{shsj} as timestamp)
+                </if>
+        </set>
+        <where>
+            sczlid=#{sczlid} and scbj='0'
+        </where>
+    </update>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_sczlmx
+                <set>
+                    <trim prefixOverrides=",">
+                        <if test="item.xgry != null and item.xgry != ''">
+                            ,xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                        </if>
+                        <if test="item.scry != null and item.scry != ''">
+                            ,scry=#{item.scry},scsj=LOCALTIMESTAMP
+                        </if>
+                        <if test="item.scbj != null and item.scbj != ''">
+                            ,scbj=#{item.scbj}
+                        </if>
+                        <if test="item.zt != null and item.zt != ''">
+                            ,zt=#{item.zt}
+                        </if>
+                        <if test="item.yyslbj == '0'.toString()">
+                            ,yysl=COALESCE(yysl,0) - cast(#{item.yysl} as numeric)
+                        </if>
+                        <if test="item.yyslbj == '1'.toString()">
+                            ,yysl=COALESCE(yysl,0) + cast(#{item.yysl} as numeric)
+                        </if>
+                        <if test="item.xlh != null and item.xlh != ''">
+                            ,xlh=#{item.xlh}
+                        </if>
+                        <if test="item.scsl != null and item.scsl != ''">
+                            ,scsl=cast(#{item.scsl} as numeric)
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    sczlmxid=#{item.sczlmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getProducePlanStatis" parameterType="SczlmxDto" resultType="SczlmxDto">
+        ( SELECT COUNT ( * ),'未启动' lx FROM igams_sczlmx sczlmx WHERE sczlmx.scbj = '0' AND sczlmx.zt = '00'
+        <if test="lrsjstart != null and lrsjstart != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+        </if>
+        <if test="lrsjend != null and lrsjend != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+        </if>
+            ) UNION ALL
+        (
+        SELECT COUNT
+        ( * ) ,'正常进行' lx
+        FROM
+        igams_sczlmx sczlmx
+        WHERE
+        TO_CHAR( sczlmx.yjwcsj, 'yyyy-MM-dd' )  &lt;= TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' )
+        AND sczlmx.scbj = '0'
+        AND sczlmx.zt = '10'
+        <if test="lrsjstart != null and lrsjstart != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+        </if>
+        <if test="lrsjend != null and lrsjend != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+        </if>
+        ) UNION ALL
+        (
+        SELECT COUNT
+        ( * ) ,'逾期进行' lx
+        FROM
+        igams_sczlmx sczlmx
+        WHERE
+        TO_CHAR( sczlmx.yjwcsj, 'yyyy-MM-dd' ) &gt; TO_CHAR( LOCALTIMESTAMP, 'yyyy-MM-dd' )
+        AND sczlmx.scbj = '0'
+        AND sczlmx.zt = '10'
+        <if test="lrsjstart != null and lrsjstart != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+        </if>
+        <if test="lrsjend != null and lrsjend != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+        </if>
+        ) UNION ALL
+        ( SELECT COUNT ( * ) ,'已结束' lx FROM igams_sczlmx sczlmx WHERE sczlmx.scbj = '0' AND sczlmx.zt = '80'
+        <if test="lrsjstart != null and lrsjstart != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+        </if>
+        <if test="lrsjend != null and lrsjend != ''">
+            and to_char(sczlmx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+        </if>)
+    </select>
+    <select id="getProduceEligibles" parameterType="SczlmxDto" resultType="SczlmxDto">
+        SELECT
+            COALESCE(tp.count,0) count,tmp.rq
+        FROM
+        <if test = "rqs != null and rqs.size > 0 "  >
+            <foreach collection="rqs" separator=" union all " open="(" close=") "
+                     item="item" index="index">
+                select #{item} rq
+            </foreach>
+        </if> tmp
+            LEFT JOIN (
+            SELECT
+            count(*) count
+            <if test="lrsjstart != null and lrsjstart != ''">
+                ,to_char(sczlmx.lrsj, 'yyyy-MM-dd') AS rq
+            </if>
+            <if test="lrsjMstart != null and lrsjMstart != ''">
+                ,to_char(sczlmx.lrsj, 'yyyy-MM') AS rq
+            </if>
+            <if test="lrsjYstart != null and lrsjYstart != ''">
+                , to_char(sczlmx.lrsj, 'yyyy') AS rq
+            </if>
+            from
+            igams_sczlmx sczlmx
+            LEFT JOIN igams_hwxx hwxx ON hwxx.sczlmxid = sczlmx.sczlmxid
+            AND hwxx.scbj = '0'
+            WHERE
+            sczlmx.scbj = '0'
+            AND COALESCE ( hwxx.zjthsl, 0 ) = 0
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(sczlmx.lrsj,'yyyy-MM-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend !=null and lrsjend !=''">
+                and to_char(sczlmx.lrsj,'yyyy-MM-dd') &lt;= #{lrsjend}
+            </if>
+            <if test="lrsjMstart != null and lrsjMstart != ''">
+                and to_char(sczlmx.lrsj,'yyyy-MM') &gt;= #{lrsjMstart}
+            </if>
+            <if test="lrsjMend !=null and lrsjMend !=''">
+                and to_char(sczlmx.lrsj,'yyyy-MM') &lt;= #{lrsjMend}
+            </if>
+            <if test="lrsjYstart != null and lrsjYstart != ''">
+                and to_char(sczlmx.lrsj,'yyyy') &gt;= #{lrsjYstart}
+            </if>
+            <if test="lrsjYend !=null and lrsjYend !=''">
+                and to_char(sczlmx.lrsj,'yyyy') &lt;= #{lrsjYend}
+            </if>
+            GROUP BY rq ) tp on tp.rq = tmp.rq
+    </select>
+    <select id="getSczlmxDtos" parameterType="List" resultType="SczlmxDto">
+        select sczlmx.sczlmxid,sczlmx.xqjhmxid,sczlmx.xlh,sczlmx.scsl,case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+        when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' when sczlmx.zt='00' then '待生产' end ztmc
+        from igams_sczlmx sczlmx
+        left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid and sczlgl.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid = sczlmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = sczlmx.cpxqid and cpxqjh.scbj = '0'
+        left join igams_xqjhmx xqjhmx on xqjhmx.xqjhmxid = sczlmx.xqjhmxid and cpxqjh.scbj = '0'
+        left join matridx_jcsj cplx on cplx.csid = sczlgl.cplx and cplx.scbj = '0'
+        left join matridx_yhssjg yhssjg on yhssjg.yhid = sczlgl.lrry
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join (
+        select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp
+        from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+        from matridx_shxx sh
+        left join matridx_spgw gw on gw.gwid=sh.gwid
+        where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+        group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+        group by tmp.ywid
+        ) tmp on tmp.ywid=sczlmx.sczlmxid
+        left join (
+        select ywid,max(shsj) tjsj
+        from matridx_shxx
+        where lcxh is null    and sftg is null
+        group by ywid
+        )tj on tj.ywid=sczlmx.sczlmxid
+        left join (
+        select tmp.ywid,string_agg(tmp.gwmc||'!'||tmp.shsj,',' order by tmp.shsj) as temp_t
+        from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid,Sum(sh.lcxh) as lcxh
+        from matridx_shxx sh
+        left join matridx_spgw gw on gw.gwid=sh.gwid
+        where ((sh.sftg='1' and sh.gwid is not null) or (sh.sftg is null))
+        group by sh.lcxh,gw.gwmc,sh.ywid) tmp
+        group by tmp.ywid
+        ) tmp_t on tmp_t.ywid=hwxx.dhjyid
+        left join (
+        select ywid,max(shsj) tjsj
+        from matridx_shxx
+        where lcxh is null    and sftg is null
+        group by ywid
+        )tj_t on tj_t.ywid=hwxx.dhjyid
+        where sczlmx.scbj='0' and sczlmx.xqjhmxid in
+        <foreach collection="list" separator="," open="(" close=") "
+                 item="item" index="index">
+            #{item.xqjhmxid}
+        </foreach>
+    </select>
+    <select id="getPagedProduce"  parameterType="SczlmxDto" resultType="SczlmxDto">
+        SELECT
+            sczlgl.zldh,sczlgl.cpbh,sczlgl.jhcl,wlgl.wlbm,wlgl.wlmc,sczlmx.xlh,sczlmx.sczlmxid,sczlmx.sczlid,wlgl.wlid,sczlmx.scsl
+        FROM
+            igams_sczlmx sczlmx
+                LEFT JOIN igams_sczlgl sczlgl ON sczlgl.sczlid = sczlmx.sczlid
+                LEFT JOIN igams_wlgl wlgl ON sczlmx.wlid = wlgl.wlid
+        WHERE sczlmx.scbj ='0'
+        <if test="entire != null and entire != ''">
+            and (
+            sczlgl.zldh ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="zldh !=null and zldh != ''">
+            and sczlgl.zldh ILIKE '%'||#{zldh}||'%'
+        </if>
+        <if test="wlbm !=null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc !=null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+    </select>
+    <select id="getProgressSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,2)),'0') AS numeric) + 1) as VARCHAR),2, '0') serial
+        FROM igams_sczlmx
+        <where>
+            scbj != '1' AND jlbh like #{prefix}||'%'
+        </where>
+    </select>
+    <select id="getDtoListForPrint" parameterType="SczlmxDto" resultType="SczlmxDto">
+        select
+        sczlmx.sczlmxid,sczlmx.zt,sczlmx.xlh,sczlmx.scsl,sczlmx.sczlid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.wlid,wlgl.scs,wlgl.jldw
+        ,sczlgl.zldh,sczlgl.zlrq,sczlgl.cpbh,sczlgl.jhcl,sczlgl.cplx,wlgl.ychh,sczlgl.bz,sczlmx.jlbh,wlgl.bctj
+        from igams_sczlmx sczlmx
+        left join igams_sczlgl sczlgl on sczlgl.sczlid=sczlmx.sczlid
+        left join igams_wlgl wlgl on wlgl.wlid = sczlmx.wlid
+        <where>
+            sczlmx.scbj='0'
+            <if test="ids !=null and ids.size >0" >
+                and sczlmx.sczlmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

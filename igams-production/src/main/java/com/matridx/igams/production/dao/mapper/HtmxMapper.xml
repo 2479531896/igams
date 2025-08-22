@@ -1,0 +1,1529 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IHtmxDao" >
+	<sql id="SEARCH_TERMS">
+		htmx.scbj!='1'
+		<if test="entire != null and entire != ''">
+			and (
+			htgl.htwbbh ILIKE '%'||#{entire}||'%'
+			or htgl.htwbbh ILIKE '%'||#{entire}||'%'
+			or wl.wlmc ILIKE '%'||#{entire}||'%'
+			or wl.wlbm ILIKE '%'||#{entire}||'%'
+			or jc_wllb.csmc ILIKE '%'||#{entire}||'%'
+			or jc_wlzlb.csmc ILIKE '%'||#{entire}||'%'
+			or jc_wlzlbtc.csmc ILIKE '%'||#{entire}||'%'
+			or qggl.djh ILIKE '%'||#{entire}||'%'
+			or gys.gysmc ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="htnbbh != null and htnbbh != ''">
+			and htgl.htnbbh ILIKE '%'||#{htnbbh}||'%'
+		</if>
+		<if test="htwbbh != null and htwbbh != ''">
+			and htgl.htwbbh ILIKE '%'||#{htwbbh}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wl.wlmc ILIKE '%'||#{wlmc}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wllbmc != null and wllbmc != ''">
+			and jc_wllb.csmc ILIKE '%'||#{wllbmc}||'%'
+		</if>
+		<if test="wlzlbmc != null and wlzlbmc != ''">
+			and jc_wlzlb.csmc ILIKE '%'||#{wlzlbmc}||'%'
+		</if>
+		<if test="wlzlbtcmc != null and wlzlbtcmc != ''">
+			and jc_wlzlbtc.csmc ILIKE '%'||#{wlzlbtcmc}||'%'
+		</if>
+		<if test="djh != null and djh != ''">
+			and qggl.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="hwrkdh != null and hwrkdh != ''">
+			and rkgl.rkdh ILIKE '%'||#{hwrkdh}||'%'
+		</if>
+		<if test="kdmc != null and kdmc != ''">
+			and jc_kdlx.csmc ILIKE '%'||#{kdmc}||'%'
+		</if>
+		<if test="jhdhrqstart != null and jhdhrqstart != ''">
+			and to_char(htmx.jhdhrq,'yyyy-mm-dd hh24:mi:ss') &gt;= #{jhdhrqstart}
+		</if>
+		<if test="jhdhrqend != null and jhdhrqend != ''">
+			and to_char(htmx.jhdhrq,'yyyy-mm-dd hh24:mi:ss') &lt;= #{jhdhrqend}
+		</if>
+		<if test="dhrqstart != null and dhrqstart != ''">
+			and to_char(dhxx.dhrq,'yyyy-mm-dd hh24:mi:ss') &gt;= #{dhrqstart}
+		</if>
+		<if test="dhrqend != null and dhrqend != ''">
+			and to_char(dhxx.dhrq,'yyyy-mm-dd hh24:mi:ss') &lt;= #{dhrqend}
+		</if>
+		<if test="lrsjstart != null and lrsjstart != ''">
+			and to_char(fpgl.lrsj,'yyyy-mm-dd hh24:mi:ss') &gt;= #{lrsjstart}
+		</if>
+		<if test="lrsjend != null and lrsjend != ''">
+			and to_char(fpgl.lrsj,'yyyy-mm-dd hh24:mi:ss') &lt;= #{lrsjend}
+		</if>
+		<if test="qgshtgsjstart != null and qgshtgsjstart != ''">
+			and qgsh.qgshtgsj&gt;= #{qgshtgsjstart}
+		</if>
+		<if test="qgshtgsjend != null and qgshtgsjend != ''">
+			and qgsh.qgshtgsj &lt;= #{qgshtgsjend}
+		</if>
+		<if test="htshtgsjstart != null and htshtgsjstart != ''">
+			and htsh.htshtgsj&gt;= #{htshtgsjstart}
+		</if>
+		<if test="htshtgsjend != null and htshtgsjend != ''">
+			and  htsh.htshtgsj &lt;= #{htshtgsjend}
+		</if>
+		<if test="gysmc != null and gysmc != ''">
+			and gys.gysmc ILIKE '%'||#{gysmc}||'%'
+
+		</if>
+	</sql>
+	<!-- 采购物料  -->
+	<select id="getPagedDtoList" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+		htmx.htmxid,
+		htmx.qgmxid,
+		htmx.qgid,
+		htmx.wlid,
+		round( htmx.sl, 2 ) sl,
+		round( htmx.hsdj, 6 ) hsdj,
+		round( htmx.hjje, 2 ) hjje,
+		htmx.jhdhrq,
+		htmx.bz,
+		qggl.djh,
+		qggl.sqbm,
+		jg_sqbm.jgmc AS sqbmmc,
+		wl.wlbm,
+		wl.wlmc,
+		wl.gg,
+		wl.jldw,
+		qgmx.sl qgsl,
+		htgl.htnbbh,
+		htgl.htwbbh,
+		htgl.htid,
+		jc_wllb.csmc wllbmc,
+		jc_wlzlb.csmc wlzlbmc,
+		jc_wlzlbtc.csmc wlzlbtcmc,
+		wl.ychh,
+		htmx.kddh,
+		htmx.kdlx,
+		xtyh.zsxm AS sqr,
+		qgmx.qwrq,
+		jc_kdlx.csmc AS kdmc,
+		htmx.kdlxmc,
+		jc_kdlx.cskz2,
+		COALESCE ( tmp.rkzsl, 0 ) rkzsl,
+		COALESCE ( tmp.bhgsl, 0 ) bhgsl,
+		tab.u8rkdh,
+		fp.fph,
+		zllb.cskz1 lbcskz1,
+		fp.fpzje,
+		yh.zsxm sqrmc,
+		gys.gysmc,
+		fkfs.csmc fkfsmc,
+		tab.dhrq,
+		fp.fplrsj,
+		htfk.fkrq,
+		htgl.yfje,
+		fp.fpsl,
+		(COALESCE(htgl.zje,0)-COALESCE(htgl.yfje,0)) wfkje,
+		htfk.fkje,
+		jc_htfx.csmc htfxmc,
+		htmx.ccdg,
+		wlfl.csmc wlflmc,htmx.cpzch
+		FROM
+		igams_htmx htmx
+		<if test="(dhrqstart != null and dhrqstart != '')or(dhrqend != null and dhrqend != '')">
+			left join igams_hwxx hwxx on hwxx.htmxid=htmx.htmxid and hwxx.scbj='0'
+			left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		</if>
+		<if test="(lrsjstart != null and lrsjstart != '')or(lrsjend != null and lrsjend != '')">
+			LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+			LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid and fpgl.scbj='0'
+		</if>
+		LEFT OUTER JOIN (
+		SELECT SUM
+		( COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 ) - COALESCE ( hwxx.zjthsl, 0 ) ) rkzsl,
+		SUM
+		( COALESCE ( hwxx.cythsl, 0 ) + COALESCE ( hwxx.zjthsl, 0 ) ) bhgsl,
+		htmxid
+		FROM
+		igams_hwxx hwxx
+		WHERE
+		hwxx.scbj != '1'
+		GROUP BY
+		hwxx.htmxid
+		) tmp ON tmp.htmxid = htmx.htmxid
+		left join (SELECT
+		htmx.htmxid,
+		string_agg (distinct  hwxx.u8rkdh||'('||COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 )||')'||'-'||rkgl.rkid||'-'||dhxx.dhid, ',' ) u8rkdh,
+		string_agg (distinct  to_char(dhxx.dhrq,'yyyy-mm-dd'), ',' ) dhrq
+		FROM
+		igams_htmx htmx
+		left join igams_hwxx hwxx on hwxx.htmxid=htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		WHERE
+		htmx.scbj != '1'
+		GROUP BY
+		htmx.htmxid) tab on tab.htmxid=htmx.htmxid
+		left join (select
+		htmx.htmxid,
+		string_agg (distinct  fpgl.fph||'-'||fpgl.fpid, ',' ) fph,
+		sum(fpmx.fpje) fpzje,
+		sum(fpmx.fpsl) fpsl,
+		string_agg (distinct  to_char(fpgl.lrsj,'yyyy-mm-dd'), ',' ) fplrsj
+		from igams_htmx htmx
+		LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+		LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid and fpgl.scbj='0'
+		where htmx.scbj='0'
+		GROUP BY
+		htmx.htmxid) fp on fp.htmxid=htmx.htmxid
+		LEFT JOIN igams_qggl qggl ON htmx.qgid = qggl.qgid
+		left join matridx_xtyh yh on yh.yhid = qggl.sqr
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) qgshtgsj,
+		qggl.qgid
+		from igams_qggl qggl
+		left join matridx_shxx shxx on shxx.ywid=qggl.qgid and qggl.zt='80'
+		group by qggl.qgid) qgsh on qgsh.qgid=htmx.qgid
+		LEFT JOIN matridx_jgxx jg_sqbm ON jg_sqbm.jgid = qggl.sqbm
+		LEFT JOIN igams_qgmx qgmx ON htmx.qgmxid = qgmx.qgmxid
+		LEFT JOIN igams_wlgl wl ON htmx.wlid = wl.wlid
+		left join matridx_jcsj zllb on zllb.csid=wl.lb
+		LEFT JOIN igams_htgl htgl ON htgl.htid = htmx.htid
+		left join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left join (select
+		htfkmx.htid,
+		string_agg (distinct cast(COALESCE(htfkmx.fkje,0) as varchar),',' ) fkje,
+		string_agg (distinct  to_char(htfkqk.fkrq,'yyyy-mm-dd'), ',' ) fkrq
+		from igams_htfkmx htfkmx
+		left join igams_htfkqk htfkqk on htfkqk.htfkid=htfkmx.htfkid and htfkqk.scbj='0'
+		where htfkmx.scbj='0'
+		GROUP BY
+		htfkmx.htid) htfk on htfk.htid=htgl.htid
+		left join igams_gysxx gys on gys.gysid = htgl.gys
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) htshtgsj,
+		htgl.htid
+		from igams_htgl htgl
+		left join matridx_shxx shxx on shxx.ywid=htgl.htid and htgl.zt='80'
+		group by htgl.htid) htsh on htsh.htid=htgl.htid
+		LEFT JOIN matridx_jcsj wlfl ON wlfl.csid = htmx.wlfl
+		LEFT JOIN matridx_jcsj jc_wllb ON jc_wllb.csid = wl.wllb
+		LEFT JOIN matridx_jcsj jc_wlzlb ON jc_wlzlb.csid = wl.wlzlb
+		LEFT JOIN matridx_jcsj jc_wlzlbtc ON jc_wlzlbtc.csid = wl.wlzlbtc
+		LEFT JOIN matridx_jcsj jc_kdlx ON jc_kdlx.csid = htmx.kdlx
+		LEFT JOIN matridx_jcsj jc_htfx ON jc_htfx.csid = htgl.htfxcd
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = qggl.sqr
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+			<if test="hwbj != null and hwbj == '0'.toString">
+				and htmx.dhsl is null or htmx.dhsl=0
+			</if>
+			<if test="hwbj != null and hwbj == '1'.toString">
+				and htmx.dhsl =htmx.sl
+			</if>
+			<if test="hwbj != null and hwbj == '2'.toString">
+				and htmx.dhsl is not null and htmx.dhsl!=0 and htmx.sl!=htmx.dhsl
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据合同明细ID获取合同明细信息 -->
+	<select id="getDtoById" parameterType="String" resultType="HtmxDto">
+		select htmx.htid,htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,htmx.sl,htmx.hsdj,htmx.hjje,htmx.jhdhrq,htmx.bz,to_char(htgl.ddrq,'yyyy-mm-dd') ddrq,
+		qggl.djh,qggl.sqbm,jg_sqbm.jgmc as sqbmmc,wl.wlbm wlbm,wl.wlmc wlmc,wl.gg,wl.jldw jldw,qgmx.sl qgsl,htgl.htnbbh,htgl.htwbbh,htmx.kdlx,htmx.kdlxmc,
+		jc_wllb.csmc wllbmc,jc_wlzlb.csmc wlzlbmc,jc_wlzlbtc.csmc wlzlbtcmc,wl.ychh,xtyh.zsxm as sqr,xtyh.ddid,jc_kdlx.csmc as kdmc,htmx.kddh,jc_kdlx.cskz2,
+		htmx.dhrq,htmx.dhsl dhsl,htmx.dhrq,htgl.ddrq as ddrq,gysxx.gysmc as gysmc,xtyh1.zsxm as fzrmc,jgxx.jgmc as sqbmmc,htgl.cjrq as cjrq,htgl.tjrq as tjrq,htgl.htwfrq as htwfrq,
+      			htmx.suil as suil,htgl.hl as hl,biz.csmc as bizmc,htgl.szbj as szbj,jc_fkfs.csmc as fkfsmc,jc_fpfs.csmc as fpfs,htmx.bz as htmxbz,htmx.zt,htmx.sl,htmx.hsdj,htmx.hjje,htmx.jhdhrq,htgl.bz as bz,
+			jc_ywlx.csmc as ywlxmc,htmx.xh,htmx.ccdg,wlfl.csmc wlflmc,qggl.sqrq,htmx.bxsj,xtyh_dk.zsxm dkrymc,xtyh_gb.zsxm gbrymc,htmx.hzt,qggl.sqr,xtyh.yhm sqryhm,htmx.cpzch,qggl.sqr
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join matridx_jcsj wlfl on wlfl.csid=htmx.wlfl
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		left join matridx_jcsj jc_kdlx on jc_kdlx.csid=htmx.kdlx
+		left join matridx_xtyh xtyh on xtyh.yhid = qggl.sqr
+		left join matridx_jgxx jgxx on htgl.sqbm =jgxx.jgid
+		left join matridx_jcsj biz on biz.csid=htgl.biz
+		left join matridx_jcsj jc_fkfs on jc_fkfs.csid=htgl.fkfs
+		left join matridx_jcsj jc_fpfs on jc_fpfs.csid=htgl.fpfs
+		left join matridx_jcsj jc_ywlx on jc_ywlx.csid=htgl.ywlx
+		left join igams_gysxx gysxx on htgl.gys=gysxx.gysid
+		left join matridx_xtyh xtyh1 on htgl.fzr=xtyh1.yhid
+		LEFT JOIN matridx_xtyh xtyh_dk ON xtyh_dk.yhid = htmx.dkry
+		LEFT JOIN matridx_xtyh xtyh_gb ON xtyh_gb.yhid = htmx.gbry
+
+		<where>
+			htmx.scbj!='1' and
+			htmx.htmxid=#{htmxid}
+		</where>
+	</select>
+
+	<!-- 获取物料信息列表 -->
+	<select id="getListByHtid" parameterType="String" resultType="HtmxDto">
+		select htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,round(htmx.sl,2) sl,round(htmx.sl,2) presl,round(htmx.hsdj,6) hsdj,round(htmx.hjje,2) hjje,htmx.jhdhrq,htmx.bz,htgl.u8omid,htgl.u8poid,htmx.u8mxid,htmx.u8ommxid,
+		qggl.djh,qggl.sqbm,jg_sqbm.jgmc as sqbmmc,wl.wlbm wlbm,wl.wlmc wlmc,wl.gg,wl.jldw,wl.ychh,htmx.wsdj,jc_xmbm.csdm as xmcsdm,jc_xmbm.csmc as xmcsmc,jc_fcs.csdm as fcsdm,
+		qgmx.ydsl as ydsl, qgmx.sysl as sysl,qgmx.sl as qgsl,htmx.suil,qgmx.qwrq as qgqwrq,qgmx.qxqg as qgqxqg,qgmx.bz as qgbz,qgmx.glid,qggl.qglb,qglb.csdm qglbdm,qglb.csmc qglbmc,
+		htmx.hwmc,qgmx.hwbz,qgmx.hwjldw,qgmx.hwyt,htgl.htnbbh,tmp.fphms,htmx.sfgdzc,htmx.bxsj,htmx.xh,htmx.hzt,xtyh_dk.zsxm dkrymc,xtyh_gb.zsxm gbrymc,htmx.ccdg,wlfl.csmc wlflmc,htmx.wlfl,htmx.cpzch,zllb.cskz1 lbcskz1,
+		wl.scs,case when htmx.wlid is null then 1 else 0 end fwbj,htmx.scbj,htmx.dhzq,htmx.kjhtmxid,htmx.sfty,htmx.bchtmxid,htgl.htlx,
+		round(yhtmx.sl,2) yhtmxsl,round(yhtmx.hsdj,6) yhtmxhsdj,round(yhtmx.hjje,2) yhtmxhjje
+		from igams_htmx htmx
+		left join igams_htmx yhtmx on htmx.bchtmxid = yhtmx.htmxid
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join matridx_jcsj wlfl on wlfl.csid=htmx.wlfl
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		left join matridx_jcsj jc_xmbm on jc_xmbm.csid=qggl.xmbm
+		left join matridx_jcsj jc_fcs on jc_fcs.csid = jc_xmbm.fcsid
+		left join matridx_jcsj qglb on qglb.csid=qggl.qglb
+		LEFT JOIN matridx_xtyh xtyh_dk ON xtyh_dk.yhid = htmx.dkry
+		LEFT JOIN matridx_xtyh xtyh_gb ON xtyh_gb.yhid = htmx.gbry
+		left join matridx_jcsj zllb on zllb.csid=wl.lb
+		left join
+		(
+		select string_agg(fpqk.fphm,',') fphms,fpmx.htmxid from igams_htfpmx fpmx
+		left join igams_htfpqk fpqk on fpqk.htfpid=fpmx.htfpid and fpqk.scbj!='1'
+		where  fpqk.htid= #{htid}
+		GROUP BY fpmx.htmxid
+		)tmp on tmp.htmxid=htmx.htmxid
+		<where>
+			htmx.scbj !='1' and htmx.htid = #{htid}
+		</where>
+		order by htmx.xh asc
+	</select>
+	<!-- 获取原合同u8id -->
+	<select id="getOriginalContractU8" parameterType="String" resultType="HtmxDto">
+		select htmx.htmxid,htmx.sfty,htmx.bchtmxid,yhtgl.u8omid,yhtgl.u8poid,yhtmx.u8mxid,yhtmx.u8ommxid,yhtgl.htlx
+		from igams_htmx htmx
+		left join igams_htmx yhtmx on yhtmx.htmxid = htmx.bchtmxid
+		left join igams_htgl yhtgl on yhtgl.htid = yhtmx.htid
+		<where>
+			htmx.scbj !='1' and htmx.htid = #{htid}
+		</where>
+	</select>
+	<!-- 获取原合同明细列表 -->
+	<select id="getOriginalContractDetails" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,round(htmx.sl,2) sl,round(htmx.hsdj,6) hsdj,round(htmx.hjje,2) hjje,htmx.jhdhrq,htmx.bz,
+		qggl.djh,wl.wlbm wlbm,wl.wlmc wlmc,wl.gg,wl.jldw,htmx.suil,qgmx.bz as qgbz,qggl.qglb,qglb.csdm qglbdm,qglb.csmc qglbmc,
+		htmx.hwmc,qgmx.hwbz,qgmx.hwjldw,qgmx.hwyt,htgl.htnbbh,htmx.sfgdzc,htmx.bxsj,htmx.ccdg,wlfl.csmc wlflmc,htmx.wlfl,htmx.cpzch,zllb.cskz1 lbcskz1,
+		wl.scs,case when htmx.wlid is null then 1 else 0 end fwbj,htmx.scbj,htmx.dhzq,htmx.hzt,htmx.xh
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join matridx_jcsj wlfl on wlfl.csid=htmx.wlfl
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		left join matridx_jcsj qglb on qglb.csid=qggl.qglb
+		left join matridx_jcsj zllb on zllb.csid=wl.lb
+		<where>
+			htmx.scbj !='1'
+			<if test="htid != null and htid !='' ">
+				and htmx.htid = #{htid}
+			</if>
+			<if test="htmxid != null and htmxid !='' ">
+				and htmx.htmxid = #{htmxid}
+			</if>
+		</where>
+		order by htmx.xh asc
+	</select>
+	<select id="getListByHtidDingTalk" parameterType="String" resultType="HtmxDto">
+		SELECT
+		wlgl.wlmc,
+		wlgl.wlbm,
+		htmx.sl,
+		wlgl.jldw AS hwjldw,
+		htmx.hsdj,
+		hwxx.hwid,wlgl.wlid,htmx.hjje,qgmx.hwmc
+		FROM
+		igams_htmx htmx
+	 	left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid and qgmx.scbj ='0'
+		LEFT JOIN igams_wlgl wlgl ON htmx.wlid = wlgl.wlid and wlgl.scbj!='1'
+		left join igams_hwxx hwxx on htmx.htmxid =hwxx.htmxid and  hwxx.scbj!='1'
+		<where>
+			htmx.scbj !='1' and hwxx.hwid!='1' and htmx.htid = #{htid}
+		</where>
+	</select>
+
+	<!-- 批量新增合同明细信息 -->
+	<insert id="insertHtmxDtos" parameterType="list">
+		insert into igams_htmx
+			(htmxid,htid,qgid,xh,qgmxid,wlid,hwmc,sl,hsdj,wsdj,suil,hjje,jhdhrq,bz,zt,u8mxid,lrry,lrsj,scbj,sffpwh,sfgdzc,bxsj,ccdg,wlfl,cpzch,kjhtmxid,sfty,bchtmxid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.htmxid},#{item.htid},#{item.qgid},
+				<if test="item.xh !=null and item.xh !=''">
+					cast(#{item.xh} as numeric),
+				</if>
+				<if test="item.xh ==null or item.xh ==''">
+					(select (select coalesce(max(xh),0)+1+#{index} from igams_htmx where htid=#{item.htid})),
+				</if>
+				#{item.qgmxid},#{item.wlid},#{item.hwmc},
+					<if test="item.sl !=null and item.sl !=''">
+						cast(#{item.sl} as numeric),
+					</if>
+					<if test="item.sl ==null or item.sl ==''">
+						null,
+					</if>
+					<if test="item.hsdj !=null and item.hsdj !=''">
+						cast(#{item.hsdj} as decimal),
+					</if>
+					<if test="item.hsdj ==null or item.hsdj ==''">
+						null,
+					</if>
+					<if test="item.wsdj !=null and item.wsdj !=''">
+						cast(#{item.wsdj} as decimal),
+					</if>
+					<if test="item.wsdj ==null or item.wsdj ==''">
+						null,
+					</if>
+					<if test="item.suil !=null and item.suil !=''">
+						cast(#{item.suil} as numeric),
+					</if>
+					<if test="item.suil ==null or item.suil ==''">
+						null,
+					</if>
+					<if test="item.hjje !=null and item.hjje !=''">
+						cast(#{item.hjje} as numeric),
+					</if>
+					<if test="item.hjje ==null or item.hjje ==''">
+						null,
+					</if>
+					<if test="item.jhdhrq !=null and item.jhdhrq !=''">
+						cast(#{item.jhdhrq} as date),
+					</if>
+					<if test="item.jhdhrq ==null or item.jhdhrq ==''">
+						null,
+					</if>
+					#{item.bz},#{item.zt},#{item.u8mxid},#{item.lrry},LOCALTIMESTAMP,'0','0',#{item.sfgdzc},#{item.bxsj},#{item.ccdg},#{item.wlfl},#{item.cpzch},#{item.kjhtmxid},#{item.sfty},#{item.bchtmxid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 批量新增框架合同明细信息 -->
+	<insert id="insertFrameworks" parameterType="list">
+		insert into igams_htmx
+			(htmxid,htid,xh,wlid,hwmc,hsdj,bz,lrry,lrsj,scbj,sffpwh,sfgdzc,bxsj,ccdg,wlfl,cpzch,dhzq)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.htmxid},#{item.htid},(select (select coalesce(max(xh),0)+1+#{index} from igams_htmx where htid=#{item.htid})),#{item.wlid},#{item.hwmc},
+				cast(#{item.hsdj} as decimal),#{item.bz},#{item.lrry},LOCALTIMESTAMP,#{item.scbj},#{item.sffpwh},#{item.sfgdzc},#{item.bxsj},#{item.ccdg},#{item.wlfl},#{item.cpzch},cast(#{item.dhzq} as decimal))
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 批量修改合同明细信息 -->
+	<update id="updateHtmxDtos" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_htmx set
+					xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+					<if test="item.htid !=null and item.htid !=''">
+						,htid=#{item.htid}
+					</if>	
+					<if test="item.qgid !=null and item.qgid !=''">
+						,qgid=#{item.qgid}
+					</if>
+					<if test="item.qgmxid !=null and item.qgmxid !=''">
+						,qgmxid=#{item.qgmxid}
+					</if>
+					<if test="item.wlid !=null and item.wlid !=''">
+						,wlid=#{item.wlid}
+					</if>
+					<if test="item.hwmc !=null and  item.hwmc !=''">
+						,hwmc=#{item.hwmc}
+					</if>
+					<if test="item.sl !=null and  item.sl !=''">
+						,sl=cast(#{item.sl} as numeric)
+					</if>
+					<if test="item.hsdj !=null and  item.hsdj !=''">
+						,hsdj=cast(#{item.hsdj} as decimal)
+					</if>
+					<if test="item.wsdj !=null and  item.wsdj !=''">
+						,wsdj=cast(#{item.wsdj} as decimal)
+					</if>
+					<if test="item.suil !=null and  item.suil !=''">
+						,suil=cast(#{item.suil} as numeric)
+					</if>
+					<if test="item.hjje !=null and  item.hjje !=''">
+						,hjje=cast(#{item.hjje} as decimal)
+					</if>
+					<if test="item.jhdhrq !=null and  item.jhdhrq !=''">
+						,jhdhrq=cast(#{item.jhdhrq} as date)
+					</if>
+					<if test="item.yjhdhrq !=null and  item.yjhdhrq !=''">
+						,yjhdhrq=cast(#{item.yjhdhrq} as date)
+					</if>
+					<if test="item.bz !=null and  item.bz !=''">
+						,bz=#{item.bz}
+					</if>
+					<if test="item.zt !=null and  item.zt !=''">
+						,zt=#{item.zt}
+					</if>
+					<if test="item.u8mxid !=null and  item.u8mxid !=''">
+						,u8mxid=#{item.u8mxid}
+					</if>
+					<if test="item.dhslbj == '0'.toString()">
+						,dhsl=COALESCE(dhsl,0) - cast(#{item.bydhsl} as numeric)
+					</if>
+					<if test="item.dhslbj == '1'.toString()">
+						,dhsl=COALESCE(dhsl,0) + cast(#{item.bydhsl} as numeric)
+					</if>
+					<if test="item.dhsl !=null and  item.dhsl !=''">
+						,dhsl=cast(#{item.dhsl} as numeric)
+					</if>
+					<if test="item.sfgdzc !=null and  item.sfgdzc !=''">
+						,sfgdzc=#{item.sfgdzc}
+					</if>
+					<if test="item.u8ommxid !=null and  item.u8ommxid !=''">
+						,u8ommxid=#{item.u8ommxid}
+					</if>
+					<if test="item.ccdg !=null and  item.ccdg !=''">
+						,ccdg=#{item.ccdg}
+					</if>
+					<if test="item.wlfl !=null and  item.wlfl !=''">
+						,wlfl=#{item.wlfl}
+					</if>
+					<if test="item.cpzch !=null and  item.cpzch !=''">
+						,cpzch=#{item.cpzch}
+					</if>
+					<if test="item.dhzq !=null and  item.dhzq !=''">
+						,dhzq=cast(#{item.dhzq} as numeric)
+					</if>
+					<if test="item.scbj !=null and  item.scbj !=''">
+						,scbj=#{item.scbj}
+					</if>
+					<if test="item.sfty !=null and  item.sfty !=''">
+						,sfty=#{item.sfty}
+					</if>
+					<where>
+						htmxid=#{item.htmxid}
+					</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<!--批量删除合同明细信息-->
+	<update  id="deleteHtmxDtos" parameterType="HtmxDto">
+		update igams_htmx set scry = #{scry}, scsj = LOCALTIMESTAMP, scbj = #{scbj}
+		<where>
+			1=2
+			<if test="ids !=null and ids.size > 0">
+				or htmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<delete id="delete" parameterType="HtmxDto">
+		update igams_htmx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+				htid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</delete>
+
+
+	<!-- 含税单价统计 -->
+	<select id="statisticTaxPrice" parameterType="HtmxDto" resultType="Map">
+		select row_number() over(order by htgl.cjrq desc ) tjmc, htmx.hsdj tjsl, to_char(htgl.cjrq,'YYYY-mm-dd') cjrq
+		from igams_htmx htmx
+		left join igams_htgl htgl on htmx.htid = htgl.htid
+		<where>
+			htmx.scbj != '1' and htmx.wlid = #{wlid} and htgl.zt = '80' and htgl.htlx!='3'
+		</where>
+		order by htgl.cjrq DESC
+	</select>
+	<!-- 采购物料周期统计(当前使用的创建日期，功能完整后可以改为订单日期) -->
+	<select id="statisticCycle" parameterType="HtmxDto" resultType="Map">
+		select row_number() over(order by htgl.cjrq desc ) tjmc, date_part('day',htmx.dhrq::timestamp-htgl.cjrq::timestamp) tjsl, to_char(htgl.cjrq,'YYYY-mm-dd')||' 周期(天)' xname
+		from igams_htmx htmx
+		left join igams_htgl htgl on htmx.htid = htgl.htid
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		<where>
+			htmx.wlid = #{wlid} and htmx.dhrq is not null
+		</where>
+		order by htgl.cjrq desc
+		limit 5
+	</select>
+
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="HtmxDto"
+			resultType="java.lang.Integer">
+		select count(htmx.htmxid)
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_xtyh yh on yh.yhid = qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on qgmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_gysxx gys on gys.gysid = htgl.gys
+		left join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left join (select
+		htfkmx.htid,
+		string_agg (distinct cast(COALESCE(htfkmx.fkje,0) as varchar),'/' ) fkje,
+		string_agg (distinct  to_char(htfkqk.fkrq,'yyyy-mm-dd'), '/' ) fkrq
+		from
+		igams_htfkmx htfkmx
+		left join
+		igams_htfkqk htfkqk
+		on htfkqk.htfkid=htfkmx.htfkid and htfkqk.scbj='0'
+		where
+		htfkmx.scbj='0'
+		GROUP BY
+		htfkmx.htid) htfk on htfk.htid=htgl.htid
+		left join (select
+		htmx.htmxid,
+		sum(fpmx.fpje) fpzje,
+		string_agg (distinct  to_char(fpgl.lrsj,'yyyy-mm-dd'), '/' ) fplrsj,
+		string_agg (distinct  fpgl.fph, '/' ) fph
+		from igams_htmx htmx
+		LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+		LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid and fpgl.scbj='0'
+		where htmx.scbj='0'
+		GROUP BY
+		htmx.htmxid) fp on fp.htmxid=htmx.htmxid
+		left join (SELECT
+		htmx.htmxid,
+		string_agg (distinct  hwxx.u8rkdh, '/' ) u8rkdh,
+		string_agg (distinct  to_char(dhxx.dhrq,'yyyy-mm-dd'), '/' ) dhrq,
+		string_agg (distinct  ''||hwxx.dhsl, '/' ) dhsl
+		FROM
+		igams_htmx htmx
+		left join igams_hwxx hwxx on hwxx.htmxid=htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		WHERE
+		htmx.scbj != '1'
+		GROUP BY
+		htmx.htmxid) tab on tab.htmxid=htmx.htmxid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) htshtgsj,
+		htgl.htid
+		from igams_htgl htgl
+		left join matridx_shxx shxx on shxx.ywid=htgl.htid and htgl.zt='80'
+		group by htgl.htid) htsh on htsh.htid=htgl.htid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) qgshtgsj,
+		qggl.qgid
+		from igams_qggl qggl
+		left join matridx_shxx shxx on shxx.ywid=qggl.qgid and qggl.zt='80'
+		group by qggl.qgid) qgsh on qgsh.qgid=htmx.qgid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid ${sqlParam}
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_xtyh yh on yh.yhid = qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on qgmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_gysxx gys on gys.gysid = htgl.gys
+		left join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left join (select
+		htfkmx.htid,
+		string_agg (distinct cast(COALESCE(htfkmx.fkje,0) as varchar),'/' ) fkje,
+		string_agg (distinct  to_char(htfkqk.fkrq,'yyyy-mm-dd'), '/' ) fkrq
+		from
+		igams_htfkmx htfkmx
+		left join
+		igams_htfkqk htfkqk
+		on htfkqk.htfkid=htfkmx.htfkid and htfkqk.scbj='0'
+		where
+		htfkmx.scbj='0'
+		GROUP BY
+		htfkmx.htid) htfk on htfk.htid=htgl.htid
+		left join (select
+		htmx.htmxid,
+		sum(fpmx.fpje) fpzje,
+		string_agg (distinct  to_char(fpgl.lrsj,'yyyy-mm-dd'), '/' ) fplrsj,
+		string_agg (distinct  fpgl.fph, '/' ) fph
+		from igams_htmx htmx
+		LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+		LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid and fpgl.scbj='0'
+		where htmx.scbj='0'
+		GROUP BY
+		htmx.htmxid) fp on fp.htmxid=htmx.htmxid
+		left join (SELECT
+		htmx.htmxid,
+		string_agg (distinct  hwxx.u8rkdh, '/' ) u8rkdh,
+		string_agg (distinct  to_char(dhxx.dhrq,'yyyy-mm-dd'), '/' ) dhrq,
+		string_agg (distinct  ''||hwxx.dhsl, '/' ) dhsl
+		FROM
+		igams_htmx htmx
+		left join igams_hwxx hwxx on hwxx.htmxid=htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		WHERE
+		htmx.scbj != '1'
+		GROUP BY
+		htmx.htmxid) tab on tab.htmxid=htmx.htmxid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) htshtgsj,
+		htgl.htid
+		from igams_htgl htgl
+		left join matridx_shxx shxx on shxx.ywid=htgl.htid and htgl.zt='80'
+		group by htgl.htid) htsh on htsh.htid=htgl.htid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) qgshtgsj,
+		qggl.qgid
+		from igams_qggl qggl
+		left join matridx_shxx shxx on shxx.ywid=qggl.qgid and qggl.zt='80'
+		group by qggl.qgid) qgsh on qgsh.qgid=htmx.qgid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} htmxid,#{index} ordernum
+		</foreach>
+		) tmp
+		left join igams_htmx htmx on tmp.htmxid = htmx.htmxid
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_xtyh yh on yh.yhid = qggl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on qgmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join igams_gysxx gys on gys.gysid = htgl.gys
+		left join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left join (select
+		htfkmx.htid,
+		string_agg (distinct cast(COALESCE(htfkmx.fkje,0) as varchar),'/' ) fkje,
+		string_agg (distinct  to_char(htfkqk.fkrq,'yyyy-mm-dd'), '/' ) fkrq
+		from
+		igams_htfkmx htfkmx
+		left join
+		igams_htfkqk htfkqk
+		on htfkqk.htfkid=htfkmx.htfkid and htfkqk.scbj='0'
+		where
+		htfkmx.scbj='0'
+		GROUP BY
+		htfkmx.htid) htfk on htfk.htid=htgl.htid
+		left join (select
+		htmx.htmxid,
+		sum(fpmx.fpje) fpzje,
+		string_agg (distinct  to_char(fpgl.lrsj,'yyyy-mm-dd'), '/' ) fplrsj,
+		string_agg (distinct  fpgl.fph, '/' ) fph
+		from igams_htmx htmx
+		LEFT JOIN igams_fpmx fpmx ON fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+		LEFT JOIN igams_fpgl fpgl ON fpgl.fpid = fpmx.fpid and fpgl.scbj='0'
+		where htmx.scbj='0'
+		GROUP BY
+		htmx.htmxid) fp on fp.htmxid=htmx.htmxid
+		left join (SELECT
+		htmx.htmxid,
+		string_agg (distinct  hwxx.u8rkdh, '/' ) u8rkdh,
+		string_agg (distinct  to_char(dhxx.dhrq,'yyyy-mm-dd'), '/' ) dhrq,
+		string_agg (distinct  ''||hwxx.dhsl, '/' ) dhsl
+		FROM
+		igams_htmx htmx
+		left join igams_hwxx hwxx on hwxx.htmxid=htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		WHERE
+		htmx.scbj != '1'
+		GROUP BY
+		htmx.htmxid) tab on tab.htmxid=htmx.htmxid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) htshtgsj,
+		htgl.htid
+		from igams_htgl htgl
+		left join matridx_shxx shxx on shxx.ywid=htgl.htid and htgl.zt='80'
+		group by htgl.htid) htsh on htsh.htid=htgl.htid
+		left join (select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) qgshtgsj,
+		qggl.qgid
+		from igams_qggl qggl
+		left join matridx_shxx shxx on shxx.ywid=qggl.qgid and qggl.zt='80'
+		group by qggl.qgid) qgsh on qgsh.qgid=htmx.qgid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		order by tmp.ordernum
+	</select>
+
+	<select id="getDtoList" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htid,htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,round(htmx.sl,2) sl,round(htmx.hsdj,6) hsdj,round(htmx.suil,5) suil,round(htmx.hjje,2) hjje,htmx.jhdhrq,htmx.bz,
+		qggl.djh,qggl.sqbm,jg_sqbm.jgmc as sqbmmc,wl.wlbm,wl.wlmc,wl.gg,wl.jldw,qgmx.sl qgsl,htgl.htnbbh,htgl.htwbbh,
+		jc_wllb.csmc wllbmc,jc_wlzlb.csmc wlzlbmc,jc_wlzlbtc.csmc wlzlbtcmc,wl.ychh,htgl.ddrq as htddrq,htgl.zt as htzt,htgl.cjrq,round(htgl.hl,5) hl,
+		jc_kd.csmc as kdmc,htmx.kdlxmc,htmx.kddh,jc_kd.cskz2,qgmx.hwmc,htmx.hzt,htmx.cpzch
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on qgmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		left join matridx_jcsj jc_kd on jc_kd.csid=htmx.kdlx
+		<where>
+			htmx.scbj!='1'
+			<if test="qgid !=null and qgid != ''">
+				and htmx.qgid=#{qgid}
+			</if>
+			<if test="htid !=null and htid != ''">
+				and htmx.htid=#{htid}
+			</if>
+			<if test="sffpwh !=null and  sffpwh !=''">
+				and htmx.sffpwh=#{sffpwh}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and htmx.htid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getListForInvoice" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htid,htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,
+		<if test="(htid !=null and htid != '') or (htids !=null and htids.size > 0)">
+			(COALESCE ( bcmx.sl,coalesce(htmx.sl,0)) - COALESCE ( fp.fpzsl, 0 )) sl,
+			round(coalesce(bcmx.hsdj,htmx.hsdj),6) hsdj,round(coalesce(bcmx.wsdj,htmx.wsdj),5) wsdj,
+			round(coalesce(bcmx.hjje,htmx.hjje),2) hjje,
+		</if>
+		<if test="(htid ==null or htid == '') and htids ==null">
+			(coalesce(htmx.sl,0) - COALESCE ( fp.fpzsl, 0 )) sl,
+			round(htmx.hsdj,6) hsdj,round(htmx.wsdj,5) wsdj,
+			round(htmx.hjje,2) hjje,
+		</if>
+		round(htmx.suil,5) suil,htmx.jhdhrq,htmx.bz,
+		wl.wlbm,wl.wlmc,wl.gg,wl.jldw,htgl.htnbbh,htgl.htwbbh,wl.ychh,
+		wl.ychh,htgl.ddrq as htddrq,htgl.zt as htzt,htgl.cjrq,htgl.gys,gysxx.gysmc,htgl.hl,htgl.biz,
+		htmx.kdlxmc,htmx.kddh,(hwxx.u8rkdh||'('||COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 )||')') u8rkdh,zllb.cskz1 as lbcskz1,rkgl.rkid,dhxx.dhid,(COALESCE ( hw.rkzsl, 0 ) - COALESCE ( fp.fpzsl, 0 )) wwhsl,
+		qglb.csdm qglbdm,qgmx.qgmxid,qgmx.hwmc,qgmx.hwbz,sbys.sbysid,sbys.sbysdh
+		from igams_htmx htmx
+		left join(
+		select
+		htmxid,
+		sum(fpsl) fpzsl
+		from igams_fpmx
+		where scbj='0'
+		group by htmxid
+		) fp on fp.htmxid=htmx.htmxid
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid and qggl.scbj='0'
+		left join matridx_jcsj qglb on qglb.csid=qggl.qglb and qglb.scbj='0'
+		left join igams_qgmx qgmx on qgmx.qgmxid=htmx.qgmxid and qgmx.scbj='0'
+		left join igams_hwxx hwxx on htmx.htmxid = hwxx.htmxid and hwxx.scbj='0'
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		left join matridx_jcsj zllb on zllb.csid=wl.lb
+		left join igams_htgl htgl on htgl.htid = htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gysxx on htgl.gys = gysxx.gysid
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		left join (
+		SELECT SUM
+		( COALESCE ( hwxx.dhsl, 0 )) rkzsl,
+		hwxx.htmxid
+		FROM
+		igams_hwxx hwxx
+		WHERE
+		hwxx.scbj != '1'
+		GROUP BY
+		hwxx.htmxid
+		) hw on hw.htmxid=htmx.htmxid
+		left join igams_sbys sbys on sbys.sbysid=hwxx.sbysid and sbys.scbj='0'
+		<if test="(htid !=null and htid != '') or (htids !=null and htids.size > 0)">
+		left join
+		<if test="htid !=null and htid != ''">
+			(select bchtid,htnbbh,htid
+			from igams_htgl
+			where scbj='0' and zt='80' and bchtid=#{htid}
+			order by cjrq desc
+			limit 1)
+		</if>
+		<if test="htids !=null and htids.size > 0">
+			<foreach collection="htids" separator=" union all " open="(" close=") " item="item" index="index">
+				(select bchtid,htnbbh,htid
+				from igams_htgl
+				where scbj='0' and zt='80' and bchtid=#{item}
+				order by cjrq desc
+				limit 1)
+			</foreach>
+		</if>
+		bcht2 on bcht2.bchtid=htgl.htid
+		left join igams_htmx bcmx on bcmx.bchtmxid = htmx.htmxid and bcmx.htid=bcht2.htid and bcmx.scbj='0'
+		</if>
+		<where>
+			htmx.scbj!='1'
+			<if test="htid !=null and htid != ''">
+				and htmx.htid=#{htid}
+			</if>
+			<if test="sffpwh != null and sffpwh != '' and sffpwh != 'undefined'">
+				and htmx.sffpwh=#{sffpwh}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and htmx.htmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="htids !=null and htids.size > 0">
+				and htmx.htid in
+				<foreach collection="htids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by htmx.htmxid asc
+	</select>
+
+	<!-- 查询数量校验信息(物料) -->
+	<select id="selectCheckWlglInfo" parameterType="list" resultType="HtmxDto">
+		select wlid, qdl, wlbm, sl from (
+		select tmp.wlid,wlgl.qdl,wlgl.wlbm,sum(cast(tmp.sl as numeric)) as sl
+		from(
+		<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.wlid} wlid, #{item.qgmxid} qgmxid, #{item.sl} sl
+		</foreach>
+		) tmp
+		left join igams_wlgl wlgl on wlgl.wlid = tmp.wlid
+		group by tmp.wlid,wlgl.qdl,wlgl.wlbm
+		) tmp2
+		where coalesce(cast(tmp2.qdl as numeric), 0) > tmp2.sl
+	</select>
+
+	<!-- 查询数量校验信息(请购明细) -->
+	<select id="selectCheckQgmxInfo" parameterType="list" resultType="HtmxDto">
+		select tmp.djh,tmp.wlid,tmp.qgmxid,tmp.sl,tmp.htmxid,
+		COALESCE(wlgl.qdl, '0') qdl, wlgl.wlbm,
+		qgmx.sl qgsl,qgmx.sysl,qgmx.ydsl
+		from(
+		<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.htmxid} htmxid, #{item.djh} djh, #{item.wlid} wlid, #{item.qgmxid} qgmxid, #{item.sl} sl
+		</foreach>
+		) tmp
+		left join igams_wlgl wlgl on wlgl.wlid = tmp.wlid
+		left join igams_qgmx qgmx on qgmx.qgmxid = tmp.qgmxid
+		left join igams_htmx htmx on htmx.htmxid = tmp.htmxid
+		where tmp.qgmxid is not null
+		and (
+		(tmp.htmxid is null and cast(tmp.sl as numeric) > cast(qgmx.sysl as numeric) - cast(qgmx.ydsl as numeric))
+		or
+		(tmp.htmxid is not null and cast(tmp.sl as numeric) > cast(qgmx.sysl as numeric) - cast(qgmx.ydsl as numeric) + cast(htmx.sl as numeric))
+		)
+
+	</select>
+
+	<!-- 新增合同明细请购数量修改(审核前) -->
+	<update  id="updateQuantityAdd" parameterType="list">
+		<foreach collection="list" separator=";" item="item" index="index">
+			<if test="item.qgmxid !=null and item.qgmxid != ''">
+				update igams_qgmx set ydsl = COALESCE(ydsl, 0) + cast(#{item.sl} as numeric), xgry = #{item.xgry}, xgsj = LOCALTIMESTAMP
+				<where>
+					qgmxid = #{item.qgmxid}
+				</where>
+			</if>
+		</foreach>
+	</update>
+
+	<!-- 删除合同明细请购数量修改(审核前) -->
+	<update  id="updateQuantityDel" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			update igams_qgmx qgmx
+			set xgry = #{list[0].xgry}, xgsj = LOCALTIMESTAMP,
+			ydsl = qgmx.ydsl - cast((
+			select tmp.sl from
+			(<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.qgmxid} as qgmxid, #{item.sl} as sl
+		</foreach>) tmp
+			where tmp.qgmxid = qgmx.qgmxid
+			) as numeric)
+			where qgmx.qgmxid in (select qgmxid from igams_htmx where htmxid in
+			<foreach collection="list"  open="(" close=")" separator="," item="item" index="index">
+				#{item.htmxid}
+			</foreach>
+			and qgmxid is not null)
+		</if>
+	</update>
+
+	<!-- 获取需要修改的合同明细数量 -->
+	<select id="getUpdateHtmxDtos" parameterType="list" resultType="HtmxDto">
+		<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select htmxid, qgmxid, cast(#{item.sl} as numeric)-sl as sl, #{item.xgry} as xgry  from igams_htmx
+			where htmxid = #{item.htmxid} and qgmxid is not null
+		</foreach>
+	</select>
+
+	<!-- 新增合同明细请购数量修改(审核后)  -->
+	<update  id="updateQuantityAddLast" parameterType="list">
+		<foreach collection="list" separator=";" item="item" index="index">
+			<if test="item.qgmxid !=null and item.qgmxid != ''">
+				update igams_qgmx set sysl = sysl - cast(#{item.sl} as numeric), xgry = #{item.xgry}, xgsj = LOCALTIMESTAMP
+				<where>
+					qgmxid = #{item.qgmxid}
+				</where>
+			</if>
+		</foreach>
+	</update>
+
+	<!-- 删除合同明细请购数量修改(审核后) -->
+	<update  id="updateQuantityDelLast" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			update igams_qgmx qgmx
+			set xgry = #{list[0].xgry}, xgsj = LOCALTIMESTAMP,
+			sysl = qgmx.sysl + cast((
+			select tmp.sl from
+			(<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.qgmxid} as qgmxid, #{item.sl} as sl
+		</foreach>) tmp
+			where tmp.qgmxid = qgmx.qgmxid
+			) as numeric)
+			where qgmx.qgmxid in (select qgmxid from igams_htmx where htmxid in
+			<foreach collection="list"  open="(" close=")" separator="," item="item" index="index">
+				#{item.htmxid}
+			</foreach>
+			and qgmxid is not null)
+		</if>
+	</update>
+
+	<!-- 合同明细请购数量修改(审核通过) -->
+	<update  id="updateQuantityComp" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			update igams_qgmx qgmx
+			set xgry = #{list[0].xgry}, xgsj = LOCALTIMESTAMP,
+			sysl = qgmx.sysl - cast((
+			select tmp.sl from
+			(<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.qgmxid} as qgmxid, #{item.sl} as sl
+		</foreach>) tmp
+			where tmp.qgmxid = qgmx.qgmxid
+			) as numeric),
+			ydsl = 	qgmx.ydsl - cast((
+			select tmp.sl from
+			(<foreach collection="list" separator=" UNION ALL " item="item" index="index">
+			select #{item.qgmxid} as qgmxid, #{item.sl} as sl
+		</foreach>) tmp
+			where tmp.qgmxid = qgmx.qgmxid
+			) as numeric)
+			where qgmx.qgmxid in (select qgmxid from igams_htmx where htmxid in
+			<foreach collection="list"  open="(" close=")" separator="," item="item" index="index">
+				#{item.htmxid}
+			</foreach>
+			and qgmxid is not null)
+		</if>
+	</update>
+
+	<!-- 根据ids修改明细 -->
+	<update id="modSaveMaintenance" parameterType="HtmxDto">
+		update igams_htmx set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="kdlx !=null and kdlx != ''">
+			,kdlx=#{kdlx}
+		</if>
+		<if test="kdlxmc !=null and kdlxmc != ''">
+			,kdlxmc=#{kdlxmc}
+		</if>
+		<if test="kddh !=null and kddh != ''">
+			,kddh=#{kddh}
+		</if>
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				htmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<!-- 更新合同信息至请购明细表 -->
+	<update id="updateQgmxDtos" parameterType="List">
+		<foreach collection="list" item="item" index="index" separator=";">
+			<if test="item.qgid !=null and item.qgid != ''">
+				update igams_qgmx
+				<set>
+					xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+					<if test="item.htnbbh != null and item.htnbbh != ''">
+						,htbhgl = case when htbhgl is null then #{item.htnbbh} else htbhgl||','||#{item.htnbbh} end
+					</if>
+					<if test="item.jhdhrq != null and item.jhdhrq != ''">
+						,jhdhrq=cast(#{item.jhdhrq} as date)
+					</if>
+					<if test="item.ddrq != null and item.ddrq != ''">
+						,htrq=cast(#{item.ddrq} as date)
+					</if>
+				</set>
+				<where>
+					scbj!='1' and qgid=#{item.qgid} and qgmxid=#{item.qgmxid}
+				</where>
+			</if>
+		</foreach>
+	</update>
+
+	<!-- 获取合同明细数据 -->
+	<select id="getHtmxList" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htid,htmx.htmxid,htmx.qgmxid,htmx.qgid,htmx.wlid,round(htmx.sl,2) sl,round(htmx.hsdj,6) hsdj,round(htmx.hjje,2) hjje,htmx.jhdhrq,htmx.bz,
+		qggl.djh,qggl.sqbm,jg_sqbm.jgmc as sqbmmc,wl.wlbm,wl.wlmc,wl.gg,wl.jldw,qgmx.sl qgsl,htgl.htnbbh,htgl.htwbbh,
+		jc_wllb.csmc wllbmc,jc_wlzlb.csmc wlzlbmc,jc_wlzlbtc.csmc wlzlbtcmc,wl.ychh,htgl.ddrq as htddrq,htgl.zt as htzt,htgl.cjrq,
+		jc_kd.csmc as kdmc,htmx.kdlxmc,htmx.kddh,jc_kd.cskz2,htmx.cpzch
+		from igams_htmx htmx
+		left join igams_qggl qggl on htmx.qgid = qggl.qgid
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qggl.sqbm
+		left join igams_qgmx qgmx on htmx.qgmxid = qgmx.qgmxid
+		left join igams_wlgl wl on qgmx.wlid = wl.wlid
+		left join igams_htgl htgl on htgl.htid = htmx.htid
+		left join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		left join matridx_jcsj jc_kd on jc_kd.csid=htmx.kdlx
+		<where>
+			htmx.scbj!='1' and htmx.htid=#{htid}
+			<if test="zt != null and zt != ''">
+				and htgl.zt=#{zt}
+			</if>
+			<if test="cghzbj != null and cghzbj != '' and cghzbj=='1'.toString()">
+				and coalesce(htmx.dhsl,0)>0
+			</if>
+		</where>
+	</select>
+	<!-- 更新合同明细的到货数量 -->
+	<update id="updateHtmxDhsl" parameterType="HtmxDto">
+		UPDATE igams_htmx htmx
+		SET dhsl = (
+		SELECT SUM( COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 ) - COALESCE ( hwxx.zjthsl, 0 ) )
+		FROM
+		igams_hwxx hwxx
+		WHERE
+		hwxx.htmxid = htmx.qgmxid
+		AND hwxx.scbj != '1'
+		AND hwxx.zt IN ( '03', '80' )
+		)
+		WHERE
+		htmxid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+
+	<update id="htmxDtoModDhxx" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_htmx
+				<set>
+					<trim prefixOverrides=",">
+						<if test="item.dhrq != null and item.dhrq != ''">
+							,dhrq=cast(#{item.dhrq} as timestamp)
+						</if>
+						<if test="item.xgry != null and item.xgry != ''">
+							,xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+						</if>
+						<if test="item.dhdhgl != null and item.dhdhgl != ''">
+							,dhdhgl=#{item.dhdhgl}
+						</if>
+						<if test="item.dhsl != null and item.dhsl != ''">
+							,dhsl=cast(#{item.dhsl} as numeric)
+						</if>
+						<if test="item.rksladd != null and item.rksladd != ''">
+							,rksl=COALESCE(rksl,0) + cast(#{item.rksl} as numeric)
+						</if>
+						<if test="item.rksldel != null and item.rksldel != ''">
+							,rksl=COALESCE(rksl,0) - cast(#{item.rksl} as numeric)
+						</if>
+					</trim>
+				</set>
+				<where>
+					htmxid=#{item.htmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<!-- 根据合同ids获取合同信息（共通页面） -->
+	<select id="getCommonDtoListByHtmxids" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+		htmx.htmxid,htmx.htid, htmx.qgid,htmx.xh,htmx.hwmc,htmx.hsdj, htmx.wsdj, htmx.suil, htmx.hjje, htmx.jhdhrq, htmx.bz, htmx.zt, htmx.u8mxid, htmx.kddh, htmx.dhdhgl,htmx.rksl, htmx.dhrq,htmx.qgmxid,htmx.wlid,htmx.sl, htmx.dhsl,
+		kdlx.csmc kdmc,
+		qggl.djh,
+		wlgl.wlbm,wlgl.wlmc,wlgl.gg,
+		hwxx.hwid,hwxx.zsh,hwxx.scrq,hwxx.yxq,hwxx.dhid,hwxx.cythsl,hwxx.dhbz,hwxx.zjthsl,hwxx.qyl,hwxx.qyrq,hwxx.bgdh,hwxx.zjrq,hwxx.zjry,hwxx.jybz,hwxx.dhjyid,hwxx.rkid,hwxx.ckid,hwxx.kwbh,hwxx.rkry,hwxx.rkrq,hwxx.rkbz,hwxx.kcl,hwxx.yds,hwxx.glid,hwxx.kcglid,hwxx.scph
+		FROM
+		igams_htmx htmx
+		LEFT JOIN igams_qggl qggl on htmx.qgid = qggl.qgid
+		LEFT JOIN igams_wlgl wlgl on htmx.wlid = wlgl.wlid
+		LEFT JOIN igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj != '1'
+		LEFT JOIN igams_qgmx qgmx on htmx.qgmxid=qgmx.qgmxid
+		LEFT JOIN matridx_jcsj kdlx on kdlx.csid=htmx.kdlx
+		<where>
+			htmx.scbj!='1'
+			<if test="ids !=null and ids.size > 0">
+				and htmx.htmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<update id="updateU8mxid" parameterType="HtmxDto">
+		update igams_htmx set u8mxid=#{u8mxid}
+		where htmxid=#{htmxid}
+	</update>
+
+	<!-- 是否发票维护置为1 -->
+	<update id="updateSffpwh" parameterType="HtmxDto">
+		update igams_htmx
+		<set>
+			sffpwh = #{sffpwh}
+		</set>
+		<where>
+			htmxid in (
+			<foreach collection="ids"  separator="," item="item">
+				#{item}
+			</foreach>
+			)
+		</where>
+	</update>
+
+	<select id="getPurchaseDetails"  parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT  qggl.sqbm,jgxx.jgmc sqbmmc,htmx.htmxid
+		FROM igams_htmx htmx
+		LEFT JOIN igams_qggl qggl ON qggl.qgid=htmx.qgid and qggl.scbj='0'
+		left join matridx_jgxx jgxx on jgxx.jgid=qggl.sqbm
+		<where>
+			htmx.htid = #{htid}
+			AND htmx.scbj !='1'
+		</where>
+	</select>
+
+	<select id="getPageListContractDetail" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,htgl.htnbbh,gysxx.gysmc,wl.wlmc,wl.wlbm,htmx.sl,htgl.gys,wl.wlid,htmx.cpzch
+		from igams_htmx htmx
+		left join igams_htgl htgl on htgl.htid = htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gysxx on htgl.gys = gysxx.gysid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		<where>
+			htmx.scbj ='0' AND htgl.htlx = '2'
+			AND htgl.zt = '80'
+			<if test="htnbbh !=null and htnbbh != ''">
+				and htgl.htnbbh like '%'|| #{htnbbh}||'%'
+			</if>
+			<if test="gysmc !=null and gysmc != ''">
+				and gysxx.gysmc like '%'|| #{gysmc}||'%'
+			</if>
+			<if test="wlbm !=null and wlbm != ''">
+				and wl.wlbm like '%'|| #{wlbm}||'%'
+			</if>
+			<if test="wlmc !=null and wlmc != ''">
+				and wl.wlmc like '%'|| #{wlmc}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="getContractDetailWithStructure" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,htgl.htnbbh,gysxx.gysmc,wl.wlmc,wl.wlbm,htmx.sl,wl.wlid,wl.gg,wl.jldw,ck.ckmc,htgl.gys,round((coalesce(htmx.sl,0)*coalesce(cpjgmx.sysl,0)),2) ylsl,round((coalesce(htmx.sl,0)*coalesce(cpjgmx.sysl,0)-coalesce(tmp.cksl,0)),2) klsl
+		,cpjgmx.cpjgmxid
+		from igams_cpjgmx cpjgmx
+		left join (select cpjgmxid,sum(cksl) cksl from igams_ckmx where scbj='0'
+		<if test="htmxid !=null and htmxid != ''">
+			and wwhtmxid =#{htmxid}
+		</if>
+		group by cpjgmxid) tmp on tmp.cpjgmxid=cpjgmx.cpjgmxid
+		left join igams_cpjg cpjg on cpjgmx.cpjgid=cpjg.cpjgid and cpjg.scbj='0'
+		left join igams_htmx htmx on cpjg.mjwlid=htmx.wlid and htmx.scbj='0'
+		left join igams_htgl htgl on htgl.htid = htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gysxx on htgl.gys = gysxx.gysid
+		left join igams_wlgl wl on cpjgmx.zjwlid = wl.wlid
+		LEFT JOIN igams_ckxx ck ON ck.ckid = cpjgmx.ckid and ck.scbj='0'
+		
+		<where>
+			cpjgmx.scbj ='0'
+			<if test="htmxid !=null and htmxid != ''">
+				and htmx.htmxid =#{htmxid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and cpjgmx.cpjgmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="getCpjgxxs"  parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT htmx.htmxid,cpjg.cpjgid,cpjg.mjshl,cpjg.u8cpjgid,jcsj.csmc bomlbmc,jcsj.csdm bomlbdm,cpjgmx.jbyl,cpjgmx.jcsl,cpjgmx.zjshl,COALESCE(cpjgmx.sysl,0) sysl,ckxx.ckdm,COALESCE(cpjgmx.sysl,0) cpsysl,wlgl.wlbm zjwlbm,cpjgmx.bz,cpjgmx.u8cpjgmxid
+		FROM igams_htmx htmx
+		left join igams_cpjg cpjg on cpjg.mjwlid = htmx.wlid and cpjg.scbj = '0'
+		left join igams_cpjgmx cpjgmx on cpjg.cpjgid= cpjgmx.cpjgid and cpjgmx.scbj = '0'
+		left join igams_wlgl wlgl on cpjgmx.zjwlid = wlgl.wlid
+		left join igams_ckxx ckxx on cpjgmx.ckid = ckxx.ckid
+		left join matridx_jcsj jcsj on jcsj.csid = cpjg.lb
+		<where>
+			htmx.htmxid = #{htmxid}
+			AND htmx.scbj !='1'
+		</where>
+	</select>
+	<select id="getCpjgByWlids" parameterType="HtmxDto" resultType="HtmxDto">
+        select cpjg.cpjgid,wlgl.wlmc
+		from igams_wlgl wlgl
+      	left join igams_cpjg cpjg on cpjg.mjwlid = wlgl.wlid
+        where wlgl.wlid in
+		<foreach collection="wlids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+    </select>
+	<select id="getDhxx" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+			htmx.htid,hwxx.hwid
+		FROM
+			igams_htmx htmx
+				LEFT JOIN igams_hwxx hwxx ON hwxx.htmxid = htmx.htmxid and hwxx.scbj = '0'
+		where htmx.scbj = '0'
+		and htmx.htmxid =#{htmxid}
+    </select>
+	<select id="getDtoByHtmxId" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+			htmx.htmxid,htgl.htlx,htgl.u8omid,htgl.u8poid,htgl.htid,htmx.u8mxid,htmx.u8ommxid
+		FROM
+			igams_htmx htmx
+				LEFT JOIN igams_htgl htgl ON htgl.htid = htmx.htid
+		where htmx.htmxid = #{htmxid}
+    </select>
+	<update id="updateOpenClose" parameterType="HtmxDto">
+		update igams_htmx
+		<set>
+			<trim prefixOverrides=",">
+				<if test="gbry != null and gbry != ''">
+					,gbry=#{gbry}
+				</if>
+				<if test="dkry != null and dkry != ''">
+					,dkry=#{dkry}
+				</if>
+				<if test="hzt != null and hzt != ''">
+					,hzt=#{hzt}
+				</if>
+			</trim>
+		</set>
+		<where>
+			htmxid=#{htmxid}
+		</where>
+    </update>
+	<update id="updateOpenCloses" parameterType="HtmxDto">
+		update igams_htmx
+		<set>
+			<trim prefixOverrides=",">
+				<if test="gbry != null and gbry != ''">
+					,gbry=#{gbry}
+				</if>
+				<if test="dkry != null and dkry != ''">
+					,dkry=#{dkry}
+				</if>
+				<if test="hzt != null and hzt != ''">
+					,hzt=#{hzt}
+				</if>
+			</trim>
+		</set>
+		<where>
+			htmxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<select id="getHtmxListByHtid" parameterType="String" resultType="HtmxDto">
+		select htid,hzt
+		from igams_htmx
+		<where>
+			scbj !='1' and htid = #{htid}
+		</where>
+	</select>
+	<select id="getSfccdg" parameterType="HtmxDto" resultType="String">
+		SELECT
+			wlid
+		FROM
+			igams_htmx
+		WHERE
+			scbj = '0'
+		  AND wlid in
+		<foreach collection="wlids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		GROUP BY
+			wlid
+	</select>
+	<select id="getPagedHisContract" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,htgl.htnbbh,gysxx.gysmc,wl.wlmc,htmx.hwmc,wl.wlbm,htmx.sl,htgl.gys,wl.wlid,htmx.cpzch
+		     ,htgl.cjrq,htgl.ksrq,htgl.dqrq,case when htgl.dqrq+1>now() then '未过期' else '已过期' end sfgq,case when htmx.wlid is null then 1 else 0 end fwbj,
+		htmx.scbj,wl.scs
+		from igams_htmx htmx
+		left join igams_htgl htgl on htgl.htid = htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gysxx on htgl.gys = gysxx.gysid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		where htmx.scbj !='1'
+		<if test="gysid != null and gysid != ''">
+			and htgl.gys=#{gysid}
+		</if>
+		<if test="htlx != null and htlx != ''">
+			and htgl.htlx=#{htlx}
+		</if>
+		<if test="htid!=null and htid!=''">
+			and htgl.htid!=#{htid}
+		</if>
+		<if test="sfgq != null and sfgq != ''and sfgq=='0'.toString()">
+			and htgl.dqrq+1 &gt; now()
+		</if>
+		<if test="sfgq != null and sfgq != '' and sfgq=='1'.toString()">
+			and htgl.dqrq+1 &lt;= now()
+		</if>
+	</select>
+	<select id="getHisContract" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,wl.wlmc,htmx.hwmc,wl.wlbm,htmx.sl,wl.wlid,htmx.cpzch,
+		       case when htmx.wlid is null then 1 else 0 end fwbj,
+		       htmx.scbj,wl.jldw,wl.gg,wl.scs,htmx.hsdj,htmx.dhzq,htmx.ccdg,htmx.wlfl,htmx.bxsj,htmx.sfgdzc,htmx.bz,lbjc.cskz1 lbcskz1
+		from igams_htmx htmx
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		left join matridx_jcsj lbjc on wl.lb = lbjc.csid
+		where htmx.htmxid = #{htmxid}
+	</select>
+	<update id="updateScbj" parameterType="HtmxDto">
+		update igams_htmx
+		set
+		xgry=#{xgry}
+		,xgsj=LOCALTIMESTAMP
+		,scbj=#{scbj}
+		<where>
+			htmxid = #{htmxid}
+		</where>
+	</update>
+	<select id="getFrameworkContractDetail" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,htgl.htnbbh,gysxx.gysmc,wl.wlmc,htmx.hwmc,wl.wlbm,htmx.sl,htgl.gys,wl.wlid,htmx.cpzch
+		,htgl.cjrq,htgl.ksrq,htgl.dqrq,case when htgl.dqrq+1>now() then '未过期' else '已过期' end sfgq,case when htmx.wlid is null then 1 else 0 end fwbj,
+		htmx.scbj,wl.scs,htmx.hsdj,htmx.ccdg,htmx.wlfl,htmx.bxsj,htmx.sfgdzc,htmx.bz,htmx.dhzq,wlfl.csmc wlflmc,wl.gg,wl.jldw,htgl.kjlx,htgl.htid
+		from igams_htmx htmx
+		left join igams_htgl htgl on htgl.htid = htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gysxx on htgl.gys = gysxx.gysid
+		left join igams_wlgl wl on htmx.wlid = wl.wlid
+		LEFT JOIN matridx_jcsj wlfl ON wlfl.csid = htmx.wlfl
+		where htmx.scbj !='1'
+		<if test="gys != null and gys != ''">
+			and htgl.gys=#{gys}
+		</if>
+		<if test="htlx != null and htlx != ''">
+			and htgl.htlx=#{htlx}
+		</if>
+		<if test="zt != null and zt != ''">
+			and htgl.zt=#{zt}
+		</if>
+		<if test="sfty != null and sfty != ''and sfty=='0'.toString()">
+			and htmx.scbj='0'
+		</if>
+		<if test="sfty != null and sfty != '' and sfty=='1'.toString()">
+			and htmx.scbj='3'
+		</if>
+		<if test="sfgq != null and sfgq != ''and sfgq=='0'.toString()">
+			and htgl.dqrq+1 &gt; now()
+		</if>
+		<if test="sfgq != null and sfgq != '' and sfgq=='1'.toString()">
+			and htgl.dqrq+1 &lt;= now()
+		</if>
+		<if test="ids !=null and ids.size > 0">
+			and htmx.htmxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		ORDER BY htmx.lrsj DESC
+	</select>
+	<select id="getPagedtContractArrivalInfo" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+			htgl.htnbbh,gysxx.gysmc,round(COALESCE(htmx.dhsl,0),2) dhsl,wlgl.jldw,htmx.hsdj
+		FROM
+			igams_htgl htgl
+				LEFT JOIN igams_htmx htmx ON htgl.htid = htmx.htid and htmx.scbj ='0'
+				LEFT JOIN igams_gysxx gysxx ON htgl.gys = gysxx.gysid and gysxx.scbj !='1'
+				LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = htmx.wlid
+		WHERE htgl.scbj ='0' and htgl.htlx!='3' and htgl.zt='80' and wlgl.wlid = #{wlid}
+		<if test="cjrqstart != null and cjrqstart != ''">
+			and to_char(htgl.cjrq,'yyyy-mm-dd') &gt;= #{cjrqstart}
+		</if>
+		<if test="cjrqend != null and cjrqend != ''">
+			and to_char(htgl.cjrq,'yyyy-mm-dd') &lt;= #{cjrqend}
+		</if>
+	</select>
+	<select id="getNotAllArrival" parameterType="HtmxDto" resultType="HtmxDto">
+		SELECT
+			htmx.htmxid,htgl.htnbbh
+		FROM
+			igams_htmx htmx
+				LEFT JOIN igams_htgl htgl ON htgl.htid = htmx.htid AND htgl.scbj='0'
+		WHERE htmx.scbj='0' and coalesce(htmx.sl,0) &gt;  coalesce(htmx.dhsl,0) and htgl.gys = #{gysid} and htgl.htlx!='3'
+	</select>
+	<select id="queryBchtmxDto" parameterType="HtmxDto" resultType="HtmxDto">
+		select htmx.htmxid,ROUND(htmx.hsdj,2) as hsdj,ROUND(htmx.hjje,2) as hjje,ROUND(htmx.sl,2) as sl,string_agg(cast(ROUND(bcmx.hsdj, 2) as varchar),'→' order by bcht.cjrq) bchthsdj,
+		string_agg(cast(ROUND(bcmx.hjje,2) as varchar),'→' order by bcht.cjrq) bchthjje,string_agg(cast(ROUND(bcmx.sl,2) as varchar),'→' order by bcht.cjrq) bchtsl,
+		wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,htmx.xh
+		from igams_htgl htgl
+		left join igams_htgl bcht on bcht.bchtid=htgl.htid and bcht.scbj='0' and bcht.zt='80'
+		left join igams_htmx htmx on htmx.htid=htgl.htid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join igams_htmx bcmx on bcmx.bchtmxid = htmx.htmxid and bcmx.htid=bcht.htid and bcmx.scbj='0'
+		where htgl.htid=#{htid} and htgl.scbj='0' and htmx.scbj='0'
+		group by htmx.htmxid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,htmx.xh
+		order by htmx.xh asc
+	</select>
+
+	<select id="getByQgidAndHtid" parameterType="HtmxDto" resultType="HtmxDto">
+		select wl.wlbm,wl.wlmc,wl.gg,qgmx.sl as qgsl,mx.sl,qgmx.sysl,mx.hsdj,mx.hjje,qgmx.qwrq,mx.jhdhrq,mx.ccdg,jcsj.csmc as wlflmc
+		from igams_htmx mx
+		left join igams_qgmx qgmx on qgmx.qgmxid=mx.qgmxid
+		left join igams_wlgl wl on wl.wlid=mx.wlid
+		left join matridx_jcsj jcsj on jcsj.csid=mx.wlfl
+		where mx.scbj='0'
+		<if test="htid != null and htid != ''">
+			and mx.htid=#{htid}
+		</if>
+		<if test="qgid != null and qgid != ''">
+			and mx.qgid=#{qgid}
+		</if>
+	</select>
+	<select id="getByQgid" parameterType="HtmxDto" resultType="HtmxDto">
+		select wl.wlbm,wl.wlmc,wl.gg,mx.sl as qgsl,mx.sysl,mx.qwrq
+		from igams_qgmx mx
+		left join igams_wlgl wl on wl.wlid=mx.wlid
+		where mx.scbj='0' and mx.sysl!=0 and mx.sysl is not null
+		<if test="qgid != null and qgid != ''">
+			and mx.qgid=#{qgid}
+		</if>
+	</select>
+</mapper>

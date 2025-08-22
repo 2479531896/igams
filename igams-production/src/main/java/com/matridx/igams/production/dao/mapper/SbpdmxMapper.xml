@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.ISbpdmxDao" >
+
+    <select id="getDtoList" parameterType="SbpdmxDto" resultType="SbpdmxDto">
+        select sbpdmx.pdmxid,sbpdmx.sbpdid,sbpdmx.sbysid,sbpdmx.pdzt,sbpd.fqsj,sbpd.pdry,sbpd.fqry,sbpd.bm,pdry.zsxm as pdrymc,fqry.zsxm as fqrymc,jg.jgmc as bmmc
+        ,sbys.sbbh,sbys.sbmc,sbys.gdzcbh,sbys.ggxh,sbys.xlh,xsybm.jgmc as xsybmmc,sbys.sydd,sblx.csmc as sblxmc,sbbmfzr.zsxm as sbbmfzrmc,sbpdmx.bz
+        from igams_sbpdmx sbpdmx
+        left join igams_sbpd sbpd on sbpd.sbpdid=sbpdmx.sbpdid
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        left join igams_sbys sbys on sbys.sbysid=sbpdmx.sbysid and sbys.scbj='0'
+        left join matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm and xsybm.scbj='0'
+        left join matridx_jcsj sblx on sblx.csid=sbys.sblx and sblx.scbj='0'
+        left join matridx_xtyh sbbmfzr on sbbmfzr.yhid=sbys.bmsbfzr and sbbmfzr.scbj='0'
+        <where>
+            sbpd.scbj='0'
+            <if test="sbysid != null and sbysid != ''">
+                and sbpdmx.sbysid=#{sbysid}
+            </if>
+            <if test="sbpdid != null and sbpdid != ''">
+                and sbpdmx.sbpdid=#{sbpdid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and sbpdmx.sbpdid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY sbys.sbbh,sbys.sbmc
+    </select>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_sbpdmx(pdmxid,sbpdid,sbysid,pdzt)
+        values
+        <foreach collection="list" item="item" separator="," index="index">
+            (#{item.pdmxid},#{item.sbpdid},#{item.sbysid},#{item.pdzt})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_sbpdmx
+                <set>
+                    pdzt=#{item.pdzt},bz=#{item.bz}
+                </set>
+                <where>
+                    pdmxid=#{item.pdmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <select id="getCountForSearchExp"  parameterType="SbpdmxDto" resultType="java.lang.Integer">
+        select count(sbpdmx.pdmxid)
+        from igams_sbpd sbpd
+        left join igams_sbpdmx sbpdmx on sbpdmx.sbpdid = sbpd.sbpdid
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="SbpdmxDto" resultType="SbpdmxDto">
+        select sbpd.sbpdid,sbpdmx.pdmxid ${sqlParam} from igams_sbpd sbpd
+        left join igams_sbpdmx sbpdmx on sbpdmx.sbpdid = sbpd.sbpdid
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        left join igams_sbys sbys on sbys.sbysid=sbpdmx.sbysid
+        left join matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm
+        left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+        LEFT JOIN matridx_xtyh sbbmfzr ON sbbmfzr.yhid = sbys.bmsbfzr
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+    </select>
+
+    <select id="getListForSelectExp" parameterType="SbpdmxDto" resultType="SbpdmxDto">
+        select sbpd.sbpdid,sbpdmx.pdmxid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids" separator=" union all ">
+            select #{item,jdbcType=VARCHAR} sbpdid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_sbpd sbpd on tmp.sbpdid = sbpd.sbpdid
+        left join igams_sbpdmx sbpdmx on sbpdmx.sbpdid = sbpd.sbpdid
+        left join matridx_xtyh pdry on pdry.yhid=sbpd.pdry and pdry.scbj='0'
+        left join matridx_xtyh fqry on fqry.yhid=sbpd.fqry and fqry.scbj='0'
+        left join matridx_jgxx jg on jg.jgid=sbpd.bm and jg.scbj='0'
+        left join igams_sbys sbys on sbys.sbysid=sbpdmx.sbysid
+        left join matridx_jgxx xsybm ON xsybm.jgid = sbys.xsybm
+        left join matridx_jcsj sblx on sblx.csid=sbys.sblx
+        LEFT JOIN matridx_xtyh sbbmfzr ON sbbmfzr.yhid = sbys.bmsbfzr
+        order by tmp.ordernum
+    </select>
+    <sql id="SEARCH_TERMS">
+        <if test="entire != null and entire != ''">
+            and (fqry.zsxm like '%'||#{entire}||'%'
+            or pdry.zsxm like '%'||#{entire}||'%')
+        </if>
+        <if test="fqrymc != null and fqrymc != ''">
+            and fqry.zsxm like '%'||#{fqrymc}||'%'
+        </if>
+        <if test="pdrymc != null and pdrymc != ''">
+            and pdry.zsxm like '%'||#{pdrymc}||'%'
+        </if>
+        <if test = "bms != null and bms.length > 0 "  >
+            and sbpd.bm in
+            <foreach collection="bms" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="zts!=null and zts.length > 0">
+            and sbpd.zt in
+            <foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="fqsjstart != null and fqsjstart != ''">
+            and to_char(sbpd.fqsj,'YYYY-MM-dd') &gt;= #{fqsjstart}
+        </if>
+        <if test="fqsjend != null and fqsjend != ''">
+            and to_char(sbpd.fqsj,'YYYY-MM-dd') &lt;= #{fqsjend}
+        </if>
+    </sql>
+</mapper>

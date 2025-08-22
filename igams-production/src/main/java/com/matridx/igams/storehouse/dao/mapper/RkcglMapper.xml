@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IRkcglDao" >
+	<select id="getDtoList" parameterType="RkcglDto" resultType="RkcglDto">
+		select rkcgl.ryid,rkcgl.hwid,rkcgl.lrsj,hwxx.hwid,wlgl.wlbm,wlgl.wlmc,dhxx.dhdh,dhxx.dhrq,gysxx.gysmc,zllb.csmc as lbcsmc,zllb.csdm as lbcsdm,
+		zllb.cskz1 as lbcskz1,hwxx.dhsl,hwxx.cythsl,wlgl.jldw,wlgl.gg,hwxx.zsh,htgl.htnbbh,wlgl.ychh,qgmx.qgmxid,dhxx.rklb,rklb.csmc AS rklbmc,dhxx.bz as dhbz,
+		hwxx.scrq,hwxx.yxq,hwxx.dhbz,htmx.sl htsl,dhjy.jydh,hwxx.dhid,hwxx.bz,dhxx.gysid,htgl.sqbm,jg_sqbm.jgmc as sqbmmc,wlgl.lb,dhck.ckmc as dhckmc,dhxx.ckid as dhckid,
+		rkgl.rkdh,hwxx.rkrq,hwxx.kwbh,hwxx.sl,(hwxx.cythsl+hwxx.zjthsl) as thsl,hwxx.rkbz,hwxx.glid,htmx.hjje,htmx.suil
+		,htmx.wsdj,htmx.hsdj,hwxx.scph,hwxx.ckid,hwxx.lbbj,ckxx.ckmc,dhlx.csdm as dhlxdm,dhlx.csmc as dhlxmc,dhxx.bz dhzbz,hwxx.cpzch
+		from igams_rkcgl rkcgl
+			left join igams_hwxx hwxx on hwxx.hwid=rkcgl.hwid
+			left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+			left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid
+			left join igams_ckxx dhck on dhck.ckid=dhxx.ckid and dhck.scbj='0'
+			left join igams_gysxx gysxx on gysxx.gysid=dhxx.gysid
+			left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+			left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid
+			left join igams_htgl htgl on htgl.htid=htmx.htid
+			left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = htgl.sqbm
+			left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+			left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+			left join igams_qgmx qgmx on htmx.qgmxid=qgmx.qgmxid
+			left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+		    LEFT JOIN matridx_jcsj rklb ON rklb.csid = dhxx.rklb
+		    LEFT JOIN matridx_jcsj dhlx on dhlx.csid=dhxx.dhlx
+		<where>
+			rkcgl.ryid=#{ryid}
+		</where>
+	</select>
+
+	<select id="getDtoRklb" parameterType="String" resultType="RkcglDto">
+		select dhxx.rklb,dhxx.cglx,rkcgl.hwid,dhxx.dhlx,dhlx.csdm as dhlxdm
+		from igams_rkcgl rkcgl
+		left join igams_hwxx hwxx on hwxx.hwid=rkcgl.hwid
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid
+		LEFT JOIN matridx_jcsj dhlx on dhlx.csid=dhxx.dhlx
+		where
+		rkcgl.ryid = #{ryid}
+	</select>
+
+	<insert id="insert" parameterType="RkcglDto">
+		insert into igams_rkcgl(ryid,hwid,lrsj)values
+		(#{ryid},#{hwid},LOCALTIMESTAMP)
+	</insert>
+	
+	<delete id="delete" parameterType="RkcglDto">
+		delete from igams_rkcgl
+		<where>			
+			<if test="ryid != null and ryid != ''">
+				ryid=#{ryid}
+			</if>
+			<if test="hwid != null and hwid != ''">
+				and hwid =#{hwid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and hwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where> 
+	</delete>
+</mapper>

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQcjlDao" >
+
+    <sql id="SEARCH_WHERE">
+        <where>
+            qcjl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (qcjl.jlbh ILIKE '%'||#{entire}||'%'
+                or qcjl.fjmc ILIKE '%'||#{entire}||'%'
+                or qcjl.ssgx ILIKE '%'||#{entire}||'%'
+                or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+                or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+                or qcjl.ph ILIKE '%'||#{entire}||'%'
+                or czr.zsxm ILIKE '%'||#{entire}||'%'
+                or jcr.zsxm ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="jlbh != null and jlbh != ''">
+                and qcjl.jlbh ILIKE '%'||#{jlbh}||'%'
+            </if>
+            <if test="fjmc != null and fjmc != ''">
+                and qcjl.fjmc ILIKE '%'||#{fjmc}||'%'
+            </if>
+            <if test="ssgx != null and ssgx != ''">
+                and qcjl.ssgx ILIKE '%'||#{ssgx}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+            </if>
+            <if test="ph != null and ph != ''">
+                and qcjl.ph ILIKE '%'||#{ph}||'%'
+            </if>
+            <if test="czrmc != null and czrmc != ''">
+                and czr.zsxm ILIKE '%'||#{czrmc}||'%'
+            </if>
+            <if test="jcrmc != null and jcrmc != ''">
+                and jcr.zsxm ILIKE '%'||#{jcrmc}||'%'
+            </if>
+            <if test="jczp != null and jczp != ''">
+                and qcjl.jczp =#{jczp}
+            </if>
+            <if test="qcrqstart != null and qcrqstart != ''">
+                and to_char(qcjl.qcrq,'yyyy-mm-dd') &gt;= #{qcrqstart}
+            </if>
+            <if test="qcrqend != null and qcrqend != ''">
+                and to_char(qcjl.qcrq,'yyyy-mm-dd') &lt;= #{qcrqend}
+            </if>
+        </where>
+    </sql>
+
+    <select id="getPagedDtoList" parameterType="QcjlDto" resultType="QcjlDto">
+        select
+        qcjl.qcjlid,qcjl.fjmc,qcjl.ssgx,qcjl.jlbh,qcjl.wlid,qcjl.ph,qcjl.czr,qcjl.qcrq,qcjl.jczp,qcjl.jcr,qcjl.bz,qcjl.yxq,qcjl.zt
+        ,wlgl.wlbm,wlgl.wlmc,czr.zsxm as czrmc,jcr.zsxm as jcrmc
+        from igams_qcjl qcjl
+        left join igams_wlgl wlgl on wlgl.wlid = qcjl.wlid and wlgl.scbj = '0'
+        left join matridx_xtyh czr on czr.yhid = qcjl.czr and czr.scbj = '0'
+        left join matridx_xtyh jcr on jcr.yhid = qcjl.jcr and jcr.scbj = '0'
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <select id="getPagedClearingRecords" parameterType="QcjlDto" resultType="QcjlDto">
+        select
+        qcjl.qcjlid,qcjl.fjmc,qcjl.ssgx,qcjl.jlbh,qcjl.wlid,qcjl.ph,qcjl.czr,qcjl.qcrq,qcjl.jczp,qcjl.jcr,qcjl.bz,qcjl.yxq,qcjl.zt
+        ,wlgl.wlbm,wlgl.wlmc,czr.zsxm as czrmc,jcr.zsxm as jcrmc
+        from igams_qcjl qcjl
+        left join igams_wlgl wlgl on wlgl.wlid = qcjl.wlid and wlgl.scbj = '0'
+        left join matridx_xtyh czr on czr.yhid = qcjl.czr and czr.scbj = '0'
+        left join matridx_xtyh jcr on jcr.yhid = qcjl.jcr and jcr.scbj = '0'
+        <include refid="SEARCH_WHERE"></include>
+    </select>
+
+    <select id="getAuditListClearingRecords" parameterType="List" resultType="QcjlDto">
+        select
+        qcjl.qcjlid,qcjl.fjmc,qcjl.ssgx,qcjl.jlbh,qcjl.wlid,qcjl.ph,qcjl.czr,qcjl.qcrq,qcjl.jczp,qcjl.jcr,qcjl.bz,qcjl.yxq,qcjl.zt
+        ,wlgl.wlbm,wlgl.wlmc,czr.zsxm as czrmc,jcr.zsxm as jcrmc,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.qcjlid} qcjlid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach>
+        tmp
+        left join igams_qcjl qcjl on qcjl.qcjlid=tmp.qcjlid
+        left join igams_wlgl wlgl on wlgl.wlid = qcjl.wlid and wlgl.scbj = '0'
+        left join matridx_xtyh czr on czr.yhid = qcjl.czr and czr.scbj = '0'
+        left join matridx_xtyh jcr on jcr.yhid = qcjl.jcr and jcr.scbj = '0'
+        order by tmp.rownum
+    </select>
+
+    <select id="getDto" parameterType="QcjlDto" resultType="QcjlDto">
+        select
+        qcjl.qcjlid,qcjl.fjmc,qcjl.ssgx,qcjl.jlbh,qcjl.wlid,qcjl.ph,qcjl.czr,qcjl.qcrq,qcjl.jczp,qcjl.jcr,qcjl.bz,qcjl.yxq,qcjl.zt
+        ,wlgl.wlbm,wlgl.wlmc,czr.zsxm as czrmc,jcr.zsxm as jcrmc,wlgl.gg
+        from igams_qcjl qcjl
+        left join igams_wlgl wlgl on wlgl.wlid = qcjl.wlid and wlgl.scbj = '0'
+        left join matridx_xtyh czr on czr.yhid = qcjl.czr and czr.scbj = '0'
+        left join matridx_xtyh jcr on jcr.yhid = qcjl.jcr and jcr.scbj = '0'
+       <where>
+           qcjl.scbj='0' and qcjl.qcjlid=#{qcjlid}
+       </where>
+    </select>
+
+    <select id="getDtoById" parameterType="String" resultType="QcjlDto">
+        select
+        qcjl.qcjlid,qcjl.fjmc,qcjl.ssgx,qcjl.jlbh,qcjl.wlid,qcjl.ph,qcjl.czr,qcjl.qcrq,qcjl.jczp,qcjl.jcr,qcjl.bz,qcjl.yxq,qcjl.zt
+        ,wlgl.wlbm,wlgl.wlmc,czr.zsxm as czrmc,jcr.zsxm as jcrmc
+        from igams_qcjl qcjl
+        left join igams_wlgl wlgl on wlgl.wlid = qcjl.wlid and wlgl.scbj = '0'
+        left join matridx_xtyh czr on czr.yhid = qcjl.czr and czr.scbj = '0'
+        left join matridx_xtyh jcr on jcr.yhid = qcjl.jcr and jcr.scbj = '0'
+        <where>
+            qcjl.scbj='0' and qcjl.qcjlid=#{qcjlid}
+        </where>
+    </select>
+
+    <update id="delete" parameterType="QcjlDto">
+        update igams_qcjl
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            qcjlid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="generateJlbh" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_qcjl
+        <where>
+            scbj = '0' AND jlbh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <insert id="insert"  parameterType="QcjlDto">
+        insert into igams_qcjl(
+        qcjlid
+        <if test="fjmc != '' and fjmc != null">
+            ,fjmc
+        </if>
+        <if test="ssgx != '' and ssgx != null">
+            ,ssgx
+        </if>
+        <if test="jlbh != '' and jlbh != null">
+            ,jlbh
+        </if>
+        <if test="wlid != '' and wlid != null">
+            ,wlid
+        </if>
+        <if test="ph != '' and ph != null">
+            ,ph
+        </if>
+        <if test="czr != '' and czr != null">
+            ,czr
+        </if>
+        <if test="qcrq != '' and qcrq != null">
+            ,qcrq
+        </if>
+        <if test="jczp != '' and jczp != null">
+            ,jczp
+        </if>
+        <if test="jcr != '' and jcr != null">
+            ,jcr
+        </if>
+        <if test="bz != '' and bz != null">
+            ,bz
+        </if>
+        <if test="yxq != '' and yxq != null">
+            ,yxq
+        </if>
+        <if test="zt != '' and zt != null">
+            ,zt
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(
+        #{qcjlid}
+        <if test="fjmc != '' and fjmc != null">
+            ,#{fjmc}
+        </if>
+        <if test="ssgx != '' and ssgx != null">
+            ,#{ssgx}
+        </if>
+        <if test="jlbh != '' and jlbh != null">
+            ,#{jlbh}
+        </if>
+        <if test="wlid != '' and wlid != null">
+            ,#{wlid}
+        </if>
+        <if test="ph != '' and ph != null">
+            ,#{ph}
+        </if>
+        <if test="czr != '' and czr != null">
+            ,#{czr}
+        </if>
+        <if test="qcrq != '' and qcrq != null">
+            ,cast(#{qcrq} as date)
+        </if>
+        <if test="jczp != '' and jczp != null">
+            ,#{jczp}
+        </if>
+        <if test="jcr != '' and jcr != null">
+            ,#{jcr}
+        </if>
+        <if test="bz != '' and bz != null">
+            ,#{bz}
+        </if>
+        <if test="yxq != '' and yxq != null">
+            ,cast(#{yxq} as date)
+        </if>
+        <if test="zt != '' and zt != null">
+            ,#{zt}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert>
+
+    <update id="update" parameterType="QcjlDto">
+        update igams_qcjl
+        set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="fjmc != '' and fjmc != null">
+            ,fjmc=#{fjmc}
+        </if>
+        <if test="ssgx != '' and ssgx != null">
+            ,ssgx=#{ssgx}
+        </if>
+        <if test="jlbh != '' and jlbh != null">
+            ,jlbh=#{jlbh}
+        </if>
+        <if test="wlid != '' and wlid != null">
+            ,wlid=#{wlid}
+        </if>
+        <if test="ph != '' and ph != null">
+            ,ph=#{ph}
+        </if>
+        <if test="czr != '' and czr != null">
+            ,czr=#{czr}
+        </if>
+        <if test="qcrq != '' and qcrq != null">
+            ,qcrq=cast(#{qcrq} as date)
+        </if>
+        <if test="jczp != '' and jczp != null">
+            ,jczp=#{jczp}
+        </if>
+        <if test="jcr != '' and jcr != null">
+            ,jcr=#{jcr}
+        </if>
+        <if test="bz != '' and bz != null">
+            ,bz=#{bz}
+        </if>
+        <if test="yxq != '' and yxq != null">
+            ,yxq=cast(#{yxq} as date)
+        </if>
+        <if test="zt != '' and zt != null">
+            ,zt=#{zt}
+        </if>
+        <where>
+            qcjlid=#{qcjlid}
+        </where>
+    </update>
+</mapper>

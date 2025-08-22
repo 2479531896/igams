@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzllmxDao" >
+
+    <select id="getDtoXzllmxListByXzllid" resultType="XzllmxDto" parameterType="String">
+        select xzkcxx.hwmc,xzkcxx.hwbz,xzllmx.xzllmxid,xzllmx.xzllid,xzllmx.xzkcid,(coalesce(xzkcxx.kcl,0) - coalesce(xzkcxx.yds,0)+coalesce(xzllmx.qlsl,0)) klsl,coalesce(xzllmx.qlsl,0) qlsl,(coalesce(xzkcxx.yds,0)-coalesce(xzllmx.qlsl,0)) yds,
+        jcsj.csmc kw,xzllmx.cksl,xzllmx.sbysid
+        from igams_xzllmx xzllmx
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid = xzllmx.xzkcid
+        left join igams_xzrkmx xzrkmx on xzrkmx.xzkcid=xzkcxx.xzkcid
+		 left join matridx_jcsj jcsj on xzkcxx.kwid=jcsj.csid
+        where xzllid = #{xzllid} and xzllmx.scbj='0'
+        	group by xzllmx.xzllmxid,xzllmx.xzkcid,xzkcxx.kcl,xzkcxx.yds,xzkcxx.hwmc,xzkcxx.hwbz,jcsj.csmc
+        order by xzllmx.xh asc
+    </select>
+    <select id="getDtoXzllmxListByXzkcid" resultType="XzllmxDto" parameterType="String">
+        select xzllmx.xzllmxid,coalesce(xzllmx.qlsl,0) qlsl,llry.zsxm llrymc,xzllgl.lldh,case when xzllgl.flry is not null then '已出库' else '未出库' end ckzt
+        from igams_xzllmx xzllmx
+        left join igams_xzllgl xzllgl on xzllgl.xzllid = xzllmx.xzllid
+        left join matridx_xtyh llry on llry.yhid=xzllgl.llry
+        where xzllmx.xzkcid = #{xzkcid} and xzllmx.scbj='0'
+    </select>
+    <insert id="insertList" parameterType="List">
+        insert into igams_xzllmx(xzllmxid,xzllid,xzkcid,qlsl,xh,lrry,lrsj,scbj,sbysid)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.xzllmxid},#{item.xzllid},#{item.xzkcid},cast(#{item.qlsl} as numeric),#{item.xh},#{item.lrry},LOCALTIMESTAMP,'0',#{item.sbysid}
+                )
+            </foreach>
+        </if>
+    </insert>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_xzllmx set
+                xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+                <if test="item.xzllid !=null and item.xzllid != ''">
+                    ,xzllid = #{item.xzllid}
+                </if>
+                <if test="item.xzkcid !=null and item.xzkcid != ''">
+                    ,xzkcid = #{item.xzkcid}
+                </if>
+                <if test="item.qlsl !=null and item.qlsl != ''">
+                    ,qlsl =  cast(#{item.qlsl} as numeric)
+                </if>
+                <if test="item.xh !=null and item.xh != ''">
+                    ,xh = #{item.xh}
+                </if>
+                <if test="item.cksl !=null and item.cksl != ''">
+                    , cksl =  cast(#{item.cksl} as numeric)
+                </if>
+                where xzllmxid = #{item.xzllmxid}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="delXzllmxByXzllid" parameterType="XzllmxDto">
+        delete from igams_xzllmx
+        where xzllid = #{xzllid}
+    </update>
+
+    <update id="delete" parameterType="XzllmxDto">
+        update igams_xzllmx
+        set scry = #{scry} , scsj = LOCALTIMESTAMP, scbj = '1'
+        <where>
+            scbj != '1'
+            <if test="xzllid != null and xzllid !=''">
+                and xzllid = #{xzllid}
+            </if>
+            <if test="ids !=null and ids.size >0">
+                and xzllid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <select id="getDtoById" resultType="XzllmxDto" parameterType="String">
+        select xzkcxx.hwmc,xzkcxx.hwbz,xzllmx.xzllmxid,xzllmx.xzllid,xzllmx.xzkcid,(coalesce(xzkcxx.kcl,0) - coalesce(xzkcxx.yds,0)+coalesce(xzllmx.qlsl,0)) klsl,coalesce(xzllmx.qlsl,0) qlsl,(coalesce(xzkcxx.yds,0)-coalesce(xzllmx.qlsl,0)) yds,
+        jcsj.csmc kw,xzllmx.cksl,xzllmx.sbysid
+        from igams_xzllmx xzllmx
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid = xzllmx.xzkcid
+        left join igams_xzrkmx xzrkmx on xzrkmx.xzkcid=xzkcxx.xzkcid
+		 left join matridx_jcsj jcsj on xzkcxx.kwid=jcsj.csid
+        where xzllmxid = #{xzllmxid} and xzllmx.scbj='0'
+        group by xzllmx.xzllmxid,xzllmx.xzkcid,xzkcxx.kcl,xzkcxx.yds,xzkcxx.hwmc,xzkcxx.hwbz,jcsj.csmc,xzllmx.sbysid
+    </select>
+    <update id="update" parameterType="String">
+        update igams_xzllmx set
+        xgry=#{xgry},
+        xgsj=LOCALTIMESTAMP
+        <if test="sbysid !=null and sbysid!=''">
+            ,sbysid=#{sbysid}
+        </if>
+        where xzllmxid=#{xzllmxid}
+    </update>
+</mapper>

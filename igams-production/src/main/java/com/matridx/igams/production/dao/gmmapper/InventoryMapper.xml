@@ -1,0 +1,791 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.gmsql.IGmInventoryDao" >
+	
+	<!-- 更改文件删除标记 -->
+	<update  id="deletematridx" parameterType="InventoryModel">
+		update  UFDATA_001_2016.dbo.Inventory set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			<if test="wjid !=null and wjid != ''">
+				or wjid = #{wjid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or wjid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	 <!-- 修改之前查询单位是否存在 -->
+	<select id="selectmatridx" parameterType="String" resultType="ComputationUnitModel">
+		select 
+			cComunitCode from UFDATA_001_2016.dbo.ComputationUnit 
+		<where>
+			cComUnitName=#{cComUnitName}
+		</where>
+		 
+ 	</select>
+ 	<!-- 新增之前查一下物料是否已经存在 -->
+ 	<select id="select_matridx_InvName" parameterType="String" resultType="InventoryModel">
+ 		select 
+ 			cInvName from UFDATA_001_2016.dbo.Inventory
+ 		<where>
+ 			cInvCode=#{cInvCode}
+ 		</where>
+ 	</select>
+ 	
+ 	<!-- 查询partid最大的值 -->
+ 	<select id="select_matridx_partid"  resultType="Bas_partModel">
+ 		select ISNULL(max(PartId),0) as PartId  from UFDATA_001_2016.dbo.bas_part
+ 	</select>
+ 	
+ 	<!-- 	添加Bas_part表 -->
+	<insert id="insert_matridx_Bas_part" parameterType="Bas_partModel">
+		insert into UFDATA_001_2016.dbo.bas_part(
+			<if test="PartId!=null and PartId !=''">
+				PartId
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,InvCode
+			</if>
+				,bVirtual,LLC,iSurenessType,RoundingFactor,FreeStockFlag,bFreeStop
+				)values(
+			<if test="PartId!=null and PartId !=''">
+				#{PartId}
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,#{InvCode}
+			</if>
+				,'1',0,1,0.0,0,0)
+	</insert>
+	<!-- 更新文件信息 -->
+	<update  id="updatematridx" parameterType="InventoryModel" >
+		update  UFDATA_001_2016.dbo.Inventory
+		<set>
+		<if test="cInvName !=null and cInvName != ''">
+			cInvName = #{cInvName},
+		</if>
+			<!-- 存货分类 -->
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			cInvCCode=#{cInvCCode},
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			cInvDefine2=#{cInvDefine2},
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			cInvDefine3=#{cInvDefine3},
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			cInvStd=#{cInvStd},
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			iMassDate=#{iMassDate},
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			cInvDefine6=#{cInvDefine6},
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			cMassUnit=#{cMassUnit},
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			cComUnitCode=#{cComUnitCode},
+		</if>
+		<if test="cModifyPerson !=null and  cModifyPerson !=''">
+			cModifyPerson=#{cModifyPerson},
+		</if>
+			cInvABC=#{cInvABC},
+			dModifyDate=getdate()
+		</set>
+		<where>
+			cInvCode = #{cInvCode}
+		</where>
+	</update>
+	<!-- 新增文件信息 -->
+	<insert id="insertmatridx" parameterType="InventoryModel">
+		insert into UFDATA_001_2016.dbo.Inventory(cPosition,bSale,bPurchase,bSelf,bComsume,bProducing,bService,bAccessary,iTaxRate,iVolume,iInvAdvance,bInvQuality,bInvBatch,bInvEntrust,bInvOverStock,dSDate,bFree1,bFree2<!--,I_id-->,bInvType,bFree3,bFree4,bFree5,bFree6,bFree7,bFree8,bFree9,bFree10,bFixExch,bTrack,bSerial,bBarCode ,dLastDate 
+		,bSolitude,bSpecialties,cDefWareHouse,bPropertyCheck,iRecipeBatch,bPromotSales,bPlanInv,bProxyForeign,bATOModel,bCheckItem,bPTOModel,
+		bEquipment,cPlanMethod,bMPS,bROP,bRePlan,cSRPolicy,bBillUnite,bCutMantissa,bInTotalCost,iSupplyType,bConfigFree1,bConfigFree2,bConfigFree3,bConfigFree4,bConfigFree5,
+		bConfigFree6,bConfigFree7,bConfigFree8,bConfigFree9,bConfigFree10,bPeriodDT,bOutInvDT,bBackInvDT,bDTWarnInv,fBackTaxRate,cShopUnit,bImportMedicine,bFirstBusiMedicine,bForeExpland,
+		fConvertRate,bInvModel,bKCCutMantissa,bReceiptByDT,bExpSale,bCheckBSATP,bCheckFree1,bCheckFree2,bCheckFree3,bCheckFree4,bCheckFree5,bCheckFree6,bCheckFree7,bCheckFree8,bCheckFree9,bCheckFree10,
+		bBomMain,bBomSub,bProductBill,iCheckATP,bPiece,bSrvItem,bSrvFittings,bSpecialOrder,bTrackSaleBill,iPlanDefault,iAllocatePrintDgt,bCheckBatch,bMngOldpart,
+		iGroupType,cGroupCode
+		<if test="cInvCode !=null and cInvCode != ''">
+			,cInvCode
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,cInvName
+		</if>
+		<!-- 存货分类 -->
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			,cInvCCode
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,cInvDefine2
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,cInvDefine3
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,cInvStd
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,iMassDate
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,cInvDefine6
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,cMassUnit
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,cComUnitCode
+		</if>
+		) values('02000','1','1','0','1','0','0','0','0','0','0' ,'1','1','0','0',getdate(),'0','0'<!--,'4824' -->,'0','0','0','0','0','0','0','0','0','0','0','0' ,'0',getdate()
+		,'0','0','01','0','0','0','0','1','0','0','0',
+		'1','R','0','0',0,'PE','0','0','1','0','0','0','0','0','0',
+		'0','0','0','0','0','0','0','0','0','0','027','0','0','0',
+		'1','0','0','0','1','0','0','0','0','0','0','0','0','0','0','0',
+		'1','1','0','0','0','0','0','0','0','3','4','0','0',
+		'0','01'
+		<if test="cInvCode !=null and cInvCode != ''">
+			,#{cInvCode}
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,#{cInvName}
+		</if>
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			,#{cInvCCode}
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,#{cInvDefine2}
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,#{cInvDefine3}
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,#{cInvStd}
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,#{iMassDate}
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,#{cInvDefine6}
+		</if>
+			<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,#{cMassUnit}
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,#{cComUnitCode}
+		</if>
+		)
+	</insert>
+	
+	<insert id="insertsubmatridx" parameterType="map">
+		insert into  UFDATA_001_2016.dbo.Inventory_Sub(
+			cInvSubCode,bInByProCheck ,iRequireTrackStyle,iExpiratDateCalcu,iBOMExpandUnitType, 
+			bPurPriceFree1,bPurPriceFree2,bPurPriceFree3,bPurPriceFree4,bPurPriceFree5,bPurPriceFree6,bPurPriceFree7,bPurPriceFree8,bPurPriceFree9,bPurPriceFree10,
+			bOMPriceFree1,bOMPriceFree2,bOMPriceFree3,bOMPriceFree4,bOMPriceFree5,bOMPriceFree6,bOMPriceFree7,bOMPriceFree8,bOMPriceFree9,bOMPriceFree10,
+			bSalePriceFree1,bSalePriceFree2,bSalePriceFree3,bSalePriceFree4,bSalePriceFree5,bSalePriceFree6,bSalePriceFree7,bSalePriceFree8,bSalePriceFree9,bSalePriceFree10,
+			bBondedInv,bBatchCreate,bBatchProperty1,bBatchProperty2,bBatchProperty3,bBatchProperty4,bBatchProperty5,bBatchProperty6,bBatchProperty7,bBatchProperty8,bBatchProperty9,bBatchProperty10,
+			bControlFreeRange1,bControlFreeRange2,bControlFreeRange3,bControlFreeRange4,bControlFreeRange5,bControlFreeRange6,bControlFreeRange7,bControlFreeRange8,bControlFreeRange9,bControlFreeRange10,
+			iWarrantyUnit,bInvKeyPart,iAcceptEarlyDays,dInvCreateDatetime,bPUQuota,bInvROHS,bPrjMat,bInvAsset,bSrvProduct,iAcceptDelayDays,iDrawType,bSCkeyProjections,iSupplyPeriodType,iAvailabilityDate,bImport,bCheckSubitemCost,fRoundFactor,bConsiderFreeStock,bSuitRetail,
+			bFeatureMatch,bProduceByFeatureAllocate,bMaintenance,iMaintenanceCycleUnit,bCoupon,bStoreCard,bProcessProduct,bProcessMaterial
+		  	,iSurenessType,bIsAttachFile 
+		)values(
+			#{cInvSubCode},'1','0','0','1',  
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','1','999',getdate(),'0','0','0','0','0','0','0','0','1','1','1','1','0','1','0',
+			'0','0','0','0','0','0','0','0',
+			'1','0' 
+		)
+	</insert>
+<!-- 	                                                       	另外一个数据库 -->
+	<!-- 更改文件删除标记 -->
+	<update  id="deleteInventory" parameterType="InventoryModel">
+		update  UFDATA_003_2019.dbo.Inventory set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			<if test="wjid !=null and wjid != ''">
+				or wjid = #{wjid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or wjid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+ 	<!-- 修改之前查询单位是否存在 -->
+	<select id="selectInventory" parameterType="String" resultType="ComputationUnitModel">
+		select 
+			cComunitCode from UFDATA_003_2019.dbo.ComputationUnit 
+		<where>
+			cComUnitName=#{cComUnitName}
+		</where>
+ 	</select>
+ 	
+ 	 <!-- 修改之前查询单位是否存在 -->
+	<select id="selectInventory2017" parameterType="String" resultType="ComputationUnitModel">
+		select 
+			cComunitCode from UFDATA_006_2017.dbo.ComputationUnit 
+		<where>
+			cComUnitName=#{cComUnitName}
+		</where>
+ 	</select>
+ 	
+ 	 <!-- 修改之前查询单位是否存在 -->
+	<select id="selectInventory2020" parameterType="String" resultType="ComputationUnitModel">
+		select 
+			cComunitCode from UFDATA_010_2020.dbo.ComputationUnit 
+		<where>
+			cComUnitName=#{cComUnitName}
+		</where>
+ 	</select>
+	 	
+	 <!-- 新增之前查一下物料是否已经存在 -->
+ 	<select id="select_Inventory_InvName" parameterType="String" resultType="InventoryModel">
+		select 
+			cInvName from UFDATA_003_2019.dbo.Inventory
+		<where>
+			cInvCode=#{cInvCode}
+		</where>
+	</select>
+	
+	<!-- 查询partid最大的值 -->
+ 	<select id="select_Inventory_partid"  resultType="Bas_partModel">
+ 		select ISNULL(max(PartId),0) as PartId  from UFDATA_003_2019.dbo.bas_part
+ 	</select>
+
+	<select id="select_Inventory_partid_cInvCode"  resultType="Bas_partModel" parameterType="Bas_partModel">
+ 		
+ 		select PartId  from UFDATA_003_2019.dbo.bas_part where InvCode=#{InvCode}
+ 	</select>
+ 	
+ 		<!-- 查询partid最大的值 -->
+ 	<select id="select_Inventory2017_partid"  resultType="Bas_partModel">
+ 		select ISNULL(max(PartId),0) as PartId  from UFDATA_006_2017.dbo.bas_part
+ 	</select>
+ 	
+ 		<!-- 查询partid最大的值 -->
+ 	<select id="select_Inventory2020_partid"  resultType="Bas_partModel">
+ 		select ISNULL(max(PartId),0) as PartId  from UFDATA_010_2020.dbo.bas_part
+ 	</select>
+ 	
+ 	<!-- 	添加Bas_part表 -->
+	<insert id="insert_Inventory_Bas_part" parameterType="Bas_partModel">
+		insert into UFDATA_003_2019.dbo.bas_part(
+			<if test="PartId!=null and PartId !=''">
+				PartId
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,InvCode
+			</if>
+				,bVirtual,LLC,iSurenessType,RoundingFactor,FreeStockFlag,bFreeStop
+				)values(
+			<if test="PartId!=null and PartId !=''">
+				#{PartId}
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,#{InvCode}
+			</if>
+				,'1',0,1,0.0,0,0)
+	</insert>
+	
+	<!-- 	添加Bas_part表 -->
+	<insert id="insert_Inventory2017_Bas_part" parameterType="Bas_partModel">
+		insert into UFDATA_006_2017.dbo.bas_part(
+			<if test="PartId!=null and PartId !=''">
+				PartId
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,InvCode
+			</if>
+				,bVirtual,LLC,iSurenessType,RoundingFactor,FreeStockFlag,bFreeStop
+				)values(
+			<if test="PartId!=null and PartId !=''">
+				#{PartId}
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,#{InvCode}
+			</if>
+				,'1',0,1,0.0,0,0)
+	</insert>
+	
+	<!-- 	添加Bas_part表 -->
+	<insert id="insert_Inventory2020_Bas_part" parameterType="Bas_partModel">
+		insert into UFDATA_010_2020.dbo.bas_part(
+			<if test="PartId!=null and PartId !=''">
+				PartId
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,InvCode
+			</if>
+				,bVirtual,LLC,iSurenessType,RoundingFactor,FreeStockFlag,bFreeStop
+				)values(
+			<if test="PartId!=null and PartId !=''">
+				#{PartId}
+			</if>
+			<if test="InvCode!=null and InvCode !=''">
+				,#{InvCode}
+			</if>
+				,'1',0,1,0.0,0,0)
+	</insert>
+	
+	<!-- 更新文件信息 -->
+	<update  id="updateInventory" parameterType="InventoryModel">
+		update UFDATA_003_2019.dbo.Inventory
+		<set>
+		<if test="cInvName !=null and cInvName != ''">
+			cInvName = #{cInvName},
+		</if>
+			<!-- 存货分类 -->
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			cInvCCode=#{cInvCCode},
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			cInvDefine2=#{cInvDefine2},
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			cInvDefine3=#{cInvDefine3},
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			cInvStd=#{cInvStd},
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			iMassDate=#{iMassDate},
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			cInvDefine6=#{cInvDefine6},
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			cMassUnit=#{cMassUnit},
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			cComUnitCode=#{cComUnitCode},
+		</if>
+		<if test="cModifyPerson !=null and  cModifyPerson !=''">
+			cModifyPerson=#{cModifyPerson},
+		</if>
+			dModifyDate=getdate()
+		</set>
+		<where>
+			cInvCode = #{cInvCode}
+		</where>
+	</update>
+	
+	<!-- 更新文件信息 -->
+	<update  id="updateInventory2017" parameterType="InventoryModel">
+		update UFDATA_006_2017.dbo.Inventory
+		<set>
+		<if test="cInvName !=null and cInvName != ''">
+			cInvName = #{cInvName},
+		</if>
+			<!-- 存货分类 -->
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			cInvCCode=#{cInvCCode},
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			cInvDefine2=#{cInvDefine2},
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			cInvDefine3=#{cInvDefine3},
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			cInvStd=#{cInvStd},
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			iMassDate=#{iMassDate},
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			cInvDefine6=#{cInvDefine6},
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			cMassUnit=#{cMassUnit},
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			cComUnitCode=#{cComUnitCode},
+		</if>
+		<if test="cModifyPerson !=null and  cModifyPerson !=''">
+			cModifyPerson=#{cModifyPerson},
+		</if>
+			dModifyDate=getdate()
+		</set>
+		<where>
+			cInvCode = #{cInvCode}
+		</where>
+	</update>
+	
+	<!-- 更新文件信息 -->
+	<update  id="updateInventory2020" parameterType="InventoryModel">
+		update UFDATA_010_2020.dbo.Inventory
+		<set>
+		<if test="cInvName !=null and cInvName != ''">
+			cInvName = #{cInvName},
+		</if>
+			<!-- 存货分类 -->
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			cInvCCode=#{cInvCCode},
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			cInvDefine2=#{cInvDefine2},
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			cInvDefine3=#{cInvDefine3},
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			cInvStd=#{cInvStd},
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			iMassDate=#{iMassDate},
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			cInvDefine6=#{cInvDefine6},
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			cMassUnit=#{cMassUnit},
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			cComUnitCode=#{cComUnitCode},
+		</if>
+		<if test="cModifyPerson !=null and  cModifyPerson !=''">
+			cModifyPerson=#{cModifyPerson},
+		</if>
+			dModifyDate=getdate()
+		</set>
+		<where>
+			cInvCode = #{cInvCode}
+		</where>
+	</update>
+	
+	<!-- 新增文件信息 -->
+	<insert id="insertInventory" parameterType="InventoryModel"  >
+		insert into UFDATA_003_2019.dbo.Inventory(cPosition,bSale,bPurchase,bSelf,bComsume,bProducing,bService,bAccessary,iTaxRate,iVolume,iInvAdvance,bInvQuality,bInvBatch,bInvEntrust,bInvOverStock,dSDate,bFree1,bFree2<!--,I_id-->,bInvType,bFree3,bFree4,bFree5,bFree6,bFree7,bFree8,bFree9,bFree10,bFixExch,bTrack,bSerial,bBarCode ,dLastDate 
+		,bSolitude,bSpecialties,cDefWareHouse,bPropertyCheck,iRecipeBatch,bPromotSales,bPlanInv,bProxyForeign,bATOModel,bCheckItem,bPTOModel,
+		bEquipment,cPlanMethod,bMPS,bROP,bRePlan,cSRPolicy,bBillUnite,bCutMantissa,bInTotalCost,iSupplyType,bConfigFree1,bConfigFree2,bConfigFree3,bConfigFree4,bConfigFree5,
+		bConfigFree6,bConfigFree7,bConfigFree8,bConfigFree9,bConfigFree10,bPeriodDT,bOutInvDT,bBackInvDT,bDTWarnInv,fBackTaxRate,cShopUnit,bImportMedicine,bFirstBusiMedicine,bForeExpland,
+		fConvertRate,bInvModel,bKCCutMantissa,bReceiptByDT,bExpSale,bCheckBSATP,bCheckFree1,bCheckFree2,bCheckFree3,bCheckFree4,bCheckFree5,bCheckFree6,bCheckFree7,bCheckFree8,bCheckFree9,bCheckFree10,
+		bBomMain,bBomSub,bProductBill,iCheckATP,bPiece,bSrvItem,bSrvFittings,bSpecialOrder,bTrackSaleBill,iPlanDefault,iAllocatePrintDgt,bCheckBatch,bMngOldpart,
+		iGroupType,cGroupCode
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,cInvCode
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,cInvName
+		</if>
+		<!-- 存货分类 -->
+		 <if test="cInvCCode !=null and cInvCCode !=''">
+			,cInvCCode
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,cInvDefine2
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,cInvDefine3
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,cInvStd
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,iMassDate
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,cInvDefine6
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,cMassUnit
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,cComUnitCode
+		</if>
+		
+		) values('02000','1','1','0','1','0','0','0','0','0','0' ,'1','1','0','0',getdate(),'0','0'<!--,'4824' -->,'0','0','0','0','0','0','0','0','0','0','0','0' ,'0',getdate()
+		,'0','0','01','0','0','0','0','1','0','0','0',
+		'1','R','0','0',0,'PE','0','0','1','0','0','0','0','0','0',
+		'0','0','0','0','0','0','0','0','0','0','027','0','0','0',
+		'1','0','0','0','1','0','0','0','0','0','0','0','0','0','0','0',
+		'1','1','0','0','0','0','0','0','0','3','4','0','0',
+		'0','01'
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,#{cInvCode}
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,#{cInvName}
+		</if>
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			,#{cInvCCode}
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,#{cInvDefine2}
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,#{cInvDefine3}
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,#{cInvStd}
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,#{iMassDate}
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,#{cInvDefine6}
+		</if>
+			<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,#{cMassUnit}
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,#{cComUnitCode}
+		</if>
+		)
+	</insert>
+	
+	<insert id="insertsubInventory" parameterType="map">
+		insert into UFDATA_003_2019.dbo.Inventory_Sub(
+			cInvSubCode,bInByProCheck ,iRequireTrackStyle,iExpiratDateCalcu,iBOMExpandUnitType, 
+			bPurPriceFree1,bPurPriceFree2,bPurPriceFree3,bPurPriceFree4,bPurPriceFree5,bPurPriceFree6,bPurPriceFree7,bPurPriceFree8,bPurPriceFree9,bPurPriceFree10,
+			bOMPriceFree1,bOMPriceFree2,bOMPriceFree3,bOMPriceFree4,bOMPriceFree5,bOMPriceFree6,bOMPriceFree7,bOMPriceFree8,bOMPriceFree9,bOMPriceFree10,
+			bSalePriceFree1,bSalePriceFree2,bSalePriceFree3,bSalePriceFree4,bSalePriceFree5,bSalePriceFree6,bSalePriceFree7,bSalePriceFree8,bSalePriceFree9,bSalePriceFree10,
+			bBondedInv,bBatchCreate,bBatchProperty1,bBatchProperty2,bBatchProperty3,bBatchProperty4,bBatchProperty5,bBatchProperty6,bBatchProperty7,bBatchProperty8,bBatchProperty9,bBatchProperty10,
+			bControlFreeRange1,bControlFreeRange2,bControlFreeRange3,bControlFreeRange4,bControlFreeRange5,bControlFreeRange6,bControlFreeRange7,bControlFreeRange8,bControlFreeRange9,bControlFreeRange10,
+			iWarrantyUnit,bInvKeyPart,iAcceptEarlyDays,dInvCreateDatetime,bPUQuota,bInvROHS,bPrjMat,bInvAsset,bSrvProduct,iAcceptDelayDays,iDrawType,bSCkeyProjections,iSupplyPeriodType,iAvailabilityDate,bImport,bCheckSubitemCost,fRoundFactor,bConsiderFreeStock,bSuitRetail,
+			bFeatureMatch,bProduceByFeatureAllocate,bMaintenance,iMaintenanceCycleUnit,bCoupon,bStoreCard,bProcessProduct,bProcessMaterial
+		  	,iSurenessType,bIsAttachFile 
+		)values(
+			#{cInvSubCode},'1','0','0','1',  
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','1','999',getdate(),'0','0','0','0','0','0','0','0','1','1','1','1','0','1','0',
+			'0','0','0','0','0','0','0','0',
+			'1','0' 
+		)
+	</insert>
+	
+	<insert id="insertsubInventory2017" parameterType="map">
+		insert into UFDATA_006_2017.dbo.Inventory_Sub(
+			cInvSubCode,bInByProCheck ,iRequireTrackStyle,iExpiratDateCalcu,iBOMExpandUnitType, 
+			bPurPriceFree1,bPurPriceFree2,bPurPriceFree3,bPurPriceFree4,bPurPriceFree5,bPurPriceFree6,bPurPriceFree7,bPurPriceFree8,bPurPriceFree9,bPurPriceFree10,
+			bOMPriceFree1,bOMPriceFree2,bOMPriceFree3,bOMPriceFree4,bOMPriceFree5,bOMPriceFree6,bOMPriceFree7,bOMPriceFree8,bOMPriceFree9,bOMPriceFree10,
+			bSalePriceFree1,bSalePriceFree2,bSalePriceFree3,bSalePriceFree4,bSalePriceFree5,bSalePriceFree6,bSalePriceFree7,bSalePriceFree8,bSalePriceFree9,bSalePriceFree10,
+			bBondedInv,bBatchCreate,bBatchProperty1,bBatchProperty2,bBatchProperty3,bBatchProperty4,bBatchProperty5,bBatchProperty6,bBatchProperty7,bBatchProperty8,bBatchProperty9,bBatchProperty10,
+			bControlFreeRange1,bControlFreeRange2,bControlFreeRange3,bControlFreeRange4,bControlFreeRange5,bControlFreeRange6,bControlFreeRange7,bControlFreeRange8,bControlFreeRange9,bControlFreeRange10,
+			iWarrantyUnit,bInvKeyPart,iAcceptEarlyDays,dInvCreateDatetime,bPUQuota,bInvROHS,bPrjMat,bInvAsset,bSrvProduct,iAcceptDelayDays,iDrawType,bSCkeyProjections,iSupplyPeriodType,iAvailabilityDate,bImport,bCheckSubitemCost,fRoundFactor,bConsiderFreeStock,bSuitRetail,
+			bFeatureMatch,bProduceByFeatureAllocate,bMaintenance,iMaintenanceCycleUnit,bCoupon,bStoreCard,bProcessProduct,bProcessMaterial
+		  	,iSurenessType,bIsAttachFile 
+		)values(
+			#{cInvSubCode},'1','0','0','1',  
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','1','999',getdate(),'0','0','0','0','0','0','0','0','1','1','1','1','0','1','0',
+			'0','0','0','0','0','0','0','0',
+			'1','0' 
+		)
+	</insert>
+	
+	<insert id="insertsubInventory2020" parameterType="map">
+		insert into UFDATA_010_2020.dbo.Inventory_Sub(
+			cInvSubCode,bInByProCheck ,iRequireTrackStyle,iExpiratDateCalcu,iBOMExpandUnitType, 
+			bPurPriceFree1,bPurPriceFree2,bPurPriceFree3,bPurPriceFree4,bPurPriceFree5,bPurPriceFree6,bPurPriceFree7,bPurPriceFree8,bPurPriceFree9,bPurPriceFree10,
+			bOMPriceFree1,bOMPriceFree2,bOMPriceFree3,bOMPriceFree4,bOMPriceFree5,bOMPriceFree6,bOMPriceFree7,bOMPriceFree8,bOMPriceFree9,bOMPriceFree10,
+			bSalePriceFree1,bSalePriceFree2,bSalePriceFree3,bSalePriceFree4,bSalePriceFree5,bSalePriceFree6,bSalePriceFree7,bSalePriceFree8,bSalePriceFree9,bSalePriceFree10,
+			bBondedInv,bBatchCreate,bBatchProperty1,bBatchProperty2,bBatchProperty3,bBatchProperty4,bBatchProperty5,bBatchProperty6,bBatchProperty7,bBatchProperty8,bBatchProperty9,bBatchProperty10,
+			bControlFreeRange1,bControlFreeRange2,bControlFreeRange3,bControlFreeRange4,bControlFreeRange5,bControlFreeRange6,bControlFreeRange7,bControlFreeRange8,bControlFreeRange9,bControlFreeRange10,
+			iWarrantyUnit,bInvKeyPart,iAcceptEarlyDays,dInvCreateDatetime,bPUQuota,bInvROHS,bPrjMat,bInvAsset,bSrvProduct,iAcceptDelayDays,iDrawType,bSCkeyProjections,iSupplyPeriodType,iAvailabilityDate,bImport,bCheckSubitemCost,fRoundFactor,bConsiderFreeStock,bSuitRetail,
+			bFeatureMatch,bProduceByFeatureAllocate,bMaintenance,iMaintenanceCycleUnit,bCoupon,bStoreCard,bProcessProduct,bProcessMaterial
+		  	,iSurenessType,bIsAttachFile 
+		)values(
+			#{cInvSubCode},'1','0','0','1',  
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0','0','0',
+			'0','0','0','0','0','0','0','0','0','0',
+			'0','1','999',getdate(),'0','0','0','0','0','0','0','0','1','1','1','1','0','1','0',
+			'0','0','0','0','0','0','0','0',
+			'1','0' 
+		)
+	</insert>
+	
+	<!-- 新增文件信息 -->
+	<insert id="insertInventory2017" parameterType="InventoryModel"  >
+		insert into UFDATA_006_2017.dbo.Inventory(cPosition,bSale,bPurchase,bSelf,bComsume,bProducing,bService,bAccessary,iTaxRate,iVolume,iInvAdvance,bInvQuality,bInvBatch,bInvEntrust,bInvOverStock,dSDate,bFree1,bFree2<!--,I_id-->,bInvType,bFree3,bFree4,bFree5,bFree6,bFree7,bFree8,bFree9,bFree10,bFixExch,bTrack,bSerial,bBarCode ,dLastDate 
+		,bSolitude,bSpecialties,cDefWareHouse,bPropertyCheck,iRecipeBatch,bPromotSales,bPlanInv,bProxyForeign,bATOModel,bCheckItem,bPTOModel,
+		bEquipment,cPlanMethod,bMPS,bROP,bRePlan,cSRPolicy,bBillUnite,bCutMantissa,bInTotalCost,iSupplyType,bConfigFree1,bConfigFree2,bConfigFree3,bConfigFree4,bConfigFree5,
+		bConfigFree6,bConfigFree7,bConfigFree8,bConfigFree9,bConfigFree10,bPeriodDT,bOutInvDT,bBackInvDT,bDTWarnInv,fBackTaxRate,cShopUnit,bImportMedicine,bFirstBusiMedicine,bForeExpland,
+		fConvertRate,bInvModel,bKCCutMantissa,bReceiptByDT,bExpSale,bCheckBSATP,bCheckFree1,bCheckFree2,bCheckFree3,bCheckFree4,bCheckFree5,bCheckFree6,bCheckFree7,bCheckFree8,bCheckFree9,bCheckFree10,
+		bBomMain,bBomSub,bProductBill,iCheckATP,bPiece,bSrvItem,bSrvFittings,bSpecialOrder,bTrackSaleBill,iPlanDefault,iAllocatePrintDgt,bCheckBatch,bMngOldpart,
+		iGroupType,cGroupCode
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,cInvCode
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,cInvName
+		</if>
+		<!-- 存货分类 -->
+		 <if test="cInvCCode !=null and cInvCCode !=''">
+			,cInvCCode
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,cInvDefine2
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,cInvDefine3
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,cInvStd
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,iMassDate
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,cInvDefine6
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,cMassUnit
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,cComUnitCode
+		</if>
+		
+		) values('02000','1','1','0','1','0','0','0','0','0','0' ,'1','1','0','0',getdate(),'0','0'<!--,'4824' -->,'0','0','0','0','0','0','0','0','0','0','0','0' ,'0',getdate()
+		,'0','0','01','0','0','0','0','1','0','0','0',
+		'1','R','0','0',0,'PE','0','0','1','0','0','0','0','0','0',
+		'0','0','0','0','0','0','0','0','0','0','027','0','0','0',
+		'1','0','0','0','1','0','0','0','0','0','0','0','0','0','0','0',
+		'1','1','0','0','0','0','0','0','0','3','4','0','0',
+		'0','01'
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,#{cInvCode}
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,#{cInvName}
+		</if>
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			,#{cInvCCode}
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,#{cInvDefine2}
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,#{cInvDefine3}
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,#{cInvStd}
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,#{iMassDate}
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,#{cInvDefine6}
+		</if>
+			<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,#{cMassUnit}
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,#{cComUnitCode}
+		</if>
+		)
+	</insert>
+	
+	<!-- 新增文件信息 -->
+	<insert id="insertInventory2020" parameterType="InventoryModel"  >
+		insert into UFDATA_010_2020.dbo.Inventory(cPosition,bSale,bPurchase,bSelf,bComsume,bProducing,bService,bAccessary,iTaxRate,iVolume,iInvAdvance,bInvQuality,bInvBatch,bInvEntrust,bInvOverStock,dSDate,bFree1,bFree2<!--,I_id-->,bInvType,bFree3,bFree4,bFree5,bFree6,bFree7,bFree8,bFree9,bFree10,bFixExch,bTrack,bSerial,bBarCode ,dLastDate 
+		,bSolitude,bSpecialties,cDefWareHouse,bPropertyCheck,iRecipeBatch,bPromotSales,bPlanInv,bProxyForeign,bATOModel,bCheckItem,bPTOModel,
+		bEquipment,cPlanMethod,bMPS,bROP,bRePlan,cSRPolicy,bBillUnite,bCutMantissa,bInTotalCost,iSupplyType,bConfigFree1,bConfigFree2,bConfigFree3,bConfigFree4,bConfigFree5,
+		bConfigFree6,bConfigFree7,bConfigFree8,bConfigFree9,bConfigFree10,bPeriodDT,bOutInvDT,bBackInvDT,bDTWarnInv,fBackTaxRate,cShopUnit,bImportMedicine,bFirstBusiMedicine,bForeExpland,
+		fConvertRate,bInvModel,bKCCutMantissa,bReceiptByDT,bExpSale,bCheckBSATP,bCheckFree1,bCheckFree2,bCheckFree3,bCheckFree4,bCheckFree5,bCheckFree6,bCheckFree7,bCheckFree8,bCheckFree9,bCheckFree10,
+		bBomMain,bBomSub,bProductBill,iCheckATP,bPiece,bSrvItem,bSrvFittings,bSpecialOrder,bTrackSaleBill,iPlanDefault,iAllocatePrintDgt,bCheckBatch,bMngOldpart,
+		iGroupType,cGroupCode
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,cInvCode
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,cInvName
+		</if>
+		<!-- 存货分类 -->
+		 <if test="cInvCCode !=null and cInvCCode !=''">
+			,cInvCCode
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,cInvDefine2
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,cInvDefine3
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,cInvStd
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,iMassDate
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,cInvDefine6
+		</if>
+				<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,cMassUnit
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,cComUnitCode
+		</if>
+		
+		) values('02000','1','1','0','1','0','0','0','0','0','0' ,'1','1','0','0',getdate(),'0','0'<!--,'4824' -->,'0','0','0','0','0','0','0','0','0','0','0','0' ,'0',getdate()
+		,'0','0','01','0','0','0','0','1','0','0','0',
+		'1','R','0','0',0,'PE','0','0','1','0','0','0','0','0','0',
+		'0','0','0','0','0','0','0','0','0','0','027','0','0','0',
+		'1','0','0','0','1','0','0','0','0','0','0','0','0','0','0','0',
+		'1','1','0','0','0','0','0','0','0','3','4','0','0',
+		'0','01'
+		<if test="cInvCode !=null and cInvCode!=''">
+		 	,#{cInvCode}
+		</if>
+		<if test="cInvName !=null and cInvName != ''">
+			,#{cInvName}
+		</if>
+		<if test="cInvCCode !=null and cInvCCode !=''">
+			,#{cInvCCode}
+		</if>
+		<if test="cInvDefine2 !=null and cInvDefine2 !=''">
+			,#{cInvDefine2}
+		</if>
+		<if test="cInvDefine3 !=null and cInvDefine3 !=''">
+			,#{cInvDefine3}
+		</if>
+		<if test="cInvStd !=null and cInvStd !=''">
+			,#{cInvStd}
+		</if>
+		<if test="iMassDate !=null and iMassDate !=''">
+			,#{iMassDate}
+		</if>
+		<if test="cInvDefine6 !=null and cInvDefine6 !=''">
+			,#{cInvDefine6}
+		</if>
+			<!-- 保质期单位 -->
+		<if test="cMassUnit !=null and  cMassUnit !=''">
+			,#{cMassUnit}
+		</if>
+		<if test="cComUnitCode !=null and  cComUnitCode !=''">
+			,#{cComUnitCode}
+		</if>
+		)
+	</insert>
+</mapper>

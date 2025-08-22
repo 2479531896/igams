@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ILykcxxDao" >
+	<sql id="SEARCH_TERMS">
+	lykcxx.scbj!='1'
+		<if test="entire !=null and entire !=''">
+			and (wlgl.wlbm ILIKE '%'||#{entire}||'%'
+			or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+			or lykcxx.scph ILIKE '%'||#{entire}||'%'
+			or wlgl.ychh ILIKE '%'||#{entire}||'%'
+			or wlgl.bctj ILIKE '%'||#{entire}||'%')
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+		</if>
+		<if test="scph != null and scph != ''">
+			and lykcxx.scph ILIKE '%'||#{scph}||'%'
+		</if>
+		<if test="ychh != null and ychh != ''">
+			and wlgl.ychh ILIKE '%'||#{ychh}||'%'
+		</if>
+		<if test="bctj != null and bctj != ''">
+			and wlgl.bctj ILIKE '%'||#{bctj}||'%'
+		</if>
+		<if test="sflyxj != null and sflyxj == '1' .toString">
+			and lykcxx.lyxj IS NOT NULL
+		</if>
+		<if test="sflyxj != null and sflyxj == '0' .toString">
+			and (lykcxx.lyxj IS NULL or lykcxx.lyxj = '')
+		</if>
+		<if test="kczt != null and kczt == '1' .toString">
+			and coalesce(lykcxx.kcl,0) &gt; 0
+		</if>
+		<if test="kczt != null and kczt == '0' .toString">
+			and coalesce(lykcxx.kcl,0)  = 0
+		</if>
+		<if test="cssjstart != null and cssjstart != ''">
+			and to_char(lykcxx.scrq,'yyyy-mm-dd') &gt;= #{cssjstart}
+		</if>
+		<if test="cssjend != null and cssjend != ''">
+			and to_char(lykcxx.scrq,'yyyy-mm-dd') &lt;= #{cssjend}
+		</if>
+		<if test="yxqstart != null and yxqstart != ''">
+			and to_char(lykcxx.yxq,'yyyy-mm-dd') &gt;= #{yxqstart}
+		</if>
+		<if test="yxqsjend != null and yxqsjend != ''">
+			and to_char(lykcxx.yxq,'yyyy-mm-dd') &lt;= #{yxqsjend}
+		</if>
+		<if test="scgcrqstart != null and scgcrqstart != ''">
+			and to_char(lykcxx.scgcrq,'yyyy-mm-dd') &gt;= #{scgcrqstart}
+		</if>
+		<if test="scgcrqend != null and scgcrqend != ''">
+			and to_char(lykcxx.scgcrq,'yyyy-mm-dd') &lt;= #{scgcrqend}
+		</if>
+	</sql>
+	<insert id="insertList" parameterType="List">
+		insert into igams_lykcxx(
+		lykcid,
+		wlid,
+		scph,
+		kcl,
+		scrq,
+		yxq,
+		lyxj,
+		lrry,
+		lrsj,
+		scbj
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.lykcid},#{item.wlid},#{item.scph},cast(#{item.kcl} as numeric),cast(#{item.scrq} as date),cast(#{item.yxq} as date),#{item.lyxj},#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_lykcxx
+				<set>
+					xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+					<if test="item.kcl !=null and item.kcl != ''">
+						,kcl = cast(#{item.kcl} as numeric )
+					</if>
+				</set>
+				<where>
+					lykcid = #{item.lykcid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<select id="getPagedDtoList" resultType="LykcxxDto" parameterType="LykcxxDto">
+		SELECT
+		lykcxx.lykcid,
+		lykcxx.wlid,
+		lykcxx.scph,
+		COALESCE(lykcxx.kcl,0) kcl,
+		lykcxx.scrq,
+		lykcxx.yxq,
+		lykcxx.lyxj,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.bctj,
+		wlgl.gg,
+		wlgl.jldw,
+		wlgl.ychh,to_char(lykcxx.scgcrq,'yyyy-MM-dd') scgcrq,case when lykcxx.scgcrq is null then '否' when current_date-cast(lykcxx.scgcrq as date)>30 then '否' else '是' end gcjl
+		FROM
+		igams_lykcxx lykcxx
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = lykcxx.wlid
+	<where>
+		<include refid="SEARCH_TERMS"></include>
+	</where>
+	</select>
+	<select id="getDtoById" resultType="LykcxxDto" parameterType="String">
+		SELECT
+		lykcxx.lykcid,
+		lykcxx.wlid,
+		lykcxx.scph,
+		lykcxx.kcl,
+		lykcxx.scrq,
+		lykcxx.yxq,
+		lykcxx.lyxj,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.bctj,
+		wlgl.gg,
+		wlgl.jldw,
+		wlgl.ychh
+		FROM
+		igams_lykcxx lykcxx
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = lykcxx.wlid
+		where lykcxx.lykcid=#{lykcid}
+	</select>
+	<update id="updateKcl" parameterType="LykcxxDto">
+		update igams_lykcxx set
+		<if test="kclbj =='1'.toString()">
+			kcl =  COALESCE(kcl,0) + cast(COALESCE(#{kcl},'0') as numeric)
+		</if>
+		<if test="kclbj =='0'.toString()">
+			kcl =  COALESCE(kcl,0) - cast(COALESCE(#{kcl},'0') as numeric)
+		</if>
+		where lykcid=#{lykcid}
+	</update>
+	<update id="updateKclListByBj" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_lykcxx
+				<set>
+					xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+					<if test="item.kclbj =='1'.toString()">
+						,kcl = COALESCE(kcl,0) + cast(COALESCE(#{item.kcl},'0') as numeric)
+					</if>
+					<if test="item.kclbj =='0'.toString()">
+						,kcl = COALESCE(kcl,0) - cast(COALESCE(#{item.kcl},'0') as numeric)
+					</if>
+				</set>
+				<where>
+					lykcid = #{item.lykcid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<update id="updateDto" parameterType="LykcxxDto">
+		update igams_lykcxx set
+				lyxj=#{lyxj},
+				xgry=#{xgry},
+				xgsj=LOCALTIMESTAMP
+		<where>
+			lykcid= #{lykcid}
+		</where>
+	</update>
+	<update id="updateScgcrq" parameterType="LykcxxDto">
+		update igams_lykcxx set
+		scgcrq=cast(#{scgcrq} as TIMESTAMP)
+		<where>
+			lykcid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<update id="updateKclList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_lykcxx
+				<set>
+					xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+					<if test="item.kcl !=null and item.kcl != ''">
+						,kcl = coalesce(kcl,0) + cast(#{item.kcl} as numeric )
+					</if>
+				</set>
+				<where>
+					lykcid = #{item.lykcid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+</mapper>

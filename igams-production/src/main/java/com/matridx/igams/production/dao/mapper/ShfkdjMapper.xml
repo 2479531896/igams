@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IShfkdjDao">
+    <sql id="SEARCH_TERMS">
+        shfkdj.scbj!='1'
+        <if test="entire !=null and entire !='' ">
+            and khgl.khmc ILIKE '%'||#{entire}||'%'
+            or  shfkdj.wtms ILIKE '%'||#{entire}||'%'
+            or  shfkdj.clyj ILIKE '%'||#{entire}||'%'
+            or  shfkdj.lxr ILIKE '%'||#{entire}||'%'
+            or  shfkdj.yqmc ILIKE '%'||#{entire}||'%'
+            or  shfkdj.xlh ILIKE '%'||#{entire}||'%'
+            or  xtyh_fzr.zsxm ILIKE '%'||#{entire}||'%'
+            or  xtyh_djry.zsxm ILIKE '%'||#{entire}||'%'
+        </if>
+        <if test="khmc != null and khmc != ''">
+            and khgl.khmc ILIKE '%'||#{khmc}||'%'
+        </if>
+        <if test="wtms != null and wtms != ''">
+            and shfkdj.wtms ILIKE '%'||#{wtms}||'%'
+        </if>
+        <if test="clyj != null and clyj != ''">
+            and shfkdj.clyj ILIKE '%'||#{clyj}||'%'
+        </if>
+        <if test="lxr != null and lxr != ''">
+            and shfkdj.lxr ILIKE '%'||#{lxr}||'%'
+        </if>
+        <if test="xlh != null and xlh != ''">
+            and shfkdj.xlh ILIKE '%'||#{xlh}||'%'
+        </if>
+        <if test="yqmc != null and yqmc != ''">
+            and shfkdj.yqmc ILIKE '%'||#{yqmc}||'%'
+        </if>
+        <if test="fzrmc != null and fzrmc != ''">
+            and xtyh_fzr.zsxm ILIKE '%'||#{fzrmc}||'%'
+        </if>
+        <if test="djry != null and djry != ''">
+            and xtyh_djry.zsxm ILIKE '%'||#{djry}||'%'
+        </if>
+        <if test="djsjstart != null and djsjstart != ''">
+            and to_char(shfkdj.lrsj,'yyyy-mm-dd') &gt;= #{djsjstart}
+        </if>
+        <if test="djsjend != null and djsjend != ''">
+            and to_char(shfkdj.lrsj,'yyyy-mm-dd') &lt;= #{djsjend}
+        </if>
+        <if test = "jds != null and jds.length > 0 "  >
+            and shfkdj.jd in
+            <foreach collection="jds" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "lxs != null and lxs.length > 0 "  >
+            and shfkdj.lx in
+            <foreach collection="lxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="ShfkdjDto" resultType="ShfkdjDto">
+        SELECT
+        shfkdj.shfkid,
+        shfkdj.khid,
+        shfkdj.fzr,
+        shfkdj.wtms,
+        shfkdj.clyj,
+        shfkdj.jd,
+        khgl.khmc,
+        xtyh_fzr.zsxm fzrmc,
+        xtyh_djry.zsxm djry,shfkdj.xlh,shfkdj.yqmc,shfkdj.lxr,
+        to_char(shfkdj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,shfkdj.lx,lx.csmc lxmc
+        FROM
+        igams_shfkdj shfkdj
+        LEFT JOIN igams_khgl khgl ON shfkdj.khid = khgl.khid
+        LEFT JOIN matridx_xtyh xtyh_fzr ON xtyh_fzr.yhid = shfkdj.fzr
+        left join matridx_xtyh xtyh_djry on xtyh_djry.yhid=shfkdj.lrry
+        left join matridx_jcsj lx on lx.csid=shfkdj.lx
+	<where>
+        <include refid="SEARCH_TERMS"></include>
+    </where>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="ShfkdjDto">
+        SELECT
+        shfkdj.shfkid,
+        shfkdj.khid,
+        shfkdj.fzr,
+        shfkdj.wtms,
+        shfkdj.clyj,
+        shfkdj.jd,
+        khgl.khmc,
+        xtyh_fzr.zsxm fzrmc,
+        xtyh_fzr.yhm fzryhm,
+        xtyh_fzr.ddid fzrddid,
+        xtyh_djry.zsxm djry,shfkdj.xlh,shfkdj.yqmc,shfkdj.lxr,
+        to_char(shfkdj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,
+        case when jd='0' then '登记' when  jd='1' then '处理中' else '结束' end jdmc,shfkdj.lx,lx.csmc lxmc
+        FROM
+        igams_shfkdj shfkdj
+        LEFT JOIN igams_khgl khgl ON shfkdj.khid = khgl.khid
+        LEFT JOIN matridx_xtyh xtyh_fzr ON xtyh_fzr.yhid = shfkdj.fzr
+        left join matridx_xtyh xtyh_djry on xtyh_djry.yhid=shfkdj.lrry
+        left join matridx_jcsj lx on lx.csid=shfkdj.lx
+        <where>
+            shfkdj.scbj!='1' and shfkdj.shfkid=#{shfkid}
+        </where>
+    </select>
+    <select id="getPagedListSaleFeedbackDingTalk" resultType="ShfkdjDto" parameterType="ShfkdjDto">
+        SELECT
+        shfkdj.shfkid,
+        shfkdj.khid,
+        shfkdj.fzr,
+        shfkdj.wtms,
+        shfkdj.clyj,
+        shfkdj.jd,
+        khgl.khmc,
+        xtyh_fzr.zsxm fzrmc,
+        xtyh_djry.zsxm djry,shfkdj.xlh,shfkdj.yqmc,shfkdj.lxr,
+        to_char(shfkdj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,
+        case when jd='0' then '登记' when  jd='1' then '处理中' else '结束' end jdmc,shfkdj.lx,lx.csmc lxmc
+        FROM
+        igams_shfkdj shfkdj
+        LEFT JOIN igams_khgl khgl ON shfkdj.khid = khgl.khid
+        LEFT JOIN matridx_xtyh xtyh_fzr ON xtyh_fzr.yhid = shfkdj.fzr
+        left join matridx_xtyh xtyh_djry on xtyh_djry.yhid=shfkdj.lrry
+        left join matridx_jcsj lx on lx.csid=shfkdj.lx
+        <where>
+            shfkdj.scbj!='1'
+            <if test="jd != null and jd != ''">
+                and jd=#{jd}
+            </if>
+            <if test="entireSignal != null and entireSignal != ''">
+                and (khgl.khmc ILIKE '%'||#{entireSignal}||'%'
+                or xtyh_fzr.zsxm ILIKE '%'||#{entireSignal}||'%')
+            </if>
+            <if test="entireAll != null and entireAll != ''">
+                and (xtyh_fzr.zsxm ILIKE '%'||#{entireAll}||'%'
+                or xtyh_djry.zsxm ILIKE '%'||#{entireAll}||'%')
+            </if>
+            <if test = "jds != null and jds.length > 0 "  >
+                and shfkdj.jd in
+                <foreach collection="jds" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="qflb=='signal'">
+                and shfkdj.lrry=#{lrry}
+            </if>
+        </where>
+    </select>
+
+    <select id="getCljlList" resultType="ShfkdjDto" parameterType="ShfkdjDto">
+        SELECT
+            cljlxx.bz,
+            xtyh_fzr.zsxm fzrmc,
+            to_char( cljlxx.lrsj, 'yyyy-mm-dd' ) lrsj,
+            to_char( cljlxx.lrsj, 'hh24:mi' ) lrtime,
+            cljlxx.llid
+        FROM
+            igams_shfkdj shfkdj
+            LEFT JOIN igams_cljlxx cljlxx ON cljlxx.shfkid = shfkdj.shfkid
+            LEFT JOIN matridx_xtyh xtyh_fzr ON xtyh_fzr.yhid = cljlxx.lrry
+        WHERE
+            shfkdj.shfkid = #{shfkid}
+        ORDER BY
+            cljlxx.lrsj,
+            cljlxx.bz,
+            xtyh_fzr.zsxm DESC
+    </select>
+    <update id="updateJd" parameterType="ShfkdjDto">
+        update igams_shfkdj set jd = #{jd} where shfkid = #{shfkid}
+    </update>
+    <update id="updateFzr" parameterType="ShfkdjDto">
+        update igams_shfkdj set fzr = #{fzr} where shfkid = #{shfkid}
+    </update>
+
+    <insert id="insert" parameterType="ShfkdjDto">
+        insert into igams_shfkdj(shfkid
+        <if test="khid !=null and khid !=''">
+            ,khid
+        </if>
+        <if test="fzr !=null and fzr !=''">
+            ,fzr
+        </if>
+        <if test="wtms !=null and wtms !=''">
+            ,wtms
+        </if>
+        <if test="clyj !=null and clyj !=''">
+            ,clyj
+        </if>
+        <if test="jd !=null and jd !=''">
+            ,jd
+        </if>
+        <if test="lxr !=null and lxr !=''">
+            ,lxr
+        </if>
+        <if test="xlh !=null and xlh !=''">
+            ,xlh
+        </if>
+        <if test="yqmc !=null and yqmc !=''">
+            ,yqmc
+        </if>
+        <if test="lx !=null and lx !=''">
+            ,lx
+        </if>
+        ,lrry,lrsj,scbj
+        )values(#{shfkid}
+        <if test="khid !=null and khid !=''">
+            ,#{khid}
+        </if>
+        <if test="fzr !=null and fzr !=''">
+            ,#{fzr}
+        </if>
+        <if test="wtms !=null and wtms !=''">
+            ,#{wtms}
+        </if>
+        <if test="clyj !=null and clyj !=''">
+            ,#{clyj}
+        </if>
+        <if test="jd !=null and jd !=''">
+            ,#{jd}
+        </if>
+        <if test="lxr !=null and lxr !=''">
+            ,#{lxr}
+        </if>
+        <if test="xlh !=null and xlh !=''">
+            ,#{xlh}
+        </if>
+        <if test="yqmc !=null and yqmc !=''">
+            ,#{yqmc}
+        </if>
+        <if test="lx !=null and lx !=''">
+            ,#{lx}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0'
+        )
+    </insert >
+
+
+    <update id="update" parameterType="ShfkdjDto">
+        update igams_shfkdj set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="khid !=null and khid !=''">
+            ,khid=#{khid}
+        </if>
+        <if test="fzr !=null and fzr !=''">
+            ,fzr=#{fzr}
+        </if>
+        <if test="wtms !=null and wtms !=''">
+            ,wtms=#{wtms}
+        </if>
+        <if test="clyj !=null and clyj !=''">
+            ,clyj=#{clyj}
+        </if>
+        <if test="jd !=null and jd !=''">
+            ,jd=#{jd}
+        </if>
+        <if test="lxr !=null and lxr !=''">
+            ,lxr=#{lxr}
+        </if>
+        <if test="xlh !=null and xlh !=''">
+            ,xlh=#{xlh}
+        </if>
+        <if test="yqmc !=null and yqmc !=''">
+            ,yqmc=#{yqmc}
+        </if>
+        <if test="lx !=null and lx !=''">
+            ,lx=#{lx}
+        </if>
+        <where>
+            shfkid = #{shfkid}
+        </where>
+    </update>
+    <update id="delete" parameterType="ShfkdjDto">
+        update igams_shfkdj set
+        scry=#{scry}, scsj=LOCALTIMESTAMP,scbj = '1'
+        <where>
+             shfkid in
+             <foreach collection="ids" open="(" close=")" separator="," item="item">
+                 #{item}
+             </foreach>
+        </where>
+    </update>
+</mapper>

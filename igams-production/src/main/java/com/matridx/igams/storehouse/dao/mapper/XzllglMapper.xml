@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzllglDao" >
+    <!--获取领料列表-->
+    <select id="getPagedDtoListReceiveAdministrationMateriel" resultType="XzllglDto" parameterType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,to_char(xzllgl.sqrq, 'yyyy-mm-dd') sqrq,jgxx.jgmc sqbm,llry.zsxm llry,xzllgl.flry,flry.zsxm flrymc,xzllgl.lllx
+        from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        <if test="(kws != null and kws.length > 0) or (entire!=null and entire!='') or (hwmc!=null and hwmc!='') or(hwbz!=null and hwbz!='')">
+            left join igams_xzllmx xzllmx on xzllmx.xzllid=xzllgl.xzllid
+            left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzllmx.xzkcid
+        </if>
+        <where>
+            xzllgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (
+                xzllgl.lldh ILIKE '%' ||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+                or llry.zsxm ILIKE '%' ||#{entire}||'%'
+                or xzkcxx.hwmc ILIKE '%' ||#{entire}||'%'
+                or xzkcxx.hwbz ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="lldh != null and lldh != ''">
+                and xzllgl.lldh ILIKE '%' ||#{lldh}||'%'
+            </if>
+            <if test="jgid != null and jgid != ''">
+                and jgxx.jgid = #{jgid}
+            </if>
+            <if test="sqbm != null and sqbm != ''">
+                and jgxx.jgmc ILIKE '%' ||#{sqbm}||'%'
+            </if>
+            <if test="llry != null and llry != ''">
+                and llry.zsxm ILIKE '%' ||#{llry}||'%'
+            </if>
+            <if test="flry != null and flry != ''">
+                and flry.zsxm ILIKE '%' ||#{flry}||'%'
+            </if>
+            <if test="hwmc != null and hwmc != ''">
+                and xzkcxx.hwmc ILIKE '%' ||#{hwmc}||'%'
+            </if>
+            <if test="hwbz != null and hwbz != ''">
+                and xzkcxx.hwbz ILIKE '%' ||#{hwbz}||'%'
+            </if>
+            <if test="kws != null and kws.length > 0">
+                and xzkcxx.kwid in
+                <foreach collection="kws" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lllxs != null and lllxs.length > 0">
+                and xzllgl.lllx in
+                <foreach collection="lllxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sqrqstart != null and sqrqstart != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+            </if>
+            <if test="sqrqend != null and sqrqend != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+            </if>
+        </where>
+        <if test="(kws != null and kws.length > 0) or (entire!=null and entire!='') or (hwmc!=null and hwmc!='') or(hwbz!=null and hwbz!='')">
+        group by xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,xzllgl.sqrq,jgxx.jgmc,llry.zsxm,xzllgl.flry,flry.zsxm,xzllgl.lllx,xzllgl.lrsj
+        </if>
+    </select>
+    <!--获取行政领料审核列表-->
+    <select id="getPagedAuditXzllgl" resultType="XzllglDto" parameterType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,xzllgl.sqrq,jgxx.jgmc sqbm,llry.zsxm llry,flry.zsxm flry
+        from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        <where>
+            xzllgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (
+                xzllgl.lldh ILIKE '%' ||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+                or llry.zsxm ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="lldh != null and lldh != ''">
+                and xzllgl.lldh ILIKE '%' ||#{lldh}||'%'
+            </if>
+            <if test="sqbm != null and sqbm != ''">
+                and jgxx.jgmc ILIKE '%' ||#{sqbm}||'%'
+            </if>
+            <if test="llry != null and llry != ''">
+                and llry.zsxm ILIKE '%' ||#{llry}||'%'
+            </if>
+            <if test="flry != null and flry != ''">
+                and flry.zsxm ILIKE '%' ||#{flry}||'%'
+            </if>
+            <if test="kws != null and kws.length > 0">
+                and xzkcxx.kwid in
+                <foreach collection="kws" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sqrqstart != null and sqrqstart != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+            </if>
+            <if test="sqrqend != null and sqrqend != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+            </if>
+        </where>
+    </select>
+    <select id="getAuditXzllglList" resultType="XzllglDto" parameterType="List">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,xzllgl.sqrq,jgxx.jgmc sqbm,llry.zsxm llry,flry.zsxm flry,shxx_shxxid,shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_gwmc,shxx_shyj
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.xzllid} xzllid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+        </foreach>
+        tmp
+        left join igams_xzllgl xzllgl on xzllgl.xzllid=tmp.xzllid
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        order by tmp.rownum
+    </select>
+    <!--根据行政领料id获取行政领料信息-->
+    <select id="getDtoReceiveAdministrationMaterielByXzllid" resultType="XzllglDto" parameterType="XzllglDto">
+        select  xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt, to_char(xzllgl.sqrq,'yyyy-mm-dd') sqrq,xzllgl.sqbm,jgxx.jgmc sqbmmc,xzllgl.llry,llry.zsxm llrymc,flry.zsxm flry,xzllgl.lllx
+        from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        where xzllgl.xzllid = #{xzllid}
+    </select>
+
+    <!--删除行政领料信息-->
+    <update id="delReceiveAdministrationMateriel" parameterType="XzllglDto">
+        update igams_xzllgl
+        set scry = #{scry} , scsj = LOCALTIMESTAMP, scbj = '1'
+        <where>
+            scbj != '1'
+            <if test="xzllid != null and xzllid !=''">
+                and xzllid = #{xzllid}
+            </if>
+            <if test="ids !=null and ids.size >0">
+                and xzllid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <!--根据行政领料ids获取审核通过行政领料详细信息-->
+    <select id="getReceiveAdministrationMaterielListByXzllids" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,xzllgl.sqrq,xzllgl.flry,jgxx.jgmc sqbm,llry.zsxm llry,xzllmx.qlsl,xzkcxx.kcl,xzkcxx.yds,xzkcxx.xzkcid,xzllmx.sbysid
+        from igams_xzllgl xzllgl
+        left join igams_xzllmx xzllmx on xzllmx.xzllid = xzllgl.xzllid
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid = xzllmx.xzkcid
+        <where>
+            xzllgl.scbj = '0'
+            <if test="ids !=null and ids.size >0">
+                and xzllgl.xzllid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDjhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(lldh,LENGTH(lldh)-strpos(reverse(lldh),'-')+2,LENGTH(lldh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial
+        FROM igams_xzllgl
+        <where>
+            scbj = '0' AND lldh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="XzllglDto">
+        insert into igams_xzllgl(xzllid
+        <if test="lldh != null and lldh != ''">
+            ,lldh
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,sqrq
+        </if>
+        <if test="llry != null and llry != ''">
+            ,llry
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,sqbm
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        <if test="lllx != null and lllx != ''">
+            ,lllx
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{xzllid}
+        <if test="lldh != null and lldh != ''">
+            ,#{lldh}
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,cast(#{sqrq} as date)
+        </if>
+        <if test="llry != null and llry != ''">
+            ,#{llry}
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,#{sqbm}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        <if test="lllx != null and lllx != ''">
+            ,#{lllx}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+
+    <!-- 校验领料单号是否重复 -->
+    <select id="getDtoByLldh" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.bz,xzllgl.zt,xzllgl.sqrq,jgxx.jgmc sqbm,xzllgl.lrry,llry.zsxm llryxm
+        from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        <where>
+            xzllgl.scbj!='1'
+            <if test="lldh != null and lldh != ''">
+                and xzllgl.lldh=#{lldh}
+            </if>
+            <if test="xzllid != null and xzllid != ''">
+                and xzllgl.xzllid !=#{xzllid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.llry,xzllgl.sqbm,xtyh.zsxm sqrmc,xtyh.ddid,jgxx.jgmc sqbmmc,xzllgl.bz,xzllgl.ddslid
+        from igams_xzllgl xzllgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzllgl.llry and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        <where>
+            xzllgl.scbj!='1'
+            <if test="_parameter != null and _parameter != ''">
+                and xzllgl.xzllid=#{xzllid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.llry,xzllgl.sqbm,xtyh.zsxm sqrmc,xtyh.ddid,jgxx.jgmc sqbmmc,xzllgl.bz,xzllgl.ddslid
+        from igams_xzllgl xzllgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzllgl.llry and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        <where>
+            xzllgl.scbj!='1'
+            <if test="ids !=null and ids.size >0">
+                and xzllgl.xzllid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoByDdslid" parameterType="String" resultType="XzllglDto">
+        select xzllgl.xzllid,xzllgl.lldh,xzllgl.llry,xzllgl.sqbm,xtyh.zsxm sqrmc,xtyh.ddid,jgxx.jgmc sqbmmc,xzllgl.bz,xzllgl.ddslid
+        from igams_xzllgl xzllgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzllgl.llry and xtyh.scbj='0'
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        <where>
+            xzllgl.scbj!='1'
+            <if test="_parameter != null and _parameter != ''">
+                and xzllgl.ddslid=#{ddslid}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取审批人信息 -->
+    <select id="getSprxxByDdid" parameterType="String" resultType="XzllglDto">
+        select yhid as sprid,zsxm as sprxm,ddid as sprddid,yhm as spryhm
+        from matridx_xtyh
+        <where>
+            scbj!='1' and ddid=#{ddid}
+        </where>
+    </select>
+
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="XzllglDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+    <update id="update" parameterType="XzllglDto">
+        update igams_xzllgl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="zt !=null and  zt !=''">
+                ,zt=#{zt}
+            </if>
+            <if test="ddslid !=null and  ddslid !=''">
+                ,ddslid=#{ddslid}
+            </if>
+        </set>
+        <where>
+            xzllid=#{xzllid}
+        </where>
+    </update>
+
+    <update id="modReceiveAdminMateriel">
+        update igams_xzllgl
+        <set>
+            <if test="lldh != null and lldh != ''">
+                lldh=#{lldh},
+            </if>
+            <if test="sqrq != null and sqrq != ''">
+                sqrq=cast(#{sqrq} as date),
+            </if>
+            <if test="llry != null and llry != ''">
+                llry=#{llry},
+            </if>
+            <if test="flry != null and flry != ''">
+                flry=#{flry},
+            </if>
+            <if test="sqbm != null and sqbm != ''">
+                sqbm=#{sqbm},
+            </if>
+            <if test="bz != null and bz != ''">
+                bz=#{bz},
+            </if>
+            <if test="zt != null and zt != ''">
+                zt=#{zt},
+            </if>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            xzllid=#{xzllid}
+        </where>
+    </update>
+
+    <!-- 将钉钉实例ID设置为空 -->
+    <update id="updateDdslidToNull" parameterType="XzllglDto">
+        update igams_xzllgl set ddslid = null
+        <where>
+            scbj !='1' and   xzllid=#{xzllid}
+        </where>
+    </update>
+
+
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="XzllglDto"
+            resultType="java.lang.Integer">
+        select count(xzllgl.xzllid)
+	from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        left join igams_xzllmx xzllmx on xzllmx.xzllid=xzllgl.xzllid
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzllmx.xzkcid
+        <where>
+        xzllgl.scbj = '0'
+        <if test="entire != null and entire != ''">
+            and (
+            xzllgl.lldh ILIKE '%' ||#{entire}||'%'
+            or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+            or llry.zsxm ILIKE '%' ||#{entire}||'%'
+            )
+        </if>
+        <if test="lldh != null and lldh != ''">
+            and xzllgl.lldh ILIKE '%' ||#{lldh}||'%'
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            and jgxx.jgmc ILIKE '%' ||#{sqbm}||'%'
+        </if>
+        <if test="llry != null and llry != ''">
+            and llry.zsxm ILIKE '%' ||#{llry}||'%'
+        </if>
+        <if test="flry != null and flry != ''">
+            and flry.zsxm ILIKE '%' ||#{flry}||'%'
+        </if>
+        <if test="kws != null and kws.length > 0">
+            and xzkcxx.kwid in
+            <foreach collection="kws" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+            <if test="lllxs != null and lllxs.length > 0">
+                and xzllgl.lllx in
+                <foreach collection="lllxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        <if test="sqrqstart != null and sqrqstart != ''">
+            and to_char(xzllgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+        </if>
+        <if test="sqrqend != null and sqrqend != ''">
+            and to_char(xzllgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+        </if>
+        </where>
+    </select>
+
+ <select id="getListForSearchExp" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid ${sqlParam}
+        from igams_xzllgl xzllgl
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        left join igams_xzllmx xzllmx on xzllmx.xzllid=xzllgl.xzllid
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzllmx.xzkcid
+        <where>
+            xzllgl.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (
+                xzllgl.lldh ILIKE '%' ||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+                or llry.zsxm ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="lldh != null and lldh != ''">
+                and xzllgl.lldh ILIKE '%' ||#{lldh}||'%'
+            </if>
+            <if test="sqbm != null and sqbm != ''">
+                and jgxx.jgmc ILIKE '%' ||#{sqbm}||'%'
+            </if>
+            <if test="llry != null and llry != ''">
+                and llry.zsxm ILIKE '%' ||#{llry}||'%'
+            </if>
+            <if test="flry != null and flry != ''">
+                and flry.zsxm ILIKE '%' ||#{flry}||'%'
+            </if>
+            <if test="kws != null and kws.length > 0">
+                and xzkcxx.kwid in
+                <foreach collection="kws" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lllxs != null and lllxs.length > 0">
+                and xzllgl.lllx in
+                <foreach collection="lllxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sqrqstart != null and sqrqstart != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+            </if>
+            <if test="sqrqend != null and sqrqend != ''">
+                and to_char(xzllgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+            </if>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="XzllglDto" resultType="XzllglDto">
+        select xzllgl.xzllid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} xzllid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join  igams_xzllgl xzllgl on tmp.xzllid=xzllgl.xzllid
+        left join matridx_jgxx jgxx on jgxx.jgid = xzllgl.sqbm
+        left join matridx_xtyh llry on llry.yhid = xzllgl.llry
+        left join matridx_xtyh flry on flry.yhid=xzllgl.flry
+        left join igams_xzllmx xzllmx on xzllmx.xzllid=xzllgl.xzllid
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzllmx.xzkcid
+        order by tmp.ordernum
+    </select>
+</mapper>

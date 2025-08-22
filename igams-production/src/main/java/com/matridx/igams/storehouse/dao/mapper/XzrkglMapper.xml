@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzrkglDao" >
+    <!--行政入库列表-->
+    <select id="getPagedDtoList" parameterType="XzrkglDto" resultType="XzrkglDto">
+        select xzrk.xzrkid,to_char(xzrk.rkrq,'YYYY-MM-dd') rkrq,xzrk.rkdh,yh.zsxm rkrymc,jcsj.csmc kwmc,xzrk.lrsj,rklb.csmc rklbmc
+        from igams_xzrkgl xzrk
+        left join matridx_xtyh yh on yh.yhid = xzrk.rkry
+        left join matridx_jcsj jcsj on jcsj.csid = xzrk.kwid
+        left join matridx_jcsj rklb on rklb.csid = xzrk.rklb
+        <if test="(entire != null and entire != '') or (hwmc!=null and hwmc!='') or (hwbz!=null and hwbz!='')">
+            left join igams_xzrkmx xzrkmx on xzrkmx.xzrkid=xzrk.xzrkid
+        </if>
+        <where>
+            xzrk.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                xzrkmx.hwmc ILIKE '%' ||#{entire}||'%'
+                or xzrk.rkdh ILIKE '%' ||#{entire}||'%'
+                or yh.zsxm ILIKE '%' ||#{entire}||'%'
+                or xzrkmx.hwbz ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="rkdh !=null and rkdh !=''">
+                and xzrk.rkdh ILIKE '%'||#{rkdh}||'%'
+            </if>
+            <if test="rkrymc !=null and rkrymc !=''">
+                and yh.zsxm ILIKE '%'||#{rkrymc}||'%'
+            </if>
+            <if test="hwmc !=null and hwmc !=''">
+                and xzrkmx.hwmc ILIKE '%'||#{hwmc}||'%'
+            </if>
+            <if test="hwbz !=null and hwbz !=''">
+                and xzrkmx.hwbz ILIKE '%'||#{hwbz}||'%'
+            </if>
+            <if test="kws != null and kws.length > 0">
+                and xzrk.kwid in
+                <foreach collection="kws" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="xzrksjstart != null and xzrksjstart != ''">
+                and to_char(xzrk.rkrq,'YYYY-MM-dd') &gt;= #{xzrksjstart}
+            </if>
+            <if test="xzrksjend != null and xzrksjend != ''">
+                and to_char(xzrk.rkrq,'YYYY-MM-dd') &lt;= #{xzrksjend}
+            </if>
+            <if test = "rklbs != null and rklbs.length > 0 "  >
+                and xzrk.rklb in
+                <foreach collection="rklbs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        <if test="(entire != null and entire != '') or (hwmc!=null and hwmc!='') or (hwbz!=null and hwbz!='')">
+            group by xzrk.xzrkid,xzrk.rkrq,xzrk.rkdh,yh.zsxm,jcsj.csmc ,xzrk.lrsj,rklb.csmc
+        </if>
+    </select>
+    <select id="getPagedAuditPutInAdmin" parameterType="XzrkglDto" resultType="XzrkglDto">
+        select xzrk.xzrkid,to_char(xzrk.rkrq,'YYYY-MM-dd') rkrq,xzrk.rkdh,yh.zsxm rkrymc
+        from igams_xzrkgl xzrk
+        left join matridx_xtyh yh on yh.yhid = xzrk.rkry
+        <where>
+            xzrk.scbj!='1'
+            <if test="rkdh !=null and rkdh !=''">
+                and rkgl.rkdh ILIKE '%'||#{rkdh}||'%'
+            </if>
+        </where>
+    </select>
+     <!-- 入库审核列表-->
+    <select id="getAuditListPutInAdmin" parameterType="List" resultType="XzrkglDto">
+        select xzrk.xzrkid,to_char(xzrk.rkrq,'YYYY-MM-dd') rkrq,xzrk.rkdh,yh.zsxm rkrymc,
+        shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid
+        from 
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.xzrkid} xzrkid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach> tmp
+        left join igams_xzrkgl xzrk on xzrk.xzrkid = tmp.xzrkid
+        left join matridx_xtyh yh on yh.yhid = xzrk.rkry
+        order by tmp.rownum
+    </select>
+    <select id="getDjhSerial" parameterType="String" resultType="String">
+        SELECT lpad(cast((CAST(coalesce(MAX(substring(rkdh,LENGTH(rkdh)-strpos(reverse(rkdh),'-')+2,LENGTH(rkdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial
+        FROM igams_xzrkgl
+        <where>
+            scbj != '1' AND rkdh like #{prefix}||'%'
+        </where>
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="XzrkglDto">
+        select xzrkgl.xzrkid,xzrkgl.rkdh,xzrkgl.rkrq,xzrkgl.rkry,xtyh.zsxm rkrymc,xtyh.ddid,xzrkgl.bz,xzrkgl.rklb
+        from igams_xzrkgl xzrkgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzrkgl.rkry and xtyh.scbj='0'
+        <where>
+            xzrkgl.scbj!='1'
+            <if test="_parameter != null and _parameter != ''">
+                and xzrkgl.xzrkid=#{xzrkid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="XzrkglDto" resultType="XzrkglDto">
+        select xzrkgl.xzrkid,xzrkgl.rkdh,xzrkgl.rkrq,xzrkgl.rkry,xtyh.zsxm rkrymc,xtyh.ddid,xzrkgl.bz,xzrkgl.rklb
+        from igams_xzrkgl xzrkgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzrkgl.rkry and xtyh.scbj='0'
+        <where>
+            xzrkgl.scbj!='1'
+            <if test="ids !=null and ids.size > 0">
+                and xzrkgl.xzrkid in
+                <foreach collection="ids" open="(" close=")" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoByRkdh" parameterType="XzrkglDto" resultType="XzrkglDto">
+        select xzrkgl.xzrkid,xzrkgl.rkdh
+        from igams_xzrkgl xzrkgl
+        <where>
+            xzrkgl.scbj!='1'
+            <if test="rkdh != null and rkdh != ''">
+                and xzrkgl.rkdh=#{rkdh}
+            </if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="LlglDto">
+        update igams_xzrkgl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="zt !=null and  zt !=''">
+                ,zt=#{zt}
+            </if>
+            <if test="rkdh !=null and  rkdh !=''">
+                ,rkdh=#{rkdh}
+            </if>
+            <if test="rkry !=null and  rkry !=''">
+                ,rkry=#{rkry}
+            </if>
+            <if test="bz !=null and  bz !=''">
+                ,bz=#{bz}
+            </if>
+            <if test="rkrq !=null and  rkrq !=''">
+                ,rkrq=cast(#{rkrq} as date)
+            </if>
+            <if test="rklb !=null and  rklb !=''">
+                ,rklb=#{rklb}
+            </if>
+        </set>
+        <where>
+            xzrkid=#{xzrkid}
+        </where>
+    </update>
+
+    <insert id="insert" parameterType="LlglDto">
+        insert into igams_xzrkgl(xzrkid
+        <if test="rkrq != null and rkrq != ''">
+            ,rkrq
+        </if>
+        <if test="rkdh != null and rkdh != ''">
+            ,rkdh
+        </if>
+        <if test="kwid != null and kwid != ''">
+            ,kwid
+        </if>
+        <if test="rkry != null and rkry != ''">
+            ,rkry
+        </if>
+        <if test="rklb != null and rklb != ''">
+            ,rklb
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{xzrkid}
+        <if test="rkrq != null and rkrq != ''">
+            ,cast(#{rkrq} as date)
+        </if>
+        <if test="rkdh != null and rkdh != ''">
+            ,#{rkdh}
+        </if>
+        <if test="kwid != null and kwid != ''">
+            ,#{kwid}
+        </if>
+        <if test="rkry != null and rkry != ''">
+            ,#{rkry}
+        </if>
+        <if test="rklb != null and rklb != ''">
+            ,#{rklb}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <select id="getDtoByXzrkid" parameterType="String" resultType="XzrkglDto">
+        select xzrkgl.xzrkid,xzrkgl.rkdh,xzrkgl.rkrq,xzrkgl.rkry,xtyh.zsxm rkrymc,jcsj.csmc kwmc,rklb.csdm rklbdm,xzrkgl.rklb,xzrkgl.kwid ykwid,xzrkgl.kwid
+        from igams_xzrkgl xzrkgl
+        left join matridx_xtyh xtyh on xtyh.yhid = xzrkgl.rkry and xtyh.scbj='0'
+        left join matridx_jcsj jcsj on jcsj.csid = xzrkgl.kwid
+        left join matridx_jcsj rklb on rklb.csid = xzrkgl.rklb
+        <where>
+            xzrkgl.scbj!='1'
+            and xzrkgl.xzrkid=#{xzrkid}
+        </where>
+    </select>
+    <select id="getDtoByXzrkids" parameterType="XzrkglDto" resultType="XzrkglDto">
+        select xzrkgl.xzrkid,xzrkmx.rksl,xzrkmx.kcl,jcsj.csdm rklbdm,xzrkmx.qgmxid,xzrkmx.xzkcid,xzkcxx.hwmc,xzkcxx.hwbz,xzkcxx.kcl xzkcl,xzrkgl.rkdh
+        from igams_xzrkgl xzrkgl
+        left join igams_xzrkmx xzrkmx on xzrkmx.xzrkid = xzrkgl.xzrkid and xzrkmx.scbj='0'
+        left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid = xzrkmx.xzkcid
+        left join matridx_jcsj jcsj on jcsj.csid = xzrkgl.rklb
+        <where>
+            xzrkgl.scbj!='1'
+            <if test="ids !=null and ids.size > 0">
+                and xzrkgl.xzrkid in
+                <foreach collection="ids" open="(" close=")" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <update id="delete" parameterType="XzrkglDto">
+        update igams_xzrkgl set scbj = '1'
+        where
+        xzrkid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updatePageEvent" parameterType="XzrkglDto">
+        update igams_xzrkgl set
+        xgry=#{xgry},xgsj=LOCALTIMESTAMP,rkdh=#{rkdh},kwid=#{kwid},rkrq=cast(#{rkrq} as date),rkry=#{rkry}
+        where xzrkid=#{xzrkid}
+    </update>
+</mapper>

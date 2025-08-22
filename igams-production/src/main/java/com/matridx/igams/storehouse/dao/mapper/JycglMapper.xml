@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJycglDao" >
+	<!-- 检验车详细信息列表 -->
+	<select id="getjycDtoList" parameterType="JycglDto" resultType="JycglDto">
+		
+	</select>
+	<!-- 新增 -->
+	<insert id="insert" parameterType="JycglDto">
+		insert into igams_Jycgl(hwid,lrsj,ryid)
+		values(#{hwid},LOCALTIMESTAMP,#{ryid})
+	</insert>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="JycglDto">
+		delete from igams_Jycgl
+		<where>
+			hwid=#{hwid} and ryid=#{ryid}
+		</where>
+	</delete>
+	
+	<!-- 查询当前用户检验车中货物的数据 -->
+	<select id="getGoods" parameterType="JycglDto" resultType="JycglDto">
+		select htgl.htnbbh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,
+			wlgl.ychh,hwxx.sl,hwxx.qyl,hwxx.hwid,hwxx.wlid,
+			hwxx.qyrq,hwxx.zjthsl,hwxx.bgdh,wlgl.wlid,hwxx.dhsl,hwxx.cythsl,hwxx.zjthsl
+			,(hwxx.dhsl-COALESCE(hwxx.cythsl,0)-COALESCE(hwxx.zjthsl,0)) as maxsl,hwxx.jysl,
+		jc_rklb.csdm rklbdm,dhlx.csdm as dhlxdm
+		from igams_Jycgl jyc
+			left join igams_hwxx hwxx on hwxx.hwid = jyc.hwid
+			left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid
+		left join matridx_jcsj jc_rklb on jc_rklb.csid=dhxx.rklb
+			left join igams_wlgl wlgl on wlgl.wlid = hwxx.wlid
+			left join igams_htmx htmx on htmx.htmxid = hwxx.htmxid
+			left join igams_htgl htgl on htmx.htid = htgl.htid
+			left join matridx_jcsj jcsj on jcsj.csid=wlgl.lb
+			left join matridx_jcsj dhlx on dhlx.csid=dhxx.dhlx
+		<where>
+			jyc.ryid=#{ryid} and hwxx.lbcskz=#{lbcskz1}
+		</where>
+	</select>
+	<!-- 查询当前用户检验车中的货物id -->
+	<select id="getJychwidList" parameterType="String" resultType="String">
+		select jyc.hwid 
+			from igams_Jycgl jyc
+			left join igams_hwxx hwxx on hwxx.hwid = jyc.hwid
+			left join igams_wlgl wlgl on wlgl.wlid = hwxx.wlid
+			<where>
+				jyc.ryid=#{ryid} and hwxx.lbcskz=#{kzcs1}
+			</where>
+	</select>
+	<!-- 删除货物 -->
+	<delete id="deleteHw" parameterType="JycglDto">
+		delete from igams_Jycgl 
+		<where>
+			ryid=#{ryid} 
+			<if test="ids != null and ids.size()>0 ">
+	           and hwid in 
+	           <foreach collection="ids" open="(" close=")" separator="," item="item">
+	               #{item}
+	           </foreach>
+	       </if>
+		</where>
+	</delete>
+	<!-- 清空检验车 -->
+	<delete id="cleanJyc" parameterType="JycglDto">
+		delete from igams_Jycgl 
+		<where>
+			ryid=#{ryid}
+		</where>
+	</delete>
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.InvPositionDao" >
+	<insert id="insertDtos" parameterType="List">
+		insert into InvPosition(
+			RdsID,RDID,cWhCode,cPosCode,cInvCode,cBatch,dVDate,iQuantity,cHandler,dDate,bRdFlag,dMadeDate,iMassDate,cMassUnit,cvouchtype,dVouchDate
+			,iTrackId,iExpiratDateCalcu,
+			cMemo,cSource,cvmivencode,cInVouchType
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.RdsID},#{item.RDID},#{item.cWhCode},#{item.cPosCode},#{item.cInvCode}
+					,#{item.cBatch},cast(#{item.dVDate} as datetime),#{item.iQuantity}
+					,#{item.cHandler},cast(#{item.dDate} as datetime),#{item.bRdFlag},#{item.dMadeDate}
+					,#{item.iMassDate},#{item.cMassUnit},#{item.cvouchtype},cast(#{item.dVouchDate} as datetime)
+				,0,0,'','',null,'')
+			</foreach>
+		</if>		
+	</insert>
+	<update id="updateByRdsID" parameterType="InvPositionDto">
+		update InvPosition set
+		RdsID=#{RdsID}
+		<if test="iQuantity != null and iQuantity != ''">
+			,iQuantity=#{iQuantity}
+		</if>
+		<where>
+			RdsID = #{RdsID}
+		</where>
+	</update>
+	<update id="updateByRDIDAndRDSID" parameterType="InvPositionDto">
+		update InvPosition set
+		<trim prefixOverrides=",">
+			<if test="cWhCode != null and cWhCode != ''">
+				,cWhCode=#{cWhCode}
+			</if>
+			<if test="cPosCode != null and cPosCode != ''">
+				,cPosCode=#{cPosCode}
+			</if>
+			<if test="cBatch != null and cBatch != ''">
+				,cBatch=#{cBatch}
+			</if>
+			<if test="iQuantity != null and iQuantity != ''">
+				,iQuantity=#{iQuantity}
+			</if>
+			<if test="dVDate != null and dVDate != ''">
+				,dVDate=cast(#{dVDate} as datetime)
+			</if>
+			<if test="dDate != null and dDate != ''">
+				,dDate=#{dDate}
+			</if>
+			<if test="dMadeDate != null and dMadeDate != ''">
+				,dMadeDate=cast(#{dMadeDate} as datetime)
+			</if>
+		</trim>
+		where RDID= #{RDID}
+		and RdsID = #{RdsID}
+	</update>
+</mapper>

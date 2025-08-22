@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IFlowingDao" >
+	<sql id="SEARCH_TERMS">
+	<if test="entire != null and entire != ''">
+		and (
+		tmp.bm ILIKE '%'||#{entire}||'%'
+		or tmp.wlbm ILIKE '%'||#{entire}||'%'
+		or tmp.gys ILIKE '%'||#{entire}||'%'
+		or tmp.zdr ILIKE '%'||#{entire}||'%'
+		or tmp.wlmc ILIKE '%'||#{entire}||'%'
+		or tmp.ck ILIKE '%'||#{entire}||'%'
+		or tmp.djh ILIKE '%'||#{entire}||'%'
+		or tmp.ph ILIKE '%'||#{entire}||'%'
+		)
+	</if>
+	<if test="bm != null and bm != ''">
+		and tmp.bm ILIKE '%'||#{bm}||'%'
+	</if>
+	<if test="wlbm != null and wlbm != ''">
+		and tmp.wlbm ILIKE '%'||#{wlbm}||'%'
+	</if>
+	<if test="gys != null and gys != ''">
+		and tmp.gys ILIKE '%'||#{gys}||'%'
+	</if>
+	<if test="zdr != null and zdr != ''">
+		and tmp.zdr ILIKE '%'||#{zdr}||'%'
+	</if>
+	<if test="wlmc != null and wlmc != ''">
+		and tmp.wlmc ILIKE '%'||#{wlmc}||'%'
+	</if>
+	<if test="ck != null and ck != ''">
+		and tmp.ck ILIKE '%'||#{ck}||'%'
+	</if>
+	<if test="djh != null and djh != ''">
+		and tmp.djh ILIKE '%'||#{djh}||'%'
+	</if>
+	<if test="ph != null and ph != ''">
+		and tmp.ph ILIKE '%'||#{ph}||'%'
+	</if>
+		<if test = "sflbs != null and sflbs.length > 0 "  >
+		and tmp.sflb in
+		<foreach collection="sflbs" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+		</if>
+		<if test = "djlxs != null and djlxs.length > 0 "  >
+			and tmp.djlx in
+			<foreach collection="djlxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="lsrqstart != null and lsrqstart != ''">
+			and tmp.lsrq &gt;= #{lsrqstart}
+		</if>
+		<if test="lsrqend != null and lsrqend != ''">
+			and tmp.lsrq &lt;= #{lsrqend}
+		</if>
+	</sql>
+    <select id="getPageFlowingDtoList" parameterType="FlowingDto" resultType="FlowingDto">
+		select tmp.djlx,tmp.djh,tmp.bm,tmp.sl,tmp.lsid,tmp.wlbm,tmp.ggxh,tmp.ph,tmp.btbz,tmp.gys,tmp.ck,tmp.zdr,tmp.wlmc,tmp.sflb,tmp.dcid,tmp.viewId,tmp.lsrq from (
+		select '入库单' as djlx,rk.rkdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,rk.rkid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,rk.bz as btbz,gysxx.gysmc as gys,ckxx.ckmc as ck,
+		wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(rk.rkid,hw.hwid) as dcid,to_char(rk.rkrq,'yyyy-mm-dd') as lsrq
+		from igams_rkgl rk
+		left join igams_hwxx hw on hw.rkid=rk.rkid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on rk.bm=jg.jgid
+		left join igams_ckxx ckxx on rk.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on rk.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on rk.lrry=xtyh.yhid
+		<where>
+			rk.scbj!='1'
+		</where>
+		union all
+		select '出库单' as djlx,ckgl.ckdh as djh,'出库类型' as sflb,jg.jgmc as bm,ckmx.cksl as sl,ckgl.ckid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,ckgl.bz as btbz,'' as gys,
+		ckxx.ckmc as ck,wl.wlmc as wlmc,ckmx.ckmxid as viewId,xtyh.zsxm as zdr,concat(ckmx.ckmxid,hw.hwid) as dcid,to_char(ckgl.ckrq,'yyyy-mm-dd') as lsrq
+		from igams_ckgl ckgl
+		left join igams_ckmx ckmx on ckgl.ckid=ckmx.ckid
+		left join igams_hwxx hw on ckmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on ckgl.bm=jg.jgid
+		left join igams_ckxx ckxx on ckgl.ck=ckxx.ckid
+		left join matridx_xtyh xtyh on ckgl.lrry=xtyh.yhid
+		<where>
+			ckgl.scbj!='1'
+		</where>
+		union all
+		select '到货单' as djlx,dh.dhdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.dhsl as sl,dh.dhid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,dh.bz as btbz,gysxx.gysmc as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(dh.dhid,hw.hwid) as dcid,to_char(dh.dhrq,'yyyy-mm-dd') as lsrq
+		from igams_dhxx dh
+		left join igams_hwxx hw on dh.dhid=hw.dhid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on dh.bm=jg.jgid
+		left join igams_ckxx ckxx on dh.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on dh.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on dh.lrry=xtyh.yhid
+		<where>
+			dh.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他出库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.dchwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.dchwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他入库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.drhwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.drhwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '借出单' as djlx,jc.jydh as djh,'出库类型' as sflb,jg.jgmc as bm,jx.jysl as sl,jc.jcjyid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,jc.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,jx.jymxid as viewId,xtyh.zsxm as zdr,concat(jx.jymxid,hw.hwid) as dcid,to_char(jc.jyrq,'yyyy-mm-dd') as lsrq
+		FROM igams_jcjygl jc
+		left join igams_jcjymx jx on jc.jcjyid=jx.jcjyid
+		left join igams_hwxx hw on jx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on jc.bm=jg.jgid
+		left join matridx_xtyh xtyh on jc.lrry=xtyh.yhid
+		<where>
+			jc.scbj!='1'
+		</where>
+		union all
+		select '发货单' as djlx,fh.fhdh as djh,'出库类型' as sflb,'' as bm,fx.fhsl as sl,fh.fhid as lsid,wl.wlbm as wlbm,wl.gg
+		as ggxh,hw.scph as ph,fh.bz as btbz,'' as gys,ckxx.ckmc as ck,wl.wlmc as wlmc,fx.fhmxid as viewId,xtyh.zsxm as zdr,concat(fx.fhmxid,hw.hwid) as dcid,to_char(fh.djrq,'yyyy-mm-dd') as lsrq
+		from igams_fhgl fh
+		left join igams_fhmx fx on fh.fhid=fx.fhid
+		left join igams_hwxx hw on fx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on fh.ckid=ckxx.ckid
+		left join matridx_xtyh xtyh on fh.lrry=xtyh.yhid
+		<where>
+			fh.scbj!='1'
+		</where>
+		union all
+		select '归还单' as djlx,gh.ghdh as djh,'入库类型' as sflb,jg.jgmc as bm,ghmx.ghsl as sl,gh.jcghid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,gh.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,ghmx.ghmxid as viewId,xtyh.zsxm as zdr,concat(ghmx.ghmxid,hw.hwid) as dcid,to_char(gh.ghrq,'yyyy-mm-dd') as lsrq
+		from igams_jcghgl gh
+		left join igams_jcghmx ghmx on gh.jcghid=ghmx.jcghid
+		left join igams_hwxx hw on ghmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on gh.bm=jg.jgid
+		left join matridx_xtyh xtyh on gh.lrry=xtyh.yhid
+		<where>
+			gh.scbj!='1'
+		</where>
+		) tmp
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+
+
+	<select id="getJcById" parameterType="FlowingDto" resultType="FlowingDto">
+		select '借出单' as djlx,jc.jydh as djh,'出库类型' as sflb,jg.jgmc as bm,jx.jysl as sl,jc.jcjyid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,jc.bz as btbz
+		 ,wl.wlmc as wlmc,jx.jymxid as viewId,xtyh.zsxm as zdr
+		FROM igams_jcjygl jc
+		left join igams_jcjymx jx on jc.jcjyid=jx.jcjyid
+		left join igams_hwxx hw on jx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on jc.bm=jg.jgid
+		left join matridx_xtyh xtyh on jc.lrry=xtyh.yhid
+		where jx.jymxid=#{viewId} and jc.scbj!='1'
+	</select>
+
+	<select id="getRkById" parameterType="FlowingDto" resultType="FlowingDto">
+		select '入库单' as djlx,rk.rkdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,rk.rkid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,rk.bz as btbz,gysxx.gysmc as gys,ckxx.ckmc as ck,
+		wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr
+		from igams_rkgl rk
+		left join igams_hwxx hw on hw.rkid=rk.rkid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on rk.bm=jg.jgid
+		left join igams_ckxx ckxx on rk.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on rk.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on rk.lrry=xtyh.yhid
+		WHERE hw.hwid=#{viewId} and rk.scbj!='1'
+	</select>
+
+	<select id="getCkById" parameterType="FlowingDto" resultType="FlowingDto">
+		select '出库单' as djlx,ckgl.ckdh as djh,'出库类型' as sflb,jg.jgmc as bm,hw.sl as sl,ckgl.ckid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,ckgl.bz as btbz,
+		ckxx.ckmc as ck,wl.wlmc as wlmc,ckmx.ckmxid as viewId,xtyh.zsxm as zdr
+		from igams_ckgl ckgl
+		left join igams_ckmx ckmx on ckgl.ckid=ckmx.ckid
+		left join igams_hwxx hw on ckmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on ckgl.bm=jg.jgid
+		left join igams_ckxx ckxx on ckgl.ck=ckxx.ckid
+		left join matridx_xtyh xtyh on ckgl.lrry=xtyh.yhid
+		where ckmx.ckmxid=#{viewId} and ckgl.scbj!='1'
+	</select>
+	<select id="getGhById" resultType="FlowingDto" parameterType="FlowingDto">
+		select '归还单' as djlx,gh.ghdh as djh,'入库类型' as sflb,jg.jgmc as bm,ghmx.ghsl as sl,gh.jcghid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,gh.bz as btbz
+		 ,wl.wlmc as wlmc,ghmx.ghmxid as viewId,xtyh.zsxm as zdr
+		from igams_jcghgl gh
+		left join igams_jcghmx ghmx on gh.jcghid=ghmx.jcghid
+		left join igams_hwxx hw on ghmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on gh.bm=jg.jgid
+		left join matridx_xtyh xtyh on gh.lrry=xtyh.yhid
+		where ghmx.ghmxid=#{viewId} and gh.scbj!='1'
+	</select>
+	<select id="getDhById" resultType="FlowingDto" parameterType="FlowingDto">
+		select '到货单' as djlx,dh.dhdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,dh.dhid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,dh.bz as btbz,gysxx.gysmc as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,hw.hwid as viewId
+		from igams_dhxx dh
+		left join igams_hwxx hw on dh.dhid=hw.dhid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on dh.bm=jg.jgid
+		left join igams_ckxx ckxx on dh.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on dh.gysid=gysxx.gysid
+		where hw.hwid=#{viewId} and dh.scbj!='1'
+	</select>
+	<select id="getFhById" resultType="FlowingDto" parameterType="FlowingDto">
+		select '发货单' as djlx,fh.fhdh as djh,'出库类型' as sflb,fx.fhsl as sl,fh.fhid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,fh.bz as btbz
+		 ,ckxx.ckmc as ck,wl.wlmc as wlmc,fx.fhmxid as viewId,xtyh.zsxm as zdr
+		from igams_fhgl fh
+		left join igams_fhmx fx on fh.fhid=fx.fhid
+		left join igams_hwxx hw on fx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on fh.ckid=ckxx.ckid
+		left join matridx_xtyh xtyh on fh.lrry=xtyh.yhid
+		where fx.fhmxid =#{viewId} and fh.scbj!='1'
+	</select>
+	<select id="getDcById" resultType="FlowingDto" parameterType="FlowingDto">
+		select '调拨单' as djlx,db.dbdh as djh,'其他出库类型' as sflb,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz
+		 ,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.dchwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		where dx.dbmxid=#{viewId} and db.scbj!='1'
+	</select>
+	<select id="getDrById" resultType="FlowingDto" parameterType="FlowingDto">
+		select '调拨单' as djlx,db.dbdh as djh,'其他入库类型' as sflb,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz
+		 ,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.drhwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		where dx.dbmxid=#{viewId} and db.scbj!='1'
+	</select>
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="FlowingDto" resultType="FlowingDto">
+		select tmp.dcid ${sqlParam} from (
+		select '入库单' as djlx,rk.rkdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,rk.rkid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,rk.bz as btbz,gysxx.gysmc as gys,ckxx.ckmc as ck,
+		wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(rk.rkid,hw.hwid) as dcid,to_char(rk.rkrq,'yyyy-mm-dd') as lsrq,
+		rk.bz
+		from igams_rkgl rk
+		left join igams_hwxx hw on hw.rkid=rk.rkid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on rk.bm=jg.jgid
+		left join igams_ckxx ckxx on rk.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on rk.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on rk.lrry=xtyh.yhid
+		<where>
+			rk.scbj!='1'
+		</where>
+		union all
+		select '出库单' as djlx,ckgl.ckdh as djh,'出库类型' as sflb,jg.jgmc as bm,hw.sl as sl,ckgl.ckid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,ckgl.bz as btbz,'' as gys,
+		ckxx.ckmc as ck,wl.wlmc as wlmc,ckmx.ckmxid as viewId,xtyh.zsxm as zdr,concat(ckmx.ckmxid,hw.hwid) as dcid,to_char(ckgl.ckrq,'yyyy-mm-dd') as lsrq,
+		ckgl.bz
+		from igams_ckgl ckgl
+		left join igams_ckmx ckmx on ckgl.ckid=ckmx.ckid
+		left join igams_hwxx hw on ckmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on ckgl.bm=jg.jgid
+		left join igams_ckxx ckxx on ckgl.ck=ckxx.ckid
+		left join matridx_xtyh xtyh on ckgl.lrry=xtyh.yhid
+		<where>
+			ckgl.scbj!='1'
+		</where>
+		union all
+		select '到货单' as djlx,dh.dhdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,dh.dhid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,dh.bz as btbz,gysxx.gysmc as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(dh.dhid,hw.hwid) as dcid,to_char(dh.dhrq,'yyyy-mm-dd') as lsrq,
+		dh.bz
+		from igams_dhxx dh
+		left join igams_hwxx hw on dh.dhid=hw.dhid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on dh.bm=jg.jgid
+		left join igams_ckxx ckxx on dh.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on dh.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on dh.lrry=xtyh.yhid
+		<where>
+			dh.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他出库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.dchwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq,
+		db.bz
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.dchwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他入库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.drhwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq,
+		db.bz
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.drhwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '借出单' as djlx,jc.jydh as djh,'出库类型' as sflb,jg.jgmc as bm,jx.jysl as sl,jc.jcjyid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,jc.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,jx.jymxid as viewId,xtyh.zsxm as zdr,concat(jx.jymxid,hw.hwid) as dcid,to_char(jc.jyrq,'yyyy-mm-dd') as lsrq,
+		jc.bz
+		FROM igams_jcjygl jc
+		left join igams_jcjymx jx on jc.jcjyid=jx.jcjyid
+		left join igams_hwxx hw on jx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on jc.bm=jg.jgid
+		left join matridx_xtyh xtyh on jc.lrry=xtyh.yhid
+		<where>
+			jc.scbj!='1'
+		</where>
+		union all
+		select '发货单' as djlx,fh.fhdh as djh,'出库类型' as sflb,'' as bm,fx.fhsl as sl,fh.fhid as lsid,wl.wlbm as wlbm,wl.gg
+		as ggxh,hw.scph as ph,fh.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,fx.fhmxid as viewId,xtyh.zsxm as zdr,concat(fx.fhmxid,hw.hwid) as dcid,to_char(fh.djrq,'yyyy-mm-dd') as lsrq,
+		fh.bz
+		from igams_fhgl fh
+		left join igams_fhmx fx on fh.fhid=fx.fhid
+		left join igams_hwxx hw on fx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on fh.ckid=ckxx.ckid
+		left join matridx_xtyh xtyh on fh.lrry=xtyh.yhid
+		<where>
+			fh.scbj!='1'
+		</where>
+		union all
+		select '归还单' as djlx,gh.ghdh as djh,'入库类型' as sflb,jg.jgmc as bm,ghmx.ghsl as sl,gh.jcghid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,gh.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,ghmx.ghmxid as viewId,xtyh.zsxm as zdr,concat(ghmx.ghmxid,hw.hwid) as dcid,to_char(gh.ghrq,'yyyy-mm-dd') as lsrq,
+		gh.bz
+		from igams_jcghgl gh
+		left join igams_jcghmx ghmx on gh.jcghid=ghmx.jcghid
+		left join igams_hwxx hw on ghmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on gh.bm=jg.jgid
+		left join matridx_xtyh xtyh on gh.lrry=xtyh.yhid
+		<where>
+			gh.scbj!='1'
+		</where>
+		) tmp
+		<where>
+			<if test="dcid !=null and dcid !=''">
+				or dcid=#{dcid}
+			</if>
+			<if test="ids !=null and ids.size() !=''">
+				or dcid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" >
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="FlowingDto" resultType="FlowingDto">
+		select tmp.dcid ${sqlParam} from (
+		select '入库单' as djlx,rk.rkdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,rk.rkid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,rk.bz as btbz,gysxx.gysmc as gys,ckxx.ckmc as ck,
+		wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(rk.rkid,hw.hwid) as dcid,to_char(rk.rkrq,'yyyy-mm-dd') as lsrq,
+		rk.bz
+		from igams_rkgl rk
+		left join igams_hwxx hw on hw.rkid=rk.rkid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on rk.bm=jg.jgid
+		left join igams_ckxx ckxx on rk.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on rk.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on rk.lrry=xtyh.yhid
+		<where>
+			rk.scbj!='1' and hw.hwid!=''
+		</where>
+		union all
+		select '出库单' as djlx,ckgl.ckdh as djh,'出库类型' as sflb,jg.jgmc as bm,hw.sl as sl,ckgl.ckid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,ckgl.bz as btbz,'' as gys,
+		ckxx.ckmc as ck,wl.wlmc as wlmc,ckmx.ckmxid as viewId,xtyh.zsxm as zdr,concat(ckmx.ckmxid,hw.hwid) as dcid,to_char(ckgl.ckrq,'yyyy-mm-d') as lsrq,
+		ckgl.bz
+		from igams_ckgl ckgl
+		left join igams_ckmx ckmx on ckgl.ckid=ckmx.ckid
+		left join igams_hwxx hw on ckmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on ckgl.bm=jg.jgid
+		left join igams_ckxx ckxx on ckgl.ck=ckxx.ckid
+		left join matridx_xtyh xtyh on ckgl.lrry=xtyh.yhid
+		<where>
+			ckgl.scbj!='1'
+		</where>
+		union all
+		select '到货单' as djlx,dh.dhdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,dh.dhid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,dh.bz as btbz,gysxx.gysmc as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(dh.dhid,hw.hwid) as dcid,to_char(dh.dhrq,'yyyy-mm-dd') as lsrq,
+		dh.bz
+		from igams_dhxx dh
+		left join igams_hwxx hw on dh.dhid=hw.dhid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on dh.bm=jg.jgid
+		left join igams_ckxx ckxx on dh.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on dh.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on dh.lrry=xtyh.yhid
+		<where>
+			dh.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他出库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.dchwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq,
+		db.bz
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.dchwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他入库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.drhwid,hw.hwid) as dcid,to_char(db.dbrq,'yyyy-mm-dd') as lsrq,
+		db.bz
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.drhwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '借出单' as djlx,jc.jydh as djh,'出库类型' as sflb,jg.jgmc as bm,jx.jysl as sl,jc.jcjyid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,jc.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,jx.jymxid as viewId,xtyh.zsxm as zdr,concat(jx.jymxid,hw.hwid) as dcid,to_char(jc.jyrq,'yyyy-mm-dd') as lsrq,
+		jc.bz
+		FROM igams_jcjygl jc
+		left join igams_jcjymx jx on jc.jcjyid=jx.jcjyid
+		left join igams_hwxx hw on jx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on jc.bm=jg.jgid
+		left join matridx_xtyh xtyh on jc.lrry=xtyh.yhid
+		<where>
+			jc.scbj!='1'
+		</where>
+		union all
+		select '发货单' as djlx,fh.fhdh as djh,'出库类型' as sflb,'' as bm,fx.fhsl as sl,fh.fhid as lsid,wl.wlbm as wlbm,wl.gg
+		as ggxh,hw.scph as ph,fh.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,fx.fhmxid as viewId,xtyh.zsxm as zdr,concat(fx.fhmxid,hw.hwid) as dcid,to_char(fh.djrq,'yyyy-mm-dd') as lsrq,
+		fh.bz
+		from igams_fhgl fh
+		left join igams_fhmx fx on fh.fhid=fx.fhid
+		left join igams_hwxx hw on fx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on fh.ckid=ckxx.ckid
+		left join matridx_xtyh xtyh on fh.lrry=xtyh.yhid
+		<where>
+			fh.scbj!='1'
+		</where>
+		union all
+		select '归还单' as djlx,gh.ghdh as djh,'入库类型' as sflb,jg.jgmc as bm,ghmx.ghsl as sl,gh.jcghid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,gh.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,ghmx.ghmxid as viewId,xtyh.zsxm as zdr,concat(ghmx.ghmxid,hw.hwid) as dcid,to_char(gh.ghrq,'yyyy-mm-dd') as lsrq,
+		gh.bz
+		from igams_jcghgl gh
+		left join igams_jcghmx ghmx on gh.jcghid=ghmx.jcghid
+		left join igams_hwxx hw on ghmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on gh.bm=jg.jgid
+		left join matridx_xtyh xtyh on gh.lrry=xtyh.yhid
+		<where>
+			gh.scbj!='1'
+		</where>
+		) tmp
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<!-- 查询导出条数 -->
+	<select id="getCountForSearchExp"  parameterType="FlowingDto" resultType="java.lang.Integer">
+		select count(tmp.dcid) from(
+		select '入库单' as djlx,rk.rkdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,rk.rkid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,rk.bz as btbz,gysxx.gysmc as gys,ckxx.ckmc as ck,
+		wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(rk.rkid,hw.hwid) as dcid
+		from igams_rkgl rk
+		left join igams_hwxx hw on hw.rkid=rk.rkid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on rk.bm=jg.jgid
+		left join igams_ckxx ckxx on rk.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on rk.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on rk.lrry=xtyh.yhid
+		<where>
+			rk.scbj!='1'
+		</where>
+		union all
+		select '出库单' as djlx,ckgl.ckdh as djh,'出库类型' as sflb,jg.jgmc as bm,hw.sl as sl,ckgl.ckid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,ckgl.bz as btbz,'' as gys,
+		ckxx.ckmc as ck,wl.wlmc as wlmc,ckmx.ckmxid as viewId,xtyh.zsxm as zdr,concat(ckmx.ckmxid,hw.hwid) as dcid
+		from igams_ckgl ckgl
+		left join igams_ckmx ckmx on ckgl.ckid=ckmx.ckid
+		left join igams_hwxx hw on ckmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on ckgl.bm=jg.jgid
+		left join igams_ckxx ckxx on ckgl.ck=ckxx.ckid
+		left join matridx_xtyh xtyh on ckgl.lrry=xtyh.yhid
+		<where>
+			ckgl.scbj!='1'
+		</where>
+		union all
+		select '到货单' as djlx,dh.dhdh as djh,'入库类型' as sflb,jg.jgmc as bm,hw.sl as sl,dh.dhid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,dh.bz as btbz,gysxx.gysmc as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,hw.hwid as viewId,xtyh.zsxm as zdr,concat(dh.dhid,hw.hwid) as dcid
+		from igams_dhxx dh
+		left join igams_hwxx hw on dh.dhid=hw.dhid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on dh.bm=jg.jgid
+		left join igams_ckxx ckxx on dh.ckid=ckxx.ckid
+		left join igams_gysxx gysxx on dh.gysid=gysxx.gysid
+		left join matridx_xtyh xtyh on dh.lrry=xtyh.yhid
+		<where>
+			dh.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他出库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.dchwid,hw.hwid) as dcid
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.dchwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '调拨单' as djlx,db.dbdh as djh,'其他入库类型' as sflb,'' as bm,dx.dbsl as sl,db.dbid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,db.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,dx.dbmxid as viewId,xtyh.zsxm as zdr,concat(dx.drhwid,hw.hwid) as dcid
+		FROM igams_dbgl db
+		left join igams_dbmx dx on db.dbid=dx.dbid
+		left join igams_hwxx hw on dx.drhwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on db.zrck=ckxx.ckid
+		left join matridx_xtyh xtyh on db.lrry=xtyh.yhid
+		<where>
+			db.scbj!='1'
+		</where>
+		union all
+		select '借出单' as djlx,jc.jydh as djh,'出库类型' as sflb,jg.jgmc as bm,jx.jysl as sl,jc.jcjyid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,jc.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,jx.jymxid as viewId,xtyh.zsxm as zdr,concat(jx.jymxid,hw.hwid) as dcid
+		FROM igams_jcjygl jc
+		left join igams_jcjymx jx on jc.jcjyid=jx.jcjyid
+		left join igams_hwxx hw on jx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on jc.bm=jg.jgid
+		left join matridx_xtyh xtyh on jc.lrry=xtyh.yhid
+		<where>
+			jc.scbj!='1'
+		</where>
+		union all
+		select '发货单' as djlx,fh.fhdh as djh,'出库类型' as sflb,'' as bm,fx.fhsl as sl,fh.fhid as lsid,wl.wlbm as wlbm,wl.gg
+		as ggxh,hw.scph as ph,fh.bz as btbz,'' as gys
+		,ckxx.ckmc as ck,wl.wlmc as wlmc,fx.fhmxid as viewId,xtyh.zsxm as zdr,concat(fx.fhmxid,hw.hwid) as dcid
+		from igams_fhgl fh
+		left join igams_fhmx fx on fh.fhid=fx.fhid
+		left join igams_hwxx hw on fx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join igams_ckxx ckxx on fh.ckid=ckxx.ckid
+		left join matridx_xtyh xtyh on fh.lrry=xtyh.yhid
+		<where>
+			fh.scbj!='1'
+		</where>
+		union all
+		select '归还单' as djlx,gh.ghdh as djh,'入库类型' as sflb,jg.jgmc as bm,ghmx.ghsl as sl,gh.jcghid as lsid,wl.wlbm as
+		wlbm,wl.gg as ggxh,hw.scph as ph,gh.bz as btbz,'' as gys
+		,'' as ck,wl.wlmc as wlmc,ghmx.ghmxid as viewId,xtyh.zsxm as zdr,concat(ghmx.ghmxid,hw.hwid) as dcid
+		from igams_jcghgl gh
+		left join igams_jcghmx ghmx on gh.jcghid=ghmx.jcghid
+		left join igams_hwxx hw on ghmx.hwid=hw.hwid
+		left join igams_wlgl wl on hw.wlid=wl.wlid
+		left join matridx_jgxx jg on gh.bm=jg.jgid
+		left join matridx_xtyh xtyh on gh.lrry=xtyh.yhid
+		<where>
+			gh.scbj!='1'
+		</where>
+		) tmp
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+</mapper>

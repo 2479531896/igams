@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ICkmxDao" >
+	<insert id="insertckmxs" parameterType="List">
+		insert into igams_ckmx(jymxid,ckmxid,ckid,hwid,cksl,llmxid,yymxckd,lrry,lrsj,scbj,wwhtmxid,cpjgmxid,bz)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.jymxid},#{item.ckmxid},#{item.ckid},#{item.hwid},cast(#{item.cksl} as numeric),#{item.llmxid},#{item.yymxckd},#{item.lrry},LOCALTIMESTAMP,'0',#{item.wwhtmxid},#{item.cpjgmxid},#{item.bz}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<select id="getDtoList" parameterType="CkmxDto" resultType="CkmxDto">
+		select hwllmx.llmxid,hwllmx.hwllid,hwllmx.llid,wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,hwllmx.slsl,jcsj_dl.csdm as Xmdlcsdm,
+			jcsj_dl.csmc as xmdlcsmc,jcsj_bm.csdm as xmbmcsdm,jcsj_bm.csmc as xmbmcsmc,hwxx.yxq,hwxx.scrq,ckxx.ckdm,
+			hwllxx.bz as hwllbz,hwxx.zsh,hwllmx.yxsl,htmx.wsdj,htmx.hjje,htmx.suil,hwxx.zsh,hwxx.yxq,hwxx.kwbh,hwxx.scrq,
+			llgl.glid as sqglid,hwxx.kcglid,hwllmx.glid,ckxx_kw.ckdm as kwbhcsdm,hwxx.scph,htmx.hsdj,hwxx.hwid,hwllmx.qlsl,
+			ckmx.cksl,ckmx.ckmxid,wlgl.wlmc,wlgl.wllb,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,wlgl.scs,wlgl.ychh,wlgl.gg,ckmx.bz,yckgl.ckdh yydh
+			from igams_ckmx ckmx			
+			left join igams_hwllmx hwllmx on hwllmx.llmxid=ckmx.llmxid  and hwllmx.scbj='0'
+			left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid 
+			left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid and hwxx.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+			left outer join igams_ckmx yyckmx on yyckmx.ckmxid = ckmx.yymxckd
+			left outer join igams_ckgl yckgl on yyckmx.ckid = yckgl.ckid
+			left outer join matridx_jcsj jc on wlgl.wllb = jc.csid
+			left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+			left join matridx_jcsj jcsj_dl on jcsj_dl.csid = hwllxx.xmdl
+			left join matridx_jcsj jcsj_bm on jcsj_bm.csid = hwllxx.xmbm
+			left join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid and ckxx.scbj='0'
+			left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid and htmx.scbj='0'
+			left join igams_llgl llgl on llgl.llid = hwllmx.llid and llgl.scbj='0'
+			left join igams_ckxx ckxx_kw on ckxx_kw.ckid=hwxx.kwbh and ckxx_kw.scbj='0'
+			<where>
+				ckmx.scbj = '0' and ckmx.ckid = #{ckid}
+		</where>
+	</select>
+
+	<select id="getPagedForException" parameterType="CkmxDto" resultType="CkmxDto">
+		select wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,hwxx.yxq,hwxx.scrq,
+		hwxx.zsh,hwxx.zsh,hwxx.yxq,hwxx.kwbh,hwxx.scrq,
+		llgl.glid as sqglid,hwxx.kcglid,hwxx.scph,hwxx.hwid,
+		ckmx.cksl,ckmx.ckmxid,wlgl.wlmc,wlgl.wllb,wlgl.scs,wlgl.ychh,wlgl.gg,ckmx.bz,khgl.khmc,ckgl.ckrq
+		from igams_ckmx ckmx
+		left join igams_ckgl ckgl on ckgl.ckid = ckmx.ckid and ckgl.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+		left join igams_llgl llgl on llgl.llid = ckgl.llid and llgl.scbj='0'
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		<where>
+			ckmx.scbj = '0' and ckgl.llid is not null and ckgl.llid != ''
+			<if test="wlmc !=null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+			</if>
+			<if test="wlbm !=null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+			</if>
+			<if test="khmc !=null and khmc != ''">
+				and khgl.khmc ILIKE '%'||#{khmc}||'%'
+			</if>
+			<if test="scph !=null and scph != ''">
+				and hwxx.scph ILIKE '%'||#{scph}||'%'
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getDtoListByHwid" parameterType="CkmxDto" resultType="CkmxDto">
+		select ckgl.u8ckdh
+		from igams_ckmx ckmx
+		left join igams_ckgl ckgl on ckgl.ckid = ckmx.ckid and ckgl.scbj='0'
+		<where>
+			ckmx.scbj = '0'
+			<if test="ids!= null and ids != ''">
+				and ckmx.hwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+    <select id="getHcDtoList" parameterType="CkmxDto" resultType="CkmxDto">
+        select hwllmx.llmxid,hwllmx.hwllid,hwllmx.llid,wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,hwllmx.slsl,jcsj_dl.csdm as Xmdlcsdm,
+        jcsj_dl.csmc as xmdlcsmc,jcsj_bm.csdm as xmbmcsdm,jcsj_bm.csmc as xmbmcsmc,hwxx.yxq,hwxx.scrq,ckxx.ckdm,
+        hwllxx.bz as hwllbz,hwxx.zsh,hwllmx.yxsl,htmx.wsdj,htmx.hjje,htmx.suil,hwxx.zsh,hwxx.yxq,hwxx.kwbh,hwxx.scrq,
+        llgl.glid as sqglid,hwxx.kcglid,hwllmx.glid,ckxx_kw.ckdm as kwbhcsdm,hwxx.scph,htmx.hsdj,hwxx.hwid,hwllmx.qlsl,
+        ckmx.cksl,ckmx.ckmxid
+        from igams_ckmx ckmx
+        left outer join igams_ckmx yyckmx on yyckmx.ckmxid = ckmx.yymxckd
+        left join igams_hwllmx hwllmx on hwllmx.llmxid=yyckmx.llmxid  and hwllmx.scbj='0'
+        left join igams_hwllxx hwllxx on hwllxx.hwllid = hwllmx.hwllid
+        left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid and hwxx.scbj='0'
+        left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+        left join matridx_jcsj jcsj_dl on jcsj_dl.csid = hwllxx.xmdl
+        left join matridx_jcsj jcsj_bm on jcsj_bm.csid = hwllxx.xmbm
+        left join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid and ckxx.scbj='0'
+        left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid and htmx.scbj='0'
+        left join igams_llgl llgl on llgl.llid = hwllmx.llid and llgl.scbj='0'
+        left join igams_ckxx ckxx_kw on ckxx_kw.ckid=hwxx.kwbh and ckxx_kw.scbj='0'
+        <where>
+            ckmx.scbj = '0' and ckmx.ckid = #{ckid}
+        </where>
+    </select>
+
+
+	<select id="getWWDtoList" parameterType="CkmxDto" resultType="CkmxDto">
+		select wlgl.wlbm,wlgl.bzq,wlgl.bzqflg,jcsj_dl.csdm as Xmdlcsdm,
+		jcsj_dl.csmc as xmdlcsmc,jcsj_bm.csdm as xmbmcsdm,jcsj_bm.csmc as xmbmcsmc,hwxx.yxq,hwxx.scrq,ckxx.ckdm,
+		hwxx.zsh,htmx.wsdj,htmx.hjje,htmx.suil,hwxx.zsh,hwxx.yxq,hwxx.kwbh,hwxx.scrq,
+		hwxx.kcglid,ckxx_kw.ckdm as kwbhcsdm,hwxx.scph,htmx.hsdj,hwxx.hwid,
+		ckmx.cksl,ckmx.ckmxid,gys.gysdm,qggl.jlbh qgjlbh,ckmx.wwhtmxid,htgl.htnbbh,coalesce(htmx.sl,0) sl,htmx.u8ommxid,htgl.u8omid,
+		round((coalesce(htmx.sl,0)*coalesce(cpjgmx.sysl,0)-coalesce(tmp.cksl,0)),2) kcksl,htgl.bz as htbz,tab.ckzsl,round((coalesce(htmx.sl,0)*coalesce(cpjgmx.sysl,0)),2) zcksl,htwl.wlbm htwlbm
+		from igams_ckmx ckmx
+		left join igams_cpjgmx cpjgmx on cpjgmx.cpjgmxid=ckmx.cpjgmxid  and cpjgmx.scbj='0'
+		left join (select cpjgmxid,sum(cksl) cksl from igams_ckmx where scbj='0' group by cpjgmxid) tmp on tmp.cpjgmxid=cpjgmx.cpjgmxid
+		left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid =hwxx.wlid and wlgl.scbj!='1'
+
+		left join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid and ckxx.scbj='0'
+		left join igams_htmx htmx on htmx.htmxid=ckmx.wwhtmxid and htmx.scbj='0'
+		left join igams_wlgl htwl on htwl.wlid=htmx.wlid and htwl.scbj='0'
+		left join (select wwhtmxid,sum(cksl) ckzsl from igams_ckmx where scbj='0' group by wwhtmxid) tab on tab.wwhtmxid=htmx.htmxid
+		left join igams_htgl htgl on htgl.htid=htmx.htid and htgl.scbj='0'
+		left join igams_gysxx gys on gys.gysid=htgl.gys and gys.scbj!='1'
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid and qggl.scbj='0'
+		left join matridx_jcsj jcsj_dl on jcsj_dl.csid = qggl.xmdl
+		left join matridx_jcsj jcsj_bm on jcsj_bm.csid = qggl.xmbm
+		left join igams_ckxx ckxx_kw on ckxx_kw.ckid=hwxx.kwbh and ckxx_kw.scbj='0'
+		<where>
+			ckmx.scbj = '0' and ckmx.ckid = #{ckid}
+		</where>
+	</select>
+
+	<update id="updateCkmxList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckmx
+			<set>
+			 xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			 	<if test="item.ckmxglid != null and item.ckmxglid != ''">
+					,ckmxglid=#{item.ckmxglid}
+				</if>
+				<if test="item.cksl != null and item.cksl != ''">
+					,cksl=cast(#{item.cksl} as numeric)
+				</if>
+				<if test="item.ydsbj == '0'.toString()">
+					,yds=COALESCE(yds,0) - cast(#{item.yds} as numeric)
+				</if>
+				<if test="item.ydsbj == '1'.toString()">
+					,yds=COALESCE(yds,0) + cast(#{item.yds} as numeric)
+				</if>
+				<if test="item.hcsbj =='1'.toString()">
+					,yhcs=COALESCE(yhcs,0) + cast(#{item.yhcs} as numeric)
+				</if>
+				<if test="item.hcsbj =='0'.toString()">
+					,yhcs=COALESCE(yhcs,0) - cast(#{item.yhcs} as numeric)
+				</if>
+			</set>
+			<where>
+				ckmxid=#{item.ckmxid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getDtoMxList" parameterType="CkmxDto" resultType="CkmxDto">
+            select ckmx.ckmxid,ckmx.yymxckd,ckmx.hwid,wl.jldw,hwxx.scph scph,hwxx.scrq,hwxx.yxq,kwxx.ckmc as hw,COALESCE(ckmx.cksl,0) - COALESCE(ckmx.yds,0) - COALESCE(ckmx.yhcs,0) as kcksl,COALESCE(ckmx.cksl,0) - COALESCE(ckmx.yds,0) - COALESCE(ckmx.yhcs,0) as cksl,hwxx.kwbh,ckxx.ckqxlx,ckxx.ckid hwckid,
+            wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,sfwxp.csmc as sfwxpmc,ckmx.bz,wl.zt,wl.bzqflg,wl.lb,wl.aqkc,wl.wlzlbtc,zlbtcjc.csmc wlzlbtcmc
+			,zlbtcjc.csdm wlzlbtcdm,wl.lrry,wl.lrsj,wl.xgry,wl.xgsj,wl.jwlbm,wl.scbj,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,jc.csdm wllbdm,zlbjc.csdm wlzlbdm,lbjc.csmc lbmc,lbjc.csdm lbdm,wl.qdl,wl.hq,sscplb.csmc sscplbmc,wl.sscplb
+			,ckgl.ckdh yydh,ckmc.ckmc ckmc,zckgl.zt ckzt,jcsj_ck.csdm as cklbcsdm,jcsj_ck.csmc as cklbcsmc,zckgl.ckdh,COALESCE(ckmx.cksl,0) ckmxcksl,hwxx.zsh,xmbm.csdm xmbmcsdm,ckmx.bz,hwxx.htmxid,hwxx.qgmxid,hwxx.cpzch
+            from igams_ckmx ckmx
+			left outer join igams_ckgl zckgl on ckmx.ckid = zckgl.ckid
+			left join matridx_jcsj jcsj_ck on jcsj_ck.csid=zckgl.cklb
+            left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid
+            left join igams_wlgl wl on wl.wlid=hwxx.wlid
+            left outer join igams_ckxx kwxx on kwxx.ckid = hwxx.kwbh
+			left outer join igams_ckmx yyckmx on yyckmx.ckmxid = ckmx.yymxckd
+			left outer join igams_ckgl ckgl on yyckmx.ckid = ckgl.ckid
+            left outer join igams_ckxx ckxx on ckxx.ckid = hwxx.ckid
+            left outer join matridx_jcsj jc on wl.wllb = jc.csid
+			left outer join matridx_jcsj zlbjc on wl.wlzlb = zlbjc.csid
+			left outer join matridx_jcsj lbjc on wl.lb = lbjc.csid
+			left outer join matridx_jcsj zlbtcjc on wl.wlzlbtc = zlbtcjc.csid
+			left outer join matridx_jcsj sscplb on wl.sscplb = sscplb.csid
+		    left outer join matridx_jcsj sfwxp on wl.sfwxp = sfwxp.csid
+		    left outer join igams_ckxx ckmc on ckmc.ckid=ckgl.ckid
+		    left join igams_hwllmx hwllmx on hwllmx.llmxid=ckmx.llmxid
+		    left join igams_hwllxx hwllxx on hwllxx.hwllid=hwllmx.hwllid
+			LEFT JOIN matridx_jcsj xmbm ON xmbm.csid = hwllxx.xmbm
+		    where ckmx.scbj!='1'
+			<if test="ckid!= null and ckid != ''">
+				and ckmx.ckid=#{ckid}
+			</if>
+			<if test="ckids!= null and ckids != ''">
+				and ckmx.ckid in
+				<foreach collection="ckids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+        </select>
+
+	<select id="getDto" parameterType="CkmxDto" resultType="CkmxDto">
+		select ckmx.ckmxid,ckmx.yymxckd,ckmx.hwid,COALESCE(ckmx.cksl,0) - COALESCE(ckmx.yds,0) - COALESCE(ckmx.yhcs,0) as kcksl
+		from igams_ckmx ckmx
+		where ckmx.scbj!='1'
+		<if test="ckmxid!= null and ckmxid != ''">
+			and ckmx.ckmxid=#{ckmxid}
+		</if>
+	</select>
+        <update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckmx
+			<set>
+			 xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			 	<if test="item.ckmxglid != null and item.ckmxglid != ''">
+					,ckmxglid=#{item.ckmxglid}
+				</if>
+			</set>
+			<where>
+				ckmxid=#{item.ckmxid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<select id="getDtoGroupBy" parameterType="String" resultType="CkmxDto">
+		select sum(ckmx.cksl) as zcksl,wl.wlbm,ck.ckdm,hwxx.scph
+			from igams_ckmx ckmx
+			left join igams_hwxx hwxx on hwxx.hwid=ckmx.hwid and hwxx.scbj='0'
+			left join igams_wlgl wl on wl.wlid = hwxx.wlid and wl.scbj='0'
+			left join igams_ckxx ck on ck.ckid = hwxx.ckid and ck.scbj='0'
+		<where>
+				ckmx.ckid = #{ckid} and ckmx.scbj='0'
+		</where>
+		group by wl.wlbm,ck.ckdm,hwxx.scph
+	</select>
+	
+	<update id="deleteByCkid" parameterType="CkmxDto">
+		update igams_ckmx set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			ckid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="deleteByCkmxids" parameterType="CkmxDto">
+		update igams_ckmx set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			ckmxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	
+	<update id="updateCkmxDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckmx
+			<set>
+				hcmxglid=#{item.hcmxglid}
+			</set>
+			<where>
+				ckmxglid=#{item.ckmxglid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getPrintDtoList" parameterType="CkmxDto" resultType="CkmxDto">
+		SELECT
+		xmbm.csdm xmbmcsdm,
+		xmbm.csmc xmbmcsmc,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.gg,
+		hwxx.kwbh,
+		ckmx.bz,
+		wlgl.jldw,
+		ckxx.ckmc hw,
+		hwxx.scph,
+		hwxx.zsh,
+		to_char( hwxx.yxq,
+		'YYYY-MM-dd' ) yxq,
+		COALESCE(ckmx.cksl,0) as cksl
+		FROM
+		igams_ckmx ckmx
+		LEFT JOIN
+		igams_ckgl ckgl
+		ON ckmx.ckid = ckgl.ckid
+		LEFT JOIN
+		igams_hwxx hwxx
+		ON hwxx.hwid = ckmx.hwid
+		LEFT JOIN
+		igams_wlgl wlgl
+		ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN
+		igams_ckxx ckxx
+		ON ckxx.ckid = hwxx.kwbh
+		left join igams_hwllmx hwllmx on hwllmx.llmxid=ckmx.llmxid
+		left join igams_hwllxx hwllxx on hwllxx.hwllid=hwllmx.hwllid
+		LEFT JOIN matridx_jcsj xmbm ON xmbm.csid = hwllxx.xmbm
+		<where>
+			ckmx.scbj = '0' and ckmx.ckid = #{ckid}
+		</where>
+	</select>
+	<select id="selectCkmxListByList" parameterType="List" resultType="CkmxDto">
+		SELECT
+	ckmx.ckid,
+	wlgl.wlbm,
+	wlgl.ychh,
+	wlgl.wlmc,
+	wlgl.gg,
+	wlgl.jldw,
+	ckmx.cksl,
+	hwxx.scph,
+	hwxx.scrq,
+	hwxx.yxq,
+	wlgl.bctj,
+	ckmx.bz
+FROM
+	igams_ckmx ckmx
+	LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = ckmx.hwid
+	LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+	<where>
+	ckmx.scbj='0'
+		<if test="list !=null and list.size >0" >
+			and ckmx.ckid in
+			<foreach collection="list" open="(" close=")" separator="," item="item">
+				#{item.ckid}
+			</foreach>
+		</if>
+	</where>
+	</select>
+</mapper>

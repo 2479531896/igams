@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.ISbglwjDao" >
+    <select id="getDtoList" resultType="SbglwjDto" parameterType="SbglwjDto">
+        select sbglwj.sbglwjid,sbglwj.sbglid,sbglwj.lb,sbglwj.wjid,sbglwj.sbysid,
+        wj.wjmc,wj.wjbh wjbm,wj.bbh,wj.sxrq,jg.jgmc ssdw,bzry.zsxm bhrymc,wj.wjid
+        from igams_sbglwj sbglwj
+        left join igams_wjgl wj on wj.wjid=sbglwj.wjid and wj.scbj='0'
+        left join igams_wjssdw wjss on wjss.wjid=wj.wjid
+		left join matridx_jgxx jg on jg.jgid=wjss.jgid
+		left join matridx_xtyh bzry on bzry.yhid=wj.bzry
+		<where>
+            sbglwj.lb=#{lb} and wj.scbj='0' and wj.zt='80'
+		<if test="lb!=null and lb!='' and lb=='2'.toString">
+             and sbglwj.sbysid=#{sbysid}
+        </if>
+        <if test="lb!=null and lb!='' and lb!='2'.toString">
+            and sbglwj.sbglid=#{sbglid}
+        </if>
+        </where>
+    </select>
+    <select id="getDtoById" resultType="SbglwjDto" parameterType="String">
+        select sbglwj.sbglwjid
+        from igams_sbglwj sbglwj
+		<where>
+            sbglwjid = #{sbglwjid}
+        </where>
+    </select>
+    <insert id="insert" parameterType="SbglwjDto">
+        insert into igams_sbglwj(sbglwjid,sbysid
+        <if test="sbglid != null and sbglid != ''">
+            ,sbglid
+        </if>
+        <if test="lb != null and lb != ''">
+            ,lb
+        </if>
+        <if test="wjid != null and wjid != ''">
+            ,wjid
+        </if>
+        )
+        values(#{sbglwjid},#{sbysid}
+        <if test="sbglid != null and sbglid != ''">
+            ,#{sbglid}
+        </if>
+        <if test="lb != null and lb != ''">
+            ,#{lb}
+        </if>
+        <if test="wjid != null and wjid != ''">
+            ,#{wjid}
+        </if>
+        )
+    </insert>
+    <update id="update" parameterType="SbglwjDto">
+        update igams_sbglwj set
+        sbglid=#{sbglid},
+        lb=#{lb},
+        wjid = #{wjid},
+        sbysid = #{sbysid}
+        where sbglwjid = #{sbglwjid}
+    </update>
+    <delete id="delete" parameterType="SbglwjDto">
+        delete from igams_sbglwj
+        where sbglwjid = #{sbglwjid}
+    </delete>
+</mapper>

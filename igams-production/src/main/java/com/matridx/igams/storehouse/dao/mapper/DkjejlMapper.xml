@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IDkjejlDao">
+    <sql id="SEARCH_WHERE">
+        <if test="entire != null and entire != ''">
+            and (
+            wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or xsgl.oaxsdh ILIKE '%'||#{entire}||'%'
+            or fhgl.fhdh ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="wlbm != null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc != null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="oaxsdh != null and oaxsdh != ''">
+            and xsgl.oaxsdh ILIKE '%'||#{oaxsdh}||'%'
+        </if>
+        <if test="fhdh != null and fhdh != ''">
+            and fhgl.fhdh ILIKE '%'||#{fhdh}||'%'
+        </if>
+        <if test="djrqstart != null and djrqstart != ''">
+            and to_char(fhgl.djrq,'yyyy-MM-dd') &gt;= #{djrqstart}
+        </if>
+        <if test="djrqend != null and djrqend != ''">
+            and to_char(fhgl.djrq,'yyyy-MM-dd') &lt;= #{djrqend}
+        </if>
+        <if test="dkystart != null and dkystart != ''">
+            and to_char(dkjejl.dky,'yyyy-MM-dd') &gt;= #{dkystart}
+        </if>
+        <if test="dkyend != null and dkyend != ''">
+            and to_char(dkjejl.dky,'yyyy-MM-dd') &lt;= #{dkyend}
+        </if>
+    </sql>
+    <select id="getPagedDtoList" resultType="DkjejlDto" parameterType="DkjejlDto">
+        select tmp._key,tmp.dkjlid,tmp.oaxsdh,tmp.fhdh,
+        tmp.wlid,tmp.wlmc,tmp.wlbm,tmp.hkzq,tmp.djrq,tmp.dky,tmp.fhsl,
+        tmp.hsdj,tmp.dkje,tmp.hkzt,tmp.lrsj,tmp.fhid,tmp.xsid  from (
+        select dkjejl.dkjlid _key,dkjejl.dkjlid,xsgl.oaxsdh,fhgl.fhdh,
+        wlgl.wlid,wlgl.wlmc,wlgl.wlbm,xsgl.hkzq,fhgl.djrq,dkjejl.dky,fhmx.fhsl,
+        coalesce(xsmx_fh.hsdj,xsmx.hsdj) hsdj,dkjejl.dkje,
+        case when dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+180 and dkjejl.ywlx='1' and dkjejl.lb='0' then '1'
+        when xsgl.hkzq+180&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+360  and dkjejl.ywlx='1' and dkjejl.lb='0' then '2'
+        when xsgl.hkzq+360&lt;dkjejl.dky-fhgl.djrq  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '3'
+        else '0' end hkzt,dkjejl.lrsj,fhgl.fhid,xsgl.xsid
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on dkjejl.ywid = xsmx.xsmxid
+        left join igams_fhgl fhgl on dkjejl.ywid = fhgl.fhid
+        left join igams_xsmx xsmx_fh on dkjejl.fywid = xsmx_fh.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid in (xsmx.xsid,xsmx_fh.xsid)
+        left join igams_wlgl wlgl on wlgl.wlid in (xsmx.wlid,xsmx_fh.wlid)
+        left join (select fhid,xsmxid,sum(fhsl) fhsl from igams_fhmx where scbj ='0' group by fhid,xsmxid) fhmx on fhmx.fhid = dkjejl.ywid and fhmx.xsmxid = dkjejl.fywid
+        where dkjejl.scbj ='0' and dkjejl.lb='0' and xsgl.hkzq is not null
+        <include refid="SEARCH_WHERE"></include>
+        ) tmp
+        <where>
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getPagedNotDtoList" resultType="DkjejlDto" parameterType="DkjejlDto">
+        select tmp._key,tmp.xsmxid,tmp.wlbm,tmp.wlmc,tmp.oaxsdh,tmp.fhdh,tmp.fhid,tmp.xsid,tmp.wlid,
+        tmp.djrq,tmp.fhsl,tmp.hsdj,tmp.fhzje,tmp.hkzq,tmp.dkje,tmp.hkzt  from (
+        select xsmx.xsmxid||fhgl.fhid _key,xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,xsgl.xsid,wlgl.wlid,
+        fhgl.djrq,coalesce(tpp.fhsl,0) fhsl,xsmx.hsdj,coalesce(tpp.fhsl,0)*xsmx.hsdj fhzje,xsgl.hkzq,
+        coalesce(tpp.fhsl,0)*xsmx.hsdj-sum(coalesce(dkjejl.dkje,0)) dkje,
+        case when CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+180  then '1'
+        when xsgl.hkzq+180&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+360  then '2'
+        when xsgl.hkzq+360&lt;CURRENT_DATE-fhgl.djrq then '3'
+        else '0' end hkzt
+        from
+        igams_xsmx xsmx
+        left join (select fhmx.fhid,fhmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl  from igams_fhmx fhmx
+        left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj='0'
+        where fhmx.scbj ='0'
+        group by fhmx.fhid,fhmx.xsmxid
+        )tpp on tpp.xsmxid = xsmx.xsmxid
+        left join igams_fhgl fhgl on fhgl.fhid = tpp.fhid and fhgl.scbj='0'
+        left join igams_dkjejl dkjejl on dkjejl.ywid = fhgl.fhid and dkjejl.fywid= xsmx.xsmxid and dkjejl.scbj ='0'
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        where xsmx.scbj ='0' and tpp.fhid is not null and xsgl.hkzq is not null and fhgl.zt='80'
+        <include refid="SEARCH_WHERE"></include>
+        group by xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.djrq,
+        xsmx.hsdj,fhgl.fhid,xsgl.xsid,wlgl.wlid,xsgl.hkzq,fhgl.djrq,tpp.fhsl) tmp
+        <where>
+            tmp.dkje &gt; 0
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getNotPaymentReceivedDto" parameterType="DkjejlDto" resultType="DkjejlDto">
+        select xsmx.xsmxid||fhgl.fhid _key,xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,xsgl.xsid,wlgl.wlid,
+        fhgl.djrq,coalesce(tpp.fhsl,0) fhsl,xsmx.hsdj,coalesce(tpp.fhsl,0)*xsmx.hsdj fhzje,xsgl.hkzq,
+        coalesce(tpp.fhsl,0)*xsmx.hsdj-sum(coalesce(dkjejl.dkje,0)) dkje,
+        case when CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+180  then '1'
+        when xsgl.hkzq+180&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+360  then '2'
+        when xsgl.hkzq+360&lt;CURRENT_DATE-fhgl.djrq then '3'
+        else '0' end hkzt
+        from
+        igams_xsmx xsmx
+        left join (select fhmx.fhid,fhmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl  from igams_fhmx fhmx
+        left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj='0'
+        where fhmx.scbj ='0'
+        group by fhmx.fhid,fhmx.xsmxid
+        )tpp on tpp.xsmxid = xsmx.xsmxid
+        left join igams_fhgl fhgl on fhgl.fhid = tpp.fhid and fhgl.scbj='0'
+        left join igams_dkjejl dkjejl on dkjejl.ywid = fhgl.fhid and dkjejl.fywid= xsmx.xsmxid and dkjejl.scbj ='0'
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        where xsmx.scbj ='0' and tpp.fhid is not null and xsmx.xsmxid = #{xsmxid} and fhgl.fhid = #{fhid}
+        group by xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.djrq,
+        xsmx.hsdj,fhgl.fhid,xsgl.xsid,wlgl.wlid,xsgl.hkzq,fhgl.djrq,tpp.fhsl
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="DkjejlDto">
+        select dkjejl.dkjlid,xsgl.oaxsdh,fhgl.fhdh,
+        wlgl.wlid,wlgl.wlmc,wlgl.wlbm,xsgl.hkzq,fhgl.djrq,dkjejl.dky,fhmx.fhsl,
+        coalesce(xsmx_fh.hsdj,xsmx.hsdj) hsdj,dkjejl.dkje,
+        case when dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+180  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '1'
+        when xsgl.hkzq+180&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+360  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '2'
+        when xsgl.hkzq+360&lt;dkjejl.dky-fhgl.djrq  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '3'
+        else '0' end hkzt,dkjejl.lrsj
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on dkjejl.ywid = xsmx.xsmxid
+        left join igams_fhgl fhgl on dkjejl.ywid = fhgl.fhid
+        left join igams_xsmx xsmx_fh on dkjejl.fywid = xsmx_fh.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid in (xsmx.xsid,xsmx_fh.xsid)
+        left join igams_wlgl wlgl on wlgl.wlid in (xsmx.wlid,xsmx_fh.wlid)
+        left join (select fhid,xsmxid,sum(fhsl) fhsl from igams_fhmx where scbj ='0' group by fhid,xsmxid) fhmx on fhmx.fhid = dkjejl.ywid and fhmx.xsmxid = dkjejl.fywid
+        where dkjejl.scbj ='0' and dkjejl.dkjlid = #{dkjlid}
+    </select>
+    <!-- 未到款列表选中导出  -->
+    <select id="getNotListForSelectExp" parameterType="DkjejlDto" resultType="DkjejlDto">
+        SELECT  tmp.xsmxid,tmp.fhid ${sqlParam}
+        FROM (
+        <foreach collection="ids" separator=" union all "  index="index" item="item">
+            select #{item, jdbcType=VARCHAR} xsmxfhid, #{index} ordernum
+        </foreach>
+        ) tpp left join (
+        select xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,xsgl.xsid,wlgl.wlid,
+        fhgl.djrq,coalesce(tpp.fhsl,0) fhsl,xsmx.hsdj,coalesce(tpp.fhsl,0)*xsmx.hsdj fhzje,xsgl.hkzq,
+        coalesce(tpp.fhsl,0)*xsmx.hsdj-sum(coalesce(dkjejl.dkje,0)) dkje,
+        case when CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+180  then '1'
+        when xsgl.hkzq+180&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+360  then '2'
+        when xsgl.hkzq+360&lt;CURRENT_DATE-fhgl.djrq then '3'
+        else '0' end hkzt
+        from
+        igams_xsmx xsmx
+        left join (select fhmx.fhid,fhmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl  from igams_fhmx fhmx
+        left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj='0'
+        where fhmx.scbj ='0'
+        group by fhmx.fhid,fhmx.xsmxid
+        )tpp on tpp.xsmxid = xsmx.xsmxid
+        left join igams_fhgl fhgl on fhgl.fhid = tpp.fhid and fhgl.scbj='0'
+        left join igams_dkjejl dkjejl on dkjejl.ywid = fhgl.fhid and dkjejl.fywid= xsmx.xsmxid and dkjejl.scbj ='0'
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        where xsmx.scbj ='0' and tpp.fhid is not null and fhgl.zt='80'
+        group by xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.djrq,
+        xsmx.hsdj,xsgl.xsid,wlgl.wlid,xsgl.hkzq,fhgl.djrq,tpp.fhsl) tmp on tmp.xsmxid||tmp.fhid = tpp.xsmxfhid
+        ORDER BY tpp.ordernum
+    </select>
+    <!-- 未到款列表搜索导出条数  -->
+    <select id="getNotCountForSearchExp"  parameterType="DkjejlDto" resultType="java.lang.Integer">
+        select  count (*)
+        from ( select tmp._key,tmp.xsmxid,tmp.fhid,tmp.wlbm,tmp.wlmc,tmp.oaxsdh,tmp.fhdh,tmp.xsid,tmp.wlid,
+        tmp.djrq,tmp.fhsl,tmp.hsdj,tmp.fhzje,tmp.hkzq,tmp.dkje,tmp.hkzt from (
+        select xsmx.xsmxid||fhgl.fhid _key,xsmx.xsmxid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.fhid,xsgl.xsid,wlgl.wlid,
+        fhgl.djrq,coalesce(tpp.fhsl,0) fhsl,xsmx.hsdj,coalesce(tpp.fhsl,0)*xsmx.hsdj fhzje,xsgl.hkzq,
+        coalesce(tpp.fhsl,0)*xsmx.hsdj-sum(coalesce(dkjejl.dkje,0)) dkje,
+        case when CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+180  then '1'
+        when xsgl.hkzq+180&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+360  then '2'
+        when xsgl.hkzq+360&lt;CURRENT_DATE-fhgl.djrq then '3'
+        else '0' end hkzt
+        from
+        igams_xsmx xsmx
+        left join (select fhmx.fhid,fhmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl  from igams_fhmx fhmx
+        left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj='0'
+        where fhmx.scbj ='0'
+        group by fhmx.fhid,fhmx.xsmxid
+        )tpp on tpp.xsmxid = xsmx.xsmxid
+        left join igams_fhgl fhgl on fhgl.fhid = tpp.fhid and fhgl.scbj='0'
+        left join igams_dkjejl dkjejl on dkjejl.ywid = fhgl.fhid and dkjejl.fywid= xsmx.xsmxid and dkjejl.scbj ='0'
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        where xsmx.scbj ='0' and tpp.fhid is not null and xsgl.hkzq is not null and fhgl.zt='80'
+        <include refid="SEARCH_WHERE"></include>
+        group by xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.djrq,
+        xsmx.hsdj,xsgl.xsid,wlgl.wlid,xsgl.hkzq,fhgl.djrq,tpp.fhsl) tmp
+        <where>
+            tmp.dkje &gt; 0
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>)tmp
+    </select>
+    <!-- 未到款列表搜索导出  -->
+    <select id="getNotListForSearchExp" parameterType="DkjejlDto" resultType="DkjejlDto">
+        SELECT tmp.xsmxid,tmp.fhid ${sqlParam} from (
+        select xsmx.xsmxid||fhgl.fhid _key,xsmx.xsmxid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.fhid,xsgl.xsid,wlgl.wlid,
+        fhgl.djrq,coalesce(tpp.fhsl,0) fhsl,xsmx.hsdj,coalesce(tpp.fhsl,0)*xsmx.hsdj fhzje,xsgl.hkzq,
+        coalesce(tpp.fhsl,0)*xsmx.hsdj-sum(coalesce(dkjejl.dkje,0)) dkje,
+        case when CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+180  then '1'
+        when xsgl.hkzq+180&lt;CURRENT_DATE-fhgl.djrq and CURRENT_DATE-fhgl.djrq&lt;=xsgl.hkzq+360  then '2'
+        when xsgl.hkzq+360&lt;CURRENT_DATE-fhgl.djrq then '3'
+        else '0' end hkzt
+        from
+        igams_xsmx xsmx
+        left join (select fhmx.fhid,fhmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl  from igams_fhmx fhmx
+        left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj='0'
+        where fhmx.scbj ='0'
+        group by fhmx.fhid,fhmx.xsmxid
+        )tpp on tpp.xsmxid = xsmx.xsmxid
+        left join igams_fhgl fhgl on fhgl.fhid = tpp.fhid and fhgl.scbj='0'
+        left join igams_dkjejl dkjejl on dkjejl.ywid = fhgl.fhid and dkjejl.fywid= xsmx.xsmxid and dkjejl.scbj ='0'
+        left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+        left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+        where xsmx.scbj ='0' and tpp.fhid is not null and xsgl.hkzq is not null and fhgl.zt='80'
+        <include refid="SEARCH_WHERE"></include>
+        group by xsmx.xsmxid,fhgl.fhid,wlgl.wlbm,wlgl.wlmc,xsgl.oaxsdh,fhgl.fhdh,fhgl.djrq,
+        xsmx.hsdj,xsgl.xsid,wlgl.wlid,xsgl.hkzq,fhgl.djrq,tpp.fhsl
+        ) tmp
+        <where>
+            tmp.dkje &gt; 0
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <!-- 到款列表选中导出  -->
+    <select id="getListForSelectExp" parameterType="DkjejlDto" resultType="DkjejlDto">
+    SELECT  tpp.dkjlid ${sqlParam}
+    FROM (
+    <foreach collection="ids" separator=" union all "  index="index" item="item">
+        select #{item, jdbcType=VARCHAR} dkjlid, #{index} ordernum
+    </foreach>
+    ) tpp left join (
+        select dkjejl.dkjlid,xsgl.oaxsdh,fhgl.fhdh,
+        wlgl.wlid,wlgl.wlmc,wlgl.wlbm,xsgl.hkzq,fhgl.djrq,dkjejl.dky,fhmx.fhsl,
+        coalesce(xsmx_fh.hsdj,xsmx.hsdj) hsdj,dkjejl.dkje,
+        case when dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+180  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '1'
+        when xsgl.hkzq+180&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+360  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '2'
+        when xsgl.hkzq+360&lt;dkjejl.dky-fhgl.djrq  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '3'
+        else '0' end hkzt
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on dkjejl.ywid = xsmx.xsmxid
+        left join igams_fhgl fhgl on dkjejl.ywid = fhgl.fhid
+        left join igams_xsmx xsmx_fh on dkjejl.fywid = xsmx_fh.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid in (xsmx.xsid,xsmx_fh.xsid)
+        left join igams_wlgl wlgl on wlgl.wlid in (xsmx.wlid,xsmx_fh.wlid)
+        left join (select fhid,xsmxid,sum(fhsl) fhsl from igams_fhmx where scbj ='0' group by fhid,xsmxid) fhmx on fhmx.fhid = dkjejl.ywid and fhmx.xsmxid = dkjejl.fywid
+        where dkjejl.scbj ='0') tmp on tpp.dkjlid = tmp.dkjlid
+        ORDER BY tpp.ordernum
+    </select>
+    <!-- 到款列表搜索导出条数  -->
+    <select id="getCountForSearchExp"  parameterType="DkjejlDto" resultType="java.lang.Integer">
+    select  count (*)
+    from (select tmp.dkjlid,tmp.oaxsdh,tmp.fhdh,
+        tmp.wlid,tmp.wlmc,tmp.wlbm,tmp.hkzq,tmp.djrq,tmp.dky,tmp.fhsl,
+        tmp.hsdj,tmp.dkje,tmp.hkzt from (
+        select dkjejl.dkjlid,xsgl.oaxsdh,fhgl.fhdh,
+        wlgl.wlid,wlgl.wlmc,wlgl.wlbm,xsgl.hkzq,fhgl.djrq,dkjejl.dky,fhmx.fhsl,
+        coalesce(xsmx_fh.hsdj,xsmx.hsdj) hsdj,dkjejl.dkje,
+        case when dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+180  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '1'
+        when xsgl.hkzq+180&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+360  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '2'
+        when xsgl.hkzq+360&lt;dkjejl.dky-fhgl.djrq  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '3'
+        else '0' end hkzt,dkjejl.lrsj
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on dkjejl.ywid = xsmx.xsmxid
+        left join igams_fhgl fhgl on dkjejl.ywid = fhgl.fhid
+        left join igams_xsmx xsmx_fh on dkjejl.fywid = xsmx_fh.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid in (xsmx.xsid,xsmx_fh.xsid)
+        left join igams_wlgl wlgl on wlgl.wlid in (xsmx.wlid,xsmx_fh.wlid)
+        left join (select fhid,xsmxid,sum(fhsl) fhsl from igams_fhmx where scbj ='0' group by fhid,xsmxid) fhmx on fhmx.fhid = dkjejl.ywid and fhmx.xsmxid = dkjejl.fywid
+        where dkjejl.scbj ='0' and dkjejl.lb='0' and xsgl.hkzq is not null
+        <include refid="SEARCH_WHERE"></include>
+        ) tmp
+        <where>
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>)tmp
+    </select>
+    <!-- 到款列表搜索导出  -->
+    <select id="getListForSearchExp" parameterType="DkjejlDto" resultType="DkjejlDto">
+        SELECT tmp.dkjlid ${sqlParam} from (
+        select dkjejl.dkjlid,xsgl.oaxsdh,fhgl.fhdh,
+        wlgl.wlid,wlgl.wlmc,wlgl.wlbm,xsgl.hkzq,fhgl.djrq,dkjejl.dky,fhmx.fhsl,
+        coalesce(xsmx_fh.hsdj,xsmx.hsdj) hsdj,dkjejl.dkje,
+        case when dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq then '0'
+        when xsgl.hkzq&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+180  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '1'
+        when xsgl.hkzq+180&lt;dkjejl.dky-fhgl.djrq and dkjejl.dky-fhgl.djrq&lt;=xsgl.hkzq+360  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '2'
+        when xsgl.hkzq+360&lt;dkjejl.dky-fhgl.djrq  and dkjejl.ywlx='1' and dkjejl.lb='0'  then '3'
+        else '0' end hkzt,dkjejl.lrsj
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on dkjejl.ywid = xsmx.xsmxid
+        left join igams_fhgl fhgl on dkjejl.ywid = fhgl.fhid
+        left join igams_xsmx xsmx_fh on dkjejl.fywid = xsmx_fh.xsmxid
+        left join igams_xsgl xsgl on xsgl.xsid in (xsmx.xsid,xsmx_fh.xsid)
+        left join igams_wlgl wlgl on wlgl.wlid in (xsmx.wlid,xsmx_fh.wlid)
+        left join (select fhid,xsmxid,sum(fhsl) fhsl from igams_fhmx where scbj ='0' group by fhid,xsmxid) fhmx on fhmx.fhid = dkjejl.ywid and fhmx.xsmxid = dkjejl.fywid
+        where dkjejl.scbj ='0' and dkjejl.lb='0' and xsgl.hkzq is not null
+        <include refid="SEARCH_WHERE"></include>
+        ) tmp
+        <where>
+            <if test = "hkzts != null and hkzts.length > 0 "  >
+                and tmp.hkzt in
+                <foreach collection="hkzts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <select id="getDtoList" resultType="DkjejlDto" parameterType="DkjejlDto">
+        select dkjejl.dkjlid,dkjejl.ywid,dkjejl.dky,dkjejl.dkje,to_char(dkjejl.lrsj,'yyyy-mm-dd HH24:mi:ss') lrsj,xsmx.xsid,
+        dkjejl.ywlx,dkjejl.lb,fhgl.djrq,dkjejl.fywid
+        from igams_dkjejl dkjejl
+        left join igams_xsmx xsmx on xsmx.xsmxid = dkjejl.ywid and xsmx.scbj='0'
+        left join igams_fhgl fhgl on fhgl.fhid = dkjejl.ywid and fhgl.scbj='0'
+        where dkjejl.dkjlid is not null and dkjejl.scbj ='0'
+        <if test="ywid!=null and ywid!=''">
+            and dkjejl.ywid=#{ywid}
+        </if>
+        <if test="fywid!=null and fywid!=''">
+            and dkjejl.fywid=#{fywid}
+        </if>
+        order by dkjejl.lrsj asc
+        <if test="flag_xz!=null and flag_xz!=''">
+            limit 1
+        </if>
+    </select>
+    <delete id="delete" parameterType="DkjejlDto">
+        update  igams_dkjejl set scbj ='1',scry = #{scry}, scsj = LOCALTIMESTAMP
+        where
+        dkjlid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <delete id="deleteByYwid" parameterType="DkjejlDto">
+        update  igams_dkjejl set scbj ='1',scry = #{scry}, scsj = LOCALTIMESTAMP
+        where
+        ywid = #{ywid}
+        <if test="fywid!=null and fywid!=''">
+            and fywid=#{fywid}
+        </if>
+    </delete>
+    <delete id="deleteByYwids" parameterType="DkjejlDto">
+        update  igams_dkjejl set scbj ='1',scry = #{scry}, scsj = LOCALTIMESTAMP
+        where
+        ywid in
+        <foreach collection="ywids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <insert id="insertList" parameterType="list">
+    insert into igams_dkjejl (
+            dkjlid,
+            lrsj,
+            ywid,
+            fywid,
+            dky,
+            dkje,
+            ywlx,
+            lb,scbj
+    )values
+        <if test="list !=null and list.size > 0">
+        <foreach collection="list" separator="," item="item" index="index">
+        (
+        #{item.dkjlid},
+            cast (#{item.lrsj} as timestamp ),
+            #{item.ywid},
+            #{item.fywid},
+            cast (#{item.dky} as date ),
+            cast (#{item.dkje} as numeric ),
+            #{item.ywlx},
+            #{item.lb},'0'
+        )
+        </foreach>
+        </if>
+    </insert>
+    <select id="getAllDkje" parameterType="DkjejlDto" resultType="DkjejlDto">
+        select sum(coalesce(dkje,0)) dkje from
+        igams_dkjejl
+        where (ywid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach> or
+        fywid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>)
+        and lb ='0'  and scbj ='0'
+    </select>
+</mapper>

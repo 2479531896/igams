@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ICkglDao" >
+	<select id="getDjhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(ckdh,LENGTH(ckdh)-strpos(reverse(ckdh),'-')+2,LENGTH(ckdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_ckgl
+			<where> 
+				scbj = '0' AND ckdh like #{prefix}||'%'
+			</where>	 
+	</select>
+
+	<insert id="insertCkgls" parameterType="List">
+		insert into igams_ckgl(jcjyid,ckid,llid,ckdh,bm,llr,flr,ckrq,ck,cklb,bz,zt,lrry,fhid,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.jcjyid},#{item.ckid},#{item.llid},#{item.ckdh},#{item.bm},#{item.llr},#{item.flr},cast(#{item.ckrq} as timestamp),#{item.ck},#{item.cklb}
+				,#{item.bz},#{item.zt},#{item.lrry},#{item.fhid},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<insert id="insert" parameterType="CkglDto">
+		insert into igams_ckgl(ckid
+		<if test="ckdh != null and ckdh != ''">
+			,ckdh
+		</if>
+		<if test="jcjyid != null and jcjyid != ''">
+			,jcjyid
+		</if>
+		<if test="llid != null and llid != ''">
+			,llid
+		</if>
+		<if test="bm != null and bm != ''">
+			,bm
+		</if>
+		<if test="llr != null and llr != ''">
+			,llr
+		</if>
+		<if test="flr != null and flr != ''">
+			,flr
+		</if>
+		<if test="ckrq != null and ckrq != ''">
+			,ckrq
+		</if>
+		<if test="cklb != null and cklb != ''">
+			,cklb
+		</if>
+		<if test="ck != null and ck != ''">
+			,ck
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="lrry != null and lrry != ''">
+			,lrry
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,jlbh
+		</if>
+		<if test="djlx != null and djlx != ''">
+			,djlx
+		</if>
+		,lrsj,zt,scbj)
+		values(#{ckid}
+		<if test="ckdh != null and ckdh != ''">
+			,#{ckdh}
+		</if>
+		<if test="jcjyid != null and jcjyid != ''">
+			,#{jcjyid}
+		</if>
+		<if test="llid != null and llid != ''">
+			,#{llid}
+		</if>
+		<if test="bm != null and bm != ''">
+			,#{bm}
+		</if>
+		<if test="llr != null and llr != ''">
+			,#{llr}
+		</if>
+		<if test="flr != null and flr != ''">
+			,#{flr}
+		</if>
+		<if test="ckrq != null and ckrq != ''">
+			,cast(#{ckrq} as timestamp)
+		</if>
+		<if test="cklb != null and cklb != ''">
+			,#{cklb}
+		</if>
+		<if test="ck != null and ck != ''">
+			,#{ck}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="lrry != null and lrry != ''">
+			,#{lrry}
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,#{jlbh}
+		</if>
+		<if test="djlx != null and djlx != ''">
+			,#{djlx}
+		</if>
+		,LOCALTIMESTAMP,'00','0')
+	</insert>
+
+	<update id="update" parameterType="CkglDto">
+		update igams_ckgl
+		<set>
+		<trim prefixOverrides=",">
+		<if test="ckdh != null and ckdh != ''">
+			,ckdh = #{ckdh}
+		</if>
+		<if test="jcjyid != null and jcjyid != ''">
+			,jcjyid = #{jcjyid}
+		</if>
+		<if test="llid != null and llid != ''">
+			,llid = #{llid}
+		</if>
+		<if test="bm != null and bm != ''">
+			,bm = #{bm}
+		</if>
+		<if test="llr != null and llr != ''">
+			,llr = #{llr}
+		</if>
+		<if test="flr != null and flr != ''">
+			,flr = #{flr}
+		</if>
+		<if test="ckrq != null and ckrq != ''">
+			,ckrq =cast(#{ckrq} as timestamp)
+		</if>
+		<if test="cklb != null and cklb != ''">
+			,cklb = #{cklb}
+		</if>
+		<if test="ck != null and ck != ''">
+			,ck = #{ck}
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz = #{bz}
+		</if>
+		<if test="xgry != null and xgry != ''">
+			,xgry = #{xgry}, xgsj = LOCALTIMESTAMP
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt = #{zt}
+		</if>
+		<if test="glid != null and glid != ''">
+			,glid = #{glid}
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,jlbh = #{jlbh}
+		</if>
+		<if test="u8ckdh != null and u8ckdh != ''">
+			,u8ckdh = #{u8ckdh}
+		</if>
+		</trim>
+		</set>
+		where ckid = #{ckid}
+	</update>
+
+
+	<select id="groupByCkid" parameterType="String" resultType="CkglDto">
+		select ckgl.ckid,ckgl.ckdh,ckgl.ck,ckxx.ckdm,ckgl.ckrq,jcsj_ck.csdm as cklbcsdm,jgxx.jgdm as bmdm,ckgl.llr,xtyh_fl.zsxm as flrmc
+			from igams_ckgl ckgl
+			left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+			left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm and jgxx.scbj='0'
+			left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+			left join matridx_xtyh xtyh_fl on xtyh_fl.yhid=ckgl.flr and xtyh_fl.scbj='0'
+			<where>
+				ckgl.llid=#{llid}
+			</where>
+	</select>
+	
+	<update id="updateCkgls" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckgl
+			<set>
+				glid=#{item.glid},zt=#{item.zt},u8ckdh=#{item.u8ckdh}
+			</set>
+			<where>
+				ckid=#{item.ckid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateCkglDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckgl
+			<set>
+				hcglid=#{item.hcglid},U8hcdh=#{item.U8hcdh}
+			</set>
+			<where>
+				glid=#{item.glid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getPagedAuditCkglDto" parameterType="CkglDto" resultType="CkglDto">
+
+		select ckgl.lrsj,ckgl.ckid,ckgl.ckdh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,ckgl.bz,ckxx.ckmc,jcsj_ck.csmc as cklbmc,xtyh_ll.zsxm as llrmc,xtyh_fl.zsxm as flrmc,llgl.lldh,
+		ckgl.u8ckdh,bm.jgmc as bmmc,bm.jgdm bmdm
+		from igams_ckgl ckgl
+		left join matridx_jgxx bm on bm.jgid = ckgl.bm
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_xtyh xtyh_fl on xtyh_fl.yhid=ckgl.flr and xtyh_fl.scbj='0'
+		left join matridx_xtyh xtyh_ll on xtyh_ll.yhid=ckgl.llr and xtyh_ll.scbj='0'
+		LEFT JOIN igams_llgl llgl ON llgl.llid = ckgl.llid
+		AND llgl.scbj = '0'
+		<where>
+			ckgl.scbj!='1'
+			<if test="entire!=null and entire!=''">
+				and ckgl.ckdh like '%'||#{entire}||'%'
+				or ckxx.ckmc like '%'||#{entire}||'%'
+				or jcsj_ck.csmc like '%'||#{entire}||'%'
+			</if>
+			<if test="ckdh!=null and ckdh!=''">
+				and ckgl.ckdh like '%'||#{ckdh}||'%'
+			</if>
+			<if test="ckmc!=null and ckmc!=''">
+				and ckxx.ckmc like '%'||#{ckmc}||'%'
+			</if>
+			<if test="cklbmc!=null and cklbmc!=''">
+				and jcsj_ck.csmc like '%'||#{cklbmc}||'%'
+			</if>
+			<if test="lldh!=null and lldh!=''">
+				and llgl.lldh like '%'||#{lldh}||'%'
+			</if>
+			<if test="zt != null and zt != ''">
+				and ckgl.zt = #{zt}
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getAuditListCkglDto" parameterType="List" resultType="CkglDto">
+		select ckgl.lrsj,ckgl.ckid,ckgl.jlbh,ckgl.ckdh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,ckgl.bz,ckxx.ckmc,jcsj_ck.csmc as cklbmc,xtyh_ll.zsxm as llrmc,xtyh_fl.zsxm as flrmc,llgl.lldh,
+		ckgl.u8ckdh,bm.jgmc as bmmc,bm.jgdm bmdm,shxx_sqsj, shxx_gwmc, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+		from igams_ckgl ckgl
+		left join matridx_jgxx bm on bm.jgid = ckgl.bm
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_xtyh xtyh_fl on xtyh_fl.yhid=ckgl.flr and xtyh_fl.scbj='0'
+		left join matridx_xtyh xtyh_ll on xtyh_ll.yhid=ckgl.llr and xtyh_ll.scbj='0'
+		LEFT JOIN igams_llgl llgl ON llgl.llid = ckgl.llid
+		AND llgl.scbj = '0'
+		join
+		<foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+			select #{item.ckid} ckid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg,
+			#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj, #{index} rownum
+		</foreach> tmp on tmp.ckid = ckgl.ckid
+		order by tmp.rownum
+	</select>
+	<!-- 分页查询 -->
+	<select id="getPagedDtoList" parameterType="CkglDto" resultType="CkglDto">
+		select ckgl.ckid,ckgl.ckdh,ckgl.jlbh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,ckgl.bz,ckxx.ckmc,jcsj_ck.csmc as cklbmc,xtyh_ll.zsxm as llrmc,xtyh_fl.zsxm as flrmc,llgl.lldh,
+		ckgl.u8ckdh,jcsj_djlx.csmc as djlxmc,jgxx.jgmc as bmmc,ckgl.djlx,jcsj_djlx.csdm as djlxdm,jcsj_ck.cskz1 as cklbcskz1
+		from igams_ckgl ckgl
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_jcsj jcsj_djlx on jcsj_djlx.csid=ckgl.djlx
+		left join matridx_xtyh xtyh_fl on xtyh_fl.yhid=ckgl.flr and xtyh_fl.scbj='0'
+		left join matridx_xtyh xtyh_ll on xtyh_ll.yhid=ckgl.llr and xtyh_ll.scbj='0'
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = ckgl.bm
+		LEFT JOIN igams_llgl llgl ON llgl.llid = ckgl.llid
+		AND llgl.scbj = '0'
+		<where>
+			ckgl.scbj!='1'
+			<if test="entire!=null and entire!=''">
+				and ckgl.ckdh like '%'||#{entire}||'%'
+				or ckxx.ckmc like '%'||#{entire}||'%'
+				or jcsj_ck.csmc like '%'||#{entire}||'%'
+				or xtyh_fl.zsxm like '%'||#{entire}||'%'
+				or ckgl.u8ckdh like '%'||#{entire}||'%'
+			</if>
+			<if test="ckdh!=null and ckdh!=''">
+				and ckgl.ckdh like '%'||#{ckdh}||'%'
+			</if>
+			<if test="u8ckdh!=null and u8ckdh!=''">
+				and ckgl.u8ckdh like '%'||#{u8ckdh}||'%'
+			</if>
+			<if test="ckmc!=null and ckmc!=''">
+				and ckxx.ckmc like '%'||#{ckmc}||'%'
+			</if>
+			<if test="cklbmc!=null and cklbmc!=''">
+				and jcsj_ck.csmc like '%'||#{cklbmc}||'%'
+			</if>
+			<if test="lldh!=null and lldh!=''">
+				and llgl.lldh like '%'||#{lldh}||'%'
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and jcsj_djlx.csid in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getOutBoundOrder" parameterType="CkglDto" resultType="CkglDto">
+		SELECT
+		ckgl.ckid,
+		ckgl.ckdh,
+		ckgl.zt,
+		ckgl.bm,
+		ckgl.llr,
+		ckgl.flr,
+		ckgl.ck,
+		ckgl.ckrq,
+		ckgl.cklb,
+		ckgl.bz,
+		ckxx.ckmc,
+		jcsj_ck.csmc AS cklbmc,
+		xtyh_ll.zsxm AS llrmc,
+		xtyh_fl.zsxm AS flrmc,
+		llgl.sqrq,
+		jgxx.jgmc sqbmmc,
+		llgl.jlbh,
+		ckgl.u8ckdh,
+		jcsj_ck.csdm AS cklbcsdm
+		FROM
+		igams_ckgl ckgl
+		LEFT JOIN igams_ckxx ckxx ON ckxx.ckid = ckgl.ck
+		AND ckxx.scbj = '0'
+		LEFT JOIN matridx_jcsj jcsj_ck ON jcsj_ck.csid = ckgl.cklb
+		LEFT JOIN matridx_xtyh xtyh_fl ON xtyh_fl.yhid = ckgl.flr
+		AND xtyh_fl.scbj = '0'
+		LEFT JOIN matridx_xtyh xtyh_ll ON xtyh_ll.yhid = ckgl.llr
+		AND xtyh_ll.scbj = '0'
+		LEFT JOIN igams_llgl llgl ON llgl.llid = ckgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = llgl.sqbm
+		WHERE
+			ckgl.scbj != '1'
+			<if test="ckids != null and ckids.size()>0">
+				and ckgl.ckid in
+				<foreach collection="ckids" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+	</select>
+
+	<update id="delOutDepot" parameterType="CkglDto">
+		update igams_ckgl
+		set scry=#{scry},scbj='1',scsj=LOCALTIMESTAMP
+		<where>
+			ckid in (
+			<foreach collection="ckids"  separator="," item="item">
+				#{item}
+			</foreach>
+			)
+		</where>
+	</update>
+	<select id="getDtoByCkid" parameterType="CkglDto" resultType="CkglDto">
+		select jgxx.jgdm,jgxx.jgmc,ckgl.llid,ckgl.ckid,ckgl.ckdh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,yhssjg.jgid as ssjg,ckgl.bz,ckxx.ckdm,ckxx.ckmc,jcsj_ck.csmc as cklbmc,xtyh_ll.zsxm as llrmc,xtyh_fl.zsxm as flrmc,llgl.lldh,ckgl.jlbh,
+		llgl.sqrq sqrq,xtyh_sq.zsxm sqrmc,llgl.sqbm,sqbm.jgdm sqbmdm,sqbm.jgmc sqbmmc,ckgl.llid
+		from igams_ckgl ckgl 
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_xtyh xtyh_fl on xtyh_fl.yhid=ckgl.flr and xtyh_fl.scbj='0'
+		left join matridx_xtyh xtyh_ll on xtyh_ll.yhid=ckgl.llr and xtyh_ll.scbj='0'
+		LEFT JOIN igams_llgl llgl ON llgl.llid = ckgl.llid
+		left join matridx_xtyh xtyh_sq on xtyh_sq.yhid=llgl.sqry
+		left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm
+		left join matridx_jgxx sqbm on sqbm.jgid=llgl.sqbm
+		left join matridx_yhssjg yhssjg on yhssjg.yhid = ckgl.lrry
+		where ckgl.scbj!='1' and ckgl.ckid=#{ckid}
+	</select>
+
+	<select id="getDtoList" parameterType="CkglDto" resultType="CkglDto">
+		select jgxx.jgdm,jgxx.jgmc,ckgl.llid,ckgl.ckid,ckgl.ckdh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,ckgl.bz,ckxx.ckmc,jcsj_ck.csmc as cklbmc
+		from igams_ckgl ckgl
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm
+		<where>
+			ckgl.scbj!='1'
+			<if test="ckid != null and ckid != ''">
+				and ckgl.ckid=#{ckid}
+			</if>
+			<if test="ckdh != null and ckdh != ''">
+				and ckgl.ckdh=#{ckdh}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoListByCkdh" parameterType="CkglDto" resultType="CkglDto">
+		select jgxx.jgdm,jgxx.jgmc,ckgl.llid,ckgl.ckid,ckgl.ckdh,ckgl.zt,ckgl.bm,ckgl.llr,ckgl.flr,ckgl.ck,ckgl.ckrq,ckgl.cklb,ckgl.bz,ckxx.ckmc,jcsj_ck.csmc as cklbmc
+		from igams_ckgl ckgl
+		left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid=ckgl.cklb
+		left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm
+		<where>
+			ckgl.scbj!='1'
+			<if test="ckdh != null and ckdh != ''">
+				and ckgl.ckdh=#{ckdh}
+			</if>
+		</where>
+	</select>
+ 	<select id="getDtoByCkids" parameterType="CkglDto" resultType="CkglDto">
+        select ckxx.ckdm,ckgl.ckrq,jgxx.jgmc as bmmc,jgxx.jgdm,xtyh.zsxm,ckgl.ckid,ckgl.bz,ckgl.zt
+        from igams_ckgl ckgl 
+        left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj!='1'
+        left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm and jgxx.scbj!='1'
+        left join matridx_xtyh xtyh on xtyh.yhid=ckgl.lrry and xtyh.scbj!='1' and sfsd!='1'
+        <where>
+            ckgl.scbj!='1' 
+            <if test="ids != null and ids.size()>0">
+                and ckgl.ckid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <update id="delete" parameterType="CkglDto">
+		update igams_ckgl set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			ckid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	
+	<update id="deleteByLlid" parameterType="CkglDto">
+		update igams_ckgl set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	
+	<select id="getDtoByLlids" parameterType="CkglDto" resultType="CkglDto">
+        select ckxx.ckdm,ckgl.ckrq,jgxx.jgmc as bmmc,jgxx.jgdm,xtyh.zsxm,ckgl.ckid,ckgl.bz,ckgl.zt
+        from igams_ckgl ckgl 
+        left join igams_ckxx ckxx on ckxx.ckid=ckgl.ck and ckxx.scbj!='1'
+        left join matridx_jgxx jgxx on jgxx.jgid=ckgl.bm and jgxx.scbj!='1'
+        left join matridx_xtyh xtyh on xtyh.yhid=ckgl.lrry and xtyh.scbj!='1' and sfsd!='1'
+        <where>
+            ckgl.scbj!='1' 
+            <if test="ids != null and ids.size()>0">
+                and ckgl.llid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+	<select id="generateCkjlbh" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial
+		FROM igams_ckgl
+		<where>
+			scbj = '0' AND jlbh like #{prefix}||'%'
+		</where>
+	</select>
+	<select id="selectCkglDtoByFhids" resultType="CkglDto" parameterType="String">
+	SELECT
+		fhgl.fhid,
+		ckgl.ckid,
+		ckgl.ckdh,
+		ckgl.ckrq,
+		ckxx.ckmc ckmc,
+		jgxx.jgmc xsbmmc,
+		ckgl.u8ckdh,
+		to_char( fhgl.shsj, 'yyyy-mm-dd' ) shrq,
+		khgl.khmc kh,
+		ckgl.bz,
+		fhgl.shdz,
+		sum (ckmx.cksl) sum_sl,
+		zdr.zsxm zdrmc,
+		shry.zsxm shrymc,
+		fhgl.u8fhdh
+	FROM
+		igams_ckgl ckgl
+		LEFT JOIN igams_fhgl fhgl ON ckgl.fhid = fhgl.fhid
+		LEFT JOIN igams_ckxx ckxx ON ckxx.ckid = ckgl.ck
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = fhgl.xsbm
+		left join igams_khgl khgl on khgl.khid=fhgl.kh
+		left join igams_ckmx ckmx on ckmx.ckid=ckgl.ckid
+		left join matridx_xtyh zdr on zdr.yhid=fhgl.jsr
+		left join matridx_xtyh shry on shry.yhid=fhgl.shry
+		<where>
+		ckgl.scbj='0'
+			<if test="ids != null and ids.size()>0">
+				 and ckgl.fhid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		group by fhgl.fhid,ckgl.ckid,ckgl.ckdh,ckgl.ckrq,ckxx.ckmc,jgxx.jgmc ,ckgl.u8ckdh,fhgl.shsj,khgl.khmc,ckgl.bz,fhgl.shdz,zdr.zsxm,shry.zsxm
+	</select>
+</mapper>

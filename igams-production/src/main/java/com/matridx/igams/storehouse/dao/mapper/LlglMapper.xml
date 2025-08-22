@@ -1,0 +1,1690 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ILlglDao" >
+
+	<select id="getDjhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(lldh,LENGTH(lldh)-strpos(reverse(lldh),'-')+2,LENGTH(lldh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_llgl
+			<where> 
+				scbj = '0' AND lldh like #{prefix}||'%'
+			</where>	 
+	</select>
+	
+	<!-- 全部领料列表 -->
+	<select id="getPagedDtoReceiveMaterielList" parameterType="LlglDto" resultType="LlglDto">
+		select llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckzt,
+		jgxx.jgmc sqbm,sqry.zsxm sqry,cklb.csmc cklb,llgl.ckdh,llgl.scbj,llgl.lllx,llgl.scbj,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.xslx,xslx.csmc xslxmc,gsrbm.jgmc as gsrbmmc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,llgl.htdh,llgl.sydd,bmsbfzr.zsxm bmsbfzrmc,llgl.bmsbfzr,llgl.sczlid,sczlgl.zldh,llgl.fzr,
+		fzr.zsxm fzrmc,llgl.ysfs,ysfs.csmc ysfsmc
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join igams_sczlgl sczlgl on sczlgl.sczlid = llgl.sczlid
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_jgxx gsrbm on gsrbm.jgid = llgl.gsrbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj khlb on khlb.csid = khgl.khlb
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_jcsj xslx on xslx.csid = llgl.xslx
+		left join matridx_jcsj ysfs on ysfs.csid = llgl.ysfs
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		left join matridx_xtyh fzr on fzr.yhid=llgl.fzr
+		<if test="entire != null and entire != '' or (fzs != null and fzs.length > 0) or (lbs != null and lbs.length > 0)">
+			left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid and hwllxx.scbj!='1'
+			left join igams_hwllmx hwllmx on hwllmx.hwllid = hwllxx.hwllid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid  and hwllxx.scbj!='1'
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid  and hwllxx.scbj!='1'
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="zsh != null and zsh != ''">
+			left join igams_hwllmx hwllmx on hwllmx.llid = llgl.llid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		</if>
+		<if test="scph != null and scph != ''">
+			left join igams_hwllmx hwllmx on hwllmx.llid = llgl.llid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		</if>
+		<where>
+			llgl.scbj != '1' 
+			<if test="entire != null and entire != ''">
+				and (
+				wlgl.wlbm ILIKE '%' ||#{entire}||'%'
+				or wlgl.wlmc ILIKE '%' ||#{entire}||'%'
+				or hwxx.zsh ILIKE '%' ||#{entire}||'%'
+				or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+				or hwxx.scph ILIKE '%' ||#{entire}||'%'
+				or llgl.lldh ILIKE '%' ||#{entire}||'%'
+				or khgl.khjc ILIKE '%' ||#{entire}||'%'
+				or llgl.zd ILIKE '%' ||#{entire}||'%'
+				or zdqy.csmc ILIKE '%' ||#{entire}||'%'
+				or llgl.fzdq ILIKE '%' ||#{entire}||'%'
+				or (llgl.htdh ILIKE '%' ||#{entire}||'%' or yxht.htbh ILIKE '%' ||#{entire}||'%')
+				or llgl.shdz ILIKE '%' ||#{entire}||'%'
+				or llgl.shlxfs ILIKE '%' ||#{entire}||'%'
+				or bmsbfzr.zsxm ILIKE '%' ||#{entire}||'%'
+				or llgl.sydd ILIKE '%' ||#{entire}||'%'
+				or sczlgl.zldh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="bmsbfzr != null and bmsbfzr != ''">
+				and bmsbfzr.zsxm ILIKE '%' ||#{bmsbfzr}||'%'
+			</if>
+			<if test="sydd != null and sydd != ''">
+				and llgl.sydd ILIKE '%' ||#{sydd}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="zldh != null and zldh != ''">
+				and sczlgl.zldh ILIKE '%' ||#{zldh}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and hwxx.zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="scph != null and scph != ''">
+				and hwxx.scph ILIKE '%' ||#{scph}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jgxx.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+			</if>			
+			<if test="sqrmc != null and sqrmc != ''">
+				and sqry.zsxm ILIKE '%' ||#{sqrmc}||'%'
+			</if>
+			<if test="lldh != null and lldh != ''">
+				and llgl.lldh ILIKE '%' ||#{lldh}||'%'
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>			
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>		
+			<if test="khlbs != null and khlbs.length > 0">
+				and khlb.csid in
+				<foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zts != null and zts.length > 0">
+				and llgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+			</if>
+			<if test="flrqstart != null and flrqstart != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &gt;= #{flrqstart}
+			</if>
+			<if test="flrqend != null and flrqend != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &lt;= #{flrqend}
+			</if>
+			<if test="lllx != null and lllx != ''">
+				and llgl.lllx = #{lllx}
+			</if>
+			<if test="sfqs != null and sfqs == '0'.toString">
+				and llgl.kdxx is null
+			</if>
+			<if test="sfqs != null and sfqs == '1'.toString">
+				and llgl.kdxx is not null
+			</if>
+			<if test="bz != null and bz != ''">
+				and llgl.bz ILIKE '%' ||#{bz}||'%'
+			</if>
+			<if test="khjc != null and khjc != ''">
+				and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+			</if>
+			<if test="zd != null and zd != ''">
+				and llgl.zd ILIKE '%' ||#{zd}||'%'
+			</if>
+			<if test="zdqymc != null and zdqymc != ''">
+				and zdqy.csmc ILIKE '%' ||#{zdqymc}||'%'
+			</if>
+			<if test="fzdq != null and fzdq != ''">
+				and llgl.fzdq ILIKE '%' ||#{fzdq}||'%'
+			</if>
+			<if test="htdh != null and htdh != ''">
+				and (llgl.htdh ILIKE '%' ||#{htdh}||'%' or yxht.htbh ILIKE '%' ||#{htdh}||'%')
+			</if>
+			<if test="shdz != null and shdz != ''">
+				and llgl.shdz ILIKE '%' ||#{shdz}||'%'
+			</if>
+			<if test="shlxfs != null and shlxfs != ''">
+				and llgl.shlxfs ILIKE '%' ||#{shlxfs}||'%'
+			</if>
+			<if test="sfqr != null and sfqr != ''">
+				and llgl.sfqr = #{sfqr}
+			</if>
+			<if test="ckzt != null and ckzt != ''">
+				and llgl.ckzt = #{ckzt}
+			</if>
+			<if test="ddentire != null and ddentire != ''">
+				and (
+				llgl.lldh ILIKE '%' ||#{ddentire}||'%'
+				or llgl.bz ILIKE '%' ||#{ddentire}||'%'
+				or jgxx.jgmc ILIKE '%' ||#{ddentire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{ddentire}||'%'
+				)
+			</if>
+		</where>
+		GROUP BY
+		llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckzt,
+		jgxx.jgmc,sqry.zsxm,cklb.csmc,llgl.ckdh,llgl.scbj,llgl.lllx,llgl.scbj,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc,
+		coalesce(yxht.htbh,llgl.htdh),gsr.zsxm,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.xslx,xslx.csmc,gsrbm.jgmc,llgl.htdh,llgl.sydd,bmsbfzr.zsxm,llgl.bmsbfzr,llgl.sczlid,sczlgl.zldh,fzr.zsxm,llgl.ysfs,ysfs.csmc
+	</select>
+	<!-- 钉钉领料列表 -->
+	<select id="getPagedReceiveMateriel" parameterType="LlglDto" resultType="LlglDto">
+		select llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckzt,
+		jgxx.jgmc sqbm,sqry.zsxm sqry,cklb.csmc cklb,llgl.ckdh,llgl.scbj,llgl.lllx,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.xslx,xslx.csmc xslxmc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,llgl.sydd,bmsbfzr.zsxm bmsbfzrmc,llgl.bmsbfzr
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+		left join matridx_jcsj xslx on xslx.csid = llgl.xslx
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		<if test="entire != null and entire != ''">
+			left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid and hwllxx.scbj!='1'
+			left join igams_hwllmx hwllmx on hwllmx.hwllid = hwllxx.hwllid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid  and hwllxx.scbj!='1'
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid  and hwllxx.scbj!='1'
+			left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		</if>
+		<if test="zsh != null and zsh != ''">
+			left join igams_hwllmx hwllmx on hwllmx.llid = llgl.llid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		</if>
+		<if test="scph != null and scph != ''">
+			left join igams_hwllmx hwllmx on hwllmx.llid = llgl.llid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		</if>
+		<if test="(fzs != null and fzs.length > 0) or (lbs != null and lbs.length > 0)">
+			left join igams_hwllmx hwllmx on hwllmx.llid = llgl.llid  and hwllmx.scbj!='1'
+			left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+			left join igams_wlgl wlgl on wlgl.wlid = hwxx.wlid
+		</if>
+		<where>
+			llgl.scbj != '1'
+			<if test="entire != null and entire != ''">
+				and (
+				or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+				or llgl.lldh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="zts != null and zts.length > 0">
+				and llgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lllx != null and lllx != ''">
+				and llgl.lllx = #{lllx}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 领料查看 查看基本信息-->
+	<select id="getDtoReceiveMaterielByLlid" parameterType="LlglDto" resultType="llglDto">
+		select llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckdh,
+		jgxx.jgmc sqbm,sqry.zsxm sqry,cklb.csmc cklb,ckxx.ckmc ckmc,llgl.lllx,llry.zsxm llrmc,flr.zsxm flrmc,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.xslx,xslx.csmc xslxmc,gsrbm.jgid gsrbm,gsrbm.jgdm as gsrbmdm,gsrbm.jgmc as gsrbmmc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,llgl.htdh htid,llgl.sydd,bmsbfzr.zsxm bmsbfzrmc,llgl.bmsbfzr,ysfs.csmc ysfsmc,llgl.ysfs
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_jgxx gsrbm on gsrbm.jgid = llgl.gsrbm
+		left join igams_ckxx ckxx on ckxx.ckid=llgl.ckid
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_xtyh llry on llry.yhid=llgl.llr
+		left join matridx_xtyh flr on flr.yhid=llgl.flry
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+		left join matridx_jcsj xslx on xslx.csid = llgl.xslx
+		left join matridx_jcsj ysfs on ysfs.csid = llgl.ysfs
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		<where>
+			llgl.llid = #{llid}
+		</where>
+	</select>
+	<select id="getDtoReceiveMateriel" parameterType="LlglDto" resultType="llglDto">
+		 SELECT llid,lldh,jlbh,sqrq,wcbj,bz,zt,ckdh,sqbm,sqry sqrmc,cklb,shrq,shsj,flrmc,llrmc FROM (
+			SELECT llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckdh,
+			jgxx.jgmc sqbm,sqry.zsxm sqry,cklb.csmc cklb,to_char(shxx.shsj, 'yyyy-mm-dd') shrq,shsj,rank () OVER (PARTITION by llid ORDER BY shsj DESC) as ranking,flry.zsxm as flrmc,llry.zsxm as llrmc
+			from igams_llgl llgl
+			left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+			left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+			left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+			left join matridx_shxx shxx on shxx.ywid = llgl.llid
+			left join matridx_xtyh llry on llry.yhid = llgl.llr
+			left join matridx_xtyh flry on flry.yhid = llgl.flry
+		) tem
+		<where> ranking = 1
+			<if test="llids != null and llids.size()>0">
+				and llid in
+				<foreach collection="llids" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="getDtoReceiveMaterielWithPrint" parameterType="LlglDto" resultType="llglDto">
+		SELECT tem.llid ,tem.lldh,tem.jlbh,tem.sqrq,tem.wcbj,tem.bz,tem.zt,tem.ckdh,tem.sqbm,tem.sqry sqrmc,tem.cklb,tem.shrq,tem.shsj,tem.flrmc,tem.llrmc,tmp2.yxsl as sum_slsl ,tem.zsxm shrmc,tem.lllx,tem.shdz FROM (
+		SELECT llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.zt,llgl.ckdh,tem2.zsxm,llgl.lllx,llgl.shdz,
+		jgxx.jgmc sqbm,sqry.zsxm sqry,cklb.csmc cklb,to_char(shxx.shsj, 'yyyy-mm-dd') shrq,shsj,rank () OVER (PARTITION by llid ORDER BY shsj DESC) as ranking,flry.zsxm as flrmc,llry.zsxm as llrmc
+		from igams_llgl llgl
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_shxx shxx on shxx.ywid = llgl.llid
+		left join matridx_xtyh llry on llry.yhid = llgl.llr
+		left join matridx_xtyh flry on flry.yhid = llgl.flry
+		left join (SELECT shxx.ywid,xtyh.zsxm FROM ( SELECT MAX ( lcxh ) lcxh, ywid FROM matridx_shxx GROUP BY ywid) tem1 LEFT JOIN matridx_shxx shxx ON shxx.ywid = tem1.ywid AND shxx.lcxh = tem1.lcxh LEFT JOIN matridx_xtyh xtyh on xtyh.yhid = shxx.lrry) tem2 ON tem2.ywid = shxx.ywid
+		) tem
+		left join (select sum(mx.yxsl) as  yxsl,ll.llid
+		from igams_llgl ll
+		left join igams_hwllmx mx on mx.llid=ll.llid where mx.scbj = '0' and ll.scbj = '0'
+		group by ll.llid)tmp2 on tmp2.llid = tem.llid
+		<where> ranking = 1
+			<if test="llids != null and llids.size()>0">
+				and tem.llid in
+				<foreach collection="llids" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<!-- 领料查看 查看领料明细 -->
+<!-- 	<select id="getDtoReceiveMaterielInfoByHwllid" parameterType="HwllxxDto" resultType="HwllxxDto">
+		select hwllxx.hwllid,hwllxx.slsl,dhxx.dhrq,hwxx.zsh
+		from igams_hwllxx hwllxx
+		left join igams_hwxx hwxx on hwxx.wlid = hwllxx.wlid
+		left join igams_dhxx dhxx on dhxx.dhid=hwxx.dhid
+		<where>
+			llgl.llid = #{llid}
+		</where>
+	</select> -->
+	<!-- 校验领料单号是否重复 -->
+	<select id="getDtoByLldh" parameterType="LlglDto" resultType="LlglDto">
+		select llgl.llid,llgl.lldh,llgl.sqbm,llgl,sqry,llgl,sqrq,llgl.wcbj,llgl.bz,llgl.qybj
+		from igams_llgl llgl
+		<where>
+			llgl.scbj='0'
+			<if test="lldh != null and lldh != ''">
+				and llgl.lldh=#{lldh}
+			</if>
+			<if test="ckdh != null and ckdh != ''">
+				and llgl.ckdh=#{ckdh}
+			</if>
+			<if test="llid != null and llid != ''">
+				and llgl.llid!=#{llid}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="LlglDto">
+		insert into igams_llgl(llid
+		<if test="lldh != null and lldh != ''">
+			,lldh
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,sqbm
+		</if>
+		<if test="sqry != null and sqry != ''">
+			,sqry
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,sqrq
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,jlbh
+		</if>
+		<if test="cklb != null and cklb != ''">
+			,cklb
+		</if>
+		<if test="qybj != null and qybj != ''">
+			,qybj
+		</if>
+		<if test="ckzt != null and ckzt != ''">
+			,ckzt
+		</if>
+		<if test="ckid != null and ckid != ''">
+			,ckid
+		</if>
+		<if test="lllx != null and lllx != ''">
+			,lllx
+		</if>
+		<if test="khid != null and khid != ''">
+			,khid
+		</if>
+		<if test="zd != null and zd != ''">
+			,zd
+		</if>
+		<if test="zdqy != null and zdqy != ''">
+			,zdqy
+		</if>
+		<if test="htdh != null and htdh != ''">
+			,htdh
+		</if>
+		<if test="gsr != null and gsr != ''">
+			,gsr
+		</if>
+		<if test="fzdq != null and fzdq != ''">
+			,fzdq
+		</if>
+		<if test="zsyy != null and zsyy != ''">
+			,zsyy
+		</if>
+		<if test="shdz != null and shdz != ''">
+			,shdz
+		</if>
+		<if test="shlxfs != null and shlxfs != ''">
+			,shlxfs
+		</if>
+		<if test="xslx != null and xslx != ''">
+			,xslx
+		</if>
+		<if test="sfzy != null and sfzy != ''">
+			,sfzy
+		</if>
+		<if test="gsrbm != null and gsrbm != ''">
+			,gsrbm
+		</if>
+		<if test="bmsbfzr != null and bmsbfzr != ''">
+			,bmsbfzr
+		</if>
+		<if test="sydd != null and sydd != ''">
+			,sydd
+		</if>
+		<if test="sczlid != null and sczlid != ''">
+			,sczlid
+		</if>
+		<if test="fzr != null and fzr != ''">
+			,fzr
+		</if>
+		<if test="ysfs != null and ysfs != ''">
+			,ysfs
+		</if>
+		,lrry,lrsj,wcbj,scbj)
+		values(#{llid}
+		<if test="lldh != null and lldh != ''">
+			,#{lldh}
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,#{sqbm}
+		</if>
+		<if test="sqry != null and sqry != ''">
+			,#{sqry}
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,cast(#{sqrq} as date)
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="jlbh != null and jlbh != ''">
+			,#{jlbh}
+		</if>
+		<if test="cklb != null and cklb != ''">
+			,#{cklb}
+		</if>
+		<if test="qybj != null and qybj != ''">
+			,#{qybj}
+		</if>
+		<if test="ckzt != null and ckzt != ''">
+			,#{ckzt}
+		</if>
+		<if test="ckid != null and ckid != ''">
+			,#{ckid}
+		</if>
+		<if test="lllx != null and lllx != ''">
+			,#{lllx}
+		</if>
+		<if test="khid != null and khid != ''">
+			,#{khid}
+		</if>
+		<if test="zd != null and zd != ''">
+			,#{zd}
+		</if>
+		<if test="zdqy != null and zdqy != ''">
+			,#{zdqy}
+		</if>
+		<if test="htdh != null and htdh != ''">
+			,#{htdh}
+		</if>
+		<if test="gsr != null and gsr != ''">
+			,#{gsr}
+		</if>
+		<if test="fzdq != null and fzdq != ''">
+			,#{fzdq}
+		</if>
+		<if test="zsyy != null and zsyy != ''">
+			,#{zsyy}
+		</if>
+		<if test="shdz != null and shdz != ''">
+			,#{shdz}
+		</if>
+		<if test="shlxfs != null and shlxfs != ''">
+			,#{shlxfs}
+		</if>
+		<if test="xslx != null and xslx != ''">
+			,#{xslx}
+		</if>
+		<if test="sfzy != null and sfzy != ''">
+			,#{sfzy}
+		</if>
+		<if test="gsrbm != null and gsrbm != ''">
+			,#{gsrbm}
+		</if>
+		<if test="bmsbfzr != null and bmsbfzr != ''">
+			,#{bmsbfzr}
+		</if>
+		<if test="sydd != null and sydd != ''">
+			,#{sydd}
+		</if>
+		<if test="sczlid != null and sczlid != ''">
+			,#{sczlid}
+		</if>
+		<if test="fzr != null and fzr != ''">
+			,#{fzr}
+		</if>
+		<if test="ysfs != null and ysfs != ''">
+			,#{ysfs}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0','0')
+	</insert>
+	
+	<select id="getDtoById" parameterType="String" resultType="LlglDto">
+		select llgl.llid,llgl.zt,llgl.lldh,llgl.sqbm,llgl.sqry,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.jlbh,jgxx.jgmc as sqbmmc,xtyh.zsxm as sqrmc,llgl.cklb,
+		jcsj_ck.csmc as cklbmc,jcsj_ck.csdm as ckcsdm,jgxx.jgdm as jgdm,llgl.qybj,llgl.glid,ckxx.ckdm,llgl.ckrq,llgl.ckdh,llgl.flry,xtyh_flr.zsxm as flrmc,llgl.lllx,llgl.ddspid,xtyh_llr.zsxm llrmc,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,llgl.htdh htid,gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.zdqy,llgl.gsr,llgl.xslx,xslx.csmc xslxmc,gsrbm.jgid gsrbm,gsrbm.jgdm as gsrbmdm,gsrbm.jgmc as gsrbmmc,llgl.sfzy
+		,llgl.sydd,bmsbfzr.zsxm bmsbfzrmc,llgl.bmsbfzr,llgl.sczlid,sczlgl.zldh,fzr.zsxm fzrmc,llgl.fzr,ysfs.csmc ysfsmc,llgl.ysfs,khgl.khmc
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join igams_sczlgl sczlgl on sczlgl.sczlid = llgl.sczlid
+		left join matridx_jgxx jgxx on jgxx.jgid=llgl.sqbm and jgxx.scbj='0'
+		left join matridx_jgxx gsrbm on gsrbm.jgid=llgl.gsrbm and gsrbm.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid = llgl.sqry and xtyh.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid = llgl.cklb
+		left join igams_ckxx ckxx on ckxx.ckid=llgl.ckid and ckxx.scbj='0'
+		left join matridx_xtyh xtyh_flr on xtyh_flr.yhid = llgl.flry and xtyh_flr.scbj='0'
+		left join matridx_xtyh xtyh_llr on xtyh_llr.yhid = llgl.llr and xtyh_llr.scbj='0'
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+		left join matridx_jcsj xslx on xslx.csid = llgl.xslx
+		left join matridx_jcsj ysfs on ysfs.csid = llgl.ysfs
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		left join matridx_xtyh fzr on fzr.yhid=llgl.fzr
+		<where>
+			llgl.scbj!='1'
+			<if test="_parameter != null and _parameter != ''">
+				and llgl.llid=#{llid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoByDdslid" parameterType="String" resultType="LlglDto">
+		select llgl.llid,llgl.zt,llgl.lldh,llgl.sqbm,llgl.sqry,llgl.sqrq,llgl.wcbj,llgl.bz,llgl.jlbh,jgxx.jgmc as sqbmmc,xtyh.zsxm as sqrmc,llgl.cklb,
+		jcsj_ck.csmc as cklbmc,jcsj_ck.csdm as ckcsdm,jgxx.jgdm as jgdm,llgl.qybj,llgl.glid,ckxx.ckdm,llgl.ckrq,llgl.ckdh,llgl.flry,xtyh_flr.zsxm as flrmc
+		from igams_llgl llgl
+		left join matridx_jgxx jgxx on jgxx.jgid=llgl.sqbm and jgxx.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid = llgl.sqry and xtyh.scbj='0'
+		left join matridx_jcsj jcsj_ck on jcsj_ck.csid = llgl.cklb
+		left join igams_ckxx ckxx on ckxx.ckid=llgl.ckid and ckxx.scbj='0'
+		left join matridx_xtyh xtyh_flr on xtyh_flr.yhid = llgl.flry and xtyh_flr.scbj='0'
+		<where>
+			llgl.scbj!='1'
+			<if test="_parameter != null and _parameter != ''">
+				and llgl.ddspid=#{ddspid}
+			</if>
+		</where>
+	</select>
+
+	<!-- 获取审批人信息 -->
+	<select id="getSprxxByDdid" parameterType="String" resultType="LlglDto">
+		select yhid as sprid,zsxm as sprxm,ddid as sprddid,yhm as spryhm
+		from matridx_xtyh
+		<where>
+			scbj!='1' and ddid=#{ddid}
+		</where>
+	</select>
+
+	<!-- 获取审批人角色 -->
+	<select id="getSprjsBySprid" parameterType="String" resultType="LlglDto">
+		select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+		from matridx_yhjs yhjs
+		left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		<where>
+			yhjs.yhid=#{sprid}
+		</where>
+	</select>
+
+	<!-- 将钉钉实例ID设置为空 -->
+	<update id="updateDdslidToNull" parameterType="LlglDto">
+		update igams_llgl set ddspid = null
+		<where>
+			scbj !='1' and llid =#{llid}
+		</where>
+	</update>
+
+	<update id="update" parameterType="LlglDto">
+			update igams_llgl
+		<set>
+		 xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="lldh != null and lldh != ''">
+				,lldh=#{lldh}
+			</if>
+			<if test="sqrq != null and sqrq != ''">
+				,sqrq=cast(#{sqrq} as timestamp)
+			</if>
+			<if test="cklb != null and cklb != ''">
+				,cklb=#{cklb}
+			</if>
+			<if test="sqbm != null and sqbm != ''">
+				,sqbm=#{sqbm}
+			</if>
+			<if test="sqry != null and sqry != ''">
+				,sqry=#{sqry}
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				,jlbh=#{jlbh}
+			</if>
+			<if test="bz !=null and bz !=''">
+				,bz=#{bz}
+			</if>
+			<if test="zt !=null and  zt !=''">
+				,zt=#{zt}
+			</if>
+			<if test="glid !=null and  glid !=''">
+				,glid=#{glid}
+			</if>
+			<if test="ckrq !=null and  ckrq !=''">
+				,ckrq=cast(#{ckrq} as timestamp)
+			</if>
+			<if test="ckid !=null and  ckid !=''">
+				,ckid=#{ckid}
+			</if>
+			<if test="ckdh !=null and  ckdh !=''">
+				,ckdh=#{ckdh}
+			</if>
+			<if test="llr !=null and  llr !=''">
+				,llr=#{llr}
+			</if>
+			<if test="flry !=null and  flry !=''">
+				,flry=#{flry}
+			</if>
+			<if test="ckzt !=null and  ckzt !=''">
+				,ckzt=#{ckzt}
+			</if>
+			<if test="ckglid !=null and  ckglid !=''">
+				,ckglid=#{ckglid}
+			</if>
+			<if test="wcbj !=null and  wcbj !=''">
+				,wcbj=#{wcbj}
+			</if>
+			<if test="ddspid !=null and  ddspid !=''">
+				,ddspid=#{ddspid}
+			</if>
+			<if test="khid !=null and  khid !=''">
+				,khid=#{khid}
+			</if>
+			<if test="zd !=null and  zd !=''">
+				,zd=#{zd}
+			</if>
+			<if test="zdqy !=null and  zdqy !=''">
+				,zdqy=#{zdqy}
+			</if>
+			<if test="htdh !=null and  htdh !=''">
+				,htdh=#{htdh}
+			</if>
+			<if test="gsr !=null and  gsr !=''">
+				,gsr=#{gsr}
+			</if>
+			<if test="fzdq !=null and  fzdq !=''">
+				,fzdq=#{fzdq}
+			</if>
+			<if test="zsyy !=null and  zsyy !=''">
+				,zsyy=#{zsyy}
+			</if>
+			<if test="shdz !=null and  shdz !=''">
+				,shdz=#{shdz}
+			</if>
+			<if test="shlxfs !=null and  shlxfs !=''">
+				,shlxfs=#{shlxfs}
+			</if>
+			<if test="sfqs != null and sfqs != ''">
+				,sfqs=#{sfqs}
+			</if>
+			<if test="xslx != null and xslx != ''">
+				,xslx=#{xslx}
+			</if>
+			<if test="gsrbm != null and gsrbm != ''">
+				,gsrbm=#{gsrbm}
+			</if>
+			<if test="sfzy != null and sfzy != ''">
+				,sfzy=#{sfzy}
+			</if>
+			<if test="bmsbfzr != null and bmsbfzr != ''">
+				,bmsbfzr=#{bmsbfzr}
+			</if>
+			<if test="sydd != null and sydd != ''">
+				,sydd=#{sydd}
+			</if>
+			<if test="sczlid != null and sczlid != ''">
+				,sczlid=#{sczlid}
+			</if>
+			<if test="fzr != null and fzr != ''">
+				,fzr=#{fzr}
+			</if>
+			<if test="ysfs != null and ysfs != ''">
+				,ysfs=#{ysfs}
+			</if>
+		</set>
+		<where>
+			llid=#{llid}
+		</where>
+	</update>
+	<update id="updateForCkzt" parameterType="LlglDto">
+			update igams_llgl
+		<set>
+		 xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="lldh != null and lldh != ''">
+				,lldh=#{lldh}
+			</if>
+			<if test="sqrq != null and sqrq != ''">
+				,sqrq=cast(#{sqrq} as timestamp)
+			</if>
+			<if test="cklb != null and cklb != ''">
+				,cklb=#{cklb}
+			</if>
+			<if test="sqbm != null and sqbm != ''">
+				,sqbm=#{sqbm}
+			</if>
+			<if test="sqry != null and sqry != ''">
+				,sqry=#{sqry}
+			</if>
+			<if test="jlbh != null and jlbh != ''">
+				,jlbh=#{jlbh}
+			</if>
+			<if test="bz !=null and bz !=''">
+				,bz=#{bz}
+			</if>
+			<if test="zt !=null and  zt !=''">
+				,zt=#{zt}
+			</if>
+			<if test="glid !=null and  glid !=''">
+				,glid=#{glid}
+			</if>
+			<if test="ckrq !=null and  ckrq !=''">
+				,ckrq=cast(#{ckrq} as timestamp)
+			</if>
+			<if test="ckid !=null and  ckid !=''">
+				,ckid=#{ckid}
+			</if>
+			<if test="ckdh !=null and  ckdh !=''">
+				,ckdh=#{ckdh}
+			</if>
+			<if test="llr !=null and  llr !=''">
+				,llr=#{llr}
+			</if>
+			<if test="flry !=null and  flry !=''">
+				,flry=#{flry}
+			</if>
+			<if test="ckzt !=null and  ckzt !=''">
+				,ckzt=#{ckzt}
+			</if>
+			<if test="ckglid !=null and  ckglid !=''">
+				,ckglid=#{ckglid}
+			</if>
+			<if test="wcbj !=null and  wcbj !=''">
+				,wcbj=#{wcbj}
+			</if>
+			<if test="ddspid !=null and  ddspid !=''">
+				,ddspid=#{ddspid}
+			</if>
+			<if test="khid !=null and  khid !=''">
+				,khid=#{khid}
+			</if>
+			<if test="zd !=null and  zd !=''">
+				,zd=#{zd}
+			</if>
+			<if test="zdqy !=null and  zdqy !=''">
+				,zdqy=#{zdqy}
+			</if>
+			<if test="htdh !=null and  htdh !=''">
+				,htdh=#{htdh}
+			</if>
+			<if test="gsr !=null and  gsr !=''">
+				,gsr=#{gsr}
+			</if>
+			<if test="fzdq !=null and  fzdq !=''">
+				,fzdq=#{fzdq}
+			</if>
+			<if test="zsyy !=null and  zsyy !=''">
+				,zsyy=#{zsyy}
+			</if>
+			<if test="shdz !=null and  shdz !=''">
+				,shdz=#{shdz}
+			</if>
+			<if test="shlxfs !=null and  shlxfs !=''">
+				,shlxfs=#{shlxfs}
+			</if>
+			<if test="sfqs != null and sfqs != ''">
+				,sfqs=#{sfqs}
+			</if>
+			<if test="xslx != null and xslx != ''">
+				,xslx=#{xslx}
+			</if>
+			<if test="gsrbm != null and gsrbm != ''">
+				,gsrbm=#{gsrbm}
+			</if>
+			<if test="sfzy != null and sfzy != ''">
+				,sfzy=#{sfzy}
+			</if>
+			<if test="bmsbfzr != null and bmsbfzr != ''">
+				,bmsbfzr=#{bmsbfzr}
+			</if>
+			<if test="sydd != null and sydd != ''">
+				,sydd=#{sydd}
+			</if>
+			<if test="sczlid != null and sczlid != ''">
+				,sczlid=#{sczlid}
+			</if>
+			<if test="fzr != null and fzr != ''">
+				,fzr=#{fzr}
+			</if>
+		</set>
+		<where>
+			llid=#{llid} and (ckzt = '00' or ckzt is null or ckzt = '')
+		</where>
+	</update>
+	
+	<!-- <select id="getPagedDtoMaterialAudit" parameterType="LlglDto" resultType="LlglDto">
+	    select llgl.llid,llgl.lldh,llgl.jlbh,llgl.sqbm,llgl,sqry,llgl,sqrq,llgl.wcbj,llgl.bz,llgl.zt,jgxx.jgmc as sqbmmc,xtyh.zsxm as sqrmc,llgl.cklb
+		from igams_llgl llgl
+		left join matridx_jgxx jgxx on jgxx.jgid=llgl.sqbm and jgxx.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid = llgl.sqry and xtyh.scbj='0'
+		<where>
+			llgl.scbj!='1'
+			<if test="lldh != null and lldh != ''">
+			   AND llgl.lldh ILIKE '%' || #{lldh} || '%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+			   AND jgxx.jgmc ILIKE '%' || #{sqbmmc} || '%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+			   AND xtyh.zsxm ILIKE '%' || #{sqrmc} || '%'
+			</if>
+		</where>
+	</select> -->
+	
+	<select id="getPagedAuditLlgl" parameterType="LlglDto" resultType="LlglDto">
+	    select llgl.llid,llgl.lrsj,llgl.sqbm,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr
+	    from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+	    left join matridx_jgxx jgxx on jgxx.jgid=llgl.sqbm and jgxx.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid = llgl.sqry and xtyh.scbj='0'
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+	    <where>
+	        llgl.scbj != '1'
+	        <if test="zt != null and zt!='' ">
+	           and llgl.zt = #{zt}
+	        </if>
+	        <if test="lldh != null and lldh != ''">
+			   AND llgl.lldh ILIKE '%' || #{lldh} || '%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+			   AND jgxx.jgmc ILIKE '%' || #{sqbmmc} || '%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+			   AND xtyh.zsxm ILIKE '%' || #{sqrmc} || '%'
+			</if>
+	    </where>
+	</select>
+	
+	<select id="getAuditListLlgl" parameterType="List" resultType="LlglDto">
+	    select llgl.llid,llgl.lllx,llgl.lldh,llgl.jlbh,llgl.sqbm,llgl.lrsj,llgl,sqry,llgl,sqrq,llgl.wcbj,llgl.bz,llgl.zt,jgxx.jgmc as sqbmmc,xtyh.zsxm as sqrmc,llgl.cklb,khgl.khjc,khgl.khid,llgl.zd,zdqy.csmc zdqymc,
+		coalesce(yxht.htbh,llgl.htdh) htdh,gsr.zsxm gsrmc,llgl.fzdq,llgl.zsyy,llgl.shdz,llgl.shlxfs,llgl.kdxx,llgl.sfqr,llgl.xslx,xslx.csmc xslxmc,
+	           shxx_sqsj, shxx_gwmc, sqr, shxx_lrryxm, shxx_shsj, shxx_sftg, shxx_shxxid,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=")" item="item" index="index">
+		    select #{item.llid} llid, #{item.shxx_shxxid} shxx_shxxid, #{item.shxx_sqsj} shxx_sqsj, #{item.sqr} sqr,
+		    #{item.shxx_lrryxm} shxx_lrryxm, #{item.shxx_shsj} shxx_shsj, #{item.shxx_sftg} shxx_sftg, 
+		    #{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj, #{index} rownum
+		</foreach> tmp 
+		left join igams_llgl llgl on llgl.llid = tmp.llid
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid=llgl.sqbm and jgxx.scbj='0'
+		left join matridx_xtyh xtyh on xtyh.yhid = llgl.sqry and xtyh.scbj='0'
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join matridx_jcsj xslx on xslx.csid = llgl.xslx
+		left join matridx_xtyh gsr on gsr.yhid = llgl.gsr
+		order by tmp.rownum
+	</select>
+	
+	<update id="delete" parameterType="LlglDto">
+		update igams_llgl set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<update id="updateLllx" parameterType="LlglDto">
+		update igams_llgl set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP,lllx=#{lllx}
+		<where>
+			llid =#{llid}
+		</where>
+	</update>
+		<!-- 选中导出  --> 
+ 	<select id="getListForSelectExp" parameterType="LlglDto" resultType="LlglDto"> 
+	    SELECT  llgl.llid ${sqlParam}
+		FROM (
+             <foreach collection="ids" separator=" union all "  index="index" item="item">
+		        select #{item, jdbcType=VARCHAR} llid, #{index} ordernum
+		     </foreach>
+			) tmp 
+		left outer join igams_llgl llgl on llgl.llid=tmp.llid
+		left join (
+		select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) shsj,
+		llgl.llid
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_shxx shxx on shxx.ywid=llgl.llid and llgl.zt='80'
+		group by llgl.llid) llsh on llsh.llid=llgl.llid
+		left join matridx_jgxx sqbm on sqbm.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwllmx hwllmx on hwllxx.hwllid = hwllmx.hwllid  and hwllmx.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join matridx_jcsj xmbm on hwllxx.xmbm = xmbm.csid
+		left join matridx_jcsj xmdl on hwllxx.xmbm = xmdl.csid
+		left join matridx_jcsj cplx on cplx.csid=hwllxx.cplx
+		left join igams_khgl khgl on khgl.khid=llgl.khid
+		left join matridx_jcsj sf on sf.csid=llgl.zdqy
+		left join matridx_xtyh ywy on ywy.yhid=llgl.gsr
+		ORDER BY tmp.ordernum
+	</select>
+	
+	<!-- 获取搜索导出的条数 -->
+  	<select id="getCountForSearchExp"  parameterType="LlglDto" resultType="java.lang.Integer">
+		select  count (llgl.llid) 
+		from (
+		select llgl.llid
+		from igams_llgl llgl
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_jgxx sqbm on sqbm.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		left join igams_sczlgl sczlgl on sczlgl.sczlid = llgl.sczlid
+		left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwllmx hwllmx on hwllxx.hwllid = hwllmx.hwllid  and hwllmx.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join matridx_xtyh ywy on ywy.yhid=llgl.gsr
+		left join matridx_jcsj khlb on khlb.csid = khgl.khlb
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_jcsj xmbm on hwllxx.xmbm = xmbm.csid
+		left join matridx_jcsj xmdl on hwllxx.xmbm = xmdl.csid
+		left join matridx_jcsj cplx on cplx.csid=hwllxx.cplx
+		left join matridx_jcsj sf on sf.csid=llgl.zdqy
+		<where>
+		llgl.scbj = '0'
+		<if test="entire != null and entire != ''">
+			and (
+			wlgl.wlbm ILIKE '%' ||#{entire}||'%'
+			or wlgl.wlmc ILIKE '%' ||#{entire}||'%'
+			or hwxx.zsh ILIKE '%' ||#{entire}||'%'
+			or sqbm.jgmc ILIKE '%' ||#{entire}||'%'
+			or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+			or hwxx.scph ILIKE '%' ||#{entire}||'%'
+			or llgl.lldh ILIKE '%' ||#{entire}||'%'
+			or khgl.khjc ILIKE '%' ||#{entire}||'%'
+			or llgl.zd ILIKE '%' ||#{entire}||'%'
+			or sf.csmc ILIKE '%' ||#{entire}||'%'
+			or llgl.fzdq ILIKE '%' ||#{entire}||'%'
+			or (llgl.htdh ILIKE '%' ||#{entire}||'%' or yxht.htbh ILIKE '%' ||#{entire}||'%')
+			or llgl.shdz ILIKE '%' ||#{entire}||'%'
+			or llgl.shlxfs ILIKE '%' ||#{entire}||'%'
+			or bmsbfzr.zsxm ILIKE '%' ||#{entire}||'%'
+			or llgl.sydd ILIKE '%' ||#{entire}||'%'
+			or sczlgl.zldh ILIKE '%' ||#{entire}||'%'
+			)
+		</if>
+		<if test="bmsbfzr != null and bmsbfzr != ''">
+			and bmsbfzr.zsxm ILIKE '%' ||#{bmsbfzr}||'%'
+		</if>
+		<if test="sydd != null and sydd != ''">
+			and llgl.sydd ILIKE '%' ||#{sydd}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%' ||#{wlbm}||'%'
+		</if>
+		<if test="zldh != null and zldh != ''">
+			and sczlgl.zldh ILIKE '%' ||#{zldh}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc ILIKE '%' ||#{wlmc}||'%'
+		</if>
+		<if test="zsh != null and zsh != ''">
+			and hwxx.zsh ILIKE '%' ||#{zsh}||'%'
+		</if>
+		<if test="scph != null and scph != ''">
+			and hwxx.scph ILIKE '%' ||#{scph}||'%'
+		</if>
+		<if test="sqbmmc != null and sqbmmc != ''">
+			and sqbm.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+		</if>
+		<if test="sqrmc != null and sqrmc != ''">
+			and sqry.zsxm ILIKE '%' ||#{sqrmc}||'%'
+		</if>
+		<if test="lldh != null and lldh != ''">
+			and llgl.lldh ILIKE '%' ||#{lldh}||'%'
+		</if>
+		<if test="fzs != null and fzs.length > 0">
+			and wllb in
+			<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="lbs != null and lbs.length > 0">
+			and lb in
+			<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="khlbs != null and khlbs.length > 0">
+			and khlb.csid in
+			<foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="zts != null and zts.length > 0">
+			and llgl.zt in
+			<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sqrqstart != null and sqrqstart != ''">
+			and to_char(llgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+		</if>
+		<if test="sqrqend != null and sqrqend != ''">
+			and to_char(llgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+		</if>
+		<if test="flrqstart != null and flrqstart != ''">
+			and to_char(llgl.ckrq,'yyyy-mm-dd') &gt;= #{flrqstart}
+		</if>
+		<if test="flrqend != null and flrqend != ''">
+			and to_char(llgl.ckrq,'yyyy-mm-dd') &lt;= #{flrqend}
+		</if>
+		<if test="lllx != null and lllx != ''">
+			and llgl.lllx = #{lllx}
+		</if>
+		<if test="sfqs != null and sfqs == '0'.toString">
+			and llgl.kdxx is null
+		</if>
+		<if test="sfqs != null and sfqs == '1'.toString">
+			and llgl.kdxx is not null
+		</if>
+		<if test="bz != null and bz != ''">
+			and llgl.bz ILIKE '%' ||#{bz}||'%'
+		</if>
+		<if test="khjc != null and khjc != ''">
+			and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+		</if>
+		<if test="zd != null and zd != ''">
+			and llgl.zd ILIKE '%' ||#{zd}||'%'
+		</if>
+		<if test="zdqymc != null and zdqymc != ''">
+			and sf.csmc ILIKE '%' ||#{zdqymc}||'%'
+		</if>
+		<if test="fzdq != null and fzdq != ''">
+			and llgl.fzdq ILIKE '%' ||#{fzdq}||'%'
+		</if>
+		<if test="htdh != null and htdh != ''">
+			and (llgl.htdh ILIKE '%' ||#{htdh}||'%' or yxht.htbh ILIKE '%' ||#{htdh}||'%')
+		</if>
+		<if test="shdz != null and shdz != ''">
+			and llgl.shdz ILIKE '%' ||#{shdz}||'%'
+		</if>
+		<if test="shlxfs != null and shlxfs != ''">
+			and llgl.shlxfs ILIKE '%' ||#{shlxfs}||'%'
+		</if>
+		<if test="sfqr != null and sfqr != ''">
+			and llgl.sfqr = #{sfqr}
+		</if>
+		</where>) llgl
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="LlglDto" resultType="LlglDto">
+		 SELECT  llgl.llid ${sqlParam}
+		from igams_llgl llgl
+		left join (
+		select
+		max(to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss')) shsj,
+		llgl.llid
+		from igams_llgl llgl
+		left join matridx_shxx shxx on shxx.ywid=llgl.llid and llgl.zt='80'
+		group by llgl.llid) llsh on llsh.llid=llgl.llid
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join matridx_jgxx sqbm on sqbm.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_xtyh bmsbfzr on bmsbfzr.yhid = llgl.bmsbfzr
+		left join igams_sczlgl sczlgl on sczlgl.sczlid = llgl.sczlid
+		left join igams_hwllxx hwllxx on hwllxx.llid = llgl.llid
+		left join igams_wlgl wlgl on wlgl.wlid = hwllxx.wlid
+		left join igams_hwllmx hwllmx on hwllxx.hwllid = hwllmx.hwllid  and hwllmx.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid = hwllmx.hwid
+		left join matridx_xtyh ywy on ywy.yhid=llgl.gsr
+		left join matridx_jcsj khlb on khlb.csid = khgl.khlb
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_jcsj xmbm on hwllxx.xmbm = xmbm.csid
+		left join matridx_jcsj xmdl on hwllxx.xmbm = xmdl.csid
+		left join matridx_jcsj cplx on cplx.csid=hwllxx.cplx
+		left join matridx_jcsj sf on sf.csid=llgl.zdqy
+		<where>
+			llgl.scbj = '0'
+			<if test="entire != null and entire != ''">
+				and (
+				wlgl.wlbm ILIKE '%' ||#{entire}||'%'
+				or wlgl.wlmc ILIKE '%' ||#{entire}||'%'
+				or hwxx.zsh ILIKE '%' ||#{entire}||'%'
+				or sqbm.jgmc ILIKE '%' ||#{entire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+				or hwxx.scph ILIKE '%' ||#{entire}||'%'
+				or llgl.lldh ILIKE '%' ||#{entire}||'%'
+				or khgl.khjc ILIKE '%' ||#{entire}||'%'
+				or llgl.zd ILIKE '%' ||#{entire}||'%'
+				or sf.csmc ILIKE '%' ||#{entire}||'%'
+				or llgl.fzdq ILIKE '%' ||#{entire}||'%'
+				or (llgl.htdh ILIKE '%' ||#{entire}||'%' or yxht.htbh ILIKE '%' ||#{entire}||'%')
+				or llgl.shdz ILIKE '%' ||#{entire}||'%'
+				or llgl.shlxfs ILIKE '%' ||#{entire}||'%'
+				or bmsbfzr.zsxm ILIKE '%' ||#{entire}||'%'
+				or llgl.sydd ILIKE '%' ||#{entire}||'%'
+				or sczlgl.zldh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="bmsbfzr != null and bmsbfzr != ''">
+				and bmsbfzr.zsxm ILIKE '%' ||#{bmsbfzr}||'%'
+			</if>
+			<if test="sydd != null and sydd != ''">
+				and llgl.sydd ILIKE '%' ||#{sydd}||'%'
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="zldh != null and zldh != ''">
+				and sczlgl.zldh ILIKE '%' ||#{zldh}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and hwxx.zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="scph != null and scph != ''">
+				and hwxx.scph ILIKE '%' ||#{scph}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and sqbm.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+				and sqry.zsxm ILIKE '%' ||#{sqrmc}||'%'
+			</if>
+			<if test="lldh != null and lldh != ''">
+				and llgl.lldh ILIKE '%' ||#{lldh}||'%'
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0">
+				and khlb.csid in
+				<foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zts != null and zts.length > 0">
+				and llgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+			</if>
+			<if test="flrqstart != null and flrqstart != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &gt;= #{flrqstart}
+			</if>
+			<if test="flrqend != null and flrqend != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &lt;= #{flrqend}
+			</if>
+			<if test="lllx != null and lllx != ''">
+				and llgl.lllx = #{lllx}
+			</if>
+			<if test="sfqs != null and sfqs == '0'.toString">
+				and llgl.kdxx is null
+			</if>
+			<if test="sfqs != null and sfqs == '1'.toString">
+				and llgl.kdxx is not null
+			</if>
+			<if test="bz != null and bz != ''">
+				and llgl.bz ILIKE '%' ||#{bz}||'%'
+			</if>
+			<if test="khjc != null and khjc != ''">
+				and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+			</if>
+			<if test="zd != null and zd != ''">
+				and llgl.zd ILIKE '%' ||#{zd}||'%'
+			</if>
+			<if test="zdqymc != null and zdqymc != ''">
+				and sf.csmc ILIKE '%' ||#{zdqymc}||'%'
+			</if>
+			<if test="fzdq != null and fzdq != ''">
+				and llgl.fzdq ILIKE '%' ||#{fzdq}||'%'
+			</if>
+			<if test="htdh != null and htdh != ''">
+				and (llgl.htdh ILIKE '%' ||#{htdh}||'%' or yxht.htbh ILIKE '%' ||#{htdh}||'%')
+			</if>
+			<if test="shdz != null and shdz != ''">
+				and llgl.shdz ILIKE '%' ||#{shdz}||'%'
+			</if>
+			<if test="shlxfs != null and shlxfs != ''">
+				and llgl.shlxfs ILIKE '%' ||#{shlxfs}||'%'
+			</if>
+			<if test="sfqr != null and sfqr != ''">
+				and llgl.sfqr = #{sfqr}
+			</if>
+		</where> 
+		order by
+		<if test="sortName != null and sortName != ''">
+		   ${sortName} ${sortOrder}
+		</if>
+ 		<if test="sortLastName != null and sortLastName != ''">
+		   ,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	
+	<select id="getCkdhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(ckdh,LENGTH(ckdh)-strpos(reverse(ckdh),'-')+2,LENGTH(ckdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_ckgl
+			<where> 
+				scbj = '0' AND ckdh like #{prefix}||'%'
+			</where>	 
+	</select>
+	
+	<select id="getDtoList" parameterType="LlglDto" resultType="LlglDto">
+		select llgl.llid,llgl.zt,llgl.ckzt,llgl.qybj
+		from igams_llgl llgl
+		<where>
+			llgl.scbj = '0' and
+			llgl.llid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	
+	<select id="getJlbhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial 
+			FROM igams_llgl
+			<where> 
+				scbj = '0' AND jlbh like #{prefix}||'%'
+			</where>	 
+	</select>
+	
+	<select id="getlljgdh" parameterType="LlglDto" resultType="String">
+	    select jg.kzcs1
+		from matridx_jgxx jg
+		<where>
+			jg.scbj!='1' and
+			jg.jgid=#{jgid}
+		</where>
+	</select>
+	
+	<select id="generateLljlbh" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(jlbh,LENGTH(jlbh)-strpos(reverse(jlbh),'-')+2,LENGTH(jlbh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+		FROM igams_llgl
+		<where>
+		   scbj = '0' AND jlbh like #{prefix}||'%'
+		</where>
+	</select>
+
+	<select id="getDtoByllId" parameterType="String" resultType="LlglDto">
+		select llgl.llid,llgl.zt,llgl.ckzt,llgl.ckglid,llgl.glid,llgl.ddspid
+		from igams_llgl llgl
+		<where>
+			llgl.scbj!='1' and llgl.llid=#{value}
+
+		</where>
+	</select>
+	<select id="getLldhByIds" parameterType="list" resultType="LlglDto">
+		SELECT
+		lldh,llid
+		from igams_llgl
+		WHERE
+		llid in
+		<foreach collection="list" open="(" close=")" separator="," item="items">
+			#{items}
+		</foreach>
+	</select>
+	<select id="getLllxByIds" parameterType="list" resultType="LlglDto">
+		SELECT
+		lldh,llid,lllx
+		from igams_llgl
+		WHERE
+		llid in
+		<foreach collection="ids" open="(" close=")" separator="," item="items">
+			#{items}
+		</foreach>
+	</select>
+	<update id="updateWlxx" parameterType="LlglDto">
+		update igams_llgl
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfqr=#{sfqr},kdxx=#{kdxx}
+		</set>
+		<where>
+			llid=#{llid}
+		</where>
+	</update>
+<!--	生产指令导出-->
+	<select id="getListForProductionSelectExp" parameterType="LlglDto" resultType="LlglDto">
+		SELECT  llgl.llid,coalesce(hwllmx.slsl,0) slsl,wlgl_ll.wlbm wlbm_t ${sqlParam}
+		FROM (
+		<foreach collection="ids" separator=" union all "  index="index" item="item">
+			select #{item, jdbcType=VARCHAR} llid, #{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_llgl llgl on llgl.llid=tmp.llid
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=llgl.sczlid and sczlgl.scbj='0'
+		left join igams_sczlmx sczlmx on sczlmx.sczlid=sczlgl.sczlid and sczlmx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid and hwllxx.scbj='0'
+		left join igams_wlgl wlgl_ll on wlgl_ll.wlid=hwllxx.wlid
+		left join igams_hwllmx hwllmx on hwllmx.hwllid=hwllxx.hwllid
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid and hwxx.scbj='0'
+		left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid
+		where hwllmx.slsl is not null and hwllmx.slsl>0
+		ORDER BY tmp.ordernum
+	</select>
+
+	<!-- 获取搜索导出的条数 -->
+	<select id="getProductionCountForSearchExp"  parameterType="LlglDto" resultType="java.lang.Integer">
+		select  count (llgl.llid)
+		from igams_llgl llgl
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=llgl.sczlid and sczlgl.scbj='0'
+		left join igams_sczlmx sczlmx on sczlmx.sczlid=sczlgl.sczlid and sczlmx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid and hwllxx.scbj='0'
+		left join igams_wlgl wlgl_ll on wlgl_ll.wlid=hwllxx.wlid
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_xtyh llry on llry.yhid = llgl.llr
+		left join matridx_xtyh flry on flry.yhid = llgl.flry
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj khlb on khlb.csid = khgl.khlb
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join igams_hwllmx hwllmx on hwllmx.hwllid=hwllxx.hwllid
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid and hwxx.scbj='0'
+		left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid
+		<where>
+			llgl.scbj != '1' and hwllmx.slsl is not null and hwllmx.slsl>0
+			<if test="entire != null and entire != ''">
+				and (
+				wlgl_ll.wlbm ILIKE '%' ||#{entire}||'%'
+				or wlgl_ll.wlmc ILIKE '%' ||#{entire}||'%'
+				or hwxx.zsh ILIKE '%' ||#{entire}||'%'
+				or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+				or hwxx.scph ILIKE '%' ||#{entire}||'%'
+				or llgl.lldh ILIKE '%' ||#{entire}||'%'
+				or khgl.khjc ILIKE '%' ||#{entire}||'%'
+				or llgl.zd ILIKE '%' ||#{entire}||'%'
+				or zdqy.csmc ILIKE '%' ||#{entire}||'%'
+				or llgl.fzdq ILIKE '%' ||#{entire}||'%'
+				or (llgl.htdh ILIKE '%' ||#{entire}||'%' or yxht.htbh ILIKE '%' ||#{entire}||'%')
+				or llgl.shdz ILIKE '%' ||#{entire}||'%'
+				or llgl.shlxfs ILIKE '%' ||#{entire}||'%'
+				or sczlgl.zldh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlgl_ll.wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="zldh != null and zldh != ''">
+				and sczlgl.zldh ILIKE '%' ||#{zldh}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlgl_ll.wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and hwxx.zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="scph != null and scph != ''">
+				and hwxx.scph ILIKE '%' ||#{scph}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jgxx.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+				and sqry.zsxm ILIKE '%' ||#{sqrmc}||'%'
+			</if>
+			<if test="lldh != null and lldh != ''">
+				and llgl.lldh ILIKE '%' ||#{lldh}||'%'
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wlgl_ll.wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and wlgl_ll.lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0">
+				and khlb.csid in
+				<foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zts != null and zts.length > 0">
+				and llgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+			</if>
+			<if test="flrqstart != null and flrqstart != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &gt;= #{flrqstart}
+			</if>
+			<if test="flrqend != null and flrqend != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &lt;= #{flrqend}
+			</if>
+			<if test="lllx != null and lllx != ''">
+				and llgl.lllx = #{lllx}
+			</if>
+			<if test="sfqs != null and sfqs == '0'.toString">
+				and llgl.kdxx is null
+			</if>
+			<if test="sfqs != null and sfqs == '1'.toString">
+				and llgl.kdxx is not null
+			</if>
+			<if test="bz != null and bz != ''">
+				and llgl.bz ILIKE '%' ||#{bz}||'%'
+			</if>
+			<if test="khjc != null and khjc != ''">
+				and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+			</if>
+			<if test="zd != null and zd != ''">
+				and llgl.zd ILIKE '%' ||#{zd}||'%'
+			</if>
+			<if test="zdqymc != null and zdqymc != ''">
+				and zdqy.csmc ILIKE '%' ||#{zdqymc}||'%'
+			</if>
+			<if test="fzdq != null and fzdq != ''">
+				and llgl.fzdq ILIKE '%' ||#{fzdq}||'%'
+			</if>
+			<if test="htdh != null and htdh != ''">
+				and (llgl.htdh ILIKE '%' ||#{htdh}||'%' or yxht.htbh ILIKE '%' ||#{htdh}||'%')
+			</if>
+			<if test="shdz != null and shdz != ''">
+				and llgl.shdz ILIKE '%' ||#{shdz}||'%'
+			</if>
+			<if test="shlxfs != null and shlxfs != ''">
+				and llgl.shlxfs ILIKE '%' ||#{shlxfs}||'%'
+			</if>
+			<if test="sfqr != null and sfqr != ''">
+				and llgl.sfqr = #{sfqr}
+			</if>
+		</where>
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForProductionSearchExp" parameterType="LlglDto" resultType="LlglDto">
+		SELECT  llgl.llid,coalesce(hwllmx.slsl,0) slsl,wlgl_ll.wlbm wlbm_t ${sqlParam}
+		from igams_llgl llgl
+		left join igams_sczlgl sczlgl on sczlgl.sczlid=llgl.sczlid and sczlgl.scbj='0'
+		left join igams_sczlmx sczlmx on sczlmx.sczlid=sczlgl.sczlid and sczlmx.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=sczlmx.wlid
+		left join igams_hwllxx hwllxx on hwllxx.llid=llgl.llid and hwllxx.scbj='0'
+		left join igams_wlgl wlgl_ll on wlgl_ll.wlid=hwllxx.wlid
+		left join matridx_jgxx jgxx on jgxx.jgid = llgl.sqbm
+		left join matridx_xtyh sqry on sqry.yhid = llgl.sqry
+		left join matridx_jcsj cklb on cklb.csid = llgl.cklb
+		left join matridx_xtyh llry on llry.yhid = llgl.llr
+		left join matridx_xtyh flry on flry.yhid = llgl.flry
+		left join igams_khgl khgl on khgl.khid = llgl.khid
+		left join matridx_jcsj khlb on khlb.csid = khgl.khlb
+		left join matridx_jcsj zdqy on zdqy.csid = llgl.zdqy
+		left join igams_yxht yxht on yxht.htid = llgl.htdh
+		left join igams_hwllmx hwllmx on hwllmx.hwllid=hwllxx.hwllid
+		left join igams_hwxx hwxx on hwxx.hwid=hwllmx.hwid and hwxx.scbj='0'
+		left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid
+		<where>
+			llgl.scbj != '1' and hwllmx.slsl is not null and hwllmx.slsl>0
+			<if test="entire != null and entire != ''">
+				and (
+				wlgl_ll.wlbm ILIKE '%' ||#{entire}||'%'
+				or wlgl_ll.wlmc ILIKE '%' ||#{entire}||'%'
+				or hwxx.zsh ILIKE '%' ||#{entire}||'%'
+				or jgxx.jgmc ILIKE '%' ||#{entire}||'%'
+				or sqry.zsxm ILIKE '%' ||#{entire}||'%'
+				or hwxx.scph ILIKE '%' ||#{entire}||'%'
+				or llgl.lldh ILIKE '%' ||#{entire}||'%'
+				or khgl.khjc ILIKE '%' ||#{entire}||'%'
+				or llgl.zd ILIKE '%' ||#{entire}||'%'
+				or zdqy.csmc ILIKE '%' ||#{entire}||'%'
+				or llgl.fzdq ILIKE '%' ||#{entire}||'%'
+				or (llgl.htdh ILIKE '%' ||#{entire}||'%' or yxht.htbh ILIKE '%' ||#{entire}||'%')
+				or llgl.shdz ILIKE '%' ||#{entire}||'%'
+				or llgl.shlxfs ILIKE '%' ||#{entire}||'%'
+				or sczlgl.zldh ILIKE '%' ||#{entire}||'%'
+				)
+			</if>
+			<if test="wlbm != null and wlbm != ''">
+				and wlgl_ll.wlbm ILIKE '%' ||#{wlbm}||'%'
+			</if>
+			<if test="zldh != null and zldh != ''">
+				and sczlgl.zldh ILIKE '%' ||#{zldh}||'%'
+			</if>
+			<if test="wlmc != null and wlmc != ''">
+				and wlgl_ll.wlmc ILIKE '%' ||#{wlmc}||'%'
+			</if>
+			<if test="zsh != null and zsh != ''">
+				and hwxx.zsh ILIKE '%' ||#{zsh}||'%'
+			</if>
+			<if test="scph != null and scph != ''">
+				and hwxx.scph ILIKE '%' ||#{scph}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jgxx.jgmc ILIKE '%' ||#{sqbmmc}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+				and sqry.zsxm ILIKE '%' ||#{sqrmc}||'%'
+			</if>
+			<if test="lldh != null and lldh != ''">
+				and llgl.lldh ILIKE '%' ||#{lldh}||'%'
+			</if>
+			<if test="fzs != null and fzs.length > 0">
+				and wlgl_ll.wllb in
+				<foreach collection="fzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="lbs != null and lbs.length > 0">
+				and wlgl_ll.lb in
+				<foreach collection="lbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0">
+				and khlb.csid in
+				<foreach collection="khlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zts != null and zts.length > 0">
+				and llgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sqrqstart != null and sqrqstart != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &gt;= #{sqrqstart}
+			</if>
+			<if test="sqrqend != null and sqrqend != ''">
+				and to_char(llgl.sqrq,'yyyy-mm-dd') &lt;= #{sqrqend}
+			</if>
+			<if test="flrqstart != null and flrqstart != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &gt;= #{flrqstart}
+			</if>
+			<if test="flrqend != null and flrqend != ''">
+				and to_char(llgl.ckrq,'yyyy-mm-dd') &lt;= #{flrqend}
+			</if>
+			<if test="lllx != null and lllx != ''">
+				and llgl.lllx = #{lllx}
+			</if>
+			<if test="sfqs != null and sfqs == '0'.toString">
+				and llgl.kdxx is null
+			</if>
+			<if test="sfqs != null and sfqs == '1'.toString">
+				and llgl.kdxx is not null
+			</if>
+			<if test="bz != null and bz != ''">
+				and llgl.bz ILIKE '%' ||#{bz}||'%'
+			</if>
+			<if test="khjc != null and khjc != ''">
+				and khgl.khjc ILIKE '%' ||#{khjc}||'%'
+			</if>
+			<if test="zd != null and zd != ''">
+				and llgl.zd ILIKE '%' ||#{zd}||'%'
+			</if>
+			<if test="zdqymc != null and zdqymc != ''">
+				and zdqy.csmc ILIKE '%' ||#{zdqymc}||'%'
+			</if>
+			<if test="fzdq != null and fzdq != ''">
+				and llgl.fzdq ILIKE '%' ||#{fzdq}||'%'
+			</if>
+			<if test="htdh != null and htdh != ''">
+				and (llgl.htdh ILIKE '%' ||#{htdh}||'%' or yxht.htbh ILIKE '%' ||#{htdh}||'%')
+			</if>
+			<if test="shdz != null and shdz != ''">
+				and llgl.shdz ILIKE '%' ||#{shdz}||'%'
+			</if>
+			<if test="shlxfs != null and shlxfs != ''">
+				and llgl.shlxfs ILIKE '%' ||#{shlxfs}||'%'
+			</if>
+			<if test="sfqr != null and sfqr != ''">
+				and llgl.sfqr = #{sfqr}
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<update id="updateFzrByYfzr" parameterType="LlglDto">
+		update igams_llgl set
+		fzr=#{fzr}
+		where fzr=#{yfzr}
+	</update>
+
+	<select id="queryByLlid" resultType="LlglDto" parameterType="LlglDto">
+		select ll.lldh,ll.llid,wl.wlbm,wl.wlmc,jcsj.cskz1 as lbcskz1
+		from igams_llgl ll
+		left join igams_hwllxx xx on xx.llid=ll.llid
+		left join igams_wlgl wl on wl.wlid=xx.wlid
+		left join matridx_jcsj jcsj on jcsj.csid=wl.lb
+		where ll.llid=#{llid}
+	</select>
+</mapper>

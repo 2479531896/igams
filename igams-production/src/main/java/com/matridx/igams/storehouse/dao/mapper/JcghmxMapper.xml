@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJcghmxDao">
+
+    <select id="getDtoList" parameterType="JcghmxDto" resultType="JcghmxDto">
+        SELECT
+        jcghmx.hwid,
+        jcghmx.sfyzgh,
+        jcghmx.bz,
+        jcghmx.ghsl,
+        wlgl.wlid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        wlgl.gg,
+        wlgl.jldw,
+        hwxx.scph,
+        to_char( hwxx.scrq, 'YYYY-MM-dd' ) scrq,
+        to_char( hwxx.yxq, 'YYYY-MM-dd' ) yxq,
+        hwxx.ckid,
+        hwxx.kwbh,
+        hwxx.sl,
+        hwxx.kcl,
+        jcghmx.ghmxid,
+        jcghmx.jyxxid,
+        ck.ckdm,kw.ckdm as kwdm,
+        ck.ckmc,kw.ckmc as kwmc,hwxx.zsh,
+        wlgl.bzq,wlgl.bzqflg as yxqbz,wlgl.bzqflg,
+        jcjymx.jysl,
+        COALESCE(tab.yhsl,0) as yhsl,
+        jcghmx.jymxid,jcsj_lb.cskz1 lbcskz1,hwxx.sbysid,sbys.xlh,jcjymx.mxglid as jymxglid
+        FROM
+        igams_jcghmx jcghmx
+        left join igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+        LEFT JOIN igams_hwxx jchwxx ON jchwxx.hwid = jcjymx.hwid
+        LEFT JOIN igams_wlgl jcwlgl ON jcwlgl.wlid = jchwxx.wlid
+        LEFT JOIN matridx_jcsj jcsj_lb on jcwlgl.lb = jcsj_lb.csid
+        LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+        left join igams_ckxx ck on ck.ckid = hwxx.ckid
+        left join igams_ckxx kw on kw.ckid = hwxx.kwbh
+        left join igams_sbys sbys on sbys.sbysid=hwxx.sbysid
+        LEFT JOIN (select jymxid,sum(ghsl) as yhsl from igams_jcghmx where scbj='0' and jymxid is not null group by jymxid) tab on tab.jymxid=jcjymx.jymxid
+        where jcghmx.scbj = '0'
+        <if test="jcghid != null and jcghid != ''">
+            and jcghmx.jcghid = #{jcghid}
+        </if>
+        <if test="ids !=null and ids.size > 0">
+            and jcghmx.jcghid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getListByJyxxid" parameterType="JcghmxDto" resultType="JcghmxDto">
+        select jcghmx.sfyzgh,jcghmx.bz,jcghmx.ghsl,jcghmx.jyxxid,jcghmx.ghmxid
+        from igams_jcghmx jcghmx
+        where jcghmx.scbj = '0'
+        <if test="ids !=null and ids.size > 0">
+            and jcghmx.jyxxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="JcghmxDto">
+        insert into igams_jcghmx(ghmxid
+        <if test="jcghid != null and jcghid != ''">
+            ,jcghid
+        </if>
+        <if test="mxglid != null and mxglid != ''">
+            ,mxglid
+        </if>
+        <if test="jyxxid != null and jyxxid != ''">
+            ,jyxxid
+        </if>
+        <if test="sfyzgh != null and sfyzgh != ''">
+            ,sfyzgh
+        </if>
+        <if test="hwid != null and hwid != ''">
+            ,hwid
+        </if>
+        <if test="ghsl != null and ghsl != ''">
+            ,ghsl
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{ghmxid}
+        <if test="jcghid != null and jcghid != ''">
+            ,#{jcghid}
+        </if>
+        <if test="mxglid != null and mxglid != ''">
+            ,#{mxglid}
+        </if>
+        <if test="jyxxid != null and jyxxid != ''">
+            ,#{jyxxid}
+        </if>
+        <if test="sfyzgh != null and sfyzgh != ''">
+            ,#{sfyzgh}
+        </if>
+        <if test="hwid != null and hwid != ''">
+            ,#{hwid}
+        </if>
+        <if test="ghsl != null and ghsl != ''">
+            ,cast(#{ghsl} as numeric)
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_jcghmx(ghmxid
+            ,jcghid
+            ,mxglid
+            ,jyxxid
+            ,jymxid
+            ,sfyzgh
+            ,hwid
+            ,ghsl
+            ,bz
+        ,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ghmxid}
+                    ,#{item.jcghid}
+                    ,#{item.mxglid}
+                    ,#{item.jyxxid}
+                    ,#{item.jymxid}
+                    ,#{item.sfyzgh}
+                    ,#{item.hwid}
+                    ,cast(#{item.ghsl} as numeric)
+                    ,#{item.bz}
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="update" parameterType="JcghmxDto">
+        UPDATE igams_jcghmx
+        SET
+        xgry=#{xgry}
+        ,xgsj=LOCALTIMESTAMP
+        <if test="jcghid != null and jcghid != ''">
+            ,jcghid=#{jcghid}
+        </if>
+        <if test="mxglid != null and mxglid != ''">
+            ,mxglid=#{mxglid}
+        </if>
+        <if test="mxglid2 != null and mxglid2 != ''">
+            ,mxglid2=#{mxglid2}
+        </if>
+        <if test="jyxxid != null and jyxxid != ''">
+            ,jyxxid=#{jyxxid}
+        </if>
+        <if test="jymxid != null and jymxid != ''">
+            ,jymxid=#{jymxid}
+        </if>
+        <if test="sfyzgh != null and sfyzgh != ''">
+            ,sfyzgh=#{sfyzgh}
+        </if>
+        <if test="hwid != null and hwid != ''">
+            ,hwid=#{hwid}
+        </if>
+        <if test="ghsl != null and ghsl != ''">
+            ,ghsl=cast(#{ghsl} as numeric)
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz=#{bz}
+        </if>
+        <where>
+            ghmxid = #{ghmxid}
+        </where>
+    </update>
+
+    <select id="getDtoListGroupByCk" parameterType="JcghmxDto" resultType="JcghmxDto">
+        select tem.ckid from ( SELECT
+        jcghmx.sfyzgh,
+        jcghmx.bz,
+        jcghmx.ghsl,
+        wlgl.wlid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        wlgl.gg,
+        wlgl.jldw,
+        hwxx.scph,
+        to_char( hwxx.scrq, 'YYYY-MM-dd' ) scrq,
+        to_char( hwxx.yxq, 'YYYY-MM-dd' ) yxq,
+        hwxx.ckid,
+        hwxx.kwbh,
+        jcghmx.ghmxid,
+        jcghmx.jyxxid
+        FROM
+        igams_jcghmx jcghmx
+        LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+        where jcghmx.scbj = '0'
+        <if test="jcghid != null and jcghid != ''">
+            and jcghmx.jcghid = #{jcghid}
+        </if>
+        ) as tem group by tem.ckid
+    </select>
+
+    <delete id="deleteById" parameterType="String">
+        delete from igams_jcghmx
+        <where>
+            jcghid = #{jcghid}
+        </where>
+    </delete>
+
+    <update id="delete" parameterType="JcghmxDto">
+        update igams_jcghmx
+        <set>
+            scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            jcghid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

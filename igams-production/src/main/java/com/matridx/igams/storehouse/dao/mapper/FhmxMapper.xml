@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IFhmxDao" >
+        <select id="getDtoMxList" parameterType="String" resultType="FhmxDto">
+            select
+            fhmx.xsmxid,fhmx.fhsl,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,sfwxp.csmc as sfwxpmc,wl.bz,wl.zt,wl.bzqflg,wl.lb,wl.aqkc,wl.wlzlbtc,zlbtcjc.csmc wlzlbtcmc
+			,zlbtcjc.csdm wlzlbtcdm,wl.lrry,wl.lrsj,wl.xgry,wl.xgsj,wl.jwlbm,wl.scbj,jc.csmc wllbmc,zlbjc.csmc wlzlbmc,jc.csdm wllbdm,zlbjc.csdm wlzlbdm,lbjc.csmc lbmc,lbjc.csdm lbdm,wl.qdl,wl.hq,sscplb.csmc sscplbmc,wl.sscplb
+			,hwxx.scph,ckxx.ckmc,kw.ckmc as kwmc,fhmx.fhid,fhmx.fhmxid
+            from igams_fhmx fhmx
+            left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid
+            left join igams_wlgl wl on wl.wlid=hwxx.wlid
+		  	left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid and ckxx.scbj!='1'
+			LEFT JOIN igams_ckxx kw on kw.ckid = hwxx.kwbh and kw.scbj!='1'
+            left outer join matridx_jcsj jc on wl.wllb = jc.csid
+			left outer join matridx_jcsj zlbjc on wl.wlzlb = zlbjc.csid
+			left outer join matridx_jcsj lbjc on wl.lb = lbjc.csid
+			left outer join matridx_jcsj zlbtcjc on wl.wlzlbtc = zlbtcjc.csid
+			left outer join matridx_jcsj sscplb on wl.sscplb = sscplb.csid
+		    left outer join matridx_jcsj sfwxp on wl.sfwxp = sfwxp.csid
+		    where fhmx.scbj!='1' and fhmx.fhid=#{fhid}
+        </select>
+        
+        <select id="getFhmxList" parameterType="FhmxDto" resultType="FhmxDto">
+	        select fhmx.fhid,fhmx.fhmxid,wlgl.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,jc_wllb.csmc as wllbmc,fhmx.xsdd,fhmx.suil,
+        		jc_wlzlb.csmc as wlzlbmc,fhmx.fhsl,(COALESCE(fhmx.fhsl,0)-COALESCE(fhmx.thsl,0)) as kthsl,khgl.khdm,
+				wlgl.ychh,wlgl.jldw,fhgl.fhdh,fhmx.hwid,ckxx.ckmc,ck_hw.ckmc as hwmc,hwxx.kwbh as kw,hwxx.ckid as ck,fhgl.kh,khgl.khmc,khgl.khjc,
+				hwxx.yxq,hwxx.scrq,hwxx.scph,jc_zllb.csmc as zllbmc,ckxx.ckdm,wlgl.bzq,fhmx.hsdj,fhmx.wsdj,fhmx.bj,fhgl.bz,fhmx.fhmxglid,
+				fhmx.xsmxid,fhgl.xsbm,jgxx.jgmc xsbmmc,fhgl.ddh,fhgl.jsr,fhgl.shdz,hwxx.zsh,fhmx.ckid
+			from igams_fhmx fhmx
+        	left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj!='1'
+        	left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid and ckxx.scbj!='1'
+        	left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj!='1'
+        	left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+        	left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+        	left join matridx_jcsj jc_zllb on jc_zllb.csid=wlgl.lb
+        	left join igams_ckxx ck_hw on ck_hw.ckid=hwxx.kwbh
+			left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid and fhgl.scbj!='1'
+			left join matridx_jgxx jgxx on jgxx.jgid = fhgl.xsbm
+			left join igams_khgl khgl on khgl.khid=fhgl.kh
+        	<where>
+        		fhmx.scbj!='1' 
+        		<if test="fhid !=null and fhid !=''">
+        			and fhmx.fhid=#{fhid}
+        		</if>
+				<if test="mxids !=null and mxids.size >0" >
+					and fhmx.fhmxid in
+					<foreach collection="mxids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+        		<if test="ids !=null and ids.size >0" >
+					and ckxx.ckqxlx in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>       		
+        	</where>      	
+        </select>
+
+	<insert id="insertList" parameterType="List">
+		insert into igams_fhmx(fhmxid,fhid,ckid,ckmxid,hwid,fhsl,thsl,bz,lrry,xsdd,bj,suil,hsdj,wsdj,lrsj,scbj,xsmxid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.fhmxid},#{item.fhid},#{item.ckid},#{item.ckmxid},#{item.hwid},cast(#{item.fhsl} as numeric),cast(#{item.thsl} as numeric)
+				,#{item.bz},#{item.lrry},#{item.xsdd},cast(#{item.bj} as numeric),cast(#{item.suil} as numeric),
+			    cast(#{item.hsdj} as numeric),cast(#{item.wsdj} as numeric),
+				LOCALTIMESTAMP,'0',#{item.xsmxid}
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	<select id="getDtoAllByFhid" parameterType="FhmxDto" resultType="FhmxDto">
+		select fhmx.fhmxid,fhmx.fhid,ckxx_ck.ckdm,ckxx_kw.ckdm as kwckdm,wlgl.wlbm,fhmx.fhsl,hwxx.scph,hwxx.ckid as ck,
+		fhmx.bz,hwxx.yxq,hwxx.scrq,fhmx.xsdd,wlgl.wlmc,wlgl.bzqflg,wlgl.bzq,jcsj_xslx.csdm as xslxdm,ckxx_ck.ckqxlx,
+		fhmx.suil,fhmx.hsdj,fhmx.wsdj,hwxx.kcglid,ckgl.ckid,ckmx.ckmxid,fhmx.xsmxid,hwxx.wlid,fhmx.hwid,xsgl.u8xsdh,xsgl.glid,
+		xsmx.bj,xsmx.hsdj,xsmx.wsdj,xsmx.suil,to_char(fhmx.lrsj,'yyyy-MM-dd HH24:mi') lrsj,xsmx.mxglid,xsmx.xh as ddxh,wlgl.jldw,wlgl.gg,fhgl.zt
+			from igams_fhmx fhmx
+			left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj!='1'
+			left join igams_ckxx ckxx_ck on ckxx_ck.ckid=hwxx.ckid and ckxx_ck.scbj!='1'
+			left join igams_ckxx ckxx_kw on ckxx_kw.ckid=hwxx.kwbh and ckxx_kw.scbj!='1'
+			left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj!='1'
+			left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid and fhgl.scbj!='1'
+			left join matridx_jcsj jcsj_xslx on jcsj_xslx.csid=fhgl.xslx and jcsj_xslx.scbj!='1'
+			left join igams_ckmx ckmx on ckmx.ckmxid=fhmx.ckmxid and ckmx.scbj!='1'
+			left join igams_ckgl ckgl on ckgl.ckid=ckmx.ckid and ckgl.scbj!='1'
+			left join igams_xsmx xsmx on fhmx.xsmxid = xsmx.xsmxid and xsmx.scbj != '1'
+			left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid and xsgl.scbj != '1'
+		<where>
+			fhmx.scbj!='1' and fhmx.fhid=#{fhid}
+		</where>
+	</select>
+
+	<select id="getPagedForException" parameterType="FhmxDto" resultType="FhmxDto">
+		select fhmx.fhmxid,fhmx.fhid,wlgl.wlbm,fhmx.fhsl,hwxx.scph,hwxx.ckid as ck,
+		fhmx.bz,hwxx.yxq,hwxx.scrq,fhmx.xsdd,wlgl.wlmc,wlgl.bzqflg,wlgl.bzq,
+		fhmx.suil,fhmx.hsdj,fhmx.wsdj,hwxx.kcglid,fhmx.xsmxid,hwxx.wlid,fhmx.hwid,xsgl.u8xsdh,xsgl.glid,
+		xsmx.bj,xsmx.hsdj,xsmx.wsdj,xsmx.suil,to_char(fhmx.lrsj,'yyyy-MM-dd HH24:mi') lrsj,xsmx.mxglid,xsmx.xh as ddxh,wlgl.jldw,wlgl.gg,kh.khmc,fhgl.djrq
+		from igams_fhmx fhmx
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid and fhgl.scbj!='1'
+		left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj!='1'
+		left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj!='1'
+		left join igams_xsmx xsmx on fhmx.xsmxid = xsmx.xsmxid and xsmx.scbj != '1'
+		left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid and xsgl.scbj != '1'
+		left join igams_khgl kh on kh.khid=xsgl.khjc and kh.scbj='0'
+		<where>
+			fhmx.scbj!='1'
+			<if test="wlmc !=null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+			</if>
+			<if test="wlbm !=null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+			</if>
+			<if test="khmc !=null and khmc != ''">
+				and kh.khmc ILIKE '%'||#{khmc}||'%'
+			</if>
+			<if test="scph !=null and scph != ''">
+				and hwxx.scph ILIKE '%'||#{scph}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_fhmx
+			<set>
+			<trim prefixOverrides=",">
+				<if test="item.fhmxglid !=null and item.fhmxglid !=''">
+					,fhmxglid=#{item.fhmxglid}
+				</if>
+				<if test="item.ckmxglid !=null and item.ckmxglid !=''">
+					,ckmxglid=#{item.ckmxglid}
+				</if>
+				<if test="item.thsl !=null and item.thsl !=''">
+					,thsl=cast(#{item.thsl} as numeric)
+				</if>
+			</trim>
+			</set>
+			<where>
+				fhmxid=#{item.fhmxid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	<select id="getDtoGroupBy" parameterType="String" resultType="FhmxDto">
+		select sum(fhmx.fhsl) as zfhsl,hwxx.kcglid
+			from igams_fhmx fhmx
+			left join igams_hwxx hwxx on hwxx.hwid=fhmx.hwid and hwxx.scbj='0'
+		<where>
+			fhmx.scbj!='1' and fhmx.fhid=#{fhid}
+		</where>
+		group by hwxx.kcglid
+	</select>
+
+	<delete id="delete" parameterType="FhmxDto">
+		delete from igams_fhmx fhmx where fhmx.fhid = #{fhid}
+	</delete>
+	<update id="update" parameterType="FhmxDto">
+		update igams_fhmx
+		<set>
+		<trim prefixOverrides=",">
+			<if test="scry != null and scry != ''">
+				,scry = #{scry},scsj = LOCALTIMESTAMP
+			</if>
+			<if test="scbj != null and scbj != ''">
+				,scbj = #{scbj}
+			</if>
+		</trim>
+		</set>
+		where fhid = #{fhid}
+	</update>
+	<update id="updateThsls" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_fhmx
+				<set>
+					<if test="item.thslbj =='0'.toString()">
+						thsl=COALESCE(thsl,0) - cast(#{item.thsl} as numeric)
+					</if>
+					<if test="item.thslbj =='1'.toString()">
+						thsl=COALESCE(thsl,0) + cast(#{item.thsl} as numeric)
+					</if>
+				</set>
+				<where>
+					fhmxid=#{item.fhmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<update id="updateFhsls" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_fhmx
+				<set>
+					<if test="item.fhslbj =='0'.toString()">
+						fhsl=COALESCE(fhsl,0) - cast(#{item.fhsl} as numeric)
+					</if>
+					<if test="item.fhslbj =='1'.toString()">
+						fhsl=COALESCE(fhsl,0) + cast(#{item.fhsl} as numeric)
+					</if>
+				</set>
+				<where>
+					fhmxid=#{item.fhmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<select id="getDto" parameterType="FhmxDto" resultType="FhmxDto">
+		select fhmx.xsmxid,fhmx.fhmxid
+		from igams_fhmx fhmx
+		where fhmx.scbj ='0'
+		<if test="fhmxid !=null and fhmxid !=''">
+			and fhmx.fhmxid=#{fhmxid}
+		</if>
+	</select>
+	<select id="getFhByXsmx" parameterType="FhmxDto" resultType="FhmxDto">
+		select fhmx.xsmxid,fhmx.fhmxid,fhgl.ddh xsid
+		from igams_fhmx fhmx
+		left join igams_fhgl fhgl on fhgl.fhid = fhmx.fhid and fhgl.scbj ='0'
+		where fhmx.scbj ='0'
+		<if test="xsmxid != null and xsmxid != ''">
+			and fhmx.xsmxid = #{xsmxid}
+		</if>
+		<if test="ids !=null and ids.size > 0">
+			and fhmx.xsmxid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+</mapper>

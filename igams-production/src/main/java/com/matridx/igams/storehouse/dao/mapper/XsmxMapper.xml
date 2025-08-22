@@ -1,0 +1,2681 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXsmxDao" >
+	<sql id="SEARCH_TERMS">
+	and tmp.zt='80'
+		<if test="entire !=null and entire !=''">
+			and( tmp.ddh like '%'||#{entire}||'%'
+			or jgxx.jgmc like '%'||#{entire}||'%'
+			or khgl.khmc like '%'||#{entire}||'%'
+			or khgl.khjc like '%'||#{entire}||'%'
+			or tmp.htbh like '%'||#{entire}||'%'
+			or yxht.htbh like '%'||#{entire}||'%'
+			or tmp.zd like '%'||#{entire}||'%'
+			or sf.csmc like '%'||#{entire}||'%'
+			or tmp.fzdq like '%'||#{entire}||'%'
+			or ywy.zsxm like '%'||#{entire}||'%'
+			or wlgl.wlbm like '%'||#{entire}||'%'
+			or wlgl.wlmc like '%'||#{entire}||'%'
+			or wlgl.gg like '%'||#{entire}||'%'
+			or tmp.scph like '%'||#{entire}||'%'
+			or khgl.lxr like '%'||#{entire}||'%'
+			or khgl.lxfs like '%'||#{entire}||'%'
+			or tmp.shdz like '%'||#{entire}||'%'
+			or tmp.kdxx like '%'||#{entire}||'%'
+			or tmp.shlxfs like '%'||#{entire}||'%'
+			or tmp.yddh like '%'||#{entire}||'%')
+		</if>
+		<if test="ddh != null and ddh != ''">
+			and tmp.ddh like '%'||#{ddh}||'%'
+		</if>
+		<if test="yddh != null and yddh != ''">
+			and tmp.yddh like '%'||#{yddh}||'%'
+		</if>
+		<if test="bm != null and bm != ''">
+			and jgxx.jgmc like '%'||#{bm}||'%'
+		</if>
+		<if test="khmc != null and khmc != ''">
+			and khgl.khmc like '%'||#{khmc}||'%'
+		</if>
+		<if test="khjc != null and khjc != ''">
+			and khgl.khjc like '%'||#{khjc}||'%'
+		</if>
+		<if test="zd != null and zd != ''">
+			and tmp.zd like '%'||#{zd}||'%'
+		</if>
+		<if test="zdqy != null and zdqy != ''">
+			and sf.csmc like '%'||#{zdqy}||'%'
+		</if>
+		<if test="htbh != null and htbh != ''">
+			and (tmp.htbh like '%'||#{htbh}||'%' or yxht.htbh like '%'||#{htbh}||'%')
+		</if>
+		<if test="fzdq != null and fzdq != ''">
+			and tmp.fzdq like '%'||#{fzdq}||'%'
+		</if>
+		<if test="ywy != null and ywy != ''">
+			and ywy.zsxm like '%'||#{ywy}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm like '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc like '%'||#{wlmc}||'%'
+		</if>
+		<if test="gg != null and gg != ''">
+			and wlgl.gg like '%'||#{gg}||'%'
+		</if>
+		<if test="scph != null and scph != ''">
+			and tmp.scph like '%'||#{scph}||'%'
+		</if>
+		<if test="khlxr != null and khlxr != ''">
+			and khgl.lxr like '%'||#{khlxr}||'%'
+		</if>
+		<if test="khlxfs != null and khlxfs != ''">
+			and khgl.lxfs like '%'||#{khlxfs}||'%'
+		</if>
+		<if test="shdz != null and shdz != ''">
+			and tmp.shdz like '%'||#{shdz}||'%'
+		</if>
+		<if test="kdxx != null and kdxx != ''">
+			and tmp.kdxx like '%'||#{kdxx}||'%'
+		</if>
+		<if test="shlxfs != null and shlxfs != ''">
+			and tmp.shlxfs like '%'||#{shlxfs}||'%'
+		</if>
+		<if test="khlbs !=null and khlbs.length > 0">
+			and khgl.khlb in
+			<foreach collection="khlbs" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="djlxs !=null and djlxs.length > 0">
+			and tmp.djlxmc in
+			<foreach collection="djlxs" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="xslxs !=null and xslxs.length > 0">
+			and tmp.xslx in
+			<foreach collection="xslxs" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="cplxs !=null and cplxs.length > 0">
+			and tmp.cplx in
+			<foreach collection="cplxs" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yxqstart != null and yxqstart != ''">
+			and tmp.yxq_t &gt;= #{yxqstart}
+		</if>
+		<if test="yxqend != null and yxqend != ''">
+			and tmp.yxq_t &lt;= #{yxqend}
+		</if>
+		<if test="ddrqstart != null and ddrqstart != ''">
+			and tmp.ddrq_t &gt;= #{ddrqstart}
+		</if>
+		<if test="ddrqend != null and ddrqend != ''">
+			and tmp.ddrq_t &lt;= #{ddrqend}
+		</if>
+	</sql>
+	<select id="getDjhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(ckdh,LENGTH(ckdh)-strpos(reverse(ckdh),'-')+2,LENGTH(ckdh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial 
+			FROM igams_ckgl
+			<where> 
+				scbj = '0' AND ckdh like #{prefix}||'%'
+			</where>	 
+	</select>
+
+	<insert id="insertCkgls" parameterType="List">
+		insert into igams_ckgl(jcjyid,ckid,llid,ckdh,bm,llr,flr,ckrq,ck,cklb,bz,zt,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.jcjyid},#{item.ckid},#{item.llid},#{item.ckdh},#{item.bm},#{item.llr},#{item.flr},cast(#{item.ckrq} as timestamp),#{item.ck},#{item.cklb}
+				,#{item.bz},#{item.zt},#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+	<update id="updateCkgls" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ckgl
+			<set>
+				glid=#{item.glid},zt=#{item.zt}
+			</set>
+			<where>
+				ckid=#{item.ckid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getDtoList" parameterType="XsmxDto" resultType="XsmxDto">
+		select xsmx.xsid,xsmx.xsmxid,xsmx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.jldw,wlgl.gg,xsmx.sl,xsmx.bj,xsmx.wszje,xsmx.hsdj,xsmx.wsdj,xsmx.jsze,xsmx.suil,xsmx.yfhrq,
+		xsgl.oaxsdh,kh.khmc khjcmc,kh.khdm khdm,xsgl.khjc,xsmx,COALESCE(xsmx.yfhsl,0) yfhsl,(COALESCE(xsmx.sl,0) - coalesce(xsmx.yfhsl,0)) as kysl,cplx.csmc cplx,xsgl.jcjyid,xsmx.sczt,
+		xsmx.dky,xsmx.dkje,wlzllb.cskz1 as wlzllbcskz1
+		from igams_xsmx xsmx
+		left join igams_xsgl xsgl on xsgl.xsid=xsmx.xsid and xsgl.scbj='0'
+		left join igams_khgl kh on kh.khid=xsgl.khjc and kh.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid  and wlgl.scbj='0'
+		left join matridx_jcsj cplx on xsmx.cplx=cplx.csid
+		left join matridx_jcsj wlzllb on wlzllb.csid= wlgl.lb and wlzllb.scbj='0'
+		<where>
+			xsmx.scbj='0'
+			<if test="xsid !=null and xsid != ''">
+				and xsmx.xsid = #{xsid}
+			</if>
+			<if test="czbs !=null and czbs != '' and czbs == '1'.toString">
+				and COALESCE(xsmx.sl,0) - coalesce(xsmx.yfhsl,0) > 0
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and xsmx.xsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="xsmxids !=null and xsmxids.size > 0">
+				and xsmx.xsmxid in
+				<foreach collection="xsmxids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getPagedDtoList" parameterType="XsmxDto" resultType="XsmxDto">
+		select xsmx.xsid,xsmx.xsmxid,xsmx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.jldw,wlgl.gg,hwxx.scph,xsmx.sl,xsmx.bj,xsmx.wszje,xsmx.hsdj,xsmx.wsdj,xsmx.jsze,xsmx.suil,xsmx.yfhrq
+		,xsgl.oaxsdh,kh.khmc khjcmc,kh.khdm khdm,xsgl.khjc,kh.khmc,kh.khid,xsmx.dkje
+		from igams_xsmx xsmx
+		left join igams_xsgl xsgl on xsgl.xsid=xsmx.xsid and xsgl.scbj='0'
+		left join igams_khgl kh on kh.khid=xsgl.khjc and kh.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid  and wlgl.scbj='0'
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid AND fhmx.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		<where>
+			xsmx.scbj='0'
+			<if test="wlmc !=null and wlmc != ''">
+				and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+			</if>
+			<if test="wlbm !=null and wlbm != ''">
+				and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+			</if>
+			<if test="khmc !=null and khmc != ''">
+				and kh.khmc ILIKE '%'||#{khmc}||'%'
+			</if>
+			<if test="xsid !=null and xsid != ''">
+				and xsmx.xsid = #{xsid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and xsmx.xsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="xsmxids !=null and xsmxids.size > 0">
+				and xsmx.xsmxid in
+				<foreach collection="xsmxids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getListById" parameterType="XsmxDto" resultType="XsmxDto">
+		select xsmx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.gg,xsmx.sl,xsmx.bj,xsmx.wszje,xsmx.hsdj,xsmx.wsdj,xsmx.jsze,xsmx.suil,xsmx.yfhrq
+		,xsmx.cplx,wlgl.jldw,xsmx.sczt,xsmx.dky,xsmx.dkje
+		from igams_xsmx xsmx
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid
+		<where>
+			xsmx.scbj='0' and xsmx.xsid=#{xsid}
+		</where>
+	</select>
+
+	<update id="discard" parameterType="XsmxDto">
+		update igams_xsmx
+		<set>
+			scbj='2',xgry=#{scry},xgsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			xsid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<insert id="insertList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				insert into igams_xsmx(xsmxid,xsid,wlid,sl,bj,hsdj,wsdj,wszje,jsze,suil,yfhrq,lrry,lrsj,scbj,cplx,jyxxid,sczt,dky
+				<if test="item.dkje!=null and item.dkje!=''">
+					,dkje
+				</if>
+				)
+				values
+				(
+				#{item.xsmxid},#{item.xsid},#{item.wlid},cast(#{item.sl} as numeric),cast(#{item.bj} as numeric),cast(#{item.hsdj} as numeric),cast(#{item.wsdj} as numeric)
+				,cast(#{item.wszje} as numeric),cast(#{item.jsze} as numeric),cast(#{item.suil} as numeric),cast(#{item.yfhrq} as date),#{item.lrry},LOCALTIMESTAMP,'0',#{item.cplx},#{item.jyxxid},#{item.sczt}
+				,#{item.dky}
+				<if test="item.dkje!=null and item.dkje!=''">
+					,cast(#{item.dkje} as numeric)
+				</if>
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<update id="updateXsmxList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_xsmx
+				<set>
+					<trim prefixOverrides=",">
+						<if test="item.fhbj == '0'.toString()">
+							,yfhsl=COALESCE(yfhsl,0) - cast(#{item.yfhsl} as numeric)
+						</if>
+						<if test="item.fhbj == '1'.toString()">
+							,yfhsl=COALESCE(yfhsl,0) + cast(#{item.yfhsl} as numeric)
+						</if>
+					</trim>
+				</set>
+				<where>
+					xsmxid=#{item.xsmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_xsmx
+				<set>
+					xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+					<if test="item.mxglid !=null and item.mxglid != ''">
+						,mxglid = #{item.mxglid}
+					</if>
+					<if test="item.xh !=null and item.xh != ''">
+						,xh = #{item.xh}
+					</if>
+					<if test="item.dkje !=null and item.dkje != ''">
+						,dkje = cast(coalesce(#{item.dkje},'0') as numeric)
+					</if>
+				</set>
+				<where>
+					xsmxid=#{item.xsmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<delete id="delete" parameterType="XsmxDto">
+		update igams_xsmx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="xsid !=null and xsid != ''">
+				or xsid = #{xsid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or xsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	<select id="getPagedDtoListDetails" parameterType="XsmxDto" resultType="XsmxDto">
+		SELECT
+		tmp.zjid,
+		khlx.csmc khlxmc,
+		case when xslx.csmc is not null and xslx.csmc !='' then xslx.csmc else '/' end xslxmc,
+		tmp.ddh,
+		tmp.djlxmc,
+		tmp.zd,
+		sf.csmc zdqy,
+		tmp.sl,
+		tmp.scph,
+		tmp.dj,
+		round( tmp.jsze, 5 ) jsze,
+		tmp.ddrq,
+		cplx.csmc cplxmc,
+		coalesce(yxht.htbh,tmp.htbh) htbh,
+		ywy.zsxm ywy,
+		jgxx.jgmc bm,
+		tmp.fzdq,
+		tmp.hsdj,
+		tmp.zk,
+		tmp.zsyy,
+		tmp.bz,
+		tmp.scrq,
+		tmp.yxq,
+		case when tmp.dky is not null and tmp.dky!='' then tmp.dky else '/' end dky,
+		case when  tmp.fph is not null and tmp.fph!='' then tmp.fph else '/' end fph,
+		tmp.dkje,
+		tmp.khid,
+		tmp.shdz,
+		tmp.kdxx,
+		tmp.xslx,
+		tmp.cplx,
+		tmp.wlid,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.gg,
+		wlgl.jldw,
+		khgl.khjc,
+		khgl.khlb,
+		khgl.khmc,
+		khgl.lxr khlxr,
+		khgl.lxfs khlxfs,
+		tmp.yddh,
+		tmp.u8dh,
+		tmp.yu8dh,
+		tmp.viewid,
+		tmp.yviewid,
+		tmp.zt,
+		tmp.shlxfs,
+		tmp.fhsl,
+		wlgl.ychh,
+		tmp.fhr,
+		jsr.zsxm fhrmc,
+		ysfs.csmc ysfsmc
+		FROM
+		(
+		SELECT
+		xsmx.xsmxid AS zjid,
+		xsgl.oaxsdh ddh,
+		CASE
+
+		WHEN xsgl.djlx = '1' THEN
+		'销售换货单'
+		WHEN xsgl.djlx = '2' THEN
+		'借出转销售单' ELSE'销售单'
+		END djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy,
+		xsmx.sl,
+		hwxx.scph AS scph,
+		xsmx.wsdj AS dj,
+		xsmx.jsze,
+		to_char( xsgl.ddrq, 'yyyy-mm-dd' ) ddrq,
+		to_char( xsgl.ddrq, 'yyyy-mm-dd' ) ddrq_t,
+		xsgl.htdh htbh,
+		xsgl.ywy,
+		xsgl.xsbm bm,
+		xsgl.fzdq,
+		xsmx.hsdj,
+		xsgl.zk,
+		'' AS zsyy,
+		xsgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) AS scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) AS yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) AS yxq_t,
+		xsmx.dky,
+		xsgl.xsfph fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		xsgl.khjc khid,
+		xsgl.shdz,
+		xsgl.shlxfs,
+		xsgl.kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		xsmx.wlid,
+		xsgl.u8xsdh u8dh,
+		CASE
+
+		WHEN yxsgl.u8xsdh IS NOT NULL THEN
+		yxsgl.u8xsdh
+		WHEN jcjygl.u8jydh IS NOT NULL THEN
+		jcjygl.u8jydh ELSE xsgl.u8xsdh
+		END yu8dh,
+		xsgl.xsid AS viewid,
+		CASE
+
+		WHEN yxsgl.xsid IS NOT NULL THEN
+		yxsgl.xsid
+		WHEN jcjygl.jcjyid IS NOT NULL THEN
+		jcjygl.jcjyid ELSE xsgl.xsid
+		END yviewid,
+		xsgl.zt,
+		CASE
+
+		WHEN yxsgl.oaxsdh IS NOT NULL THEN
+		yxsgl.oaxsdh
+		WHEN jcjygl.jydh IS NOT NULL THEN
+		jcjygl.jydh ELSE xsgl.oaxsdh
+		END yddh,
+		fhmx.fhsl AS fhsl,
+		fhgl.djrq fhr,
+		xsgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = xsgl.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = xsmx.jyxxid
+		LEFT JOIN igams_xsgl yxsgl ON yxsgl.xsid = xsgl.yxsid
+		AND yxsgl.scbj = '0'
+		WHERE
+		xsmx.scbj = '0' UNION ALL
+		SELECT
+		llmx.llmxid AS zjid,
+		llgl.lldh AS ddh,
+		'领料单' AS djlxmc,
+		llgl.zd,
+		llgl.zdqy,
+		hwllxx.qlsl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( llgl.sqrq, 'yyyy-mm-dd' ) AS ddrq,
+		to_char( llgl.sqrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		llgl.htdh AS htbh,
+		llgl.gsr AS ywy,
+		llgl.gsrbm bm,
+		llgl.fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		llgl.zsyy,
+		llgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		llgl.khid,
+		llgl.shdz,
+		llgl.shlxfs,
+		llgl.kdxx,
+		llgl.xslx AS xslx,
+		hwllxx.cplx AS cplx,
+		hwxx.wlid,
+		ckgl.u8ckdh u8dh,
+		ckgl.u8ckdh AS yu8dh,
+		llgl.llid AS viewid,
+		CASE
+
+		WHEN ckgl.ckid IS NOT NULL THEN
+		ckgl.ckid ELSE llgl.llid
+		END yviewid,
+		llgl.ckzt AS zt,
+		CASE
+
+		WHEN ckgl.ckdh IS NOT NULL THEN
+		ckgl.ckdh ELSE llgl.lldh
+		END yddh,
+		llmx.slsl AS fhsl,
+		llgl.ckrq fhr,
+		llgl.ysfs,
+		'' jsr
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		left join igams_ckmx ckmx on ckmx.llmxid=llmx.llmxid
+		LEFT JOIN igams_ckgl ckgl ON ckgl.ckid = ckmx.ckid
+		AND ckgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		jcghmx.ghmxid AS zjid,
+		jcghgl.ghdh ddh,
+		'归还单' AS djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy, jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) AS ddrq,
+		to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcghgl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcghgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcghgl.dwid khid,
+		jcjygl.shdz AS shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		jcghgl.xslx AS xslx,
+		'' AS cplx,
+		hwxx.wlid,
+		jcghgl.u8ghdh u8dh,
+		jcjygl.u8jydh AS yu8dh,
+		jcghgl.jcghid AS viewid,
+		jcjygl.jcjyid AS yviewid,
+		jcghgl.zt,
+		jcjygl.jydh AS yddh,
+
+		- jcghmx.ghsl AS  flsl,
+		jcghgl.ghrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		left join igams_jcjygl jcjygl on jcjymx.jcjyid=jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0' UNION ALL
+		SELECT
+		thmx.thmxid AS zjid,
+		thgl.thdh AS ddh,
+		'退货单' AS djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy, xsmx.sl AS sl,
+		hwxx.scph,
+		xsmx.wsdj AS dj, xsmx.jsze,
+		to_char( thgl.djrq, 'yyyy-mm-dd' ) AS ddrq,
+		to_char( thgl.djrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		xsgl.htdh AS htbh,
+		thgl.ywy,
+		thgl.xsbm bm,
+		xsgl.fzdq AS fzdq,
+		thmx.hsdj,
+		xsgl.zk AS zk,
+		'' AS zsyy,
+		thgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		xsmx.dky AS dky,
+		xsgl.xsfph AS fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		thgl.kh khid,
+		thgl.shdz,
+		xsgl.shlxfs,
+		fhgl.kdxx AS kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		hwxx.wlid,
+		thgl.u8thdh u8dh,
+		xsgl.u8xsdh AS yu8dh,
+		thgl.thid viewid,
+		xsgl.xsid AS yviewid,
+		thgl.zt,
+		xsgl.oaxsdh AS yddh ,
+		- thmx.thsl AS fhsl,
+		thgl.djrq fhr,
+		thgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhmx fhmx ON fhmx.fhmxid = thmx.fhmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		WHERE
+		thmx.scbj = '0' UNION ALL
+		SELECT
+		jcjymx.jymxid AS zjid,
+		jcjygl.jydh AS ddh,
+		CASE
+
+		WHEN jcjygl.djlx = '1' THEN
+		'借出换货单' ELSE'借出单'
+		END djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy AS zdqy,
+		jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) AS ddrq,
+		to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcjygl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcjygl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcjygl.dwid khid,
+		jcjygl.shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		'' AS xslx,
+		jcjyxx.cplx,
+		hwxx.wlid,
+		jcjygl.u8jydh u8dh,
+		CASE
+
+		WHEN yjcjygl.u8jydh IS NOT NULL THEN
+		yjcjygl.u8jydh ELSE jcjygl.u8jydh
+		END yu8dh,
+		jcjygl.jcjyid AS viewid,
+		CASE
+
+		WHEN yjcjygl.jcjyid IS NOT NULL THEN
+		yjcjygl.jcjyid ELSE jcjygl.jcjyid
+		END yviewid,
+		jcjygl.zt,
+		CASE
+
+		WHEN yjcjygl.jydh IS NOT NULL THEN
+		yjcjygl.jydh ELSE jcjygl.jydh
+		END yddh ,
+		jcjymx.jysl AS flsl,
+		jcjygl.jyrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjygl yjcjygl ON yjcjygl.jcjyid = jcjygl.yjcjyid
+		WHERE
+		jcjymx.scbj = '0'
+		) tmp
+		left join igams_yxht yxht on yxht.htid = tmp.htbh
+		LEFT JOIN matridx_jcsj xslx ON xslx.csid = tmp.xslx
+		LEFT JOIN igams_khgl khgl ON khgl.khid = tmp.khid
+		LEFT JOIN matridx_jcsj khlx ON khlx.csid = khgl.khlb
+		LEFT JOIN matridx_jcsj sf ON sf.csid = tmp.zdqy
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = tmp.wlid
+		LEFT JOIN matridx_jcsj cplx ON cplx.csid = tmp.cplx
+		LEFT JOIN matridx_jcsj ysfs ON ysfs.csid = tmp.ysfs
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = tmp.bm
+		LEFT JOIN matridx_xtyh ywy ON ywy.yhid = tmp.ywy
+		LEFT JOIN matridx_xtyh jsr ON jsr.yhid = tmp.jsr
+		<where>
+				tmp.zjid!=''
+				<include refid="SEARCH_TERMS"></include>
+			</where>
+	</select>
+	<select id="getDtoById" parameterType="String" resultType="XsmxDto">
+				SELECT
+		tmp.zjid,
+		khlx.csmc khlxmc,
+		case when xslx.csmc is not null and xslx.csmc !='' then xslx.csmc else '/' end xslxmc,
+		tmp.ddh,
+		tmp.djlxmc,
+		tmp.zd,
+		sf.csmc zdqy,
+		tmp.sl,
+		tmp.scph,
+		tmp.dj,
+		round( tmp.jsze, 5 ) jsze,
+		tmp.ddrq,
+		cplx.csmc cplxmc,
+		coalesce(yxht.htbh,tmp.htbh) htbh,
+		ywy.zsxm ywy,
+		jgxx.jgmc bm,
+		tmp.fzdq,
+		tmp.hsdj,
+		tmp.zk,
+		tmp.zsyy,
+		tmp.bz,
+		tmp.scrq,
+		tmp.yxq,
+		case when tmp.dky is not null and tmp.dky!='' then tmp.dky else '/' end dky,
+		case when  tmp.fph is not null and tmp.fph!='' then tmp.fph else '/' end fph,
+		tmp.dkje,
+		tmp.khid,
+		tmp.shdz,
+		tmp.kdxx,
+		tmp.xslx,
+		tmp.cplx,
+		tmp.wlid,
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.gg,
+		wlgl.jldw,
+		khgl.khjc,
+		khgl.khlb,
+		khgl.khmc,
+		khgl.lxr khlxr,
+		khgl.lxfs khlxfs,
+		tmp.yddh,
+		tmp.u8dh,
+		tmp.yu8dh,
+		tmp.viewid,
+		tmp.yviewid,
+		tmp.zt,
+		tmp.shlxfs,
+		tmp.fhsl,
+		tmp.ysk,
+		wlgl.ychh,
+		ysfs.csmc ysfsmc
+		FROM
+		(
+		SELECT
+		xsmx.xsmxid AS zjid,
+		xsgl.oaxsdh ddh,
+		CASE
+
+		WHEN xsgl.djlx = '1' THEN
+		'销售换货单'
+		WHEN xsgl.djlx = '2' THEN
+		'借出转销售单' ELSE'销售单'
+		END djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy,
+		xsmx.sl,
+		hwxx.scph AS scph,
+		xsmx.wsdj AS dj,
+		xsmx.jsze,
+		to_char( xsgl.ddrq, 'yyyy-mm-dd' ) ddrq,
+		xsgl.htdh htbh,
+		xsgl.ywy,
+		xsgl.xsbm bm,
+		xsgl.fzdq,
+		xsmx.hsdj,
+		xsgl.zk,
+		'' AS zsyy,
+		xsgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) AS scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) AS yxq,
+		xsmx.dky,
+		xsgl.xsfph fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		xsgl.khjc khid,
+		xsgl.shdz,
+		xsgl.shlxfs,
+		xsgl.kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		xsmx.wlid,
+		xsgl.u8xsdh u8dh,
+		CASE
+
+		WHEN yxsgl.u8xsdh IS NOT NULL THEN
+		yxsgl.u8xsdh
+		WHEN jcjygl.u8jydh IS NOT NULL THEN
+		jcjygl.u8jydh ELSE xsgl.u8xsdh
+		END yu8dh,
+		xsgl.xsid AS viewid,
+		CASE
+
+		WHEN yxsgl.xsid IS NOT NULL THEN
+		yxsgl.xsid
+		WHEN jcjygl.jcjyid IS NOT NULL THEN
+		jcjygl.jcjyid ELSE xsgl.xsid
+		END yviewid,
+		xsgl.zt,
+		CASE
+
+		WHEN yxsgl.oaxsdh IS NOT NULL THEN
+		yxsgl.oaxsdh
+		WHEN jcjygl.jydh IS NOT NULL THEN
+		jcjygl.jydh ELSE xsgl.oaxsdh
+		END yddh,
+		fhmx.fhsl AS fhsl,
+		xsgl.ysk,
+		xsgl.ysfs
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = xsgl.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = xsmx.jyxxid
+		LEFT JOIN igams_xsgl yxsgl ON yxsgl.xsid = xsgl.yxsid
+		AND yxsgl.scbj = '0'
+		WHERE
+		xsmx.scbj = '0' UNION ALL
+		SELECT
+		llmx.llmxid AS zjid,
+		llgl.lldh AS ddh,
+		'领料单' AS djlxmc,
+		llgl.zd,
+		llgl.zdqy,
+		hwllxx.qlsl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( llgl.sqrq, 'yyyy-mm-dd' ) AS ddrq,
+		llgl.htdh AS htbh,
+		llgl.gsr AS ywy,
+		llgl.gsrbm bm,
+		llgl.fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		llgl.zsyy,
+		llgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		llgl.khid,
+		llgl.shdz,
+		llgl.shlxfs,
+		llgl.kdxx,
+		llgl.xslx AS xslx,
+		hwllxx.cplx AS cplx,
+		hwxx.wlid,
+		ckgl.u8ckdh u8dh,
+		ckgl.u8ckdh AS yu8dh,
+		llgl.llid AS viewid,
+		CASE
+
+		WHEN ckgl.ckid IS NOT NULL THEN
+		ckgl.ckid ELSE llgl.llid
+		END yviewid,
+		llgl.ckzt AS zt,
+		CASE
+
+		WHEN ckgl.ckdh IS NOT NULL THEN
+		ckgl.ckdh ELSE llgl.lldh
+		END yddh,
+		llmx.slsl AS fhsl,
+		'0.00' AS ysk,
+		llgl.ysfs
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		left join igams_ckmx ckmx on ckmx.llmxid=llmx.llmxid
+		LEFT JOIN igams_ckgl ckgl ON ckgl.ckid = ckmx.ckid
+		AND ckgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		jcghmx.ghmxid AS zjid,
+		jcghgl.ghdh ddh,
+		'归还单' AS djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy, jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) AS ddrq,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcghgl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcghgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcghgl.dwid khid,
+		jcjygl.shdz AS shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		jcghgl.xslx AS xslx,
+		'' AS cplx,
+		hwxx.wlid,
+		jcghgl.u8ghdh u8dh,
+		jcjygl.u8jydh AS yu8dh,
+		jcghgl.jcghid AS viewid,
+		jcjygl.jcjyid AS yviewid,
+		jcghgl.zt,
+		jcjygl.jydh AS yddh,
+
+		- jcghmx.ghsl AS  flsl,
+		'0.00' AS ysk,
+		jcjygl.ysfs
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		left join igams_jcjygl jcjygl on jcjymx.jcjyid=jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0' UNION ALL
+		SELECT
+		thmx.thmxid AS zjid,
+		thgl.thdh AS ddh,
+		'退货单' AS djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy, xsmx.sl AS sl,
+		hwxx.scph,
+		xsmx.wsdj AS dj, xsmx.jsze,
+		to_char( thgl.djrq, 'yyyy-mm-dd' ) AS ddrq,
+		xsgl.htdh AS htbh,
+		thgl.ywy,
+		thgl.xsbm bm,
+		xsgl.fzdq AS fzdq,
+		thmx.hsdj,
+		xsgl.zk AS zk,
+		'' AS zsyy,
+		thgl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		xsmx.dky AS dky,
+		xsgl.xsfph AS fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		thgl.kh khid,
+		thgl.shdz,
+		xsgl.shlxfs,
+		fhgl.kdxx AS kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		hwxx.wlid,
+		thgl.u8thdh u8dh,
+		xsgl.u8xsdh AS yu8dh,
+		thgl.thid viewid,
+		xsgl.xsid AS yviewid,
+		thgl.zt,
+		xsgl.oaxsdh AS yddh ,
+		- thmx.thsl AS fhsl,
+		xsgl.ysk,
+		thgl.ysfs
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhmx fhmx ON fhmx.fhmxid = thmx.fhmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		WHERE
+		thmx.scbj = '0' UNION ALL
+		SELECT
+		jcjymx.jymxid AS zjid,
+		jcjygl.jydh AS ddh,
+		CASE
+
+		WHEN jcjygl.djlx = '1' THEN
+		'借出换货单' ELSE'借出单'
+		END djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy AS zdqy,
+		jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) AS ddrq,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcjygl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcjygl.bz,
+		to_char( hwxx.scrq, 'yyyy-mm-dd' ) scrq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcjygl.dwid khid,
+		jcjygl.shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		'' AS xslx,
+		jcjyxx.cplx,
+		hwxx.wlid,
+		jcjygl.u8jydh u8dh,
+		CASE
+
+		WHEN yjcjygl.u8jydh IS NOT NULL THEN
+		yjcjygl.u8jydh ELSE jcjygl.u8jydh
+		END yu8dh,
+		jcjygl.jcjyid AS viewid,
+		CASE
+
+		WHEN yjcjygl.jcjyid IS NOT NULL THEN
+		yjcjygl.jcjyid ELSE jcjygl.jcjyid
+		END yviewid,
+		jcjygl.zt,
+		CASE
+
+		WHEN yjcjygl.jydh IS NOT NULL THEN
+		yjcjygl.jydh ELSE jcjygl.jydh
+		END yddh ,
+		jcjymx.jysl AS flsl,
+		'0.00' AS ysk,
+		jcjygl.ysfs
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjygl yjcjygl ON yjcjygl.jcjyid = jcjygl.yjcjyid
+		WHERE
+		jcjymx.scbj = '0'
+		) tmp
+		left join igams_yxht yxht on yxht.htid = tmp.htbh
+		LEFT JOIN matridx_jcsj xslx ON xslx.csid = tmp.xslx
+		LEFT JOIN igams_khgl khgl ON khgl.khid = tmp.khid
+		LEFT JOIN matridx_jcsj khlx ON khlx.csid = khgl.khlb
+		LEFT JOIN matridx_jcsj sf ON sf.csid = tmp.zdqy
+		LEFT JOIN matridx_jcsj ysfs ON ysfs.csid = tmp.ysfs
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = tmp.wlid
+		LEFT JOIN matridx_jcsj cplx ON cplx.csid = tmp.cplx
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = tmp.bm
+		LEFT JOIN matridx_xtyh ywy ON ywy.yhid = tmp.ywy
+		where tmp.zjid=#{zjid}
+	</select>
+
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="xsmxDto" resultType="xsmxDto">
+		select tmp.zjid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} zjid,#{index} ordernum
+		</foreach>
+		) tab
+		left join(
+		SELECT
+		xsmx.xsmxid AS zjid,
+		xsgl.oaxsdh ddh,
+		CASE
+
+		WHEN xsgl.djlx = '1' THEN
+		'销售换货单'
+		WHEN xsgl.djlx = '2' THEN
+		'借出转销售单' ELSE'销售单'
+		END djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy,
+		xsmx.sl,
+		hwxx.scph AS scph,
+		xsmx.wsdj AS dj,
+		xsmx.jsze,
+		to_char( xsgl.ddrq, 'fmyyyy-fmmm-fmdd' ) ddrq,
+		xsgl.htdh htbh,
+		xsgl.ywy,
+		xsgl.xsbm bm,
+		xsgl.fzdq,
+		xsmx.hsdj,
+		xsgl.zk,
+		'' AS zsyy,
+		xsgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) AS scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) AS yxq,
+		xsmx.dky,
+		xsgl.xsfph fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		xsgl.khjc khid,
+		xsgl.shdz,
+		xsgl.shlxfs,
+		xsgl.kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		xsmx.wlid,
+		xsgl.u8xsdh u8dh,
+		CASE
+
+		WHEN yxsgl.u8xsdh IS NOT NULL THEN
+		yxsgl.u8xsdh
+		WHEN jcjygl.u8jydh IS NOT NULL THEN
+		jcjygl.u8jydh ELSE xsgl.u8xsdh
+		END yu8dh,
+		xsgl.xsid AS viewid,
+		CASE
+
+		WHEN yxsgl.xsid IS NOT NULL THEN
+		yxsgl.xsid
+		WHEN jcjygl.jcjyid IS NOT NULL THEN
+		jcjygl.jcjyid ELSE xsgl.xsid
+		END yviewid,
+		xsgl.zt,
+		CASE
+
+		WHEN yxsgl.oaxsdh IS NOT NULL THEN
+		yxsgl.oaxsdh
+		WHEN jcjygl.jydh IS NOT NULL THEN
+		jcjygl.jydh ELSE xsgl.oaxsdh
+		END yddh,
+		fhmx.fhsl AS fhsl,
+		xsgl.ysk,
+		fhgl.djrq fhr,
+		xsgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = xsgl.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = xsmx.jyxxid
+		LEFT JOIN igams_xsgl yxsgl ON yxsgl.xsid = xsgl.yxsid
+		AND yxsgl.scbj = '0'
+		WHERE
+		xsmx.scbj = '0' UNION ALL
+		SELECT
+		llmx.llmxid AS zjid,
+		llgl.lldh AS ddh,
+		'领料单' AS djlxmc,
+		llgl.zd,
+		llgl.zdqy,
+		hwllxx.qlsl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( llgl.sqrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		llgl.htdh AS htbh,
+		llgl.gsr AS ywy,
+		llgl.gsrbm bm,
+		llgl.fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		llgl.zsyy,
+		llgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		llgl.khid,
+		llgl.shdz,
+		llgl.shlxfs,
+		llgl.kdxx,
+		llgl.xslx AS xslx,
+		hwllxx.cplx AS cplx,
+		hwxx.wlid,
+		ckgl.u8ckdh u8dh,
+		ckgl.u8ckdh AS yu8dh,
+		llgl.llid AS viewid,
+		CASE
+
+		WHEN ckgl.ckid IS NOT NULL THEN
+		ckgl.ckid ELSE llgl.llid
+		END yviewid,
+		llgl.ckzt AS zt,
+		CASE
+
+		WHEN ckgl.ckdh IS NOT NULL THEN
+		ckgl.ckdh ELSE llgl.lldh
+		END yddh,
+		llmx.slsl AS fhsl,
+		'0.00' AS ysk,
+		llgl.ckrq fhr,
+		llgl.ysfs,
+		'' jsr
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		left join igams_ckmx ckmx on ckmx.llmxid=llmx.llmxid
+		LEFT JOIN igams_ckgl ckgl ON ckgl.ckid = ckmx.ckid
+		AND ckgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		jcghmx.ghmxid AS zjid,
+		jcghgl.ghdh ddh,
+		'归还单' AS djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy, jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcghgl.ghrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcghgl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcghgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcghgl.dwid khid,
+		jcjygl.shdz AS shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		jcghgl.xslx AS xslx,
+		'' AS cplx,
+		hwxx.wlid,
+		jcghgl.u8ghdh u8dh,
+		jcjygl.u8jydh AS yu8dh,
+		jcghgl.jcghid AS viewid,
+		jcjygl.jcjyid AS yviewid,
+		jcghgl.zt,
+		jcjygl.jydh AS yddh,
+
+		- jcghmx.ghsl AS  flsl,
+		'0.00' AS ysk,
+		jcghgl.ghrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		left join igams_jcjygl jcjygl on jcjymx.jcjyid=jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0' UNION ALL
+		SELECT
+		thmx.thmxid AS zjid,
+		thgl.thdh AS ddh,
+		'退货单' AS djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy, xsmx.sl AS sl,
+		hwxx.scph,
+		xsmx.wsdj AS dj, xsmx.jsze,
+		to_char( thgl.djrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		xsgl.htdh AS htbh,
+		thgl.ywy,
+		thgl.xsbm bm,
+		xsgl.fzdq AS fzdq,
+		thmx.hsdj,
+		xsgl.zk AS zk,
+		'' AS zsyy,
+		thgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		xsmx.dky AS dky,
+		xsgl.xsfph AS fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		thgl.kh khid,
+		thgl.shdz,
+		xsgl.shlxfs,
+		fhgl.kdxx AS kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		hwxx.wlid,
+		thgl.u8thdh u8dh,
+		xsgl.u8xsdh AS yu8dh,
+		thgl.thid viewid,
+		xsgl.xsid AS yviewid,
+		thgl.zt,
+		xsgl.oaxsdh AS yddh ,
+		- thmx.thsl AS fhsl,
+		xsgl.ysk,
+		thgl.djrq fhr,
+		thgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhmx fhmx ON fhmx.fhmxid = thmx.fhmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		WHERE
+		thmx.scbj = '0' UNION ALL
+		SELECT
+		jcjymx.jymxid AS zjid,
+		jcjygl.jydh AS ddh,
+		CASE
+
+		WHEN jcjygl.djlx = '1' THEN
+		'借出换货单' ELSE'借出单'
+		END djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy AS zdqy,
+		jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcjygl.jyrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcjygl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcjygl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcjygl.dwid khid,
+		jcjygl.shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		'' AS xslx,
+		jcjyxx.cplx,
+		hwxx.wlid,
+		jcjygl.u8jydh u8dh,
+		CASE
+
+		WHEN yjcjygl.u8jydh IS NOT NULL THEN
+		yjcjygl.u8jydh ELSE jcjygl.u8jydh
+		END yu8dh,
+		jcjygl.jcjyid AS viewid,
+		CASE
+
+		WHEN yjcjygl.jcjyid IS NOT NULL THEN
+		yjcjygl.jcjyid ELSE jcjygl.jcjyid
+		END yviewid,
+		jcjygl.zt,
+		CASE
+
+		WHEN yjcjygl.jydh IS NOT NULL THEN
+		yjcjygl.jydh ELSE jcjygl.jydh
+		END yddh ,
+		jcjymx.jysl AS flsl,
+		'0.00' AS ysk,
+		jcjygl.jyrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjygl yjcjygl ON yjcjygl.jcjyid = jcjygl.yjcjyid
+		WHERE
+		jcjymx.scbj = '0'
+		) tmp on tab.zjid=tmp.zjid
+		left join igams_yxht yxht on yxht.htid = tmp.htbh
+		LEFT JOIN matridx_jcsj xslx ON xslx.csid = tmp.xslx
+		LEFT JOIN igams_khgl khgl ON khgl.khid = tmp.khid
+		LEFT JOIN matridx_jcsj khlx ON khlx.csid = khgl.khlb
+		LEFT JOIN matridx_jcsj sf ON sf.csid = tmp.zdqy
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = tmp.wlid
+		LEFT JOIN matridx_jcsj cplx ON cplx.csid = tmp.cplx
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = tmp.bm
+		LEFT JOIN matridx_xtyh ywy ON ywy.yhid = tmp.ywy
+		LEFT JOIN matridx_xtyh jsr ON jsr.yhid = tmp.jsr
+		LEFT JOIN matridx_jcsj ysfs ON ysfs.csid = tmp.ysfs
+		order by tab.ordernum
+	</select>
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="xsmxDto" resultType="xsmxDto">
+		select tmp.zjid ${sqlParam} from (
+		SELECT
+		xsmx.xsmxid AS zjid,
+		xsgl.oaxsdh ddh,
+		CASE
+
+		WHEN xsgl.djlx = '1' THEN
+		'销售换货单'
+		WHEN xsgl.djlx = '2' THEN
+		'借出转销售单' ELSE'销售单'
+		END djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy,
+		xsmx.sl,
+		hwxx.scph AS scph,
+		xsmx.wsdj AS dj,
+		xsmx.jsze,
+		to_char( xsgl.ddrq, 'fmyyyy-fmmm-fmdd' ) ddrq,
+		to_char( xsgl.ddrq, 'yyyy-mm-dd' ) ddrq_t,
+		xsgl.htdh htbh,
+		xsgl.ywy,
+		xsgl.xsbm bm,
+		xsgl.fzdq,
+		xsmx.hsdj,
+		xsgl.zk,
+		'' AS zsyy,
+		xsgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) AS scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) AS yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) AS yxq_t,
+		xsmx.dky,
+		xsgl.xsfph fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		xsgl.khjc khid,
+		xsgl.shdz,
+		xsgl.shlxfs,
+		xsgl.kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		xsmx.wlid,
+		xsgl.u8xsdh u8dh,
+		CASE
+
+		WHEN yxsgl.u8xsdh IS NOT NULL THEN
+		yxsgl.u8xsdh
+		WHEN jcjygl.u8jydh IS NOT NULL THEN
+		jcjygl.u8jydh ELSE xsgl.u8xsdh
+		END yu8dh,
+		xsgl.xsid AS viewid,
+		CASE
+
+		WHEN yxsgl.xsid IS NOT NULL THEN
+		yxsgl.xsid
+		WHEN jcjygl.jcjyid IS NOT NULL THEN
+		jcjygl.jcjyid ELSE xsgl.xsid
+		END yviewid,
+		xsgl.zt,
+		CASE
+
+		WHEN yxsgl.oaxsdh IS NOT NULL THEN
+		yxsgl.oaxsdh
+		WHEN jcjygl.jydh IS NOT NULL THEN
+		jcjygl.jydh ELSE xsgl.oaxsdh
+		END yddh,
+		fhmx.fhsl AS fhsl,
+		xsgl.ysk,
+		fhgl.djrq fhr,
+		xsgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = xsgl.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = xsmx.jyxxid
+		LEFT JOIN igams_xsgl yxsgl ON yxsgl.xsid = xsgl.yxsid
+		AND yxsgl.scbj = '0'
+		WHERE
+		xsmx.scbj = '0' UNION ALL
+		SELECT
+		llmx.llmxid AS zjid,
+		llgl.lldh AS ddh,
+		'领料单' AS djlxmc,
+		llgl.zd,
+		llgl.zdqy,
+		hwllxx.qlsl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( llgl.sqrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( llgl.sqrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		llgl.htdh AS htbh,
+		llgl.gsr AS ywy,
+		llgl.gsrbm bm,
+		llgl.fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		llgl.zsyy,
+		llgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		llgl.khid,
+		llgl.shdz,
+		llgl.shlxfs,
+		llgl.kdxx,
+		llgl.xslx AS xslx,
+		hwllxx.cplx AS cplx,
+		hwxx.wlid,
+		ckgl.u8ckdh u8dh,
+		ckgl.u8ckdh AS yu8dh,
+		llgl.llid AS viewid,
+		CASE
+
+		WHEN ckgl.ckid IS NOT NULL THEN
+		ckgl.ckid ELSE llgl.llid
+		END yviewid,
+		llgl.ckzt AS zt,
+		CASE
+
+		WHEN ckgl.ckdh IS NOT NULL THEN
+		ckgl.ckdh ELSE llgl.lldh
+		END yddh,
+		llmx.slsl AS fhsl,
+		'0.00' AS ysk,
+		llgl.ckrq fhr,
+		llgl.ysfs,
+		'' jsr
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		left join igams_ckmx ckmx on ckmx.llmxid=llmx.llmxid
+		LEFT JOIN igams_ckgl ckgl ON ckgl.ckid = ckmx.ckid
+		AND ckgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		jcghmx.ghmxid AS zjid,
+		jcghgl.ghdh ddh,
+		'归还单' AS djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy, jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcghgl.ghrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcghgl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcghgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcghgl.dwid khid,
+		jcjygl.shdz AS shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		jcghgl.xslx AS xslx,
+		'' AS cplx,
+		hwxx.wlid,
+		jcghgl.u8ghdh u8dh,
+		jcjygl.u8jydh AS yu8dh,
+		jcghgl.jcghid AS viewid,
+		jcjygl.jcjyid AS yviewid,
+		jcghgl.zt,
+		jcjygl.jydh AS yddh,
+
+		- jcghmx.ghsl AS  flsl,
+		'0.00' AS ysk,
+		jcghgl.ghrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		left join igams_jcjygl jcjygl on jcjymx.jcjyid=jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0' UNION ALL
+		SELECT
+		thmx.thmxid AS zjid,
+		thgl.thdh AS ddh,
+		'退货单' AS djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy, xsmx.sl AS sl,
+		hwxx.scph,
+		xsmx.wsdj AS dj, xsmx.jsze,
+		to_char( thgl.djrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( thgl.djrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		xsgl.htdh AS htbh,
+		thgl.ywy,
+		thgl.xsbm bm,
+		xsgl.fzdq AS fzdq,
+		thmx.hsdj,
+		xsgl.zk AS zk,
+		'' AS zsyy,
+		thgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		xsmx.dky AS dky,
+		xsgl.xsfph AS fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		thgl.kh khid,
+		thgl.shdz,
+		xsgl.shlxfs,
+		fhgl.kdxx AS kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		hwxx.wlid,
+		thgl.u8thdh u8dh,
+		xsgl.u8xsdh AS yu8dh,
+		thgl.thid viewid,
+		xsgl.xsid AS yviewid,
+		thgl.zt,
+		xsgl.oaxsdh AS yddh ,
+		- thmx.thsl AS fhsl,
+		xsgl.ysk,
+		thgl.djrq fhr,
+		thgl.ysfs,
+		fhgl.jsr
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhmx fhmx ON fhmx.fhmxid = thmx.fhmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		WHERE
+		thmx.scbj = '0' UNION ALL
+		SELECT
+		jcjymx.jymxid AS zjid,
+		jcjygl.jydh AS ddh,
+		CASE
+
+		WHEN jcjygl.djlx = '1' THEN
+		'借出换货单' ELSE'借出单'
+		END djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy AS zdqy,
+		jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcjygl.jyrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcjygl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcjygl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcjygl.dwid khid,
+		jcjygl.shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		'' AS xslx,
+		jcjyxx.cplx,
+		hwxx.wlid,
+		jcjygl.u8jydh u8dh,
+		CASE
+
+		WHEN yjcjygl.u8jydh IS NOT NULL THEN
+		yjcjygl.u8jydh ELSE jcjygl.u8jydh
+		END yu8dh,
+		jcjygl.jcjyid AS viewid,
+		CASE
+
+		WHEN yjcjygl.jcjyid IS NOT NULL THEN
+		yjcjygl.jcjyid ELSE jcjygl.jcjyid
+		END yviewid,
+		jcjygl.zt,
+		CASE
+
+		WHEN yjcjygl.jydh IS NOT NULL THEN
+		yjcjygl.jydh ELSE jcjygl.jydh
+		END yddh ,
+		jcjymx.jysl AS flsl,
+		'0.00' AS ysk,
+		jcjygl.jyrq fhr,
+		jcjygl.ysfs,
+		'' jsr
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjygl yjcjygl ON yjcjygl.jcjyid = jcjygl.yjcjyid
+		WHERE
+		jcjymx.scbj = '0'
+		) tmp
+		left join igams_yxht yxht on yxht.htid = tmp.htbh
+		LEFT JOIN matridx_jcsj xslx ON xslx.csid = tmp.xslx
+		LEFT JOIN igams_khgl khgl ON khgl.khid = tmp.khid
+		LEFT JOIN matridx_jcsj khlx ON khlx.csid = khgl.khlb
+		LEFT JOIN matridx_jcsj sf ON sf.csid = tmp.zdqy
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = tmp.wlid
+		LEFT JOIN matridx_jcsj cplx ON cplx.csid = tmp.cplx
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = tmp.bm
+		LEFT JOIN matridx_xtyh ywy ON ywy.yhid = tmp.ywy
+		LEFT JOIN matridx_jcsj ysfs ON ysfs.csid = tmp.ysfs
+		LEFT JOIN matridx_xtyh jsr ON jsr.yhid = tmp.jsr
+		<where>
+		 tmp.zjid!=''
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<!-- 查询导出条数 -->
+	<select id="getCountForSearchExp"  parameterType="xsmxDto" resultType="java.lang.Integer">
+		select count(tmp.zjid) from (
+		SELECT
+		xsmx.xsmxid AS zjid,
+		xsgl.oaxsdh ddh,
+		CASE
+
+		WHEN xsgl.djlx = '1' THEN
+		'销售换货单'
+		WHEN xsgl.djlx = '2' THEN
+		'借出转销售单' ELSE'销售单'
+		END djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy,
+		xsmx.sl,
+		hwxx.scph AS scph,
+		xsmx.wsdj AS dj,
+		xsmx.jsze,
+		to_char( xsgl.ddrq, 'fmyyyy-fmmm-fmdd' ) ddrq,
+		to_char( xsgl.ddrq, 'yyyy-mm-dd' ) ddrq_t,
+		xsgl.htdh htbh,
+		xsgl.ywy,
+		xsgl.xsbm bm,
+		xsgl.fzdq,
+		xsmx.hsdj,
+		xsgl.zk,
+		'' AS zsyy,
+		xsgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) AS scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) AS yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) AS yxq_t,
+		xsmx.dky,
+		xsgl.xsfph fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		xsgl.khjc khid,
+		xsgl.shdz,
+		xsgl.shlxfs,
+		xsgl.kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		xsmx.wlid,
+		xsgl.u8xsdh u8dh,
+		CASE
+
+		WHEN yxsgl.u8xsdh IS NOT NULL THEN
+		yxsgl.u8xsdh
+		WHEN jcjygl.u8jydh IS NOT NULL THEN
+		jcjygl.u8jydh ELSE xsgl.u8xsdh
+		END yu8dh,
+		xsgl.xsid AS viewid,
+		CASE
+
+		WHEN yxsgl.xsid IS NOT NULL THEN
+		yxsgl.xsid
+		WHEN jcjygl.jcjyid IS NOT NULL THEN
+		jcjygl.jcjyid ELSE xsgl.xsid
+		END yviewid,
+		xsgl.zt,
+		CASE
+
+		WHEN yxsgl.oaxsdh IS NOT NULL THEN
+		yxsgl.oaxsdh
+		WHEN jcjygl.jydh IS NOT NULL THEN
+		jcjygl.jydh ELSE xsgl.oaxsdh
+		END yddh,
+		fhmx.fhsl AS fhsl
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_fhmx fhmx ON xsmx.xsmxid = fhmx.xsmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = fhmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = xsgl.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = xsmx.jyxxid
+		LEFT JOIN igams_xsgl yxsgl ON yxsgl.xsid = xsgl.yxsid
+		AND yxsgl.scbj = '0'
+		WHERE
+		xsmx.scbj = '0' UNION ALL
+		SELECT
+		llmx.llmxid AS zjid,
+		llgl.lldh AS ddh,
+		'领料单' AS djlxmc,
+		llgl.zd,
+		llgl.zdqy,
+		hwllxx.qlsl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( llgl.sqrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( llgl.sqrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		llgl.htdh AS htbh,
+		llgl.gsr AS ywy,
+		llgl.gsrbm bm,
+		llgl.fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		llgl.zsyy,
+		llgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		llgl.khid,
+		llgl.shdz,
+		llgl.shlxfs,
+		llgl.kdxx,
+		llgl.xslx AS xslx,
+		hwllxx.cplx AS cplx,
+		hwxx.wlid,
+		ckgl.u8ckdh u8dh,
+		ckgl.u8ckdh AS yu8dh,
+		llgl.llid AS viewid,
+		CASE
+
+		WHEN ckgl.ckid IS NOT NULL THEN
+		ckgl.ckid ELSE llgl.llid
+		END yviewid,
+		llgl.ckzt AS zt,
+		CASE
+
+		WHEN ckgl.ckdh IS NOT NULL THEN
+		ckgl.ckdh ELSE llgl.lldh
+		END yddh,
+		llmx.slsl AS fhsl
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		left join igams_ckmx ckmx on ckmx.llmxid=llmx.llmxid
+		LEFT JOIN igams_ckgl ckgl ON ckgl.ckid = ckmx.ckid
+		AND ckgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		jcghmx.ghmxid AS zjid,
+		jcghgl.ghdh ddh,
+		'归还单' AS djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy, jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcghgl.ghrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcghgl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcghgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcghgl.dwid khid,
+		jcjygl.shdz AS shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		jcghgl.xslx AS xslx,
+		'' AS cplx,
+		hwxx.wlid,
+		jcghgl.u8ghdh u8dh,
+		jcjygl.u8jydh AS yu8dh,
+		jcghgl.jcghid AS viewid,
+		jcjygl.jcjyid AS yviewid,
+		jcghgl.zt,
+		jcjygl.jydh AS yddh,
+
+		- jcghmx.ghsl AS  flsl
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjymx jcjymx on jcjymx.jymxid=jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		left join igams_jcjygl jcjygl on jcjymx.jcjyid=jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0' UNION ALL
+		SELECT
+		thmx.thmxid AS zjid,
+		thgl.thdh AS ddh,
+		'退货单' AS djlxmc,
+		xsgl.khzd zd,
+		xsgl.zdqy, xsmx.sl AS sl,
+		hwxx.scph,
+		xsmx.wsdj AS dj, xsmx.jsze,
+		to_char( thgl.djrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( thgl.djrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		xsgl.htdh AS htbh,
+		thgl.ywy,
+		thgl.xsbm bm,
+		xsgl.fzdq AS fzdq,
+		thmx.hsdj,
+		xsgl.zk AS zk,
+		'' AS zsyy,
+		thgl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		xsmx.dky AS dky,
+		xsgl.xsfph AS fph,
+		cast (round (xsmx.dkje,2) as varchar) dkje,
+		thgl.kh khid,
+		thgl.shdz,
+		xsgl.shlxfs,
+		fhgl.kdxx AS kdxx,
+		xsgl.xslx,
+		xsmx.cplx,
+		hwxx.wlid,
+		thgl.u8thdh u8dh,
+		xsgl.u8xsdh AS yu8dh,
+		thgl.thid viewid,
+		xsgl.xsid AS yviewid,
+		thgl.zt,
+		xsgl.oaxsdh AS yddh ,
+		- thmx.thsl AS fhsl
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_fhmx fhmx ON fhmx.fhmxid = thmx.fhmxid
+		AND fhmx.scbj = '0'
+		LEFT JOIN igams_fhgl fhgl ON fhgl.fhid = fhmx.fhid
+		AND fhgl.scbj = '0'
+		WHERE
+		thmx.scbj = '0' UNION ALL
+		SELECT
+		jcjymx.jymxid AS zjid,
+		jcjygl.jydh AS ddh,
+		CASE
+
+		WHEN jcjygl.djlx = '1' THEN
+		'借出换货单' ELSE'借出单'
+		END djlxmc,
+		jcjygl.zd AS zd,
+		jcjygl.zdqy AS zdqy,
+		jcjymx.jysl AS sl,
+		hwxx.scph,
+		'0.00000' AS dj,
+		'0.00000' AS jsze,
+		to_char( jcjygl.jyrq, 'fmyyyy-fmmm-fmdd' ) AS ddrq,
+		to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) AS ddrq_t,
+		jcjygl.htbh AS htbh,
+		jcjygl.ywy,
+		jcjygl.bm,
+		jcjygl.fzdq AS fzdq,
+		'0.00000' AS hsdj,
+		'0' AS zk,
+		'' AS zsyy,
+		jcjygl.bz,
+		to_char( hwxx.scrq, 'fmyyyy-fmmm-fmdd' ) scrq,
+		to_char( hwxx.yxq, 'fmyyyy-fmmm-fmdd' ) yxq,
+		to_char( hwxx.yxq, 'yyyy-mm-dd' ) yxq_t,
+		'' AS dky,
+		'' AS fph,
+		'0.00' AS dkje,
+		jcjygl.dwid khid,
+		jcjygl.shdz,
+		jcjygl.shlxfs AS shlxfs,
+		jcjygl.kdxx AS kdxx,
+		'' AS xslx,
+		jcjyxx.cplx,
+		hwxx.wlid,
+		jcjygl.u8jydh u8dh,
+		CASE
+
+		WHEN yjcjygl.u8jydh IS NOT NULL THEN
+		yjcjygl.u8jydh ELSE jcjygl.u8jydh
+		END yu8dh,
+		jcjygl.jcjyid AS viewid,
+		CASE
+
+		WHEN yjcjygl.jcjyid IS NOT NULL THEN
+		yjcjygl.jcjyid ELSE jcjygl.jcjyid
+		END yviewid,
+		jcjygl.zt,
+		CASE
+
+		WHEN yjcjygl.jydh IS NOT NULL THEN
+		yjcjygl.jydh ELSE jcjygl.jydh
+		END yddh ,
+		jcjymx.jysl AS flsl
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_jcjygl yjcjygl ON yjcjygl.jcjyid = jcjygl.yjcjyid
+		WHERE
+		jcjymx.scbj = '0'
+		) tmp
+		left join igams_yxht yxht on yxht.htid = tmp.htbh
+		LEFT JOIN matridx_jcsj xslx ON xslx.csid = tmp.xslx
+		LEFT JOIN igams_khgl khgl ON khgl.khid = tmp.khid
+		LEFT JOIN matridx_jcsj khlx ON khlx.csid = khgl.khlb
+		LEFT JOIN matridx_jcsj sf ON sf.csid = tmp.zdqy
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = tmp.wlid
+		LEFT JOIN matridx_jcsj cplx ON cplx.csid = tmp.cplx
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = tmp.bm
+		LEFT JOIN matridx_xtyh ywy ON ywy.yhid = tmp.ywy
+		<where>
+			tmp.zjid!=''
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+		<!-- 插入信息 -->
+	<insert id="insert" parameterType="XsglDto">
+		insert into igams_xsmx(xsmxid
+		<if test="xsid !=null and xsid != ''">
+			,xsid
+		</if>
+		<if test="wlid !=null and wlid != ''">
+			,wlid
+		</if>
+		<if test="sl !=null and sl != ''">
+			,sl
+		</if>
+		<if test="hsdj !=null and hsdj != ''">
+			,hsdj
+		</if>
+		<if test="cplx !=null and cplx != ''">
+			,cplx
+		</if>
+		<if test="yfhrq !=null and yfhrq != ''">
+			,yfhrq
+		</if>
+		<if test="jsze !=null and jsze != ''">
+			,jsze
+		</if>
+		,lrry,lrsj,scbj) values(#{xsmxid}
+		<if test="xsid !=null and xsid != ''">
+			,#{xsid}
+		</if>
+		<if test="wlid !=null and wlid != ''">
+			,#{wlid}
+		</if>
+		<if test="sl !=null and sl != ''">
+			,cast(#{sl} as numeric)
+		</if>
+		<if test="hsdj !=null and hsdj != ''">
+			,cast(#{hsdj} as numeric )
+		</if>
+		<if test="cplx !=null and cplx != ''">
+			,#{cplx}
+		</if>
+		<if test="yfhrq !=null and yfhrq != ''">
+			,cast(#{yfhrq} as date )
+		</if>
+		<if test="jsze !=null and jsze != ''">
+			,cast(#{jsze} as numeric )
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<select id="escapeWlbm" parameterType="XsmxDto" resultType="String">
+		select wlid  from igams_wlgl where scbj!='1' and wlbm=#{wlbm}
+	</select>
+	<select id="escapecplx" parameterType="XsmxDto" resultType="String">
+		select csid  from matridx_jcsj where scbj!='1' and jclb='PRODUCT_CLASS' and csmc=#{cplx}
+	</select>
+
+	<select id="getDto" parameterType="XsmxDto" resultType="XsmxDto">
+		select xsmx.xsid,xsmx.xsmxid,xsmx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.jldw,wlgl.gg,xsmx.sl,xsmx.bj,xsmx.wszje,xsmx.hsdj,xsmx.wsdj,xsmx.jsze,xsmx.suil,xsmx.yfhrq
+		,xsgl.oaxsdh,kh.khmc khjcmc,kh.khdm khdm,xsgl.khjc,xsmx,COALESCE(xsmx.yfhsl,0) yfhsl,(COALESCE(xsmx.sl,0) - coalesce(xsmx.yfhsl,0)) as kysl,cplx.csmc cplx,xsgl.jcjyid,xsmx.dkje,xsmx.dky
+		from igams_xsmx xsmx
+		left join igams_xsgl xsgl on xsgl.xsid=xsmx.xsid and xsgl.scbj='0'
+		left join igams_khgl kh on kh.khid=xsgl.khjc and kh.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid  and wlgl.scbj='0'
+		left join matridx_jcsj cplx on xsmx.cplx=cplx.csid
+		<where>
+			xsmx.scbj='0'
+			<if test="xsmxid !=null and xsmxid != ''">
+				and xsmx.xsmxid = #{xsmxid}
+			</if>
+		</where>
+	</select>
+	<update id="updateListSczt" parameterType="list">
+		update igams_xsmx xsmx set
+		sczt=tmp.sczt
+		from(
+		<foreach collection="list" separator="union" item="item" index="index">
+			select #{item.xsmxid} xsmxid,#{item.sczt} sczt
+		</foreach
+		>) tmp where xsmx.xsmxid=tmp.xsmxid
+	</update>
+	<update id="updateDto" parameterType="XsmxDto">
+		update igams_xsmx set
+			sczt=#{sczt}
+		<where>
+			xsid=#{xsid} and scbj='0'
+		</where>
+	</update>
+	
+	<update id="update" parameterType="XsmxDto">
+		update igams_xsmx set
+		dky=#{dky},
+		dkje=cast (#{dkje} as numeric )
+		where xsmxid=#{xsmxid}
+	</update>
+
+
+	<!-- 报表导出 -->
+	<select id="getListForReportSearchExp"  parameterType="xsmxDto" resultType="xsmxDto">
+		select '1' id ${sqlParam} from (
+		SELECT
+		tab.wlbm,
+		tab.wlmc,
+		tab.gg,
+		tab.zd,
+		tab.sl,
+		tab.jldw,
+		tab_t.zsl
+		FROM
+		(
+		SELECT
+		tmp.wlbm,
+		tmp.wlmc,
+		tmp.jldw,
+		tmp.gg,
+		tmp.zd,
+		SUM ( tmp.sl ) sl
+		FROM
+		(
+		SELECT
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.jldw,
+		wlgl.gg,
+		xsgl.khzd zd,
+		xsmx.sl
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = xsmx.wlid
+		WHERE
+		xsmx.scbj = '0'
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.jldw,
+		wlgl.gg,
+		llgl.zd,
+		hwllxx.qlsl sl
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		AND wlgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.jldw,
+		wlgl.gg,
+		jcjygl.zd,
+		- jcjymx.jysl sl
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN igams_jcjymx jcjymx ON jcjymx.jymxid = jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjymx.jcjyid = jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0'
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.jldw,
+		wlgl.gg,
+		xsgl.khzd zd,
+		- xsmx.sl AS sl
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		thmx.scbj = '0'
+		and to_char( thgl.djrq, 'yyyy-mm-ddd' ) &gt;= #{ddrqstart}
+		and to_char( thgl.djrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		wlgl.wlmc,
+		wlgl.jldw,
+		wlgl.gg,
+		jcjygl.zd,
+		jcjymx.jysl AS sl
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		jcjymx.scbj = '0'
+		and to_char( jcjygl.jyrq, 'yyyy-mm-ddd' ) &gt;= #{ddrqstart}
+		and to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		) tmp
+		GROUP BY
+		tmp.wlbm,
+		tmp.wlmc,
+		tmp.jldw,
+		tmp.gg,
+		tmp.zd
+		) tab
+		LEFT JOIN (
+		SELECT
+		tmp.wlbm,
+		SUM ( sl ) zsl
+		FROM
+		(
+		SELECT
+		wlgl.wlbm,
+		xsmx.sl
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = xsmx.wlid
+		WHERE
+		xsmx.scbj = '0'
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		hwllxx.qlsl sl
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		AND wlgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		wlgl.wlbm,
+		- jcjymx.jysl sl
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN igams_jcjymx jcjymx ON jcjymx.jymxid = jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjymx.jcjyid = jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0'
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		- xsmx.sl AS sl
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		thmx.scbj = '0'
+		and to_char( thgl.djrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( thgl.djrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		jcjymx.jysl AS sl
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		jcjymx.scbj = '0'
+		and to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		) tmp
+		GROUP BY
+		tmp.wlbm
+		) tab_t ON tab.wlbm = tab_t.wlbm
+		) tmp_t
+		where tmp_t.wlbm is not null and tmp_t.wlbm!=''
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<select id="getCountForReportSearchExp"  parameterType="xsmxDto" resultType="java.lang.Integer">
+				SELECT
+		count (*)
+		FROM
+		(
+		SELECT
+		tmp.wlbm,
+		tmp.zd
+		FROM
+		(
+		SELECT
+		wlgl.wlbm,
+		xsgl.khzd zd
+		FROM
+		igams_xsmx xsmx
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = xsmx.wlid
+		WHERE
+		xsmx.scbj = '0'
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( xsgl.ddrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		llgl.zd
+		FROM
+		igams_hwllmx llmx
+		LEFT JOIN igams_llgl llgl ON llmx.llid = llgl.llid
+		AND llgl.scbj = '0'
+		LEFT JOIN igams_hwllxx hwllxx ON hwllxx.hwllid = llmx.hwllid
+		AND hwllxx.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = llmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		AND wlgl.scbj = '0'
+		WHERE
+		llmx.scbj = '0'
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( llgl.sqrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		AND llgl.lllx = '3' UNION ALL
+		SELECT
+		wlgl.wlbm,
+		jcjygl.zd
+		FROM
+		igams_jcghmx jcghmx
+		LEFT JOIN igams_jcghgl jcghgl ON jcghmx.jcghid = jcghgl.jcghid
+		AND jcghgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON hwxx.hwid = jcghmx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		LEFT JOIN igams_jcjymx jcjymx ON jcjymx.jymxid = jcghmx.jymxid
+		AND jcjymx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjymx.jcjyid = jcjygl.jcjyid
+		WHERE
+		jcghmx.scbj = '0'
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( jcghgl.ghrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		xsgl.khzd zd
+		FROM
+		igams_thmx thmx
+		LEFT JOIN igams_thgl thgl ON thmx.thid = thgl.thid
+		AND thgl.scbj = '0'
+		LEFT JOIN igams_xsmx xsmx ON xsmx.xsmxid = thmx.xsmxid
+		AND xsmx.scbj = '0'
+		LEFT JOIN igams_xsgl xsgl ON xsgl.xsid = xsmx.xsid
+		AND xsgl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON thmx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		thmx.scbj = '0'
+		and to_char( thgl.djrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( thgl.djrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		UNION ALL
+		SELECT
+		wlgl.wlbm,
+		jcjygl.zd
+		FROM
+		igams_jcjymx jcjymx
+		LEFT JOIN igams_jcjyxx jcjyxx ON jcjyxx.jyxxid = jcjymx.jyxxid
+		AND jcjyxx.scbj = '0'
+		LEFT JOIN igams_jcjygl jcjygl ON jcjygl.jcjyid = jcjyxx.jcjyid
+		AND jcjygl.scbj = '0'
+		LEFT JOIN igams_hwxx hwxx ON jcjymx.hwid = hwxx.hwid
+		AND hwxx.scbj = '0'
+		LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = hwxx.wlid
+		WHERE
+		jcjymx.scbj = '0'
+		and to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) &gt;= #{ddrqstart}
+		and to_char( jcjygl.jyrq, 'yyyy-mm-dd' ) &lt;= #{ddrqend}
+		) tmp
+		GROUP BY
+		tmp.wlbm,
+		tmp.zd
+		) tab
+		where tab.wlbm is not null
+	</select>
+	<select id="getDkxxByXsid" parameterType="xsmxDto" resultType="xsmxDto">
+		select xsmx.xsmxid,xsgl.hkzq,wlgl.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.jldw,xsmx.sl,xsmx.jsze,sum(coalesce(dkjejl_xs.dkje,0)) yfje,sum(coalesce(dkjejl_xs.dkje,0))-coalesce (tmp.dyje,0) dysyje
+		from igams_xsmx xsmx
+		left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid
+		left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid
+		left join igams_dkjejl dkjejl_xs on dkjejl_xs.ywid = xsmx.xsmxid and dkjejl_xs.scbj ='0'
+		left join ( select xsmx.xsmxid,sum(dkjejl_fh.dkje) dyje from
+		igams_xsmx xsmx
+		left join igams_dkjejl dkjejl_fh on xsmx.xsmxid = dkjejl_fh.fywid and dkjejl_fh.scbj ='0' and dkjejl_fh.lb in('1','2')
+		where xsmx.scbj ='0' and xsmx.xsid = #{xsid}
+		group by xsmx.xsmxid
+		)tmp on tmp.xsmxid = xsmx.xsmxid
+		where xsmx.scbj ='0' and xsmx.xsid = #{xsid}
+		group by xsmx.xsmxid,xsgl.hkzq,wlgl.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.jldw,xsmx.jsze,tmp.dyje,xsmx.sl
+		ORDER BY wlgl.wlbm
+	</select>
+	<select id="getDkxxGroup" parameterType="xsmxDto" resultType="xsmxDto">
+		select xsmx.xsmxid,fhgl.fhid,fhgl.fhdh,fhgl.djrq,coalesce(tmp.fhsl,0) fhsl,coalesce(tmp.fhsl,0)*xsmx.hsdj zje,sum(coalesce(dkjejl_fh.dkje,0)) dkje
+		from igams_xsmx xsmx
+		left join (
+		select fhmx.fhid,xsmx.xsmxid,sum(coalesce(fhmx.fhsl,0)) fhsl
+		from igams_xsmx xsmx
+		left join igams_fhmx fhmx on xsmx.xsmxid = fhmx.xsmxid and fhmx.scbj ='0'
+		where xsmx.scbj = '0' and xsmx.xsmxid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		group by fhmx.fhid,xsmx.xsmxid) tmp on tmp.xsmxid = xsmx.xsmxid
+		left join igams_fhgl fhgl on fhgl.fhid = tmp.fhid and fhgl.scbj ='0'
+		left join igams_dkjejl dkjejl_fh on fhgl.fhid = dkjejl_fh.ywid and xsmx.xsmxid = dkjejl_fh.fywid and dkjejl_fh.scbj ='0'
+		where xsmx.scbj ='0' and fhgl.fhid is not null and fhgl.zt ='80' and xsmx.xsmxid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		group by xsmx.xsmxid,fhgl.fhid,fhgl.fhdh,fhgl.djrq,tmp.fhsl,xsmx.hsdj
+		ORDER BY fhgl.djrq,fhgl.fhdh
+	</select>
+	<select id="getXsmxByXs" parameterType="xsmxDto" resultType="xsmxDto">
+		select xsmx.xsmxid
+		from igams_xsmx xsmx
+		<where>
+			xsmx.scbj='0'
+			<if test="xsid !=null and xsid != ''">
+				and xsmx.xsid = #{xsid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and xsmx.xsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<update id="updateDkxx" parameterType="xsmxDto">
+		update igams_xsmx
+		<set>
+			dkje = cast(coalesce(#{dkje},'0') as numeric),
+			<if test="dky !=null and dky != ''">
+				dky = #{dky}
+			</if>
+		</set>
+		where xsmxid = #{xsmxid}
+	</update>
+	<select id="getAllDkjeGroupXs" parameterType="xsmxDto" resultType="xsmxDto">
+		select tmp.xsmxid,tmp.xsid,sum(coalesce(tmp.dkje,0)) dkje from(
+		select xsmx.xsid,xsmx.xsmxid,sum(coalesce(dkjejl.dkje,0)) dkje from
+		igams_xsmx xsmx
+		left join igams_dkjejl dkjejl on dkjejl.ywid = xsmx.xsmxid and dkjejl.scbj='0' and (fywid is null or fywid ='') and lb ='0'
+		where xsmx.scbj='0'  and xsmx.xsid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		group by xsmx.xsid,xsmx.xsmxid
+		union all
+		select xsmx.xsid,xsmx.xsmxid,sum(coalesce(dkjejl.dkje,0)) dkje from
+		igams_xsmx xsmx
+		left join igams_dkjejl dkjejl on dkjejl.fywid = xsmx.xsmxid and dkjejl.scbj='0' and (fywid is not null and fywid !='') and lb ='0'
+		where xsmx.scbj='0'  and xsmx.xsid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		group by xsmx.xsid,xsmx.xsmxid
+		)tmp
+		group by tmp.xsmxid,tmp.xsid
+	</select>
+</mapper>

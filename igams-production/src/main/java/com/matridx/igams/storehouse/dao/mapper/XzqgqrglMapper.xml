@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzqgqrglDao" >
+    <insert id="insert" parameterType="XzqgqrglDto">
+        insert into igams_xzqgqrgl(qrid
+        <if test="qrdh != null and qrdh != ''">
+            ,qrdh
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="ddslid != null and ddslid != ''">
+            ,ddslid
+        </if>
+        <if test="zfdx != null and zfdx != ''">
+            ,zfdx
+        </if>
+        <if test="zje != null and zje != ''">
+            ,zje
+        </if>
+        <if test="dzfs != null and dzfs != ''">
+            ,dzfs
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        <if test="sqr != null and sqr != ''">
+            ,sqr
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,sqbm
+        </if>
+        ,lrry,lrsj,scbj,fkwcbj)
+        values(
+            #{qrid}
+        <if test="qrdh != null and qrdh != ''">
+            ,#{qrdh}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="ddslid != null and ddslid != ''">
+            ,#{ddslid}
+        </if>
+        <if test="zfdx != null and zfdx != ''">
+            ,#{zfdx}
+        </if>
+        <if test="zje != null and zje != ''">
+            ,cast(#{zje} as numeric )
+        </if>
+        <if test="dzfs != null and dzfs != ''">
+            ,#{dzfs}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        <if test="sqr != null and sqr != ''">
+            ,#{sqr}
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,#{sqbm}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0','0')
+    </insert>
+
+    <select id="getDjhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(qrdh,LENGTH(qrdh)-strpos(reverse(qrdh),'-')+2,LENGTH(qrdh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_xzqgqrgl
+        <where>
+            scbj = '0' AND qrdh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+        jc_dzfs.csmc dzfsmc,qrgl.zt,qrgl.sqr,qrgl.sqbm,qrgl.scbj
+        from igams_xzqgqrgl qrgl
+        left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        <if test="(entire != null and entire != '')or(djh !=null and djh !='')or(hwmc !=null and hwmc !='')">
+        left join igams_xzqgqrmx mx on mx.qrid=qrgl.qrid
+        left join igams_qgmx qgmx on qgmx.qgmxid=mx.qgmxid
+        left join igams_qggl qggl on qggl.qgid=qgmx.qgid
+        </if>
+        <where>
+            qrgl.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (qrgl.qrdh like '%'||#{entire}||'%')
+                or (qggl.djh like '%'||#{entire}||'%')
+                or (mx.hwmc like '%'||#{entire}||'%')
+                or (qrgl.zfdx like '%'||#{entire}||'%')
+                or (yh.zsxm like '%'||#{entire}||'%')
+            </if>
+            <if test="qrdh !=null and qrdh !=''">
+                and qrgl.qrdh ILIKE '%'||#{qrdh}||'%'
+            </if>
+            <if test="djh !=null and djh !=''">
+                and qggl.djh ILIKE '%'||#{djh}||'%'
+            </if>
+            <if test="hwmc !=null and hwmc !=''">
+                and mx.hwmc ILIKE '%'||#{hwmc}||'%'
+            </if>
+            <if test="zfdx !=null and zfdx !=''">
+                and qrgl.zfdx ILIKE '%'||#{zfdx}||'%'
+            </if>
+            <if test="qrrymc !=null and qrrymc !=''">
+                and yh.zsxm ILIKE '%'||#{zfdx}||'%'
+            </if>
+            <if test="qrrqstart != null and qrrqstart != ''">
+                and to_char(qrgl.lrsj,'YYYY-MM-dd') &gt;= #{qrrqstart}
+            </if>
+            <if test="qrrqend != null and qrrqend != ''">
+                and to_char(qrgl.lrsj,'YYYY-MM-dd') &lt;= #{qrrqend}
+            </if>
+            <if test="zt != null and zt != ''">
+                and qrgl.zt=#{zt}
+            </if>
+            <if test="fkwcbj != null and fkwcbj != ''">
+                and qrgl.fkwcbj=#{fkwcbj}
+            </if>
+            <if test = "dzfss != null and dzfss.length > 0 "  >
+                and qrgl.dzfs in
+                <foreach collection="dzfss" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        <if test="(entire != null and entire != '')or(djh !=null and djh !='')or(hwmc !=null and hwmc !='')">
+        group by qrgl.qrid,qrgl.qrdh,qrgl.bz,qrgl.lrsj,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm,
+            jc_dzfs.csmc,qrgl.zt,qrgl.sqr,qrgl.sqbm,qrgl.scbj
+        </if>
+    </select>
+    <select id="getDto" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+               jc_dzfs.csmc dzfsmc,qrgl.zt,qrgl.sqbm,jg.jgmc sqbmmc,jg.jgdm sqbmdm,jc_dzfs.csdm dzfsdm,qrgl.ddslid
+        from igams_xzqgqrgl qrgl
+        left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+        left join matridx_jgxx jg on jg.jgid=qrgl.sqbm
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        <where>
+            qrgl.scbj='0' and qrgl.qrid=#{qrid}
+        </where>
+    </select>
+
+    <select id="getDtoById" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+        jc_dzfs.csmc dzfsmc,qrgl.zt,qrgl.sqbm,qrgl.sqr,sqbm.jgmc sqbmmc,qrgl.ddslid
+        from igams_xzqgqrgl qrgl
+        left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        left join matridx_jgxx sqbm on sqbm.jgid=qrgl.sqbm
+        <where>
+            qrgl.scbj='0' and qrgl.qrid=#{qrid}
+        </where>
+    </select>
+
+    <update id="delete" parameterType="XzqgqrglDto">
+        update igams_xzqgqrgl set
+        scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        <where>
+            qrid in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="update" parameterType="XzqgqrglDto">
+        update igams_xzqgqrgl set
+        xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="qrdh != null and qrdh != ''">
+            ,qrdh=#{qrdh}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz=#{bz}
+        </if>
+        <if test="zfdx != null and zfdx != ''">
+            ,zfdx=#{zfdx}
+        </if>
+        <if test="zje != null and zje != ''">
+            ,zje=cast(#{zje} as numeric )
+        </if>
+        <if test="dzfs != null and dzfs != ''">
+            ,dzfs=#{dzfs}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt=#{zt}
+        </if>
+        <if test="sqbm != null and sqbm != ''">
+            ,sqbm=#{sqbm}
+        </if>
+        <if test="sqr != null and sqr != ''">
+            ,sqr=#{sqr}
+        </if>
+        <where>
+            qrid=#{qrid}
+        </where>
+    </update>
+    <select id="getPagedAuditIdList" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+        jc_dzfs.csmc dzfsmc,lr.zsxm as lrrymc,qrgl.lrsj,qrgl.ddslid
+        from igams_xzqgqrgl qrgl
+        left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        left join matridx_xtyh lr on lr.yhid=qrgl.lrry
+        <where>
+            qrgl.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (qrgl.qrdh like '%'||#{entire}||'%')
+            </if>
+            <if test="qrdh !=null and qrdh !=''">
+                and qrgl.qrdh ILIKE '%'||#{qrdh}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getAuditListByIds" parameterType="List" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+        jc_dzfs.csmc dzfsmc,lr.zsxm as lrrymc,qrgl.lrsj,
+        shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+        from 
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.qrid} qrid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_shyj} shxx_shyj,
+            #{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+        </foreach> tmp 
+        left join igams_xzqgqrgl qrgl on qrgl.qrid = tmp.qrid         
+        left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+        left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        left join matridx_xtyh lr on lr.yhid=qrgl.lrry
+        <where>
+            qrgl.qrid in
+            <foreach collection="list" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item.qrid}
+            </foreach>
+        </where>
+        order by tmp.rownum
+    </select>
+
+    <!--更新钉钉实例ID-->
+    <update id="updateDdslid" parameterType="XzqgqrglDto">
+        update igams_xzqgqrgl
+        set ddslid=#{ddslid}
+        where qrid=#{qrid}
+    </update>
+
+    <select id="getDtoByDdslid" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+               jc_dzfs.csmc dzfsmc,qrgl.dzfs,qrgl.ddslid
+        from igams_xzqgqrgl qrgl
+            left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+            left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        <where>
+            qrgl.scbj='0' and ddslid=#{ddslid}
+        </where>
+    </select>
+
+    <!-- 获取审批人角色 -->
+    <select id="getSprjsBySprid" parameterType="String" resultType="XzqgqrglDto">
+        select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+        from matridx_yhjs yhjs
+        left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+        <where>
+            yhjs.yhid=#{sprid}
+        </where>
+    </select>
+
+    <select id="getDtoListByIds" parameterType="XzqgqrglDto" resultType="XzqgqrglDto">
+        select qrgl.qrid,qrgl.qrdh,qrgl.bz,to_char(qrgl.lrsj,'yyyy-MM-dd') qrrq,qrgl.zfdx,qrgl.zje,qrgl.dzfs,yh.zsxm sqrmc,
+               jc_dzfs.csmc dzfsmc,qrgl.ddslid
+        from igams_xzqgqrgl qrgl
+                 left join matridx_xtyh yh on yh.yhid=qrgl.sqr
+                 left join matridx_jcsj jc_dzfs on jc_dzfs.csid=qrgl.dzfs
+        <where>
+            qrgl.scbj='0' and qrid in
+            <foreach collection="ids" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <update id="updateFkwcbj" parameterType="XzqgqrglDto">
+        update igams_xzqgqrgl set fkwcbj='1'
+        <where>
+            <choose>
+                <when test="ids !=null and ids.size>0">
+                    or qrid in
+                    <foreach collection="ids" open="(" close=")" separator="," item="item">
+                        #{item}
+                    </foreach>
+                </when>
+                <otherwise>
+                    or qrid = #{qrid}
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+</mapper>

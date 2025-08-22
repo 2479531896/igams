@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IQyxxDao" >
+    <sql id="SEARCH_TERMS">
+        qyxx.scbj!='1'
+        <if test="entire != null and entire != ''">
+            and (wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or lykcxx.scph ILIKE '%'||#{entire}||'%'
+            or qyr.zsxm ILIKE '%'||#{entire}||'%')
+        </if>
+        <if test="wlbm != null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc != null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="scph != null and scph != ''">
+            and lykcxx.scph ILIKE '%'||#{scph}||'%'
+        </if>
+        <if test="qyr != null and qyr != ''">
+            and qyr.zsxm ILIKE '%'||#{qyr}||'%'
+        </if>
+        <if test="qysjstart != null and qysjstart != ''">
+            and to_char(qyxx.lrsj,'yyyy-mm-dd') &gt;= #{qysjstart}
+        </if>
+        <if test="qysjend != null and qysjend != ''">
+            and to_char(qyxx.lrsj,'yyyy-mm-dd') &lt;= #{qysjend}
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="QyxxDto" resultType="QyxxDto">
+        SELECT
+        qyxx.qyid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        lykcxx.scph,
+        wlgl.jldw,
+        qyxx.qyl,
+        to_char( qyxx.lrsj, 'YYYY-MM-DD' ) lrsj,
+        qyr.zsxm qyr,
+        qyxx.yt,
+        qyxx.bz,
+        lykcxx.lyxj,qyxx.qyxj
+        FROM
+        igams_qyxx qyxx
+        LEFT JOIN igams_lykcxx lykcxx ON lykcxx.lykcid = qyxx.lykcid and lykcxx.scbj = '0'
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = lykcxx.wlid
+        LEFT JOIN matridx_xtyh qyr ON qyr.yhid = qyxx.qyr
+        <where>
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+    <select id="getDtoById" resultType="QyxxDto" parameterType="String">
+    SELECT
+        qyxx.qyid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        lykcxx.scph,
+        wlgl.jldw,
+        qyxx.qyl,
+        to_char( qyxx.lrsj, 'YYYY-MM-DD' ) lrsj,
+        qyr.zsxm qyr,
+        qyxx.yt,
+        qyxx.bz,
+        lykcxx.lyxj,
+        qyxx.qyxj
+    FROM
+        igams_qyxx qyxx
+        LEFT JOIN igams_lykcxx lykcxx ON lykcxx.lykcid = qyxx.lykcid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = lykcxx.wlid
+        LEFT JOIN matridx_xtyh qyr ON qyr.yhid = qyxx.qyr
+		where qyxx.qyid=#{qyid}
+	</select>
+    <insert id="insert" parameterType="QyxxDto">
+        insert into igams_qyxx(qyid,lykcid,qyl,qyr,yt,bz,qyxj,lrry,lrsj,scbj)
+        values (#{qyid},#{lykcid},cast(#{qyl} as numeric),#{qyr},#{yt},#{bz},#{qyxj},#{lrry},cast(#{lrsj} as timestamp),'0')
+	</insert>
+    <select id="getQyxxListByIds" parameterType="QyxxDto" resultType="QyxxDto">
+        select qyxx.qyl,qyxx.qyid,lykcxx.lykcid,lykcxx.kcl
+        from igams_qyxx qyxx
+        left join igams_lykcxx lykcxx on lykcxx.lykcid = qyxx.lykcid
+        where qyxx.scbj = '0' and qyxx.qyid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+	</select>
+    <delete id="delete" parameterType="QyxxDto">
+       update igams_qyxx set scbj = '1' ,scry=#{scry}, scsj=LOCALTIMESTAMP
+        where qyid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+	</delete>
+    <update id="updateDto" parameterType="QyxxDto">
+        update igams_qyxx set
+        qyxj=#{qyxj},
+        xgry=#{xgry},
+        xgsj=LOCALTIMESTAMP
+        <where>
+            qyid= #{qyid}
+        </where>
+    </update>
+    <select id="getDtolistQySampleStock" resultType="QyxxDto" parameterType="QyxxDto">
+        SELECT
+        qyxx.qyid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        lykcxx.scph,
+        wlgl.jldw,
+        qyxx.qyl,
+        to_char( qyxx.lrsj, 'YYYY-MM-DD' ) lrsj,
+        qyr.zsxm qyr,
+        qyxx.yt,
+        qyxx.bz,
+        lykcxx.lyxj,
+        qyxx.qyxj,
+        CASE
+
+        WHEN fj.ywid IS NULL THEN
+        1 ELSE 0
+        END AS fjbj
+        FROM
+        igams_qyxx qyxx
+        LEFT JOIN igams_lykcxx lykcxx ON lykcxx.lykcid = qyxx.lykcid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = lykcxx.wlid
+        LEFT JOIN matridx_xtyh qyr ON qyr.yhid = qyxx.qyr
+        LEFT JOIN matridx_fjcfb fj ON fj.ywid = qyxx.qyid
+        <where>
+            qyxx.scbj!='1'
+            <if test="lykcid !=null and lykcid!=''">
+                and qyxx.lykcid=#{lykcid}
+            </if>
+        </where>
+        GROUP BY
+        qyxx.qyid,
+        wlgl.wlbm,
+        wlgl.wlmc,
+        lykcxx.scph,
+        wlgl.jldw,
+        qyxx.qyl,
+        qyxx.lrsj,
+        qyr.zsxm,
+        qyxx.yt,
+        qyxx.bz,
+        lykcxx.lyxj,
+        qyxx.qyxj,
+        fj.ywid
+    </select>
+</mapper>

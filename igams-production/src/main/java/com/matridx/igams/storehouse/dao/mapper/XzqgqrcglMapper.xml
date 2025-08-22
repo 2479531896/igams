@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzqgqrcglDao" >
+
+    <!--加入确认车-->
+    <insert id="saveConfirmCar" parameterType="XzqgqrcglDto">
+        insert into igams_xzqgqrcgl (ryid,qgmxid,lrsj)
+        values (#{ryid},#{qgmxid},LOCALTIMESTAMP)
+    </insert>
+
+    <!--删除确认车-->
+    <delete id="delConfirmCar" parameterType="XzqgqrcglDto">
+        delete from igams_xzqgqrcgl
+        <where>
+            <if test="ryid != null and ryid != ''">
+                ryid=#{ryid}
+            </if>
+            <if test="qgmxid != null and qgmxid != ''">
+                and qgmxid =#{qgmxid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and qgmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <!--根据人员id获取确认车列表-->
+    <select id="getDtoListByRyid" parameterType="XzqgqrcglDto" resultType="XzqgqrcglDto">
+        select xzqgqrcgl.qgmxid,xzqgqrcgl.ryid,xzqgqrcgl.lrsj,
+        qgmx.qgid,qgmx.qgmxid,qgmx.wlid,qgmx.sl,qgmx.jg,qgmx.qwrq,qgmx.bz,qgmx.qxqg,qgmx.zt,qgmx.ydsl,qgmx.sysl,qgmx.hwmc,
+        qgmx.yssl,qgmx.htbhgl,qgmx.jhdhrq,qgmx.htrq,qgmx.dhrq,qgmx.dhsl,qgmx.rksl,qgmx.dhdhgl,qgmx.glid,qgmx.hwbz,qgmx.yt,
+        qgmx.yq,qgmx.sjjl,qgmx.hwbz,qgmx.hwjldw,qgmx.hwyt,qgmx.sfrk,jg_sqbm.jgmc as sqbmmc,
+        qggl.sfqr,qggl.sqrq,qggl.djh,qggl.qgid,qgmx.hwbz as hwgg,qggl.djh as qgdh
+        from igams_xzqgqrcgl xzqgqrcgl
+        left join igams_qgmx qgmx on qgmx.qgmxid = xzqgqrcgl.qgmxid
+        LEFT JOIN igams_qggl qggl ON qggl.qgid = qgmx.qgid
+        LEFT JOIN matridx_jgxx jg_sqbm ON jg_sqbm.jgid=qggl.sqbm
+        LEFT JOIN matridx_jcsj jc_qglb ON qggl.qglb = jc_qglb.csid
+        <where>
+            xzqgqrcgl.ryid=#{ryid}
+        </where>
+    </select>
+
+    <!--获取不在确认车的行政请购未确认信息-->
+    <select id="getUnconfirmMsgNotInCar" parameterType="XzqgqrcglDto">
+        select qgmx.qgid,qgmx.qgmxid,qgmx.wlid,qgmx.sl,qgmx.jg,qgmx.qwrq,qgmx.bz,qgmx.qxqg,qgmx.zt,qgmx.ydsl,qgmx.sysl,qgmx.hwmc,
+               qgmx.yssl,qgmx.htbhgl,qgmx.jhdhrq,qgmx.htrq,qgmx.dhrq,qgmx.dhsl,qgmx.rksl,qgmx.dhdhgl,qgmx.glid,qgmx.hwbz,qgmx.yt,
+               qgmx.yq,qgmx.sjjl,qgmx.hwbz,qgmx.hwjldw,qgmx.hwyt,qgmx.sfrk
+        from igams_qgmx qgmx
+        LEFT JOIN igams_xzqgqrcgl qrcgl on qgmx.qgmxid=qrcgl.qgmxid
+        LEFT JOIN matridx_jcsj jc_qglb ON qggl.qglb = jc_qglb.csid
+        LEFT JOIN igams_qggl qggl ON qggl.qgid = qgmx.qgid
+        LEFT JOIN igams_xzqgfkmx xzqgfkmx ON xzqgfkmx.qgmxid = qgmx.qgmxid
+        <where>
+            qgmx.scbj='0'
+            and qgmx.zt='80'
+            and jc_qglb.csdm='ADMINISTRATION'
+            and xzqgfkmx.fkmxid is null
+            and qgmx.qgmxid not in (select qgmxid from igams_xzqgqrcgl where ryid=#{ryid})
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IHtfktxDao" >
+    <select id="getListByHtid" parameterType="HtfktxDto" resultType="HtfktxDto">
+        select fktx.fktxid,fktx.htid,fktx.htfkid,fktx.yfje,fktx.yfbl,to_char(fktx.yfrq,'yyyy-mm-dd') yfrq,fktx.bz,fktx.xh,
+        htgl.zje,htgl.xzje
+        from igams_htfktx fktx
+        left join igams_htgl htgl on htgl.htid=fktx.htid
+        where
+        fktx.scbj='0' and fktx.htid=#{htid} order by fktx.xh asc
+    </select>
+
+    <insert id="insertDtoList" parameterType="List">
+        insert into igams_htfktx(xh,fktxid,htid,htfkid,yfje,yfbl,yfrq,bz,scbj)
+        values
+        <foreach collection="list" item="item"  index="index" separator=",">
+            ((select (select coalesce(max(xh),0)+1+#{index} from igams_htfktx where htid=#{item.htid})),#{item.fktxid},#{item.htid},#{item.htfkid},cast(#{item.yfje} as numeric ),#{item.yfbl},cast(#{item.yfrq} as timestamp),#{item.bz},'0')
+        </foreach>
+    </insert>
+
+    <update id="updateDtoList" parameterType="List">
+        with recursive t(fktxid,htid,htfkid,yfje,yfbl,yfrq,bz) as (
+            select tmp.fktxid,tmp.htid,tmp.htfkid,tmp.yfje,tmp.yfbl,tmp.yfrq,tmp.bz from
+            <foreach collection="list" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+                select
+                #{item.fktxid} fktxid,#{item.htid} htid,#{item.htfkid} htfkid,#{item.yfje} yfje,#{item.yfbl} yfbl,
+             #{item.yfrq} yfrq,#{item.bz} bz
+            </foreach>
+            left join igams_htfktx fktx on fktx.fktxid=tmp.fktxid and fktx.scbj='0'
+        )
+        update igams_htfktx fktx set yfje=cast((select yfje from t where fktxid=fktx.fktxid) as numeric ),
+        yfbl=(select yfbl from t where fktxid=fktx.fktxid),
+        yfrq=CAST( (select yfrq from t where fktxid=fktx.fktxid) AS TIMESTAMP),
+        bz=(select bz from t where fktxid=fktx.fktxid)
+        where fktx.fktxid in (
+            select fktxid from t
+        )
+    </update>
+
+    <update id="delDtoList" parameterType="HtfktxDto">
+        update igams_htfktx set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+        where fktxid in
+        <foreach collection="ids" item="item" separator="," close=")" open="(">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getPagedDtoList" parameterType="HtfktxDto" resultType="HtfktxDto">
+        select fktx.htid,fktx.xh,fktx.yfje,fktx.yfbl,fktx.yfrq,fktx.htfkid,fktx.bz,fktx.fktxid,htgl.zt
+             ,htgl.htnbbh,jc_fkfs.csmc fkfsmc,gys.gysmc gysmc,htgl.zje,htgl.xzje,(COALESCE(case when htgl.xzje is not null then htgl.xzje else htgl.zje end,0)-COALESCE(htgl.yfje,0)-COALESCE(htgl.fkzje,0)) wfkje,htgl.yfje htyfje,yh.zsxm lrrymc,fktx.bz
+        from igams_htfktx fktx
+                 left join igams_htgl htgl on htgl.htid=fktx.htid
+                 left join matridx_jcsj jc_fkfs on jc_fkfs.csid=htgl.fkfs
+                 left join igams_gysxx gys on gys.gysid=htgl.gys
+                 left join matridx_xtyh yh on yh.yhid=htgl.lrry
+        where
+            fktx.scbj='0' and fktx.htfkid is null and fktx.yfrq &lt;= (SELECT CURRENT_DATE)
+            <if test="entire != null and entire != ''">
+                and (
+                    htgl.htnbbh like '%'||#{entire}||'%'
+                    or gys.gysmc like '%'||#{entire}||'%'
+                    or yh.zsxm like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="htnbbh !=null and htnbbh != ''">
+                and htgl.htnbbh like '%'||#{htnbbh}||'%'
+            </if>
+            <if test="gysmc !=null and gysmc != ''">
+                and gys.gysmc like '%'||#{gysmc}||'%'
+            </if>
+            <if test="lrrymc !=null and lrrymc != ''">
+                and yh.zsxm like '%'||#{lrrymc}||'%'
+            </if>
+    </select>
+
+    <select id="getDtoById" parameterType="HtfktxDto" resultType="HtfktxDto">
+        select fktx.htid,fktx.xh,fktx.yfje,fktx.yfbl,fktx.yfrq,fktx.htfkid,fktx.bz,fktx.fktxid
+                ,htgl.htnbbh,jc_fkfs.csmc fkfsmc,gys.gysmc gysmc,htgl.zje,(COALESCE(htgl.zje,0)-COALESCE(htgl.yfje,0)) wfje,htgl.yfje htyfje,yh.zsxm lrrymc,fktx.bz
+        from igams_htfktx fktx
+            left join igams_htgl htgl on htgl.htid=fktx.htid
+            left join matridx_jcsj jc_fkfs on jc_fkfs.csid=htgl.fkfs
+            left join igams_gysxx gys on gys.gysid=htgl.gys
+            left join matridx_xtyh yh on yh.yhid=htgl.lrry
+        <where>
+            fktx.scbj='0' and fktx.fktxid=#{fktxid}
+        </where>
+    </select>
+
+    <update id="delete" parameterType="HtfktxDto">
+        update igams_htfktx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        where fktxid in
+        <foreach collection="ids" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getDtoList" parameterType="HtfktxDto" resultType="HtfktxDto">
+        select fktx.htid,fktx.xh,fktx.yfje,fktx.yfbl,fktx.yfrq,fktx.htfkid,fktx.bz,fktx.fktxid,htgl.fkzje
+             ,htgl.htnbbh,jc_fkfs.csmc fkfsmc,gys.gysmc gysmc,htgl.zje,htgl.xzje,(COALESCE(case when htgl.xzje is not null then htgl.xzje else htgl.zje end,0)-COALESCE(htgl.yfje,0)-COALESCE(htgl.fkzje,0)) wfkje,htgl.yfje htyfje,yh.zsxm lrrymc,fktx.bz
+        ,gys.khh gyskhh,gys.zh gysyyzh,gys.gysid gysid
+        from igams_htfktx fktx
+                 left join igams_htgl htgl on htgl.htid=fktx.htid
+                 left join matridx_jcsj jc_fkfs on jc_fkfs.csid=htgl.fkfs
+                 left join igams_gysxx gys on gys.gysid=htgl.gys
+                 left join matridx_xtyh yh on yh.yhid=htgl.lrry
+        where fktx.scbj='0'
+        <if test="htid !=null and htid!=''">
+            and htgl.htid=#{htid}
+        </if>
+        <if test="ids != null and ids.size > 0">
+            and fktx.fktxid in
+            <foreach collection="ids" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateHtfkid" parameterType="HtfktxDto">
+        update igams_htfktx set htfkid=#{htfkid}
+        where
+        scbj='0' and fktxid in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+
+    <update id="updateHtfkidToNull" parameterType="HtfktxDto">
+        update igams_htfktx set htfkid=null
+        where
+        scbj='0' and htfkid in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <delete id="deleteByHtid" parameterType="HtfktxDto">
+        delete from igams_htfktx
+        where htid=#{htid}
+    </delete>
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQgqxglDao" >
+	<insert id="insert" parameterType="QgqxglDto">
+		insert into igams_qgqxgl(qgqxid
+		<if test="qgid != null and qgid != ''">
+			,qgid
+		</if>
+		<if test="djh != null and djh != ''">
+			,djh
+		</if>
+		<if test="sqr != null and sqr != ''">
+			,sqr
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,sqbm
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,sqrq
+		</if>
+		<if test="sqly != null and sqly != ''">
+			,sqly
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="zt != null and zt != ''">
+			,zt
+		</if>
+		,lrry,lrsj,scbj)
+		values(#{qgqxid}
+		<if test="qgid != null and qgid != ''">
+			,#{qgid}
+		</if>
+		<if test="djh != null and djh != ''">
+			,#{djh}
+		</if>
+		<if test="sqr != null and sqr != ''">
+			,#{sqr}
+		</if>
+		<if test="sqbm != null and sqbm != ''">
+			,#{sqbm}
+		</if>
+		<if test="sqrq != null and sqrq != ''">
+			,cast(#{sqrq} as timestamp)
+		</if>
+		<if test="sqly != null and sqly != ''">
+			,#{sqly}
+		</if>
+		<if test="bz != null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt != null and zt != ''">
+			,#{zt}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,0)
+	</insert>
+	
+	<!-- 获取请购列表审核的ID列表 -->
+	<select id="getPagedAuditQgqxgl" parameterType="QgqxglDto" resultType="QgqxglDto">
+		select qgqxgl.qgqxid,qgqxgl.lrsj,qgqxgl.sqbm
+			from igams_qgqxgl qgqxgl
+			left join matridx_xtyh xt_lrry on xt_lrry.yhid= qgqxgl.lrry
+			<where>
+				qgqxgl.scbj !='1'
+				<if test="djh !=null and djh !=''">
+					and qgqxgl.djh ILIKE '%'||#{djh}||'%'
+				</if>
+			</where>
+	</select>
+
+	
+	<!-- 请购审核列表-->
+	<select id="getAuditListQgqxgl" parameterType="List" resultType="QgqxglDto">
+		select qgqxgl.qgqxid,qgqxgl.qgid,qgqxgl.djh,qgqxgl.sqr,qgqxgl.sqbm,qgqxgl.sqrq,qgqxgl.sqly,
+		qgqxgl.bz,yh_sqr.zsxm sqrmc,jg_sqbm.jgmc sqbmmc,tmp.shxx_sqsj,shxx_shyj,shxx_shxxid,tmp.sqr,shxx_lrryxm,shxx_sftg,shxx_gwmc,shxx_shsj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+				item="item" index="index">
+			select #{item.qgqxid} qgqxid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+		</foreach>
+		tmp
+		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid = tmp.qgqxid 		
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qgqxgl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qgqxgl.sqbm
+		order by tmp.rownum
+	</select>
+	
+	<update id="update" parameterType="QgqxglDto">
+		update igams_qgqxgl
+		<set>
+				xgry=#{xgry}
+			 	,xgsj=LOCALTIMESTAMP
+			<if test="djh != null and djh != ''">
+				,djh=#{djh}
+			</if>
+			<if test="sqr != null and sqr != ''">
+				,sqr=#{sqr}
+			</if>
+			<if test="sqbm != null and sqbm != ''">
+				,sqbm=#{sqbm}
+			</if>
+			<if test="sqrq != null and sqrq != ''">
+				,sqrq=cast(#{sqrq} as timestamp)
+			</if>
+			<if test="sqly != null and sqly != ''">
+				,sqly=#{sqly}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="zt != null and zt != ''">
+				,zt=#{zt}
+			</if>
+		</set>
+		<where>
+			qgqxid=#{qgqxid}
+		</where>
+	</update>
+	
+	<select id="getDtoById" parameterType="String" resultType="QgqxglDto">
+		select qgqxgl.qgqxid,qgqxgl.qgid,qgqxgl.djh,qgqxgl.sqr,qgqxgl.sqbm,qgqxgl.sqrq,qgqxgl.sqly,
+		qgqxgl.bz,yh_sqr.zsxm sqrmc,jg_sqbm.jgmc sqbmmc,jc_qglb.csdm qglbdm
+		from igams_qgqxgl qgqxgl
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qgqxgl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qgqxgl.sqbm
+		left join igams_qggl qggl on qggl.qgid=qgqxgl.qgid
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qgqxgl.scbj!='1' and qgqxgl.qgqxid=#{qgqxid}
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="QgqxglDto" resultType="QgqxglDto">
+		select qgqxgl.qgqxid,qgqxgl.qgid,qgqxgl.djh,qgqxgl.sqr,qgqxgl.sqbm,qgqxgl.sqrq,qgqxgl.sqly,
+		qgqxgl.bz,yh_sqr.zsxm sqrmc,jg_sqbm.jgmc sqbmmc,jc_qglb.csdm qglbdm
+		from igams_qgqxgl qgqxgl
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=qgqxgl.sqr
+		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid=qgqxgl.sqbm
+		left join igams_qggl qggl on qggl.qgid=qgqxgl.qgid
+		left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb
+		<where>
+			qgqxgl.scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and qgqxgl.qgqxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<update id="delete" parameterType="QgqxglDto">
+		update igams_qgqxgl set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+				qgqxid = #{qgqxid}
+		</where>
+	</update>
+</mapper>

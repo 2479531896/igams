@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IScbomDao">
+    <select id="getPagedDtoList" parameterType="BomglDto" resultType="BomglDto">
+        SELECT
+            bomgl.bomid,bomgl.bbrq,bomgl.bbh,bomgl.bbsm,bomlb.csmc bomlbmc,wlgl.wlmc mjwlmc,wlgl.wlbm mjwlbm,wlgl.jldw,wlgl.gg
+        FROM
+            igams_bomgl bomgl
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = bomgl.mjwlid
+        LEFT JOIN matridx_jcsj bomlb on bomlb.csid = bomgl.bomlb
+        LEFT JOIN igams_bommx bommx on bommx.bomid = bomgl.bomid and bommx.scbj = '0'
+        LEFT JOIN igams_wlgl zjwlgl ON zjwlgl.wlid = bommx.zjwlid
+        WHERE bomgl.scbj ='0'
+        <include refid="Where"></include>
+        group by  bomgl.bomid,bomgl.bbrq,bomgl.bbh,bomgl.bbsm,bomlb.csmc,wlgl.wlmc,wlgl.wlbm,wlgl.jldw,wlgl.gg
+    </select>
+    <sql id="Where">
+        <if test="entire !=null and entire !=''">
+            and(wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or wlgl.gg ILIKE '%'||#{entire}||'%'
+            or bomgl.bbh ILIKE '%'||#{entire}||'%'
+            or bomgl.bbsm ILIKE '%'||#{entire}||'%'
+            or zjwlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or zjwlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or zjwlgl.gg ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="zjwlbm !=null and zjwlbm !=''">
+            and zjwlgl.wlbm like '%'||#{zjwlbm}||'%'
+        </if>
+        <if test="zjwlmc !=null and zjwlmc !=''">
+            and zjwlgl.wlmc like '%'||#{zjwlmc}||'%'
+        </if>
+        <if test="mjwlbm !=null and mjwlbm !=''">
+            and wlgl.wlbm like '%'||#{mjwlbm}||'%'
+        </if>
+        <if test="mjwlmc !=null and mjwlmc !=''">
+            and wlgl.wlmc like '%'||#{mjwlmc}||'%'
+        </if>
+        <if test="gg !=null and gg !=''">
+            and wlgl.gg like '%'||#{gg}||'%'
+        </if>
+        <if test="bbh !=null and bbh !=''">
+            and bomgl.bbh like '%'||#{bbh}||'%'
+        </if>
+        <if test="bbsm !=null and bbsm !=''">
+            and bomgl.bbsm like '%'||#{bbsm}||'%'
+        </if>
+        <if test="bbrqstart != null and bbrqstart != ''">
+            and to_char(bomgl.bbrq,'yyyy-mm-dd') &gt;= #{bbrqstart}
+        </if>
+        <if test="bbrqend != null and bbrqend != ''">
+            and to_char(bomgl.bbrq,'yyyy-mm-dd') &lt;= #{bbrqend}
+        </if>
+        <if test = "bomlbs != null and bomlbs.size() > 0 "  >
+            and bomgl.bomlb in
+            <foreach collection="bomlbs" separator="," open="(" close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getDtoById" parameterType="BomglDto" resultType="BomglDto">
+        SELECT
+            bomgl.bomid,bomgl.bbrq,bomgl.bbh,bomgl.bbsm,bomlb.csmc bomlbmc,wlgl.wlmc mjwlmc,wlgl.wlbm mjwlbm,wlgl.jldw,bomgl.bomlb,wlgl.wlid mjwlid
+        FROM
+            igams_bomgl bomgl
+                LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = bomgl.mjwlid
+                LEFT JOIN matridx_jcsj bomlb on bomlb.csid = bomgl.bomlb
+        WHERE bomgl.scbj ='0' and bomgl.bomid = #{bomid}
+    </select>
+    <select id="selectDtoByMjwlid" parameterType="String" resultType="BomglDto">
+        select bomid,mjwlid,bbrq,bbh,bbsm,bomlb
+        from igams_bomgl
+        where scbj='0' and mjwlid=#{mjwlid}
+    </select>
+    <insert id="insert" parameterType="BomglDto">
+        insert into igams_bomgl(
+        bomid,mjwlid
+        <if test="bbrq !=null and bbrq !=''">
+            ,bbrq
+        </if>
+        <if test="bbh !=null and bbh !=''">
+            ,bbh
+        </if>
+        <if test="bbsm !=null and bbsm !=''">
+            ,bbsm
+        </if>
+        <if test="bomlb !=null and bomlb !=''">
+            ,bomlb
+        </if>
+        ,lrry,lrsj,scbj
+        )values(
+        #{bomid},#{mjwlid}
+        <if test="bbrq !=null and bbrq !=''">
+            ,cast (#{bbrq} as date)
+        </if>
+        <if test="bbh !=null and bbh !=''">
+            ,#{bbh}
+        </if>
+        <if test="bbsm !=null and bbsm !=''">
+            ,#{bbsm}
+        </if>
+        <if test="bomlb !=null and bomlb !=''">
+            ,#{bomlb}
+        </if>
+        ,#{lrry}
+        ,LOCALTIMESTAMP
+        ,'0'
+        )
+    </insert>
+    <update id="update" parameterType="BomglDto">
+        update igams_bomgl set
+        <if test="mjwlid != null and mjwlid != ''">
+            mjwlid = #{mjwlid},
+        </if>
+        <if test="bbrq != null and bbrq != ''">
+            bbrq = cast(#{bbrq} as date),
+        </if>
+        <if test="bbh != null and bbh != ''">
+            bbh = #{bbh},
+        </if>
+        <if test="bbsm != null and bbsm != ''">
+            bbsm=#{bbsm},
+        </if>
+        <if test="bomlb != null and bomlb != ''">
+            bomlb=#{bomlb},
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where bomid = #{bomid}
+    </update>
+    <update id="delete" parameterType="BomglDto">
+        update igams_bomgl
+        <set>
+            scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            bomid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <update id="deleteById" parameterType="String">
+        update igams_bomgl
+        <set>
+            scbj ='1',scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            bomid =#{bomid}
+        </where>
+    </update>
+    <select id="getDtoList" resultType="BomglDto" parameterType="BomglDto">
+        select wlgl.wlbm mjwlbm,wlgl.wlmc mjwlmc,wlgl.wlid mjwlid,bomgl.bomid
+        from igams_bomgl bomgl
+        left join igams_wlgl wlgl on bomgl.mjwlid = wlgl.wlid
+        left join matridx_jcsj bomlb on bomlb.csid = bomgl.bomlb
+        <where>
+            bomgl.scbj!='1'
+            <if test="mjwlid != null and mjwlid != ''">
+                and bomgl.mjwlid=#{mjwlid}
+            </if>
+            <if test="nowwlid != null and nowwlid != ''">
+                and bomgl.mjwlid != #{nowwlid}
+            </if>
+        </where>
+    </select>
+</mapper>

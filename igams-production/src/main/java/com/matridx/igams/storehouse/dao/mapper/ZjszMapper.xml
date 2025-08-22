@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IZjszDao" >
+	<select id="getDtoList" parameterType="ZjszDto" resultType="ZjszDto">
+		select zjsz.kssj,zjsz.jssj,xtyh.zsxm zjrymc,zjsz.gzid,zjsz.zjszid
+		from igams_zjsz zjsz
+		left join matridx_xtyh xtyh on xtyh.yhid = zjsz.zjry
+		where zjsz.lykcid = #{lykcid}
+	</select>
+	<select id="getZjszDtos"   resultType="ZjszDto">
+		select to_char(zjsz.kssj,'yyyy-MM-dd') kssj,to_char(zjsz.jssj,'yyyy-MM-dd') jssj,xtyh.zsxm zjrymc,zjsz.zjszid,wlgl.wlmc,lykcxx.scph,zjsz.zjry
+		from igams_zjsz zjsz
+		left join matridx_xtyh xtyh on xtyh.yhid = zjsz.zjry
+		left join igams_lykcxx lykcxx on lykcxx.lykcid = zjsz.lykcid
+		left join igams_wlgl wlgl on wlgl.wlid = lykcxx.wlid
+	</select>
+	<update id="delete" parameterType="ZjszDto">
+		delete from igams_zjsz  where zjszid = #{zjszid}
+	</update>
+	<insert id="insert" parameterType="ZjszDto">
+		insert into igams_zjsz(zjszid,gzid,kssj,jssj,zjry,lykcid)
+		values
+			(#{zjszid},#{gzid},cast(#{kssj} as date),cast(#{jssj} as date),#{zjry},#{lykcid})
+	</insert>
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_zjsz
+				<set>
+					gzid = #{item.gzid}
+				</set>
+				<where>
+					zjszid = #{item.zjszid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+</mapper>

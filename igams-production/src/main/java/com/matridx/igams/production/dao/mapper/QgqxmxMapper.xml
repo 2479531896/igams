@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IQgqxmxDao" >
+	<sql id="SEARCH_TERMS">
+		qgqxmx.scbj!='1'
+		<if test="entire != null and entire != ''">
+			and (
+			 wlgl.wlmc ILIKE '%'||#{entire}||'%'
+			or jc_wllb.csmc ILIKE '%'||#{entire}||'%'
+			or jc_wlzlb.csmc ILIKE '%'||#{entire}||'%'
+			or qggl.djh ILIKE '%'||#{entire}||'%'
+			or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="djh != null and djh != ''">
+			and qgqxgl.djh ILIKE '%'||#{djh}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlbm != null and wlbm != ''">
+			and wlgl.wlbm like '%'||#{wlbm}||'%'
+		</if>
+		<if test="wlmc != null and wlmc != ''">
+			and wlgl.wlmc like '%'||#{wlmc}||'%'
+		</if>
+		<if test="wllbmc != null and wllbmc != ''">
+			and jc_wllb.csmc like '%'||#{wllbmc}||'%'
+		</if>
+		<if test="wlzlbmc != null and wlzlbmc != ''">
+			and jc_wlzlb.csmc like '%'||#{wlzlbmc}||'%'
+		</if>
+		<if test="qgqxid != null and qgqxid != ''">
+			and qgqxgl.qgqxid = #{qgqxid}
+		</if>
+	</sql>
+	
+	<insert id="insertDtoList" parameterType="List">
+		insert into igams_qgqxmx(qgqxmxid,qgqxid,qgmxid,qgid,wlid,qxsl,bz,zt,lrry,lrsj,scbj)
+		values
+		<foreach collection="list" open="" close="" separator="," index="index" item="item">
+			(#{item.qgqxmxid},#{item.qgqxid},#{item.qgmxid},#{item.qgid},#{item.wlid}
+			<if test="item.qxsl != null and item.qxsl != ''">
+				,cast(#{item.qxsl} as numeric)
+			</if>
+			<if test="item.qxsl == null or item.qxsl == ''">
+				,null
+			</if>
+			,#{item.bz},#{item.zt},#{item.lrry},LOCALTIMESTAMP,'0')
+		</foreach>
+	</insert>
+	
+	<!-- 更新请购取消明细数据 -->
+	<update id="updateDtoList" parameterType="List">
+		<foreach collection="list" separator=";" open="" close="" item="item" index="index">
+			update igams_qgqxmx set
+			xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			<if test="item.qxsl != null and item.qxsl != ''">
+				,qxsl=cast(#{item.qxsl} as numeric)
+			</if>
+            <if test="item.qxsl == null and item.qxsl == ''">
+				,qxsl=0
+			</if>
+			<if test="item.bz != null and item.bz!= ''">
+				,bz=#{item.bz}
+			</if>
+			<where>
+				scbj!='1' and qgqxmxid=#{item.qgqxmxid} and qgqxid=#{item.qgqxid}
+			</where>
+		</foreach>
+	</update>
+	
+	<select id="getPagedDtoList" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgid,qgqxmx.qgqxid,qgqxmx.qgmxid,qgqxmx.wlid,qgqxmx.qxsl,
+		qgqxmx.bz,qgqxgl.zt,yh.zsxm as qgqxry,to_char(qgqxmx.lrsj,'YYYY-MM-DD') as qgqxsj,qgqxgl.djh,qgmx.sl as qgmxsl,qgmx.sysl as sysl,qgmx.ydsl,
+		wlgl.wlbm,wlgl.wlzlbtc,jc_wlzlbtc.csmc wlzlbtcmc,wlgl.wlmc,wlgl.wllb,wlgl.wlzlb,jc_wllb.csmc as wllbmc,jc_wlzlb.csmc as wlzlbmc,
+		wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.ychh,qgqxmx.qxsl,qgmx.jg,qgqxgl.zt,qgqxmx.scbj,qgmx.qwrq,jc_qglb.csmc qglbmc,qgmx.hwbz, 
+	 	qgmx.yq,qgmx.sjjl, qgmx.hwjldw, qgmx.hwyt, qgmx.wbyq, qgmx.pzyq,qgmx.hwmc,jc_qglb.csdm qglbdm
+  			from igams_qgqxmx qgqxmx 
+	  		left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+	  		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+			left join matridx_xtyh yh on yh.yhid=qgqxmx.lrry
+			left join igams_qggl qggl on qggl.qgid=qgqxmx.qgid and qggl.scbj='0'
+			left join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb and jc_qglb.scbj='0'
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	
+	<select id="getDtoById" parameterType="String" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgid,qgqxmx.qgqxid,qgqxmx.qgmxid,qgqxmx.wlid,qgqxmx.qxsl,
+		qgqxmx.bz,qgqxmx.zt,qgqxgl.djh,qgmx.sl as qgmxsl,qgmx.sysl as sysl,qgmx.ydsl,
+		wlgl.wlbm,wlgl.wlzlbtc,jc_wlzlbtc.csmc wlzlbtcmc,wlgl.wlmc,wlgl.wllb,wlgl.wlzlb,jc_wllb.csmc as wllbmc,jc_wlzlb.csmc as wlzlbmc,
+		wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.ychh
+  			from igams_qgqxmx qgqxmx 
+	  		left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+	  		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+		<where>
+			qgqxmx.scbj!='1' and qgqxmx.qgqxmxid=#{qgqxmxid}
+		</where>	
+	</select>
+	
+	<select id="getDtoList" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgid,qgqxmx.qgqxid,qgqxmx.qgmxid,qgqxmx.wlid,qgqxmx.qxsl,
+		qgqxmx.bz,qgqxmx.zt,qgqxgl.djh,qgmx.sl as qgmxsl,qgmx.sysl as sysl,qgmx.ydsl,qgqxgl.sqly,
+		wlgl.wlbm,wlgl.wlzlbtc,jc_wlzlbtc.csmc wlzlbtcmc,case when (wlgl.wlmc is not null and wlgl.wlmc !='') then wlgl.wlmc else qgmx.hwmc end wlmc,wlgl.wllb,wlgl.wlzlb,jc_wllb.csmc as wllbmc,jc_wlzlb.csmc as wlzlbmc,
+		wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.ychh,to_char(qgqxmx.lrsj,'YYYY-MM-DD HH24:mi:ss') AS lrsj,qgqxgl.zt as qxqgzt,xtyh.zsxm as sqrmc
+  			from igams_qgqxmx qgqxmx 
+	  		left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+	  		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+			left join matridx_xtyh xtyh on xtyh.yhid=qgqxgl.sqr
+		<where>
+			qgqxmx.scbj!='1'
+			<if test="ids !=null and ids.size > 0">
+				and qgqxmx.qgqxmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="qgqxid !=null and qgqxid != ''">
+				and qgqxmx.qgqxid=#{qgqxid}
+			</if>
+			<if test="qgid !=null and qgid != ''">
+				and qgqxmx.qgid=#{qgid}
+			</if>
+		</where>	
+	</select>
+	
+	<update id="delete" parameterType="QgqxmxDto">
+		update igams_qgqxmx set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			<if test="qgqxmxid !=null and qgqxmxid != ''">
+				qgqxmxid = #{qgqxmxid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or qgqxmxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<select id="getQgqxmxList" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgid,qgqxmx.qgqxid,qgqxmx.qgmxid,qgqxmx.wlid,qgqxmx.qxsl,
+		qgqxmx.bz,qgqxmx.zt,qgqxgl.djh,qgmx.sl as qgmxsl,qgmx.sysl as sysl,qgmx.ydsl,qgmx.sl as sl,
+		wlgl.wlbm,wlgl.wlzlbtc,jc_wlzlbtc.csmc wlzlbtcmc,wlgl.wlmc,wlgl.wllb,wlgl.wlzlb,jc_wllb.csmc as wllbmc,jc_wlzlb.csmc as wlzlbmc,
+		wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.ychh,
+		(select sum(qxsl) from igams_qgqxmx where qgid=qgqxmx.qgid and wlid=qgmx.wlid) as zqxsl
+  			from igams_qgqxmx qgqxmx 
+	  		left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+	  		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+		<where>
+			qgqxmx.scbj!='1'
+			and qgqxmx.qgqxid=#{qgqxid}
+		</where>	
+	</select>
+
+<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="QgqxmxDto"
+		resultType="java.lang.Integer">
+		select count(qgqxmx.qgqxmxid) from igams_qgqxmx qgqxmx		
+			left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+	  		left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	
+	<select id="getListForSearchExp" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid ${sqlParam}
+		from igams_qgqxmx qgqxmx
+			left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+			left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+	  		left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	
+	<select id="getListForSelectExp" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} qgqxmxid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_qgqxmx qgqxmx on tmp.qgqxmxid = qgqxmx.qgqxmxid
+			left join igams_wlgl wlgl on wlgl.wlid=qgqxmx.wlid
+			left join igams_qgqxgl qgqxgl on qgqxgl.qgqxid=qgqxmx.qgqxid
+			left join matridx_jcsj jc_wllb on jc_wllb.csid=wlgl.wllb
+	  		left join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wlgl.wlzlb
+	  		left join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wlgl.wlzlbtc
+	  		left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = qgqxgl.sqbm
+			left join igams_qgmx qgmx on qgmx.qgmxid=qgqxmx.qgmxid
+		order by tmp.ordernum
+	</select>
+
+	<!-- 取消请购审核通过更新请购明细sl，sysl字段 -->
+ 	<update id="updateQgmxByList" parameterType="QgqxglDto">
+		update igams_qgmx qgmx
+    	set (sl,sysl)=( select qgmx.sl - qxmx.qxsl,qgmx.sysl - qxmx.qxsl
+           from igams_qgqxmx qxmx
+            where qgqxid=#{qgqxid} and scbj='0' and qxmx.qgmxid = qgmx.qgmxid
+      ) where qgmx.qgid=#{qgid} and qgmx.qgmxid in 
+      (select qgmxid from igams_qgqxmx where qgqxid=#{qgqxid})
+	</update> 
+	
+	<!-- 获取其他有关该请购明细的审核中的取消请购信息 -->
+	<select id="getOtherQxqgList" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgqxid,qgqxmx.qgid,qgqxmx.qgmxid,qgqxmx.qxsl
+		from igams_qgqxmx qgqxmx
+		left join igams_qgqxgl qgqxgl on qgqxmx.qgqxid=qgqxgl.qgqxid
+		<where>
+			qgqxmx.scbj!='1' 
+			and qgqxmx.qgid=#{qgid} 
+			and qgqxmx.qgmxid=#{qgmxid} and qgqxmx.qgqxid!=#{qgqxid}
+			and qgqxgl.zt='10'
+		</where>
+	</select>
+	
+	<!-- 获取其他有关该请购明细的 -->
+	<select id="getQgqxmxCancelList" parameterType="QgqxmxDto" resultType="QgqxmxDto">
+		select qgqxmx.qgqxmxid,qgqxmx.qgid,qgqxmx.qgqxid,qgqxmx.qgmxid,qgqxmx.wlid,qgqxmx.qxsl,wl.wlmc,wl.wlbm,jc_wllb.csmc wllbmc,jc_wlzlb.csmc wlzlbmc,
+		jc_wlzlbtc.csmc wlzlbtcmc,qgmx.sysl,qgmx.sl,wl.jldw,
+		(qgmx.sysl - coalesce(tmp.qxsl,0) - coalesce(qgmx.ydsl,0)) kqxsl,
+		qgqxmx.bz,coalesce(tmp.qxsl,0) zqxsl,coalesce(qgmx.sysl,0) sysl,coalesce(qgmx.ydsl,0) ydsl,
+		jc_qglb.csmc qglbmc,qgmx.hwbz, 
+	 	qgmx.yq,qgmx.sjjl, qgmx.hwjldw, qgmx.hwyt, qgmx.wbyq, qgmx.pzyq,qgmx.hwmc,jc_qglb.csdm qglbdm,wl.gg
+		from igams_qgqxmx qgqxmx
+		left outer join  (
+			select qxmx.qgmxid,sum(qxmx.qxsl) qxsl from igams_qgqxgl qgqx
+			left outer join matridx_shgc xshgc on xshgc.ywid = qgqx.qgqxid
+			left outer join igams_qgqxgl qtqx on qtqx.zt ='10' and qgqx.qgid = qtqx.qgid and qgqx.qgqxid != qtqx.qgqxid and qtqx.scbj ='0'
+			left outer join matridx_shgc shgc on qtqx.qgqxid = shgc.ywid and (xshgc.xlcxh &lt; shgc.xlcxh or (xshgc.xlcxh is null and shgc.xlcxh>0))
+			left outer join igams_qgqxmx qxmx on qtqx.qgqxid = qxmx.qgqxid
+			where shgc.gcid is not null and qxmx.qgid is not null and qgqx.qgqxid = #{qgqxid}
+			group by qxmx.qgmxid
+		) tmp on tmp.qgmxid = qgqxmx.qgmxid
+		left outer join igams_qgmx qgmx on qgmx.qgmxid = qgqxmx.qgmxid
+		left outer join igams_wlgl wl on wl.wlid=qgqxmx.wlid
+		left outer join matridx_jcsj jc_wllb on jc_wllb.csid=wl.wllb
+		left outer join matridx_jcsj jc_wlzlb on jc_wlzlb.csid=wl.wlzlb
+		left outer join matridx_jcsj jc_wlzlbtc on jc_wlzlbtc.csid=wl.wlzlbtc
+		left outer join igams_qggl qggl on qggl.qgid=qgqxmx.qgid and qggl.scbj='0'
+		left outer join matridx_jcsj jc_qglb on jc_qglb.csid=qggl.qglb and jc_qglb.scbj='0'
+		where qgqxmx.qgqxid = #{qgqxid} and qgqxmx.scbj!='1' order by qgmx.xh asc
+	</select>
+</mapper>

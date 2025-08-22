@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzdbglDao" >
+    <sql id="SEARCH_TERMS">
+        <if test="hwmc!=''and hwmc!=null">
+            and xzdbxx.hwmc ILIKE '%'||#{hwmc}
+        </if>
+        <if test="hwbz!=''and hwbz!=null">
+            and xzdbxx.hwbz ILIKE '%'||#{hwbz}
+        </if>
+        <if test="dbry != null and dbry != ''">
+            and dbry.zsxm ILIKE '%'||#{dbry}||'%'
+        </if>
+        <if test="dbsjstart != null and dbsjstart != ''">
+            and to_char(xzdbxx.dbsj,'yyyy-mm-dd') &gt;= #{dbsjstart}
+        </if>
+        <if test="dbsjend != null and dbsjend != ''">
+            and to_char(xzdbxx.dbsj,'yyyy-mm-dd') &lt;= #{dbsjend}
+        </if>
+        <if test = "dckws != null and dckws.length > 0 "  >
+            and xzdbxx.dckw in
+            <foreach collection="dckws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "drkws != null and drkws.length > 0 "  >
+            and xzdbxx.drkw in
+            <foreach collection="drkws" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="XzdbglDto" resultType="XzdbglDto">
+   select xzdbxx.xzdbid,xzdbxx.hwmc,xzdbxx.hwbz,xzdbxx.dckw,xzdbxx.drkw,xzdbxx.dbsl,to_char(xzdbxx.dbsj,'yyyy-mm-dd') dbsj,xzdbxx.dbry,drkw.csmc drkwmc,dckw.csmc dckwmc,dbry.zsxm dbrymc
+   from igams_xzdbxx xzdbxx
+   left join matridx_jcsj drkw on drkw.csid=xzdbxx.drkw
+   left join matridx_jcsj dckw on dckw.csid=xzdbxx.dckw
+   left join matridx_xtyh dbry on dbry.yhid=xzdbxx.dbry
+   <where>
+       <include refid="SEARCH_TERMS"></include>
+   </where>
+    </select>
+    <select id="getDto" resultType="XzdbglDto" parameterType="XzdbglDto">
+    select xzdbxx.xzdbid,xzdbxx.hwmc,xzdbxx.hwbz,xzdbxx.dckw,xzdbxx.drkw,xzdbxx.dbsl,to_char(xzdbxx.dbsj,'yyyy-mm-dd') dbsj,xzdbxx.dbry,drkw.csmc drkwmc,dckw.csmc dckwmc,dbry.zsxm dbrymc
+   from igams_xzdbxx xzdbxx
+   left join matridx_jcsj drkw on drkw.csid=xzdbxx.drkw
+   left join matridx_jcsj dckw on dckw.csid=xzdbxx.dckw
+   left join matridx_xtyh dbry on dbry.yhid=xzdbxx.dbry
+   where xzdbxx.xzdbid=#{xzdbid}
+    </select>
+    <insert id="insertDto" parameterType="XzdbglDto">
+        	insert into igams_xzdbxx(xzdbid,dckw,drkw,dbsl,hwmc,hwbz,dbry,dbsj
+
+		)values(#{xzdbid},#{dckw},#{drkw},cast(#{dbsl} as numeric),#{hwmc},#{hwbz},#{dbry},LOCALTIMESTAMP
+		)
+    </insert>
+    <update id="updateDto" parameterType="XzdbglDto">
+        	update igams_xzdbxx set
+        <if test="dbsl !=null and dbsl != ''">
+            dbsl=COALESCE(dbsl,0) + cast(#{dbsl} as numeric)
+        </if>
+        <where>
+            hwmc=#{hwmc} and hwbz=#{hwbz}
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_xzdbxx(xzdbid,
+        hwmc,
+        hwbz,
+        dckw,
+        drkw,
+        dbsl,
+        dbsj,
+        dbry
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.xzdbid},#{item.hwmc},#{item.hwbz},#{item.dckw},#{item.drkw},cast(#{item.dbsl} as numeric),LOCALTIMESTAMP,#{item.dbry}
+                )
+            </foreach>
+        </if>
+    </insert>
+</mapper>

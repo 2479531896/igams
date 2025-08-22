@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzrkmxDao" >
+    <!--库存列表-->
+    <select id="getPagedDtoAdministrationStockList" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        SELECT
+        xzrkmx.xzrkmxid,
+        xzrkmx.xzrkid,
+        xzrkmx.hwmc,
+        xzrkmx.hwgg,
+        xzrkmx.hwjldw,
+        xzrkmx.kcl,
+        xzrkmx.bz,
+        xzrkgl.rkdh,
+        xzrkgl.rkrq,
+        xzrkgl.zt,
+        ck.ckmc ckmc,
+        kw.ckmc kwmc
+        FROM igams_xzrkmx xzrkmx
+        LEFT JOIN igams_xzrkgl xzrkgl ON xzrkmx.xzrkid = xzrkgl.xzrkid and xzrkgl.scbj != '1'
+        LEFT JOIN igams_ckxx ck on ck.ckid = xzrkmx.ckid
+        LEFT JOIN igams_ckxx kw on kw.ckid = xzrkmx.kwid
+        <where>
+            xzrkmx.scbj != '1'
+            <if test="entire != null and entire != ''">
+                and (
+                xzrkmx.hwmc ILIKE '%' ||#{entire}||'%'
+                or xzrkgl.rkdh ILIKE '%' ||#{entire}||'%'
+                or ck.ckmc ILIKE '%' ||#{entire}||'%'
+                or kw.ckmc ILIKE '%' ||#{entire}||'%'
+                )
+            </if>
+            <if test="hwmc != null and hwmc != ''">
+                and xzrkmx.hwmc ILIKE '%' ||#{hwmc}||'%'
+            </if>
+            <if test="rkdh != null and rkdh != ''">
+                and xzrkgl.rkdh ILIKE '%' ||#{rkdh}||'%'
+            </if>
+            <if test="ckmc != null and ckmc != ''">
+                and ck.ckmc ILIKE '%' ||#{ckmc}||'%'
+            </if>
+            <if test="kwmc != null and kwmc != ''">
+                and kw.ckmc ILIKE '%' ||#{kwmc}||'%'
+            </if>
+            <if test="jjtss != null and jjtss.length == 1 ">
+                and (
+                case when '1' in
+                <foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+                then (COALESCE(xzrkmx.kcl,0) &gt; 0)
+                when '0' in
+                <foreach collection="jjtss" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+                then (COALESCE(xzrkmx.kcl,0) &lt;= 0) end)
+            </if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and xzrkgl.zt in
+                <foreach collection="zts" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <!--查看库存信息-->
+    <select id="getJbxxByXzrkmxid" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        SELECT
+        xzrkmx.xzrkmxid,
+        xzrkmx.xzrkid,
+        xzrkmx.hwmc,
+        xzrkmx.hwgg,
+        xzrkmx.hwjldw,
+        xzrkmx.kcl,
+        xzrkmx.ckid,
+        xzrkmx.kwid,
+        xzrkmx.bz,
+        xzrkmx.qgmxid,
+        xzrkgl.rkdh,
+        xzrkgl.rkrq,
+        xzrkgl.zt,
+        ck.ckmc ckmc,
+        kw.ckmc kwmc
+        FROM igams_xzrkmx xzrkmx
+        LEFT JOIN igams_xzrkgl xzrkgl ON xzrkmx.xzrkid = xzrkgl.xzrkid and xzrkgl.scbj != '1'
+        LEFT JOIN igams_ckxx ck on ck.ckid = xzrkmx.ckid
+        LEFT JOIN igams_ckxx kw on kw.ckid = xzrkmx.kwid
+        <where>
+            xzrkmx.xzrkmxid=#{xzrkmxid}
+        </where>
+    </select>
+    <!--查询已入库数量-->
+    <select id="getrksl" parameterType="String" resultType="XzrkmxDto">
+        SELECT sum(cast(rksl as numeric)) as rksl FROM igams_xzrkmx xzrkmx
+        LEFT JOIN igams_xzrkgl xzrkgl ON xzrkmx.xzrkid = xzrkgl.xzrkid and xzrkgl.scbj != '1'
+        where xzrkmx.qgmxid=#{qgmxid} and xzrkmx.scbj != '1' and xzrkgl.zt != '15' group by xzrkmx.qgmxid
+    </select>
+    <!--修改库存信息-->
+    <update id="updateAdministrationStockByXzrkmxid">
+        update igams_xzrkmx set
+        <if test="hwmc !=null and hwmc !=''">
+            hwmc=#{hwmc},
+        </if>
+        <if test="hwgg !=null and hwgg !=''">
+            hwgg=#{hwgg},
+        </if>
+        <if test="hwjldw !=null and hwjldw !=''">
+            hwjldw=#{hwjldw},
+        </if>
+        <if test="rksl !=null and rksl !=''">
+            rksl=cast(#{rksl} as numeric),
+        </if>
+        <if test="kcl !=null and kcl !=''">
+            kcl=cast(#{kcl} as numeric),
+        </if>
+        <if test="ckid !=null and ckid !=''">
+            ckid=#{ckid},
+        </if>
+        <if test="kwid !=null and kwid !=''">
+            kwid=#{kwid},
+        </if>
+        <if test="bz !=null and bz !=''">
+            bz=#{bz},
+        </if>
+        <if test="xgry !=null and xgry !=''">
+            xgry=#{xgry},
+        </if>
+        xgsj= LOCALTIMESTAMP
+        where xzrkmxid = #{xzrkmxid}
+    </update>
+
+    <!--根据xzrkmxid获取qgmxids-->
+    <select id="getQgmxidsByXzrkmxids" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        select qgmxid
+        from igams_xzrkmx
+        <where>
+            <if test="xzrkmxid !=null and xzrkmxid != ''">
+                or xzrkmxid = #{xzrkmxid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                or xzrkmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--删除库存信息-->
+    <update id="delAdministrationStockByXzrkmxid">
+        update igams_xzrkmx set
+        scry=#{scry},scsj= LOCALTIMESTAMP,scbj = '1'
+        <where>
+            <if test="xzrkmxid !=null and xzrkmxid != ''">
+                or xzrkmxid = #{xzrkmxid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                or xzrkmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_xzrkmx(xzrkmxid,xzrkid,qgmxid,rksl,scs,kcl,lrry,lrsj,scbj,hwmc,hwbz,xzkcid)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.xzrkmxid},#{item.xzrkid},#{item.qgmxid},cast(#{item.rksl} as numeric),#{item.scs},cast(#{item.kcl} as numeric),#{item.lrry},LOCALTIMESTAMP,'0',#{item.hwmc},#{item.hwbz},#{item.xzkcid}
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="getDtoList" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        select
+        xzrkmx.xzrkmxid,
+        xzrkmx.xzrkid,
+        xzrkmx.hwmc,
+        xzrkmx.hwbz,
+        xzrkmx.kcl,
+        xzrkgl.kwid as kw,
+        xzrkmx.rksl as sl,
+        to_char(xzrkgl.rkrq,'YYYY-MM-dd') rkrq,xzrkgl.rkdh,yh.zsxm rkrymc,jcsj.csmc kwmc,rklb.csmc rklbmc
+        from igams_xzrkmx xzrkmx
+        left join igams_xzrkgl xzrkgl on xzrkmx.xzrkid=xzrkgl.xzrkid and xzrkgl.scbj='0'
+        left join matridx_xtyh yh on yh.yhid = xzrkgl.rkry
+        left join matridx_jcsj jcsj on jcsj.csid = xzrkgl.kwid
+        left join matridx_jcsj rklb on rklb.csid = xzrkgl.rklb
+        <where>
+            xzrkmx. scbj != '1'
+            <if test="qgmxid !=null and qgmxid !=''">
+                and xzrkmx.qgmxid=#{qgmxid}
+            </if>
+            <if test="xzrkid !=null and xzrkid !=''">
+                and xzrkmx.xzrkid=#{xzrkid}
+            </if>
+            <if test="xzkcid !=null and xzkcid !=''">
+                and xzrkmx.xzkcid=#{xzkcid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                or xzrkmx.xzrkmxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getXzkcList" parameterType="String" resultType="XzrkmxDto">
+        select
+        xzkcxx.xzkcid,xzrkmx.qgmxid,xzrkgl.kwid,xzrkmx.rksl,qgmx.hwmc,qgmx.hwbz,xzrkmx.xzrkmxid,xzrkmx.hwmc rkhwmc,xzrkmx.hwbz rkhwbz,kcxx.xzkcid rkkcid
+        from igams_xzrkmx  xzrkmx
+        left join igams_xzrkgl xzrkgl on xzrkgl.xzrkid=xzrkmx.xzrkid
+        left join igams_qgmx qgmx on qgmx.qgmxid=xzrkmx.qgmxid
+        left join igams_xzkcxx xzkcxx on  xzkcxx.hwmc=qgmx.hwmc and xzkcxx.hwbz=qgmx.hwbz and xzrkgl.kwid=xzkcxx.kwid
+        left join igams_xzkcxx kcxx on  kcxx.hwmc=xzrkmx.hwmc and kcxx.hwbz=xzrkmx.hwbz and xzrkgl.kwid=kcxx.kwid
+        <where>
+            xzrkgl.scbj != '1'
+            and xzrkmx.xzrkid=#{xzrkid}
+        </where>
+    </select>
+    
+    <select id="getDto" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        select qgmxid,kcl,rksl,xzrkmxid,xzrkid,hwmc,hwgg,hwjldw,bz
+        from igams_xzrkmx
+        <where>
+            <if test="xzrkmxid !=null and xzrkmxid != ''">
+                or xzrkmxid = #{xzrkmxid}
+            </if>
+        </where>
+    </select>
+    <select id="getDtoListByXzrkid" parameterType="String" resultType="XzrkmxDto">
+        SELECT
+	      case when qgmx.hwmc is null then xzrkmx.hwmc else qgmx.hwmc end hwmc,case when qgmx.hwbz is null then xzrkmx.hwbz else qgmx.hwbz end hwbz,qgmx.hwjldw,qgmx.sl,xzrkmx.rksl,xzrkmx.qgmxid
+		,xzkcxx.xzkcid,xzrkmx.kcl,xzrkmx.xzrkmxid,xzrkmx.rksl xzrksl,xzkcxx.kcl xzkcl,ROUND((COALESCE(qgmx.sl,0)-COALESCE(qgmx.rksl,0)), 2) krksl
+        FROM
+	      igams_xzrkmx xzrkmx
+	    LEFT JOIN igams_qgmx qgmx on xzrkmx.qgmxid = qgmx.qgmxid
+		left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzrkmx.xzkcid
+		left join igams_xzrkgl xzrkgl on xzrkgl.xzrkid=xzrkmx.xzrkid
+	    where xzrkmx.xzrkid =#{xzrkid} and xzrkmx.scbj!='1'
+    </select>
+    <select id="getDtoListByDto" parameterType="XzrkmxDto" resultType="XzrkmxDto">
+        SELECT
+	      case when qgmx.hwmc is null then xzrkmx.hwmc else qgmx.hwmc end hwmc,case when qgmx.hwbz is null then xzrkmx.hwbz else qgmx.hwbz end hwbz,qgmx.hwjldw,qgmx.sl,xzrkmx.rksl,xzrkmx.qgmxid
+		,xzkcxx.xzkcid,xzrkmx.kcl,xzrkmx.xzrkmxid,xzrkmx.rksl xzrksl,xzkcxx.kcl xzkcl,ROUND((COALESCE(qgmx.sl,0)-COALESCE(qgmx.rksl,0)), 2) krksl,qgmx.rksl yrksl,qggl.djh,qggl.qgid
+        FROM
+	      igams_xzrkmx xzrkmx
+	    LEFT JOIN igams_qgmx qgmx on xzrkmx.qgmxid = qgmx.qgmxid
+			left join igams_qggl qggl on qggl.qgid=qgmx.qgid
+		left join igams_xzkcxx xzkcxx on xzkcxx.xzkcid=xzrkmx.xzkcid
+		left join igams_xzrkgl xzrkgl on xzrkgl.xzrkid=xzrkmx.xzrkid
+	    where xzrkmx.xzrkid =#{xzrkid} and xzrkmx.scbj!='1'
+    </select>
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_xzrkmx
+                <set>
+                    xzkcid=#{item.xzkcid}
+                    <if test="item.scbj !=null and item.scbj !=''">
+                        ,scbj=#{item.scbj}
+                    </if>
+                    <if test="item.rksl !=null and item.rksl !=''">
+                        ,rksl=cast (#{item.rksl} as numeric )
+                    </if>
+                    <if test="item.kcl !=null and item.kcl !=''">
+                        ,kcl=cast (#{item.kcl} as numeric )
+                    </if>
+                    <if test="item.hwmc !=null and item.hwmc !=''">
+                        ,hwmc=#{item.hwmc}
+                    </if>
+                    <if test="item.hwbz !=null and item.hwbz !=''">
+                        ,hwbz=#{item.hwbz}
+                    </if>
+                </set>
+                <where>
+                    xzrkmxid=#{item.xzrkmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <update id="delete" parameterType="XzrkmxDto">
+        update igams_xzrkmx set scbj = '1'
+        where
+        xzrkid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.HY_DZ_BorrowOutsDao">
+    <select id="queryByCode" parameterType="HY_DZ_BorrowOutsDto" resultType="HY_DZ_BorrowOutsDto">
+		SELECT cCODE,AutoID
+		FROM HY_DZ_BorrowOuts
+  			where cCODE=#{cCODE}
+	</select>
+
+    <select id="getcCode" parameterType="HY_DZ_BorrowOutsDto" resultType="HY_DZ_BorrowOutsDto">
+		SELECT cCODE,AutoID
+			FROM HY_DZ_BorrowOuts
+			where LEN(cCODE)=10 and cCode>#{cCODE}
+  			order by cCODE
+	</select>
+	
+	<insert id="insert" parameterType="HY_DZ_BorrowOutsDto">
+		INSERT INTO HY_DZ_BorrowOuts
+		   (ID, AutoID, cinvcode, cwhcode, iquantity, inum, backdate, cmemo, cbatch, cbsysbarcode, dmadedate, imassdate, cmassunit, dvdate, iexpiratDateCalcu,
+		   bborrowoutback,iQtyOut,iQtyOut2
+		   )
+		   VALUES
+		    (#{ID}, #{AutoID}, #{cinvcode}, #{cwhcode}, #{iquantity}, #{inum},cast(#{backdate} as datetime), #{cmemo}, #{cbatch}, #{cbsysbarcode},cast(#{dmadedate} as datetime),
+		    #{imassdate}, '1',cast(#{dvdate} as datetime), '0', '1',#{iQtyOut},#{iQtyOut2}
+		    )
+	</insert>
+	<update id="updateList" parameterType="list">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update HY_DZ_BorrowOuts
+				<set>
+					iQtyBack=iQtyBack + cast(#{item.iQtyBack} as decimal),iQtyBack2=#{item.iQtyBack2},
+				</set>
+				<where>
+					AutoID=#{item.AutoID}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+</mapper>

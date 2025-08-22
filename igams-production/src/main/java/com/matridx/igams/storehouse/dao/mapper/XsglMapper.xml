@@ -1,0 +1,1162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXsglDao" >
+	<select id="getOAxsddh" parameterType="String" resultType="String">
+		SELECT lpad(cast((CAST(coalesce(MAX(substring(oaxsdh,13)),'0') AS numeric) + 1) as VARCHAR), 3, '0') oaxsdh
+		FROM igams_xsgl
+		<where>
+			scbj = '0' AND oaxsdh like #{oaxsdh}||'%'
+		</where>
+	</select>
+
+
+	<!-- 分页查询 -->
+	<select id="getPagedDtoList" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.zt,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.khzd,xsgl.ysyq,xsgl.suil,xsgl.zk,xsgl.zdqy,xsgl.dkje,xsgl.kdxx,case when xsgl.sfqr='1' then '是'
+		else '否' end sfqy,xsgl.shlxfs,xsgl.shry,zd.csmc zdqymc,shry.zsxm shrymc,
+		case when xsgl.zt='00' then '未提交' when xsgl.zt='15' then '审核未通过' when xsgl.zt='80' then '审核通过' else '审核中' end ztmc,xsgl.xszje,xsgl.xsfph,jcjygl.jydh,xsgl.djlx,yxsgl.oaxsdh yoaxsdh,xsgl.yxsid,xsgl.jcjyid,
+		xsgl.ysk,xsgl.htdh htid,xsgl.fzr,fzr.zsxm fzrmc,xsgl.fhzt,xsgl.ysfs,ysfs.csmc ysfsmc
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join igams_xsgl yxsgl on yxsgl.xsid = xsgl.yxsid
+		left join igams_jcjygl jcjygl on jcjygl.jcjyid=xsgl.jcjyid
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_jcsj ysfs on ysfs.csid=xsgl.ysfs
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_xtyh fzr on fzr.yhid=xsgl.fzr
+		<if test="(entire!=null and entire!='') or(dky!=null and dky!='')">
+		left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid
+		</if>
+		<where>
+			xsgl.scbj ='0'
+			<if test="entire != null and entire != ''">
+				and (jg.jgmc ILIKE '%'||#{entire}||'%'
+				or yh.zsxm ILIKE '%'||#{entire}||'%'
+				or kh.khmc ILIKE '%'||#{entire}||'%'
+				or xsgl.khzd ILIKE '%'||#{entire}||'%'
+				or xsgl.htdh ILIKE '%'||#{entire}||'%'
+				or yxht.htbh ILIKE '%'||#{entire}||'%'
+				or zd.csmc ILIKE '%'||#{entire}||'%'
+				or xsgl.ysyq ILIKE '%'||#{entire}||'%'
+				or xsgl.zk ILIKE '%'||#{entire}||'%'
+				or xsmx.dky ILIKE '%'||#{entire}||'%'
+				or xsgl.xsfph ILIKE '%'||#{entire}||'%'
+				or shry.zsxm ILIKE '%'||#{entire}||'%'
+				or xsgl.oaxsdh ILIKE '%'||#{entire}||'%'
+				or xsgl.u8xsdh ILIKE '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="oaxsdh!=null and oaxsdh!=''">
+				and xsgl.oaxsdh like '%'||#{oaxsdh}||'%'
+			</if>
+			<if test="u8xsdh!=null and u8xsdh!=''">
+				and xsgl.u8xsdh like '%'||#{u8xsdh}||'%'
+			</if>
+			<if test="jydh!=null and jydh!=''">
+				and jcjygl.jydh like '%'||#{jydh}||'%'
+			</if>
+			<if test="zt!=null and zt!=''">
+				and xsgl.zt = #{zt}
+			</if>
+			<if test="(wlbm!=null and wlbm!='') or (wlmc!=null and wlmc!='')">
+				and xsgl.xsid in
+				(
+				select xsmx.xsid from igams_xsmx xsmx left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid and wlgl.scbj = '0'
+				where xsmx.scbj = '0'
+				<if test="wlbm!=null and wlbm!=''">
+					and wlgl.wlbm like '%'||#{wlbm}||'%'
+				</if>
+				<if test="wlmc!=null and wlmc!=''">
+					and wlgl.wlmc like '%'||#{wlmc}||'%'
+				</if>
+				)
+			</if>
+			<if test="xsbmmc!=null and xsbmmc!=''">
+				and jg.jgmc like '%'||#{xsbmmc}||'%'
+			</if>
+			<if test="ywymc!=null and ywymc!=''">
+				and yh.zsxm like '%'||#{ywymc}||'%'
+			</if>
+			<if test="khjcmc!=null and khjcmc!=''">
+				and kh.khmc like '%'||#{khjcmc}||'%'
+			</if>
+			<if test="khjc!=null and khjc!=''">
+				and kh.khjc like '%'||#{khjc}||'%'
+			</if>
+			<if test="khzd!=null and khzd!=''">
+				and xsgl.khzd like '%'||#{khzd}||'%'
+			</if>
+			<if test="htdh!=null and htdh!=''">
+				and (xsgl.htdh like '%'||#{htdh}||'%' or yxht.htbh ILIKE '%'||#{htdh}||'%')
+			</if>
+			<if test="ysyq!=null and ysyq!=''">
+				and xsgl.ysyq like '%'||#{ysyq}||'%'
+			</if>
+			<if test="zdqy!=null and zdqy!=''">
+				and zd.csmc like '%'||#{zdqy}||'%'
+			</if>
+			<if test="zk!=null and zk!=''">
+				and xsgl.zk like '%'||#{zk}||'%'
+			</if>
+			<if test="shry!=null and shry!=''">
+				and shry.zsxm like '%'||#{shry}||'%'
+			</if>
+			<if test="dky!=null and dky!=''">
+				and xsmx.dky like '%'||#{dky}||'%'
+			</if>
+			<if test="xsfph!=null and xsfph!=''">
+				and xsgl.xsfph  like '%'||#{xsfph}||'%'
+			</if>
+			<if test="ddrqstart != null and ddrqstart != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &gt;= #{ddrqstart}
+			</if>
+			<if test="ddrqend != null and ddrqend != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &lt;= #{ddrqend}
+			</if>
+			<if test="(yfhrqstart != null and yfhrqstart != '') or (yfhrqend != null and yfhrqend != '')">
+				and xsgl.xsid in(
+				select xsmx.xsid from igams_xsmx xsmx
+				where xsmx.scbj = '0'
+				<if test="yfhrqstart != null and yfhrqstart != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &gt;= #{yfhrqstart}
+				</if>
+				<if test="ddrqend != null and ddrqend != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &lt;= #{yfhrqend}
+				</if>
+				)
+			</if>
+			<if test="sfqss != null and sfqss.length > 0 ">
+				and (select case when xsgl.sfqs ='1' then '1' else '0' end  sfqs) in
+				<foreach collection="sfqss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfqrs != null and sfqrs.length > 0 ">
+				and (select case when xsgl.sfqr='1' then '1' else '0' end sfqr) in
+				<foreach collection="sfqrs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0 ">
+				and kh.khlb in
+				<foreach collection="khlbs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="djlxs != null and djlxs.length > 0 ">
+				and coalesce(xsgl.djlx,'0') in
+				<foreach collection="djlxs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="dkjemin != null and dkjemin != ''">
+				and xsgl.dkje &gt;= cast(#{dkjemin} as numeric )
+			</if>
+			<if test="dkjemax != null and dkjemax != ''">
+				and xsgl.dkje &lt;= cast(#{dkjemax} as numeric )
+			</if>
+			<if test="(entire!=null and entire!='') or(dky!=null and dky!='')">
+				group by
+				xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+				xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm,jg.jgmc,kh.khmc,kh.khdm ,ywlx.csmc,
+				xslx.csmc,xsgl.zt,yxht.htbh,xsgl.htdh,xsgl.khzd,xsgl.ysyq,xsgl.suil,xsgl.zk,xsgl.zdqy,xsgl.dkje,xsgl.kdxx, xsgl.sfqr
+				,xsgl.shlxfs,xsgl.shry,zd.csmc,shry.zsxm,xsgl.zt,xsgl.xszje,xsgl.xsfph,jcjygl.jydh,xsgl.djlx,yxsgl.oaxsdh,xsgl.yxsid,xsgl.jcjyid,
+				xsgl.ysk,xsgl.htdh,fzr.zsxm,xsgl.ysfs,ysfs.csmc
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoById" parameterType="String" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.fzdq,xsgl.xszje,xsgl.xsfph,xsgl.shlxr,
+		xsgl.kdxx,case when xsgl.sfqr='1' then '是'
+		else '否' end sfqr,xsgl.shlxfs,xsgl.shry,zd.csmc zdqymc,shry.zsxm shrymc,xsgl.dkje,xsgl.zk,xsgl.zdqy,xsgl.jcjyid,xsgl.ddslid,xsgl.ysk,xsgl.fzr
+		,xsgl.htdh htid,fzr.zsxm fzrmc,xsgl.ysfs,ysfs.csmc ysfsmc,xsgl.hkzq
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_jcsj ysfs on ysfs.csid=xsgl.ysfs
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_xtyh fzr on fzr.yhid=xsgl.fzr
+		<where>
+			xsgl.scbj !='1'
+			and xsgl.xsid=#{xsid}
+		</where>
+	</select>
+	<select id="getDtoListByJyId" parameterType="String" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,xsgl.htdh,xsgl.fzdq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.khzd,xsgl.ysyq,xsgl.suil,xsgl.xszje
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		<where>
+			xsgl.scbj !='1'
+			and xsgl.jcjyid=#{jcjyid} and xsgl.jcjyid is not null
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,xsgl.htdh,xsgl.fzdq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.khzd,xsgl.ysyq,xsgl.suil,xsgl.xszje
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		<where>
+			xsgl.scbj !='1'
+			and xsgl.xsid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<select id="getDto" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xslx.csdm xslxdm,kh.khdm,ywlx.csdm ywlxdm,jg.jgdm xsbmdm,xsgl.suil,xsgl.khzd,xsgl.ysyq,xsgl.shlxr,yh.ddid ywyddid,yh.grouping,
+		xsgl.ysfs,ysfs.csmc ysfsmc,lrry.zsxm as zsxm
+		from igams_xsgl xsgl
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj ysfs on ysfs.csid=xsgl.ysfs
+		left join matridx_xtyh lrry on lrry.yhid=xsgl.lrry
+		<where>
+			xsgl.scbj ='0'
+			<if test="xsid != null and xsid != ''">
+				and xsgl.xsid=#{xsid}
+			</if>
+			<if test="oaxsdh != null and oaxsdh != ''">
+				and xsgl.oaxsdh=#{oaxsdh}
+			</if>
+		</where>
+	</select>
+
+	<select id="verify" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc
+		from igams_xsgl xsgl
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		<where>
+			xsgl.scbj ='0'
+				and xsgl.xsid!=#{xsid}
+				and xsgl.oaxsdh=#{oaxsdh}
+		</where>
+	</select>
+
+	<update id="discard" parameterType="XsglDto">
+		update igams_xsgl
+		<set>
+			scbj='2',xgry=#{scry},xgsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			xsid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getPagedAuditSale" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.zt
+		from igams_xsgl xsgl
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		<where>
+			xsgl.scbj ='0'
+			<if test="oaxsdh!=null and oaxsdh!=''">
+				and xsgl.oaxsdh like '%'||#{oaxsdh}||'%'
+			</if>
+			<if test="xsbmmc!=null and xsbmmc!=''">
+				and jg.jgmc like '%'||#{xsbmmc}||'%'
+			</if>
+			<if test="ywymc!=null and ywymc!=''">
+				and yh.zsxm like '%'||#{ywymc}||'%'
+			</if>
+			<if test="khjcmc!=null and khjcmc!=''">
+				and kh.khmc like '%'||#{khjcmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 审核列表-->
+	<select id="getAuditListSale" parameterType="List" resultType="XsglDto">
+		select  xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.zt,shxx_sqsj,shxx_gwmc,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.xsid} xsid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_shyj} shxx_shyj,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+		</foreach> tmp
+		left join igams_xsgl xsgl on xsgl.xsid = tmp.xsid 
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		order by tmp.rownum
+	</select>
+
+	<!-- 插入信息 -->
+	<insert id="insert" parameterType="XsglDto">
+		insert into igams_xsgl(xsid
+		<if test="oaxsdh !=null and oaxsdh != ''">
+			,oaxsdh
+		</if>
+		<if test="u8xsdh !=null and u8xsdh != ''">
+			,u8xsdh
+		</if>
+		<if test="glid !=null and glid != ''">
+			,glid
+		</if>
+		<if test="ddrq !=null and ddrq != ''">
+			,ddrq
+		</if>
+		<if test="ywlx !=null and ywlx != ''">
+			,ywlx
+		</if>
+		<if test="xslx !=null and xslx != ''">
+			,xslx
+		</if>
+		<if test="xsbm !=null and xsbm != ''">
+			,xsbm
+		</if>
+		<if test="ywy !=null and ywy != ''">
+			,ywy
+		</if>
+		<if test="khjc !=null and khjc != ''">
+			,khjc
+		</if>
+		<if test="shdz !=null and shdz != ''">
+			,shdz
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="suil !=null and suil != ''">
+			,suil
+		</if>
+		<if test="htdh !=null and htdh != ''">
+			,htdh
+		</if>
+		<if test="khzd !=null and khzd != ''">
+			,khzd
+		</if>
+		<if test="ysyq !=null and ysyq != ''">
+			,ysyq
+		</if>
+		<if test="fzdq !=null and fzdq != ''">
+			,fzdq
+		</if>
+		<if test="xszje !=null and xszje != ''">
+			,xszje
+		</if>
+		<if test="zdqy !=null and zdqy != ''">
+			,zdqy
+		</if>
+		<if test="zk !=null and zk != ''">
+			,zk
+		</if>
+		<if test="dky !=null and dky != ''">
+			,dky
+		</if>
+		<if test="dkje !=null and dkje != ''">
+			,dkje
+		</if>
+		<if test="shlxfs !=null and shlxfs != ''">
+			,shlxfs
+		</if>
+		<if test="jcjyid !=null and jcjyid != ''">
+			,jcjyid
+		</if>
+		<if test="yxsid !=null and yxsid != ''">
+			,yxsid
+		</if>
+		<if test="djlx !=null and djlx != ''">
+			,djlx
+		</if>
+		<if test="shlxr !=null and shlxr != ''">
+			,shlxr
+		</if>
+		<if test="ysk !=null and ysk != ''">
+			,ysk
+		</if>
+		<if test="fzr !=null and fzr != ''">
+			,fzr
+		</if>
+		<if test="ysfs !=null and ysfs != ''">
+			,ysfs
+		</if>
+		<if test="hkzq !=null and hkzq != ''">
+			,hkzq
+		</if>
+		,lrry,lrsj,scbj) values(#{xsid}
+		<if test="oaxsdh !=null and oaxsdh != ''">
+			,#{oaxsdh}
+		</if>
+		<if test="u8xsdh !=null and u8xsdh != ''">
+			,#{u8xsdh}
+		</if>
+		<if test="glid !=null and glid != ''">
+			,#{glid}
+		</if>
+		<if test="ddrq !=null and ddrq != ''">
+			,cast(#{ddrq} as date)
+		</if>
+		<if test="ywlx !=null and ywlx != ''">
+			,#{ywlx}
+		</if>
+		<if test="xslx !=null and xslx != ''">
+			,#{xslx}
+		</if>
+		<if test="xsbm !=null and xsbm != ''">
+			,#{xsbm}
+		</if>
+		<if test="ywy !=null and ywy != ''">
+			,#{ywy}
+		</if>
+		<if test="khjc !=null and khjc != ''">
+			,#{khjc}
+		</if>
+		<if test="shdz !=null and shdz != ''">
+			,#{shdz}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="suil !=null and suil != ''">
+			,cast(#{suil} as numeric )
+		</if>
+		<if test="htdh !=null and htdh != ''">
+			,#{htdh}
+		</if>
+		<if test="khzd !=null and khzd != ''">
+			,#{khzd}
+		</if>
+		<if test="ysyq !=null and ysyq != ''">
+			,#{ysyq}
+		</if>
+		<if test="fzdq !=null and fzdq != ''">
+			,#{fzdq}
+		</if>
+		<if test="xszje !=null and xszje != ''">
+			,cast(#{xszje} as numeric)
+		</if>
+		<if test="zdqy !=null and zdqy != ''">
+			,#{zdqy}
+		</if>
+		<if test="zk !=null and zk != ''">
+			,#{zk}
+		</if>
+		<if test="dky !=null and dky != ''">
+			,#{dky}
+		</if>
+		<if test="dkje !=null and dkje != ''">
+			,cast(#{dkje} as numeric)
+		</if>
+		<if test="shlxfs !=null and shlxfs != ''">
+			,#{shlxfs}
+		</if>
+		<if test="jcjyid !=null and jcjyid != ''">
+			,#{jcjyid}
+		</if>
+		<if test="yxsid !=null and yxsid != ''">
+			,#{yxsid}
+		</if>
+		<if test="djlx !=null and djlx != ''">
+			,#{djlx}
+		</if>
+		<if test="shlxr !=null and shlxr != ''">
+			,#{shlxr}
+		</if>
+		<if test="ysk !=null and ysk != ''">
+			,cast(#{ysk} as numeric)
+		</if>
+		<if test="fzr !=null and fzr != ''">
+			,#{fzr}
+		</if>
+		<if test="ysfs !=null and ysfs != ''">
+			,#{ysfs}
+		</if>
+		<if test="hkzq !=null and hkzq != ''">
+			,cast(#{hkzq} as numeric )
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<update id="update" parameterType="XsglDto">
+		update igams_xsgl
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="oaxsdh !=null and oaxsdh != ''">
+				,oaxsdh=#{oaxsdh}
+			</if>
+			<if test="u8xsdh !=null and u8xsdh != ''">
+				,u8xsdh=#{u8xsdh}
+			</if>
+			<if test="glid !=null and glid != ''">
+				,glid=#{glid}
+			</if>
+			<if test="ddrq !=null and ddrq != ''">
+				,ddrq=cast(#{ddrq} as date)
+			</if>
+			<if test="ywlx !=null and ywlx != ''">
+				,ywlx=#{ywlx}
+			</if>
+			<if test="xslx !=null and xslx != ''">
+				,xslx=#{xslx}
+			</if>
+			<if test="xsbm !=null and xsbm != ''">
+				,xsbm=#{xsbm}
+			</if>
+			<if test="ywy !=null and ywy != ''">
+				,ywy=#{ywy}
+			</if>
+			<if test="khjc !=null and khjc != ''">
+				,khjc=#{khjc}
+			</if>
+			<if test="shdz !=null and shdz != ''">
+				,shdz=#{shdz}
+			</if>
+			<if test="bz !=null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="zt !=null and zt != ''">
+				,zt=#{zt}
+			</if>
+			<if test="scbj !=null and scbj != ''">
+				,scbj=#{scbj}
+			</if>
+			<if test="suil !=null and suil != ''">
+				,suil=cast(#{suil} as numeric )
+			</if>
+			<if test="htdh !=null and htdh != ''">
+				,htdh=#{htdh}
+			</if>
+			<if test="khzd !=null and khzd != ''">
+				,khzd=#{khzd}
+			</if>
+			<if test="ysyq !=null and ysyq != ''">
+				,ysyq=#{ysyq}
+			</if>
+			<if test="fzdq !=null and fzdq != ''">
+				,fzdq=#{fzdq}
+			</if>
+			<if test="xszje !=null and xszje != ''">
+				,xszje=cast(#{xszje} as numeric )
+			</if>
+			<if test="xsfph !=null and xsfph != ''">
+				,xsfph=#{xsfph}
+			</if>
+			<if test="zdqy !=null and zdqy != ''">
+				,zdqy=#{zdqy}
+			</if>
+			<if test="zk !=null and zk != ''">
+				,zk=#{zk}
+			</if>
+			<if test="dky !=null and dky != ''">
+				,dky=#{dky}
+			</if>
+			<if test="dkje !=null and dkje != ''">
+				,dkje=cast(#{dkje} as numeric )
+			</if>
+			<if test="shlxfs !=null and shlxfs != ''">
+				,shlxfs=#{shlxfs}
+			</if>
+			<if test="shry !=null and shry != ''">
+				,shry=#{shry}
+			</if>
+			<if test="shlxr !=null and shlxr != ''">
+				,shlxr=#{shlxr}
+			</if>
+			<if test="sfqs != null and sfqs != ''">
+				,sfqs=#{sfqs}
+			</if>
+			<if test="ddslid !=null and ddslid != ''">
+				,ddslid=#{ddslid}
+			</if>
+			<if test="ysk !=null and ysk != ''">
+				,ysk=cast(#{ysk} as numeric )
+			</if>
+			<if test="fzr !=null and fzr != ''">
+				,fzr=#{fzr}
+			</if>
+			<if test="ysfs !=null and ysfs != ''">
+				,ysfs=#{ysfs}
+			</if>
+			<if test="hkzq !=null and hkzq != ''">
+				,hkzq=cast(#{hkzq} as numeric )
+			</if>
+		</set>
+		<where>
+			xsid=#{xsid}
+		</where>
+	</update>
+
+	<delete id="delete" parameterType="XsglDto">
+		update igams_xsgl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="xsid !=null and xsid != ''">
+				or xsid = #{xsid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or xsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="tgids !=null and tgids.size > 0">
+				or xsid in
+				<foreach collection="tgids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+
+	<!-- 选中导出  -->
+	<select id="getListForSelectExp" parameterType="XsglDto" resultType="XsglDto">
+		SELECT  xsgl.xsid ${sqlParam}
+		FROM (
+		<foreach collection="ids" separator=" union all "  index="index" item="item">
+			select #{item, jdbcType=VARCHAR} xsid, #{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_xsgl xsgl on xsgl.xsid=tmp.xsid
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		<if test="exportFlag=='' or exportFlag==null">
+			left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid and xsmx.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+			left join matridx_jcsj cplx on cplx.csid=xsmx.cplx and cplx.scbj='0'
+		</if>
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid=xsgl.xsbm and jgxx.scbj='0'
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_xtyh ywy on ywy.yhid=xsgl.ywy and ywy.scbj='0'
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_jcsj khlb on khlb.csid=kh.khlb
+		left join matridx_xtyh zdr on zdr.yhid=xsgl.lrry
+		ORDER BY tmp.ordernum
+	</select>
+
+	<!-- 获取搜索导出的条数 -->
+	<select id="getCountForSearchExp"  parameterType="XsglDto" resultType="java.lang.Integer">
+		select  count (xsgl.xsid)
+		from igams_xsgl xsgl
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		<if test="exportFlag=='' or exportFlag==null">
+			left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid and xsmx.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+			left join matridx_jcsj cplx on cplx.csid=xsmx.cplx and cplx.scbj='0'
+		</if>
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid=xsgl.xsbm and jgxx.scbj='0'
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_xtyh ywy on ywy.yhid=xsgl.ywy and ywy.scbj='0'
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_jcsj khlb on khlb.csid=kh.khlb
+		left join matridx_xtyh zdr on zdr.yhid=xsgl.lrry
+		<where>
+			xsgl.scbj ='0'
+			<if test="entire != null and entire != ''">
+				and (jgxx.jgmc ILIKE '%'||#{entire}||'%'
+				or ywy.zsxm ILIKE '%'||#{entire}||'%'
+				or kh.khmc ILIKE '%'||#{entire}||'%'
+				or xsgl.khzd ILIKE '%'||#{entire}||'%'
+				or xsgl.htdh ILIKE '%'||#{entire}||'%'
+				or yxht.htbh ILIKE '%'||#{entire}||'%'
+				or zd.csmc ILIKE '%'||#{entire}||'%'
+				or xsgl.ysyq ILIKE '%'||#{entire}||'%'
+				or xsgl.zk ILIKE '%'||#{entire}||'%'
+				or xsmx.dky ILIKE '%'||#{entire}||'%'
+				or xsgl.xsfph ILIKE '%'||#{entire}||'%'
+				or shry.zsxm ILIKE '%'||#{entire}||'%'
+				or xsgl.oaxsdh ILIKE '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="oaxsdh!=null and oaxsdh!=''">
+				and xsgl.oaxsdh like '%'||#{oaxsdh}||'%'
+			</if>
+			<if test="zt!=null and zt!=''">
+				and xsgl.zt = #{zt}
+			</if>
+			<if test="(wlbm!=null and wlbm!='') or (wlmc!=null and wlmc!='')">
+				and xsgl.xsid in
+				(
+				select xsmx.xsid from igams_xsmx xsmx left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid and wlgl.scbj = '0'
+				where xsmx.scbj = '0'
+				<if test="wlbm!=null and wlbm!=''">
+					and wlgl.wlbm like '%'||#{wlbm}||'%'
+				</if>
+				<if test="wlmc!=null and wlmc!=''">
+					and wlgl.wlmc like '%'||#{wlmc}||'%'
+				</if>
+				)
+			</if>
+			<if test="xsbmmc!=null and xsbmmc!=''">
+				and jgxx.jgmc like '%'||#{xsbmmc}||'%'
+			</if>
+			<if test="ywymc!=null and ywymc!=''">
+				and ywy.zsxm like '%'||#{ywymc}||'%'
+			</if>
+			<if test="khjcmc!=null and khjcmc!=''">
+				and kh.khmc like '%'||#{khjcmc}||'%'
+			</if>
+			<if test="khzd!=null and khzd!=''">
+				and xsgl.khzd like '%'||#{khzd}||'%'
+			</if>
+			<if test="htdh!=null and htdh!=''">
+				and (xsgl.htdh like '%'||#{htdh}||'%' or  yxht.htbh ILIKE '%'||#{htdh}||'%')
+			</if>
+			<if test="ysyq!=null and ysyq!=''">
+				and xsgl.ysyq like '%'||#{ysyq}||'%'
+			</if>
+			<if test="zdqy!=null and zdqy!=''">
+				and zd.csmc like '%'||#{zdqy}||'%'
+			</if>
+			<if test="zk!=null and zk!=''">
+				and xsgl.zk like '%'||#{zk}||'%'
+			</if>
+			<if test="shry!=null and shry!=''">
+				and shry.zsxm like '%'||#{shry}||'%'
+			</if>
+			<if test="dky!=null and dky!=''">
+				and xsmx.dky like '%'||#{dky}||'%'
+			</if>
+			<if test="xsfph!=null and xsfph!=''">
+				and xsgl.xsfph  like '%'||#{xsfph}||'%'
+			</if>
+			<if test="ddrqstart != null and ddrqstart != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &gt;= #{ddrqstart}
+			</if>
+			<if test="ddrqend != null and ddrqend != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &lt;= #{ddrqend}
+			</if>
+			<if test="(yfhrqstart != null and yfhrqstart != '') or (yfhrqend != null and yfhrqend != '')">
+				and xsgl.xsid in(
+				select xsmx.xsid from igams_xsmx xsmx
+				where xsmx.scbj = '0'
+				<if test="yfhrqstart != null and yfhrqstart != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &gt;= #{yfhrqstart}
+				</if>
+				<if test="ddrqend != null and ddrqend != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &lt;= #{yfhrqend}
+				</if>
+				)
+			</if>
+			<if test="sfqss != null and sfqss.length > 0 ">
+				and (select case when xsgl.kdxx is null then '0' else '1' end sfqs) in
+				<foreach collection="sfqss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfqrs != null and sfqrs.length > 0 ">
+				and (select case when xsgl.sfqr='1' then '1' else '0' end sfqr) in
+				<foreach collection="sfqrs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0 ">
+				and kh.khlb in
+				<foreach collection="khlbs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<!-- 搜索导出 -->
+	<select id="getListForSearchExp" parameterType="XsglDto" resultType="XsglDto">
+		SELECT  xsgl.xsid  ${sqlParam}
+		from igams_xsgl xsgl
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		<if test="exportFlag=='' or exportFlag==null">
+			left join igams_xsmx xsmx on xsmx.xsid=xsgl.xsid and xsmx.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid=xsmx.wlid and wlgl.scbj='0'
+			left join matridx_jcsj cplx on cplx.csid=xsmx.cplx and cplx.scbj='0'
+		</if>
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_jgxx jgxx on jgxx.jgid=xsgl.xsbm and jgxx.scbj='0'
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_xtyh ywy on ywy.yhid=xsgl.ywy and ywy.scbj='0'
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_jcsj khlb on khlb.csid=kh.khlb
+		left join matridx_xtyh zdr on zdr.yhid=xsgl.lrry
+		<where>
+			xsgl.scbj ='0'
+			<if test="entire != null and entire != ''">
+				and (jgxx.jgmc ILIKE '%'||#{entire}||'%'
+				or ywy.zsxm ILIKE '%'||#{entire}||'%'
+				or kh.khmc ILIKE '%'||#{entire}||'%'
+				or xsgl.khzd ILIKE '%'||#{entire}||'%'
+				or xsgl.htdh ILIKE '%'||#{entire}||'%'
+				or yxht.htbh ILIKE '%'||#{entire}||'%'
+				or zd.csmc ILIKE '%'||#{entire}||'%'
+				or xsgl.ysyq ILIKE '%'||#{entire}||'%'
+				or xsgl.zk ILIKE '%'||#{entire}||'%'
+				or xsmx.dky ILIKE '%'||#{entire}||'%'
+				or xsgl.xsfph ILIKE '%'||#{entire}||'%'
+				or shry.zsxm ILIKE '%'||#{entire}||'%'
+				or xsgl.oaxsdh ILIKE '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="oaxsdh!=null and oaxsdh!=''">
+				and xsgl.oaxsdh like '%'||#{oaxsdh}||'%'
+			</if>
+			<if test="zt!=null and zt!=''">
+				and xsgl.zt = #{zt}
+			</if>
+			<if test="(wlbm!=null and wlbm!='') or (wlmc!=null and wlmc!='')">
+				and xsgl.xsid in
+				(
+				select xsmx.xsid from igams_xsmx xsmx left join igams_wlgl wlgl on wlgl.wlid = xsmx.wlid and wlgl.scbj = '0'
+				where xsmx.scbj = '0'
+				<if test="wlbm!=null and wlbm!=''">
+					and wlgl.wlbm like '%'||#{wlbm}||'%'
+				</if>
+				<if test="wlmc!=null and wlmc!=''">
+					and wlgl.wlmc like '%'||#{wlmc}||'%'
+				</if>
+				)
+			</if>
+			<if test="xsbmmc!=null and xsbmmc!=''">
+				and jgxx.jgmc like '%'||#{xsbmmc}||'%'
+			</if>
+			<if test="ywymc!=null and ywymc!=''">
+				and ywy.zsxm like '%'||#{ywymc}||'%'
+			</if>
+			<if test="khjcmc!=null and khjcmc!=''">
+				and kh.khmc like '%'||#{khjcmc}||'%'
+			</if>
+			<if test="khjc!=null and khjc!=''">
+				and kh.khjc like '%'||#{khjc}||'%'
+			</if>
+			<if test="khzd!=null and khzd!=''">
+				and xsgl.khzd like '%'||#{khzd}||'%'
+			</if>
+			<if test="htdh!=null and htdh!=''">
+				and (xsgl.htdh like '%'||#{htdh}||'%' or yxht.htbh ILIKE '%'||#{htdh}||'%')
+			</if>
+			<if test="ysyq!=null and ysyq!=''">
+				and xsgl.ysyq like '%'||#{ysyq}||'%'
+			</if>
+			<if test="zdqy!=null and zdqy!=''">
+				and zd.csmc like '%'||#{zdqy}||'%'
+			</if>
+			<if test="zk!=null and zk!=''">
+				and xsgl.zk like '%'||#{zk}||'%'
+			</if>
+			<if test="shry!=null and shry!=''">
+				and shry.zsxm like '%'||#{shry}||'%'
+			</if>
+			<if test="dky!=null and dky!=''">
+				and xsmx.dky like '%'||#{dky}||'%'
+			</if>
+			<if test="xsfph!=null and xsfph!=''">
+				and xsgl.xsfph  like '%'||#{xsfph}||'%'
+			</if>
+			<if test="ddrqstart != null and ddrqstart != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &gt;= #{ddrqstart}
+			</if>
+			<if test="ddrqend != null and ddrqend != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm-dd') &lt;= #{ddrqend}
+			</if>
+			<if test="(yfhrqstart != null and yfhrqstart != '') or (yfhrqend != null and yfhrqend != '')">
+				and xsgl.xsid in(
+				select xsmx.xsid from igams_xsmx xsmx
+				where xsmx.scbj = '0'
+				<if test="yfhrqstart != null and yfhrqstart != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &gt;= #{yfhrqstart}
+				</if>
+				<if test="ddrqend != null and ddrqend != ''">
+					and to_char(xsmx.yfhrq,'yyyy-mm-dd') &lt;= #{yfhrqend}
+				</if>
+				)
+			</if>
+			<if test="sfqss != null and sfqss.length > 0 ">
+				and (select case when xsgl.kdxx is null then '0' else '1' end sfqs) in
+				<foreach collection="sfqss" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfqrs != null and sfqrs.length > 0 ">
+				and (select case when xsgl.sfqr='1' then '1' else '0' end sfqr) in
+				<foreach collection="sfqrs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="khlbs != null and khlbs.length > 0 ">
+				and kh.khlb in
+				<foreach collection="khlbs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<select id="getXsxxWithKh" resultType="XsglDto">
+		SELECT
+			khgl.khjc,
+			COUNT ( xsmx.xsmxid ) ts,
+			khgl.khid
+		FROM
+			igams_xsgl xsgl
+				LEFT JOIN igams_xsmx xsmx ON xsgl.xsid = xsmx.xsid
+				AND xsmx.scbj = '0'
+				LEFT JOIN igams_khgl khgl ON xsgl.khjc = khgl.khid
+		WHERE
+			khgl.khjc IS NOT NULL
+		GROUP BY
+			khgl.khjc,
+			khgl.khid
+	</select>
+	<select id="getXsxxByKhid" parameterType="XsglDto" resultType="XsglDto">
+		SELECT
+			wlgl.wlmc,
+			wlgl.wlbm,
+			xsmx.sl,
+			xsmx.xsmxid,
+		    xsmx.wlid,
+		    xsgl.xsid
+		FROM
+			igams_xsgl xsgl
+				LEFT JOIN igams_xsmx xsmx ON xsgl.xsid = xsmx.xsid
+				AND xsmx.scbj = '0'
+				LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = xsmx.wlid
+		WHERE
+			xsgl.scbj = '0'
+		  AND xsgl.khjc IN
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		<if test="ddentire != null and ddentire != ''">
+			and (
+			wlgl.wlmc ILIKE '%'||#{ddentire}||'%'
+			or wlgl.wlbm ILIKE '%'||#{ddentire}||'%'
+			)
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+	<update id="updateWlxx" parameterType="XsglDto">
+		update igams_xsgl
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfqr=#{sfqr},kdxx=#{kdxx}
+		</set>
+		<where>
+			xsid=#{xsid}
+		</where>
+	</update>
+
+	<update id="updateDdslidToNull" parameterType="XsglDto">
+		update igams_xsgl set ddslid=null
+		<where>
+			xsid=#{xsid}
+		</where>
+	</update>
+
+	<select id="getDtoByDdslid" parameterType="String" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.fzdq,xsgl.xszje,xsgl.xsfph,xsgl.shlxr,
+		xsgl.kdxx,case when xsgl.sfqr='1' then '是'
+		else '否' end sfqr,xsgl.shlxfs,xsgl.shry,zd.csmc zdqymc,shry.zsxm shrymc,xsgl.dkje,xsgl.zk,xsgl.zdqy,xsgl.jcjyid,xsgl.ddslid
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		<where>
+			xsgl.scbj != '1' and xsgl.ddslid = #{ddslid}
+		</where>
+	</select>
+
+	<!-- 获取审批人信息 -->
+	<select id="getSprxxByDdid" parameterType="String" resultType="XsglDto">
+		select yhid as sprid,zsxm as sprxm,ddid as sprddid,yhm as spryhm
+		from matridx_xtyh
+		<where>
+			scbj!='1' and ddid=#{ddid}
+		</where>
+	</select>
+
+	<!-- 获取审批人角色 -->
+	<select id="getSprjsBySprid" parameterType="String" resultType="XsglDto">
+		select yhjs.jsid as sprjsid,xtjs.jsmc as sprjsmc
+		from matridx_yhjs yhjs
+		left join matridx_xtjs xtjs on xtjs.jsid=yhjs.jsid
+		<where>
+			yhjs.yhid=#{sprid}
+		</where>
+	</select>
+	<update id="updateFzrByYfzr" parameterType="XsglDto">
+		update igams_xsgl set
+		fzr=#{fzr}
+		where fzr=#{yfzr}
+	</update>
+	<select id="getPagedSaleData" parameterType="XsglDto" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc,kh.khjc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.fzdq,xsgl.xszje,xsgl.xsfph,xsgl.shlxr,
+		xsgl.kdxx,case when xsgl.sfqr='1' then '是'
+		else '否' end sfqr,xsgl.shlxfs,xsgl.shry,zd.csmc zdqymc,shry.zsxm shrymc,xsmxzje.dkje,xsgl.zk,xsgl.zdqy,xsgl.jcjyid,xsgl.ddslid,xsgl.ysk,xsgl.fzr
+		,xsgl.htdh htid,fzr.zsxm fzrmc
+		from igams_xsgl xsgl
+		left join (select xsgl.xsid,sum(coalesce(xsmx.dkje,0)) dkje from igams_xsgl xsgl
+		left join igams_xsmx xsmx on xsmx.xsid = xsgl.xsid and xsmx.scbj='0'
+		where xsgl.scbj !='1'
+		<if test="ddrqstart != null and ddrqstart != ''">
+			and to_char(xsgl.ddrq,'yyyy-mm') &gt;= #{ddrqstart}
+		</if>
+		<if test="ddrqend != null and ddrqend != ''">
+			and to_char(xsgl.ddrq,'yyyy-mm') &lt;= #{ddrqend}
+		</if>
+		group by xsgl.xsid
+		) xsmxzje on xsmxzje.xsid = xsgl.xsid
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_xtyh fzr on fzr.yhid=xsgl.fzr
+		<where>
+			xsgl.scbj !='1'
+			<if test="khjc!=null and khjc!=''">
+				and kh.khjc like '%'||#{khjc}||'%'
+			</if>
+			<if test="ddrqstart != null and ddrqstart != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm') &gt;= #{ddrqstart}
+			</if>
+			<if test="ddrqend != null and ddrqend != ''">
+				and to_char(xsgl.ddrq,'yyyy-mm') &lt;= #{ddrqend}
+			</if>
+		</where>
+	</select>
+	<update id="updateFhzt" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_xsgl xsgl
+			set fhzt=tmp.fhzt,
+			xgsj=cast(tmp.xgsj as timestamp)
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.ddh} ddh,#{item.fhzt} fhzt,#{item.xgsj} xgsj
+			</foreach>
+			)
+			tmp
+			where
+			xsgl.xsid=tmp.ddh
+		</if>
+	</update>
+	<update id="updateYsk" parameterType="XsglDto">
+		update igams_xsgl set
+		ysk = coalesce(xszje,0) - cast(coalesce(#{ysk},'0') as numeric),xgsj=LOCALTIMESTAMP
+		where xsid=#{xsid}
+	</update>
+	<update id="updateYsks" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_xsgl xsgl
+			set ysk = coalesce(xszje,0) - cast(coalesce(tmp.ysk,'0') as numeric),
+			xgry = tmp.xgry,xgsj=LOCALTIMESTAMP
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.ysk} ysk,#{item.xsid} xsid,#{item.xgry} xgry
+			</foreach>
+			) tmp
+			where
+			xsgl.xsid=tmp.xsid
+		</if>
+	</update>
+	<select id="getDtoByIdForWs" parameterType="String" resultType="XsglDto">
+		select xsgl.xsid,xsgl.oaxsdh,xsgl.u8xsdh,xsgl.glid,xsgl.ddrq,xsgl.ywlx,xsgl.xslx,xsgl.xsbm,xsgl.ywy,xsgl.khjc,xsgl.shdz,xsgl.bz,
+		xsgl.lrry,xsgl.lrsj,xsgl.xgry,xsgl.xgsj,xsgl.scry,xsgl.scsj,xsgl.scbj,yh.zsxm ywymc,jg.jgmc xsbmmc,kh.khmc khjcmc,kh.khdm khdm,ywlx.csmc ywlxmc,
+		xslx.csmc xslxmc,xsgl.suil,xsgl.khzd,xsgl.ysyq,coalesce(yxht.htbh,xsgl.htdh) htdh,xsgl.fzdq,xsgl.xszje,xsgl.xsfph,xsgl.shlxr,
+		xsgl.kdxx,case when xsgl.sfqr='1' then '是'
+		else '否' end sfqr,xsgl.shlxfs,xsgl.shry,zd.csmc zdqymc,shry.zsxm shrymc,xsgl.dkje,xsgl.zk,xsgl.zdqy,xsgl.jcjyid,xsgl.ddslid,xsgl.ysk,xsgl.fzr
+		,xsgl.htdh htid,fzr.zsxm fzrmc,xsgl.ysfs,ysfs.csmc ysfsmc,xsgl.hkzq
+		from igams_xsgl xsgl
+		left join igams_yxht yxht on yxht.htid = xsgl.htdh
+		left join matridx_xtyh yh on yh.yhid=xsgl.ywy
+		left join matridx_jgxx jg on jg.jgid=xsgl.xsbm
+		left join igams_khgl kh on kh.khid=xsgl.khjc
+		left join matridx_jcsj ywlx on ywlx.csid=xsgl.ywlx
+		left join matridx_jcsj xslx on xslx.csid=xsgl.xslx
+		left join matridx_jcsj zd on zd.csid=xsgl.zdqy
+		left join matridx_jcsj ysfs on ysfs.csid=xsgl.ysfs
+		left join matridx_xtyh shry on shry.yhid=xsgl.shry
+		left join matridx_xtyh fzr on fzr.yhid=xsgl.fzr
+		<where>
+			xsgl.scbj !='1'
+			and xsgl.xsid=#{xsid}
+		</where>
+	</select>
+</mapper>

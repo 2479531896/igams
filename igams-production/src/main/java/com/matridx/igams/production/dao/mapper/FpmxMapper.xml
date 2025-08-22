@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IFpmxDao" >
+	<select id="getDtoList" parameterType="FpmxDto" resultType="FpmxDto">
+		select wlgl.wlid,htgl.htid,qggl.qgid,qggl.djh qgdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,fpmx.fpsl sl,fpmx.fpje hjje,fpmx.htmxid,htmx.htid,htgl.htnbbh,htmx.hsdj,htmx.wsdj,htmx.suil,htmx.sl mxsl,
+		fpgl.kpje,fpgl.fph,fpzl.csmc fpzlmc,fpgl.kprq
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpgl.fpid=fpmx.fpid
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join igams_htgl htgl on htgl.htid=htmx.htid
+		<where>
+			fpmx.scbj='0'
+			<if test="fpid != null and fpid != ''">
+				and fpmx.fpid=#{fpid}
+			</if>
+			<if test="htid != null and htid != ''">
+				and htgl.htid=#{htid}
+			</if>
+			<if test="ids != null and ids.size > 0">
+				and fpmx.fpid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+  	</select>
+
+	<select id="getInvoiceList" parameterType="FpmxDto" resultType="FpmxDto">
+		select wlgl.wlid,htgl.htid,qggl.qgid,qggl.djh qgdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,fpmx.fpsl sl,fpmx.fpje hjje,fpmx.htmxid,htmx.htid,htgl.htnbbh,
+		coalesce(bcmx.hsdj,htmx.hsdj) as hsdj,coalesce(bcmx.wsdj,htmx.wsdj) as wsdj,htmx.suil,(COALESCE ( coalesce(bcmx.sl,htmx.sl), 0 ) - COALESCE ( fp.fpzsl, 0 )+ COALESCE ( fpmx.fpsl, 0 )) mxsl,
+		fpgl.kpje,fpgl.fph,fpzl.csmc fpzlmc,fpgl.kprq,zllb.cskz1 as lbcskz1,rkgl.rkid,dhxx.dhid,(hwxx.u8rkdh||'('||COALESCE ( hwxx.dhsl, 0 ) - COALESCE ( hwxx.cythsl, 0 )||')') u8rkdh,(COALESCE ( hw.rkzsl, 0 ) - COALESCE ( fp.fpzsl, 0 )+ COALESCE ( fpmx.fpsl, 0 )) wwhsl
+		,qglb.csdm qglbdm,qgmx.qgmxid,qgmx.hwmc,qgmx.hwbz,sbys.sbysdh,sbys.sbysid
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpgl.fpid=fpmx.fpid and fpgl.scbj='0'
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid and htmx.scbj='0'
+		left join igams_qgmx qgmx on qgmx.qgmxid=htmx.qgmxid and qgmx.scbj='0'
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid and qggl.scbj='0'
+		left join matridx_jcsj qglb on qglb.csid=qggl.qglb and qglb.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid and wlgl.scbj='0'
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left join igams_htgl htgl on htgl.htid=htmx.htid and htgl.scbj='0'
+		left join igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		left join igams_sbys sbys on sbys.sbysid=hwxx.sbysid and sbys.scbj='0'
+		left join(
+		select
+		htmxid,
+		sum(fpsl) fpzsl
+		from igams_fpmx
+		where scbj='0'
+		group by htmxid
+		) fp on fp.htmxid=htmx.htmxid
+		left join (
+		SELECT SUM
+		( COALESCE ( hwxx.dhsl, 0 )) rkzsl,
+		hwxx.htmxid
+		FROM
+		igams_hwxx hwxx
+		WHERE
+		hwxx.scbj != '1'
+		GROUP BY
+		hwxx.htmxid
+		) hw on hw.htmxid=fpmx.htmxid
+		left join(select bcht.bchtid,bcht.htnbbh,bcht.htid
+		from igams_fpmx fpmx2
+		left join igams_htmx htmx2 on htmx2.htmxid=fpmx2.htmxid
+		left join igams_htgl bcht on bcht.bchtid=htmx2.htid and bcht.scbj='0' and bcht.zt='80'
+		where fpmx2.scbj='0' and bcht.htid is not null and fpmx2.fpid=#{fpid}
+		order by bcht.cjrq desc
+		limit 1)bcht2 on bcht2.bchtid=htgl.htid
+		left join igams_htmx bcmx on bcmx.bchtmxid = htmx.htmxid and bcmx.htid=bcht2.htid and bcmx.scbj='0'
+		<where>
+			fpmx.scbj='0'
+			<if test="fpid != null and fpid != ''">
+				and fpmx.fpid=#{fpid}
+			</if>
+			<if test="htid != null and htid != ''">
+				and htgl.htid=#{htid}
+			</if>
+			<if test="ids != null and ids.size > 0">
+				and fpmx.fpid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by htmx.htmxid asc
+	</select>
+
+	<select id="getListByHtfkid" parameterType="FpmxDto" resultType="FpmxDto">
+		select fpmx.fpsl sl,fpmx.fpje hjje,fpmx.htmxid,
+		fpgl.kpje,fpgl.fph,fpzl.csmc fpzlmc,fpgl.kprq
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpgl.fpid=fpmx.fpid
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid
+		left join igams_htfkmx htfkmx on htfkmx.htid=htmx.htid
+		<where>
+			fpmx.scbj='0'
+			and htfkmx.htfkid=#{htfkid}
+		</where>
+	</select>
+
+	<select id="getListByHtmxid" parameterType="FpmxDto" resultType="FpmxDto">
+		select fpgl.fph,fplx.csmc fplxmc,fpzl.csmc fpzlmc,to_char(fpgl.kprq,'yyyy-mm-dd') kprq,fpgl.kpje,ywy.zsxm ywymc,jgxx.jgmc bmmc,to_char(fpgl.lrsj,'yyyy-mm-dd') lrsj,fpgl.sl,
+		fpmx.fpsl,fpmx.fpje,gys.gysmc ,biz.csmc bizmc,fpgl.bz
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpmx.fpid = fpgl.fpid
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		<where>
+			fpmx.scbj='0'
+			and fpmx.htmxid=#{htmxid}
+		</where>
+	</select>
+
+	<select id="getListForRk" parameterType="FpmxDto" resultType="FpmxDto">
+		select wlgl.jldw,hwxx.scph,hwxx.scrq,hwxx.yxq,hwxx.sl,wlgl.wlid,dhxx.dhid,dhxx.dhdh,hwxx.u8rkdh,rkgl.rkid,rkgl.rkdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,fpmx.fpje hjje,fpmx.htmxid,htmx.htid,
+		htmx.hsdj,htmx.wsdj,htmx.suil,htmx.sl mxsl,zllb.cskz1 as lbcskz1
+		from igams_hwxx hwxx
+		left join igams_htmx htmx on hwxx.htmxid=htmx.htmxid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left outer join igams_fpmx fpmx on fpmx.htmxid = htmx.htmxid and fpmx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		<where>
+			hwxx.scbj='0'
+			<if test="fpid != null and fpid != ''">
+				and fpmx.fpid=#{fpid}
+			</if>
+			<if test="htid != null and htid != ''">
+				and htmx.htid=#{htid}
+			</if>
+			<if test="htmxid != null and htmxid != ''">
+				and htmx.htmxid=#{htmxid}
+			</if>
+		</where>
+	</select>
+	<select id="getRkListByFp" parameterType="FpmxDto" resultType="FpmxDto">
+		select wlgl.jldw,hwxx.scph,hwxx.scrq,hwxx.yxq,hwxx.sl,wlgl.wlid,dhxx.dhid,dhxx.dhdh,hwxx.u8rkdh,rkgl.rkid,rkgl.rkdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,htmx.htid,
+		htmx.hsdj,htmx.wsdj,htmx.suil,htmx.sl mxsl,zllb.cskz1 as lbcskz1
+		from igams_hwxx hwxx
+		left join igams_htmx htmx on hwxx.htmxid=htmx.htmxid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		<where>
+			hwxx.scbj='0' and hwxx.dhid is not null
+			<if test="htid != null and htid != ''">
+				and htmx.htid=#{htid}
+			</if>
+			<if test="htmxid != null and htmxid != ''">
+				and htmx.htmxid=#{htmxid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getListForHw" parameterType="FpmxDto" resultType="FpmxDto">
+		select wlgl.wlid,htgl.htid,qggl.qgid,qggl.djh qgdh,wlgl.wlbm,wlgl.wlmc,wlgl.gg,fpmx.fpsl sl,fpmx.fpje hjje,fpmx.htmxid,htmx.htid,htgl.htnbbh,htmx.hsdj,htmx.wsdj,htmx.suil,htmx.sl mxsl,
+		fpgl.kpje,fpgl.fph,fpzl.csmc fpzlmc,fpgl.kprq,fpgl.fpid,hwxx.u8rkdh,zllb.cskz1 as lbcskz1,fpmx.fpmxid,hwxx.u8rkdh,rkgl.rkid,rkgl.rkdh,dhxx.dhid,dhxx.dhdh,qgmx.hwmc
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpgl.fpid=fpmx.fpid and fpgl.scbj='0'
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid and htmx.scbj='0'
+		left join igams_qgmx qgmx on qgmx.qgmxid = htmx.qgmxid and qgmx.scbj='0'
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid and qggl.scbj='0'
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join matridx_jcsj zllb on zllb.csid=wlgl.lb
+		left join igams_htgl htgl on htgl.htid=htmx.htid and htgl.scbj='0'
+		left join igams_hwxx hwxx on hwxx.htmxid = htmx.htmxid and hwxx.scbj='0'
+		left outer join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid and dhxx.scbj='0'
+		left outer join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid and rkgl.scbj='0'
+		<where>
+			fpmx.scbj='0'
+			<if test="fpid != null and fpid != ''">
+				and fpmx.fpid=#{fpid}
+			</if>
+			<if test="htid != null and htid != ''">
+				and htmx.htid=#{htid}
+			</if>
+			<if test="htmxid != null and htmxid != ''">
+				and htmx.htmxid=#{htmxid}
+			</if>
+		</where>
+		order by fpmx.fpmxid asc
+	</select>
+	<insert id="insertList" parameterType="List">
+		insert into igams_fpmx(fpmxid,fpid,htmxid,fpsl,fpje,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.fpmxid},#{item.fpid},#{item.htmxid},cast(#{item.fpsl} as numeric),cast(#{item.fpje} as numeric),#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<update id="delete" parameterType="FpmxDto">
+		update igams_fpmx
+		<set>
+			scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			fpid in
+			<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="deleteByFpid" parameterType="FpmxDto">
+		delete from igams_fpmx where fpid=#{fpid}
+	</update>
+
+
+	<select id="getSumById" parameterType="String" resultType="String">
+		select
+		sum(fpmx.fpsl)
+		from
+		igams_fpmx fpmx
+		<where>
+			fpmx.scbj='0'
+			and fpmx.htmxid=#{htmxid}
+		</where>
+	</select>
+
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="FpmxDto" resultType="java.lang.Integer">
+		select count(fpmx.fpmxid)
+		from igams_fpmx fpmx
+		left join igams_fpgl fpgl on fpmx.fpid = fpgl.fpid
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		<where>
+			fpgl.scbj='0'
+			<if test="fph !=null and fph != ''">
+				and fpgl.fph ILIKE '%'||#{fph}||'%'
+			</if>
+			<if test="gysmc !=null and gysmc != ''">
+				and gys.gysmc ILIKE '%'||#{gysmc}||'%'
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and fpgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fpzls != null and fpzls.length > 0 "  >
+				and fpgl.fpzl in
+				<foreach collection="fpzls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="kprqstart != null and kprqstart != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &gt;= #{kprqstart}
+			</if>
+			<if test="kprqend != null and kprqend != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &lt;= #{kprqend}
+			</if>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="FpmxDto" resultType="FpmxDto">
+		select fpgl.fpid,fpmx.fpmxid ${sqlParam}
+		from igams_fpmx fpmx
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid
+		left join igams_htgl htgl on htgl.htid=htmx.htid
+		left join igams_hwxx hwxx on hwxx.htmxid=fpmx.htmxid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join igams_fpgl fpgl on fpmx.fpid = fpgl.fpid
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		left outer join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left outer join matridx_jcsj fpfs on fpfs.csid = htgl.fpfs
+		left outer join matridx_jcsj fkf on fkf.csid = htgl.fkf
+		LEFT JOIN (select sum(dhsl) dhsl,htmxid from igams_hwxx where scbj='0' group by htmxid) dh on dh.htmxid=fpmx.htmxid
+		<where>
+			fpgl.scbj='0'
+			<if test="fph !=null and fph != ''">
+				and fpgl.fph ILIKE '%'||#{fph}||'%'
+			</if>
+			<if test="gysmc !=null and gysmc != ''">
+				and gys.gysmc ILIKE '%'||#{gysmc}||'%'
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and fpgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fpzls != null and fpzls.length > 0 "  >
+				and fpgl.fpzl in
+				<foreach collection="fpzls" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="kprqstart != null and kprqstart != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &gt;= #{kprqstart}
+			</if>
+			<if test="kprqend != null and kprqend != ''">
+				and to_char(fpgl.kprq,'yyyy-mm-dd') &lt;= #{kprqend}
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="FpmxDto" resultType="FpmxDto">
+		select fpgl.fpid,fpmx.fpmxid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} fpid,#{index} ordernum
+		</foreach>
+		) tmp
+		left join igams_fpmx fpmx on tmp.fpid = fpmx.fpid
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid
+		left join igams_qggl qggl on qggl.qgid=htmx.qgid
+		left join igams_htgl htgl on htgl.htid=htmx.htid
+		left join igams_hwxx hwxx on hwxx.htmxid=fpmx.htmxid
+		left join igams_dhxx dhxx on dhxx.dhid = hwxx.dhid
+		left join igams_rkgl rkgl on rkgl.rkid = hwxx.rkid
+		left join igams_wlgl wlgl on wlgl.wlid=htmx.wlid
+		left join igams_fpgl fpgl on fpmx.fpid = fpgl.fpid
+		left join matridx_jcsj biz on biz.csid=fpgl.biz
+		left join matridx_jcsj fplx on fplx.csid=fpgl.fplx
+		left join matridx_jcsj fpzl on fpzl.csid=fpgl.fpzl
+		left join igams_gysxx gys on gys.gysid=fpgl.gys
+		left join igams_gysxx dddw on dddw.gysid=fpgl.dddw
+		left join matridx_jgxx jgxx on jgxx.jgid=fpgl.bm
+		left join matridx_xtyh xtyh on xtyh.yhid=fpgl.lrry
+		left join matridx_xtyh ywy on ywy.yhid=fpgl.ywy
+		left outer join matridx_jcsj fkfs on fkfs.csid = htgl.fkfs
+		left outer join matridx_jcsj fpfs on fpfs.csid = htgl.fpfs
+		left outer join matridx_jcsj fkf on fkf.csid = htgl.fkf
+		LEFT JOIN (select sum(dhsl) dhsl,htmxid from igams_hwxx where scbj='0' group by htmxid) dh on dh.htmxid=fpmx.htmxid
+		order by fpgl.lrsj desc, fpgl.fph asc,fpmx.fpmxid asc
+	</select>
+
+	<select id="getSumGroupByHtid" parameterType="FpmxDto" resultType="FpmxDto">
+		select sum(fpmx.fpje),htmx.htid
+		from igams_fpmx fpmx
+		left join igams_htmx htmx on fpmx.htmxid=htmx.htmxid
+		<where>
+			fpmx.scbj='0'
+			<if test="fpid != null and fpid != ''">
+				and fpmx.fpid=#{fpid}
+			</if>
+			<if test="ids != null and ids.size > 0">
+				and fpmx.fpid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		GROUP BY htmx.htid
+	</select>
+
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGfpjmxDao" >
+    <select id="getDtoList" parameterType="GfpjmxDto" resultType="GfpjmxDto">
+        select gfpjmx.pjmxid,gfpjmx.gfpjid,gfpjmx.yzmxid,gfpjmx.wlid,gfpjmx.jszb,gfpjmx.zlyq,gfpjmx.lrsj,gfpjmx.scbj,gfpjmx.fwmc,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,gfpjmx.xmh
+        from igams_gfpjmx gfpjmx
+        left join igams_wlgl wlgl on wlgl.wlid=gfpjmx.wlid
+        <where>
+            gfpjmx.scbj='0'
+            <if test="pjmxid != null and pjmxid != ''">
+                and gfpjmx.pjmxid=#{pjmxid}
+            </if>
+            <if test="gfpjid != null and gfpjid != ''">
+                and gfpjmx.gfpjid=#{gfpjid}
+            </if>
+        </where>
+        order by gfpjmx.xh
+    </select>
+
+    <insert id="insetGfpjmxDtoList" parameterType="List">
+        insert into igams_gfpjmx(pjmxid,gfpjid,yzmxid,wlid,fwmc,xh,xmh,jszb,zlyq,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.pjmxid},#{item.gfpjid},#{item.yzmxid},#{item.wlid},#{item.fwmc},cast(#{item.xh} as decimal),#{item.xmh},#{item.jszb},#{item.zlyq},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateGfyzmxDtoList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="gfpjmxDtoList" separator=";" item="item" index="index">
+                update igams_gfpjmx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.xgry != null and item.xgry != ''">
+                        ,xgry=#{item.xgry}
+                    </if>
+                    <if test="item.wlid != null and item.wlid != ''">
+                        ,wlid=#{item.wlid}
+                    </if>
+                    <if test="item.jszb != null and item.jszb != ''">
+                        ,jszb=#{item.jszb}
+                    </if>
+                    <if test="item.zlyq != null and item.zlyq != ''">
+                        ,zlyq=#{item.zlyq}
+                    </if>
+                    <if test="item.scry != null and item.scry != ''">
+                        ,scry=#{item.scry}
+                    </if>
+                    <if test="item.scsj != null and item.scsj != ''">
+                        ,scsj=LOCALTIMESTAMP
+                    </if>
+                    <if test="item.scbj !=null and  item.scbj !=''">
+                        ,scbj=#{item.scbj}
+                    </if>
+                    <if test="item.fwmc !=null and  item.fwmc !=''">
+                        ,fwmc=#{item.fwmc}
+                    </if>
+                    <if test="item.xh !=null and  item.xh !=''">
+                        ,xh=cast(#{item.xh} as decimal)
+                    </if>
+                    <if test="item.xmh !=null and  item.xmh !=''">
+                        ,xmh=#{item.xmh}
+                    </if>
+                </set>
+                <where>
+                    pjmxid=#{item.pjmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="delete" parameterType="GfpjmxDto">
+        update igams_gfpjmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            gfpjid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="getDtoById" parameterType="String" resultType="GfpjmxDto">
+        select gfpjmx.pjmxid,gfpjmx.gfpjid,gfpjmx.yzmxid,gfpjmx.wlid,gfpjmx.jszb,gfpjmx.zlyq,gfpjmx.lrsj,gfpjmx.scbj,gfpjmx.fwmc,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg
+        from igams_gfpjmx gfpjmx
+        left join igams_wlgl wlgl on wlgl.wlid=gfpjmx.wlid
+        <where>
+            gfpjmx.scbj='0'
+            <if test="pjmxid != null and pjmxid != ''">
+                and gfpjmx.pjmxid=#{pjmxid}
+            </if>
+        </where>
+        order by gfpjmx.xh
+    </select>
+
+</mapper>

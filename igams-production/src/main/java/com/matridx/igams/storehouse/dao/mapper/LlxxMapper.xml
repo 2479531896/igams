@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ILlxxDao" >
+    <insert id="insert" parameterType="FhglDto">
+        INSERT INTO igams_llxx(
+        <if test="llid != null and llid != ''">
+            llid,
+        </if>
+        <if test="hwid != null and hwid != ''">
+            hwid,
+        </if>
+        <if test="qlsl != null and qlsl != ''">
+            qlsl,
+        </if>
+        <if test="qlry != null and qlry != ''">
+            qlry,
+        </if>
+        <if test="bz != null and bz != ''">
+            bz,
+        </if>
+        <if test="llrq != null and llrq != ''">
+            llrq,
+        </if>
+        <if test="lrry != null and lrry != ''">
+            lrry,
+        </if>
+        scbj,lrsj )
+        VALUES (
+        <if test="llid != null and llid != ''">
+            #{llid},
+        </if>
+        <if test="hwid != null and hwid != ''">
+            #{hwid},
+        </if>
+        <if test="qlsl != null and qlsl != ''">
+            cast(#{qlsl} as numeric),
+        </if>
+        <if test="qlry != null and qlry != ''">
+            #{qlry},
+        </if>
+        <if test="bz != null and bz != ''">
+            #{bz},
+        </if>
+        <if test="llrq != null and llrq != ''">
+            cast(#{llrq} as date),
+        </if>
+        <if test="lrry != null and lrry != ''">
+            #{lrry},
+        </if>
+        '0',LOCALTIMESTAMP)
+    </insert>
+
+
+    <select id="getPagedDtoList" parameterType="LlxxDto" resultType="LlxxDto">
+        select coalesce(hwxx.kcl,0) as kcl,hwxx.scph,hwxx.zsh,hwxx.yds,hwxx.hwid,hwxx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.ychh,wlgl.scs,wlgl.gg,wlgl.jldw,lb.csmc as lb,zlb.csmc as zlb,ckxx.ckmc,hwxx.ckid,
+        llxx.llid,llxx.qlsl,llxx.qlry,xtyh.zsxm,llxx.bz,llxx.llrq
+        from igams_llxx llxx
+        left join igams_hwxx hwxx on hwxx.hwid=llxx.hwid
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+        left join matridx_jcsj lb on lb.csid=wlgl.wllb
+        left join matridx_jcsj zlb on zlb.csid=wlgl.wlzlb
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+        left join matridx_xtyh xtyh on xtyh.yhid=llxx.qlry
+        <where>
+            llxx.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (wlgl.wlmc ILIKE '%'||#{entire}||'%'
+                or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+                or hwxx.scph ILIKE '%'||#{entire}||'%'
+                or hwxx.zsh ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or llxx.bz ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="wlmc != null and wlmc != ''">
+                and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+            </if>
+            <if test="wlbm != null and wlbm != ''">
+                and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+            </if>
+            <if test="scph != null and scph != ''">
+                and hwxx.scph ILIKE '%'||#{scph}||'%'
+            </if>
+            <if test="zsh != null and zsh != ''">
+                and hwxx.zsh ILIKE '%'||#{zsh}||'%'
+            </if>
+            <if test="zsxm != null and zsxm != ''">
+                and xtyh.zsxm ILIKE '%'||#{zsxm}||'%'
+            </if>
+            <if test="bz != null and bz != ''">
+                and llxx.bz ILIKE '%'||#{bz}||'%'
+            </if>
+            <if test="llrqstart != null and llrqstart != ''">
+                and to_char(llxx.llrq,'yyyy-mm-dd') &gt;= #{llrqstart}
+            </if>
+            <if test="llrqend != null and llrqend != ''">
+                and to_char(llxx.llrq,'yyyy-mm-dd') &lt;= #{llrqend}
+            </if>
+            <if test="cks != null and cks.length > 0">
+                and hwxx.ckid in
+                <foreach collection="cks" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="cks == null or cks.length == 0">
+                and hwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+                left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+                where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoById" resultType="LlxxDto" parameterType="String">
+        select coalesce(hwxx.kcl,0) as kcl,hwxx.scph,hwxx.yds,hwxx.hwid,hwxx.wlid,wlgl.wlbm,wlgl.wlmc,wlgl.ychh,wlgl.scs,wlgl.gg,wlgl.jldw,lb.csmc as lb,zlb.csmc as zlb,ckxx.ckmc,hwxx.ckid,
+        llxx.llid,llxx.qlsl,llxx.qlry,xtyh.zsxm,llxx.bz,llxx.llrq
+        from igams_llxx llxx
+        left join igams_hwxx hwxx on hwxx.hwid=llxx.hwid
+        left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid
+        left join matridx_jcsj lb on lb.csid=wlgl.wllb
+        left join matridx_jcsj zlb on zlb.csid=wlgl.wlzlb
+        left join igams_ckxx ckxx on ckxx.ckid=hwxx.ckid
+        left join matridx_xtyh xtyh on xtyh.yhid=llxx.qlry
+        <where>
+            llxx.scbj='0' and llxx.llid=#{llid}
+        </where>
+    </select>
+
+    <update id="delete" parameterType="LlxxDto">
+        update igams_llxx
+        set scbj='1',scsj=LOCALTIMESTAMP,scry=#{scry}
+        where llid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

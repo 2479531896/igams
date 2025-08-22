@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IJccglDao" >
+	
+	<select id="getJccDtoList" parameterType="Jccgldto" resultType="Jccgldto">
+		select jcc.ckhwid,jcc.ryid,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,wl.zt,wl.bzqflg
+			,wl.jwlbm,wl.lb,wl.aqkc,wl.qdl,wl.hq,wl.zdcgl,wl.wlzlbtc,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,wlzlbtc.csmc wlzlbtcmc,wlzlb.cskz1 cskz1
+			,ckhwxx.kcl,ckhwxx.yds,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as kqls,ckqx.csmc as ckqxmc,ckhwxx.ckqxlx
+		from igams_jccgl jcc
+		left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid=jcc.ckhwid
+		left join igams_wlgl wl on wl.wlid=ckhwxx.wlid
+		left join matridx_jcsj wllb on wl.wllb=wllb.csid
+		left join matridx_jcsj wlzlb on wl.wlzlb=wlzlb.csid
+		left join matridx_jcsj wlzlbtc on wl.wlzlbtc=wlzlbtc.csid
+		left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		<where>
+			jcc.ryid=#{ryid}
+		</where>
+	</select>
+	
+	<delete id="delete" parameterType="JccglDto">
+		delete from igams_jccgl
+		<where>
+			ryid=#{ryid} 
+			<if test="ckhwid != null and ckhwid != ''">
+			and ckhwid=#{ckhwid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and ckhwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<insert id="insert" parameterType="JccglDto">
+		insert into igams_jccgl(ryid,ckhwid,lrsj)
+		values(#{ryid},#{ckhwid},LOCALTIMESTAMP)
+	</insert>
+	
+	<select id="getDtoList" parameterType="JccglDto" resultType="JccglDto">
+		select jccgl.ryid,jccgl.ckhwid
+		from igams_jccgl jccgl
+		<where>
+			jccgl.ryid=#{ryid}
+		</where>
+	</select>
+</mapper>

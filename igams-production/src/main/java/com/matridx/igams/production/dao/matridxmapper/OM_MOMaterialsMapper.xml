@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.OM_MOMaterialsDao">
+    <insert id="insertList" parameterType="List">
+        insert into OM_MOMaterials(MOMaterialsID,MoDetailsID,MOID
+        ,cInvCode
+        ,iQuantity
+        ,dRequiredDate
+        ,fBaseQtyN
+        ,fBaseQtyD
+        ,fCompScrp
+        ,cWhCode
+        ,iUnitQuantity
+        ,OpComponentId
+        ,cbMemo
+        ,csubsysbarcode
+        ,bFVQty,iWIPtype,fbasenumn,iUnitNum,iNum,csendtype,iProductType
+        )values
+        <if test="list !=null and list.size > 0">
+          <foreach collection="list" separator="," item="item" index="index">
+          (#{item.MOMaterialsID},#{item.MoDetailsID},#{item.MOID}
+          ,#{item.cInvCode}
+          ,#{item.iQuantity}
+          ,#{item.dRequiredDate}
+            ,#{item.fBaseQtyN}
+          ,#{item.fBaseQtyD}
+          ,#{item.fCompScrp}
+          ,#{item.cWhCode}
+          ,#{item.iUnitQuantity}
+          ,#{item.OpComponentId}
+          ,#{item.cbMemo}
+          ,#{item.csubsysbarcode}
+          ,0,3,0,0,0,0,0)
+        </foreach>
+      </if>
+    </insert>
+
+    <select id="getDto" parameterType="OM_MOMaterialsDto" resultType="OM_MOMaterialsDto">
+        select MOMaterialsID,MoDetailsID,MOID
+        from OM_MOMaterials
+        <where>
+            MoDetailsID=#{MoDetailsID} and cInvCode=#{cInvCode}
+        </where>
+    </select>
+
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update OM_MOMaterials
+                <set>
+                    <if test="item.iSendQTY != null and item.iSendQTY != ''">
+                        ,iSendQTY = COALESCE(iSendQTY,0) + #{item.iSendQTY}
+                    </if>
+                    <if test="item.iSendNum != null and item.iSendNum != ''">
+                        ,iSendNum = #{item.iSendNum}
+                    </if>
+                </set>
+                <where>
+                    MoDetailsID=#{item.MoDetailsID} and cInvCode=#{item.cInvCode}
+                </where>
+            </foreach>
+        </if>
+    </update>
+</mapper>
+
+
+
+
+
+

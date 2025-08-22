@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IXzllcglDao" >
+
+    <select id="getDtoList" parameterType="XzllcglDto" resultType="XzllcglDto">
+        select xzllcgl.ryid,xzllcgl.xzkcid,xzkcxx.hwmc,xzkcxx.hwbz,xzkcxx.kcl,(coalesce(xzkcxx.kcl,0) - coalesce(xzkcxx.yds,0)) klsl,coalesce(xzkcxx.yds,0) yds,
+        jcsj.csmc kw
+        from igams_xzllcgl xzllcgl
+        left join igams_xzkcxx xzkcxx on  xzkcxx.xzkcid=xzllcgl.xzkcid
+        left join matridx_jcsj jcsj on xzkcxx.kwid = jcsj.csid
+        <where>
+            xzllcgl.ryid=#{ryid}
+        </where>
+        group by xzkcxx.yds,xzkcxx.kcl, xzkcxx.hwmc,xzkcxx.hwbz,xzllcgl.ryid,xzllcgl.xzkcid,jcsj.csmc
+    </select>
+
+    <insert id="insert" parameterType="XzllcglDto">
+		insert into igams_xzllcgl(xzkcid,ryid,lrsj)
+		values(#{xzkcid},#{ryid},LOCALTIMESTAMP)
+	</insert>
+
+    <delete id="delete" parameterType="XzllcglDto">
+        delete from igams_xzllcgl
+        <where>
+            ryid = #{ryid}
+        <if test="xzkcid != null and xzkcid != ''">
+            and xzkcid = #{xzkcid}
+        </if>
+         <if test="ids !=null and ids.size >0">
+             and xzkcid in
+             <foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+                 #{item}
+             </foreach>
+         </if>
+        </where>
+    </delete>
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.IDbmxDao" >
+	<insert id="insertList" parameterType="List">
+		insert into igams_dbmx(dbmxid,dbid,dchwid,drhwid,dbsl,mxglid,qtckmxglid,qtrkmxglid,lrry,dchw,drhw,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.dbmxid},#{item.dbid},#{item.dchwid},#{item.drhwid},cast(#{item.dbsl} as numeric),#{item.mxglid}
+				,#{item.qtckmxglid},#{item.qtrkmxglid},#{item.lrry},#{item.dchw},#{item.drhw},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	
+	<select id="queryByDbid" parameterType="String" resultType="HwxxDto">
+		select hwxx.hwid,wlgl.wlbm,wlgl.wlmc,gysxx.gysmc,zllb.csmc as lbcsmc,zllb.csdm as lbcsdm,
+		zllb.cskz1 as lbcskz1,round(hwxx.dhsl,2) dhsl,round(hwxx.cythsl,2) cythsl,wlgl.jldw,wlgl.gg,hwxx.zsh,htgl.htnbbh,wlgl.ychh,qgmx.qgmxid,
+		hwxx.scrq,hwxx.yxq,hwxx.dhbz,htmx.sl htsl,hwxx.dhid,hwxx.bz,htgl.sqbm,jg_sqbm.jgmc as sqbmmc,
+		hwxx.rkrq,hwxx.kwbh,hwxx.sl,round((hwxx.cythsl+hwxx.zjthsl),2) as thsl,hwxx.rkbz,hwxx.glid,htmx.hjje,htmx.suil
+		,htmx.wsdj,htmx.hsdj,hwxx.rkid,hwxx.rkry,hwxx.kcl,hwxx.ckid,hwxx.wlid,hwxx.htmxid,qggl.qgid,qggl.sqr as qgsqr,xtyh.ddid as qgrddid,qggl.djh as qgdh,
+		htgl.htid,hwxx.dhjyid,hwxx.kcglid,qgmx.glid as qgglid,htmx.u8mxid as htglid,wlgl.bzq,wlgl.bzqflg,hwxx.scph,hwxx.cskw,hwxx.qyl
+		,htmx.bz as htbz,hwxx.lbbj
+		,hwxx.jyry,to_char(hwxx.jysj,'yyyy-MM-dd') jysj,hwxx.jysl,hwxx.jybj,hwxx.ghsl,hwxx.ghry,to_char(hwxx.ghsj,'yyyy-MM-dd') ghsj
+			,dbgl.zcck,dbgl.zrck,dbmx.dbsl,ckxx_zc.ckdm as zcckdm,ckxx_zr.ckdm as zrckdm,dbmx.dbmxid,ck_hw_dc.ckdm as dchwdm,ck_hw_dr.ckdm as drhwdm,dbmx.drhwid
+			from igams_dbmx dbmx 
+			left join igams_hwxx hwxx on hwxx.hwid=dbmx.dchwid and hwxx.scbj='0'
+			left join igams_dbgl dbgl on dbgl.dbid=dbmx.dbid and dbgl.scbj='0'
+			left join igams_ckxx ckxx_zc on ckxx_zc.ckid=dbgl.zcck and ckxx_zc.scbj='0'
+			left join igams_ckxx ckxx_zr on ckxx_zr.ckid=dbgl.zrck and ckxx_zr.scbj='0'
+			left join igams_ckxx ck_hw_dc on ck_hw_dc.ckid=dbmx.dchw and ck_hw_dc.scbj='0'
+			left join igams_ckxx ck_hw_dr on ck_hw_dr.ckid=dbmx.drhw and ck_hw_dr.scbj='0'
+			left join igams_wlgl wlgl on wlgl.wlid=hwxx.wlid and wlgl.scbj!='1'
+			left join matridx_jcsj zllb on zllb.csid=wlgl.lb 
+			left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid and rkgl.scbj!='1'
+			left join igams_gysxx gysxx on gysxx.gysid=rkgl.gysid and gysxx.scbj!='1'
+			left join igams_htmx htmx on htmx.htmxid=hwxx.htmxid and htmx.scbj='0'
+			left join igams_htgl htgl on htgl.htid=htmx.htid and htgl.scbj='0'
+			left join matridx_jgxx jg_sqbm on jg_sqbm.jgid = htgl.sqbm and jg_sqbm.scbj='0'
+			left join igams_qgmx qgmx on htmx.qgmxid=qgmx.qgmxid and qgmx.scbj='0'
+			left join igams_qggl qggl on qggl.qgid=qgmx.qgid and qggl.scbj='0'
+			left join matridx_xtyh xtyh on xtyh.yhid=qggl.sqr and xtyh.scbj='0'	
+		<where>
+			dbmx.scbj!='1'
+				and dbmx.dbid=#{dbid}
+		</where>
+	</select>
+	
+	<update id="updateDbmxDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_dbmx
+			<set>
+			 xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			 	<if test="item.mxglid != null and item.mxglid != ''">
+					,mxglid=#{item.mxglid}
+				</if>
+				<if test="item.qtckmxglid != null and item.qtckmxglid != ''">
+					,qtckmxglid=#{item.qtckmxglid}
+				</if>
+				<if test="item.qtrkmxglid != null and item.qtrkmxglid != ''">
+					,qtrkmxglid=#{item.qtrkmxglid}
+				</if>
+			</set>
+			<where>
+				dbmxid=#{item.dbmxid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<select id="queryGroupBy" parameterType="String" resultType="DbmxDto">
+		select sum(dbmx.dbsl) as dbzs,hw.wlid
+			from igams_dbmx dbmx
+			left join igams_hwxx hw on hw.hwid=dbmx.dchwid
+			left join igams_ckxx ck on ck.ckid=hw.ckid
+			where dbmx.scbj='0' and dbmx.dbid=#{dbid}
+			group by hw.wlid
+	</select>
+
+	<select id="getDtoListByDbid" parameterType="String" resultType="DbmxDto">
+	    select dbmx.dbmxid,dbmx.dbid,dbmx.dchwid,dbmx.drhwid,dbmx.dchw,dchw.ckmc as dchwmc,dbmx.drhw,drhw.ckmc as drhwmc,Round(cast(dbmx.dbsl as numeric),2) as dbsl,hw.wlid,wlgl.wlmc,xtyh.zsxm as lrryxm,to_char(dbmx.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj,
+		wlgl.wlbm,wlgl.gg,wlgl.jldw,wlgl.lb,wlgl.scs,wlgl.ychh,hw.scph,hw.zsh,lb.csmc as lbmc
+			from igams_dbmx dbmx
+			left join igams_hwxx hw on hw.hwid=dbmx.dchwid
+			left join igams_wlgl wlgl on hw.wlid=wlgl.wlid
+			left join igams_ckxx dchw on dchw.ckid=dbmx.dchw
+			left join igams_ckxx drhw on drhw.ckid=dbmx.drhw
+			left join matridx_jcsj lb on lb.csid=wlgl.lb and lb.scbj='0'
+			left join matridx_xtyh xtyh on xtyh.yhid=dbmx.lrry and xtyh.scbj='0'
+			where dbmx.dbid=#{dbid} and dbmx.scbj != '1'
+	</select>
+	<select id="getDtoList" parameterType="DbmxDto" resultType="DbmxDto">
+	    select dbmx.dbmxid,dbmx.dbid,dbmx.dchwid,dbmx.drhwid,dbmx.dchw,dchw.ckmc as dchwmc,dbmx.drhw,drhw.ckmc as drhwmc,Round(cast(dbmx.dbsl as numeric),2) as dbsl,hw.wlid,wlgl.wlmc,xtyh.zsxm as lrryxm,to_char(dbmx.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj,
+		wlgl.wlbm,wlgl.gg,wlgl.jldw,wlgl.lb,wlgl.scs,wlgl.ychh,hw.scph,hw.zsh,lb.csmc as lbmc,hw.kcl
+			from igams_dbmx dbmx
+			left join igams_hwxx hw on hw.hwid=dbmx.dchwid and hw.scbj='0'
+			left join igams_wlgl wlgl on hw.wlid=wlgl.wlid
+			left join igams_ckxx dchw on dchw.ckid=dbmx.dchw
+			left join igams_ckxx drhw on drhw.ckid=dbmx.drhw
+			left join matridx_jcsj lb on lb.csid=wlgl.lb and lb.scbj='0'
+			left join matridx_xtyh xtyh on xtyh.yhid=dbmx.lrry and xtyh.scbj='0'
+			<where>
+				dbmx.scbj='0'
+				<if test="ids !=null and ids.size>0">
+					and dbmx.dbid in
+					<foreach collection="ids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<update id="delete" parameterType="DbmxDto">
+		update igams_dbmx set
+		scbj='1',
+		scry=#{scry},
+		scsj=LOCALTIMESTAMP
+		where
+		dbid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IHtfkqkDao" >
+		<!-- 查询所有付款 -->
+	<select id="getPagedDtoList" parameterType="HtfkqkDto" resultType="HtfkqkDto">
+	select fk.htfkid,fk.fkdh,to_char(fk.fkrq,'YYYY-MM-dd') fkrq,fk.fkzje,to_char(fk.zwzfrq,'YYYY-MM-dd') zwzfrq,fk.fksy,gys.gysmc zfdxmc,
+        yh.zsxm sqrmc,jg.jgmc sqbmmc,fk.zt,fk.ykbm,ykbm.jgmc ykbmmc,to_char(fk.shtgsj,'YYYY-MM-dd') shtgsj
+        from igams_htfkqk fk
+        left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+        left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+        left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+        left join matridx_jgxx ykbm on ykbm.jgid=fk.ykbm and ykbm.scbj='0'
+        <where>
+            fk.scbj != '1'
+            <if test="entire!=null and entire!=''">
+				and (fk.fkdh ILIKE '%'||#{entire}||'%'
+				or gys.gysmc ILIKE '%'||#{entire}||'%'
+				or fk.fksy ILIKE '%'||#{entire}||'%'
+				or yh.zsxm ILIKE '%'||#{entire}||'%'
+				or jg.jgmc ILIKE '%'||#{entire}||'%')
+			</if>
+            <if test="fkdh !=null and fkdh != ''">
+                and fk.fkdh ILIKE '%'||#{fkdh}||'%'
+            </if>
+            <if test="zfdxmc != null and zfdxmc != ''">
+                and gys.gysmc ILIKE '%'||#{zfdxmc}||'%'
+            </if>
+            <if test="fksy != null and fksy != ''">
+                and fk.fksy ILIKE '%'||#{fksy}||'%'
+            </if>
+            <if test="sqrmc != null and sqrmc != ''">
+                and yh.zsxm ILIKE '%'||#{sqrmc}||'%'
+            </if>
+            <if test="sqbmmc != null and sqbmmc != ''">
+                and jg.jgmc ILIKE '%'||#{sqbmmc}||'%'
+            </if>
+            <if test="fksjstart != null and fksjstart != ''">
+                and to_char(fk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+            </if>
+            <if test="fksjend != null and fksjend != ''">
+                and to_char(fk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+            </if>
+			<if test="shtgsjstart != null and shtgsjstart != ''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &gt;= #{shtgsjstart}
+			</if>
+			<if test="shtgsjend !=null and shtgsjend !=''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &lt;= #{shtgsjend}
+			</if>
+            <if test = "zts != null and zts.length > 0 "  >
+                and fk.zt in
+                <foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="HtfkqkDto" resultType="HtfkqkDto">
+		select fk.htfkid,fk.fkdh,to_char(fk.fkrq,'YYYY-MM-dd') fkrq,fk.fkzje,to_char(fk.zwzfrq,'YYYY-MM-dd') zwzfrq,fk.fksy,gys.gysmc zfdxmc,
+		yh.zsxm sqrmc,jg.jgmc sqbmmc,fk.zt,fk.ykbm,ykbm.jgmc ykbmmc
+		from igams_htfkqk fk
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+		left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid = fk.ykbm and ykbm.scbj='0'
+		<where>
+			fk.scbj != '1'
+			<if test="ids !=null and ids.size > 0">
+				and fk.htfkid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getDtoById" parameterType="String" resultType="HtfkqkDto">
+		select fk.htfkid,fk.fkrq,fk.fkzje,fk.lrry,fk.lrsj,fk.xgry,fk.xgsj,
+		jg.jgmc sqbmmc,fk.fkfs,fk.zfdx,fk.zffkhh,fk.zffyhzh,fk.bz,fkfs.csmc fkfsmc,
+		fkf.csmc fkfmc,fk.fksy,to_char(fk.zwzfrq,'YYYY-mm-dd') zwzfrq,fk.fkf,fk.ddslid,gys.gysmc zfdxmc,fk.bz,yh.zsxm sqrmc,fk.fkdh,fk.zffkhh,fk.zffyhzh,fk.zt
+		,fk.ykbm,ykbm.jgmc ykbmmc,jc_djcdfs.csmc djcdfsmc,gys.gysdm,fk.sqbm,jg.jgdm,gys.ywbm
+        from igams_htfkqk fk
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+        left join matridx_jcsj fkf on fkf.csid = fk.fkf and fkf.scbj='0'
+        left join matridx_jcsj fkfs on fkfs.csid = fk.fkfs and fkfs.scbj='0'
+        left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+        left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid = fk.ykbm and ykbm.scbj='0'
+		left join matridx_jcsj jc_djcdfs on jc_djcdfs.csid = fk.djcdfs and jc_djcdfs.scbj='0'
+		<where>
+			fk.scbj != '1' and fk.htfkid = #{htfkid}
+		</where>		
+	</select>
+
+	<select id="getDtoByDdslid" parameterType="String" resultType="HtfkqkDto">
+		select fk.htfkid,fk.fkrq,fk.fkzje,fk.lrry,fk.lrsj,fk.xgry,fk.xgsj,
+		fk.fkfs,fk.zfdx,fk.zffkhh,fk.zffyhzh,fk.bz,jc_fkfs.csmc fkfsmc,
+		jc_fkf.csmc fkfmc,fk.fksy,to_char(fk.zwzfrq,'YYYY-mm-dd') zwzfrq,fk.fkf
+		from igams_htfkqk fk
+		left join matridx_jcsj jc_fkfs on jc_fkfs.csid=fk.fkfs
+		left join matridx_jcsj jc_fkf on jc_fkf.csid=fk.fkf
+		<where>
+			fk.scbj != '1' and fk.ddslid = #{ddslid}
+		</where>
+	</select>
+	
+	<!--  添加付款维护 -->
+	<insert id="insert" parameterType="HtfkqkDto">
+		insert into igams_htfkqk(htfkid
+		<if test="fkrq !=null and fkrq != ''">
+			,fkrq
+		</if>
+		<if test="fkzje !=null and fkzje != ''">
+			,fkzje
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="fkf !=null and fkf != ''">
+			,fkf
+		</if>
+		<if test="fkfs !=null and fkfs != ''">
+			,fkfs
+		</if>
+		<if test="zwzfrq !=null and zwzfrq != ''">
+			,zwzfrq
+		</if>
+		<if test="zfdx !=null and zfdx != ''">
+			,zfdx
+		</if>
+		<if test="zffkhh !=null and zffkhh != ''">
+			,zffkhh
+		</if>
+		<if test="zffyhzh !=null and zffyhzh != ''">
+			,zffyhzh
+		</if>
+		<if test="fkdh !=null and fkdh != ''">
+			,fkdh
+		</if>
+		<if test="fksy !=null and fksy != ''">
+			,fksy
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,sqr
+		</if>
+		<if test="sqbm !=null and sqbm != ''">
+			,sqbm
+		</if>
+		<if test="ykbm !=null and ykbm != ''">
+			,ykbm
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="djcdfs !=null and djcdfs != ''">
+			,djcdfs
+		</if>
+		,lrry,lrsj,scbj) values(#{htfkid}
+		<if test="fkrq !=null and fkrq != ''">
+			,cast(#{fkrq} as timestamp)
+		</if>
+		<if test="fkzje !=null and fkzje != ''">
+			,cast(#{fkzje} as numeric)
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="fkf !=null and fkf != ''">
+			,#{fkf}
+		</if>
+		<if test="fkfs !=null and fkfs != ''">
+			,#{fkfs}
+		</if>
+		<if test="zwzfrq !=null and zwzfrq != ''">
+			,cast(#{zwzfrq} as timestamp)
+		</if>
+		<if test="zfdx !=null and zfdx != ''">
+			,#{zfdx}
+		</if>
+		<if test="zffkhh !=null and zffkhh != ''">
+			,#{zffkhh}
+		</if>
+		<if test="zffyhzh !=null and zffyhzh != ''">
+			,#{zffyhzh}
+		</if>
+		<if test="fkdh !=null and fkdh != ''">
+			,#{fkdh}
+		</if>
+		<if test="fksy !=null and fksy != ''">
+			,#{fksy}
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,#{sqr}
+		</if>
+		<if test="sqbm !=null and sqbm != ''">
+			,#{sqbm}
+		</if>
+		<if test="ykbm !=null and ykbm != ''">
+			,#{ykbm}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="djcdfs !=null and djcdfs != ''">
+			,#{djcdfs}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 修改合同付款维护 -->
+	<update id="update" parameterType="HtfkqkDto">
+		update igams_htfkqk set
+			xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+		<if test="fkrq !=null and fkrq != ''">
+			,fkrq = cast(#{fkrq} as date )
+		</if>
+		<if test="fkzje !=null and fkzje != ''">
+			,fkzje = cast(#{fkzje} as numeric)
+		</if>
+		<if test="fkdh !=null and fkdh != ''">
+			,fkdh = #{fkdh}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt = #{zt}
+		</if>
+		<if test="fkf !=null and fkf != ''">
+			,fkf = #{fkf}
+		</if>
+		<if test="fkfs !=null and fkfs != ''">
+			,fkfs = #{fkfs}
+		</if>
+		<if test="fksy !=null and fksy != ''">
+			,fksy = #{fksy}
+		</if>
+		<if test="zwzfrq !=null and zwzfrq != ''">
+			,zwzfrq = cast(#{zwzfrq} as timestamp)
+		</if>
+		<if test="zfdx !=null and zfdx != ''">
+			,zfdx = #{zfdx}
+		</if>
+		<if test="zffkhh !=null and zffkhh != ''">
+			,zffkhh = #{zffkhh}
+		</if>
+		<if test="zffyhzh !=null and zffyhzh != ''">
+			,zffyhzh = #{zffyhzh}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz = #{bz}
+		</if>
+		<if test="ddslid != null and ddslid !=''">
+			,ddslid=#{ddslid}
+		</if>
+		<if test="sqr != null and sqr !=''">
+			,sqr=#{sqr}
+		</if>
+		<if test="sqbm != null and sqbm !=''">
+			,sqbm=#{sqbm}
+		</if>
+		<if test="ykbm != null and ykbm !=''">
+			,ykbm=#{ykbm}
+		</if>
+		<if test="shtgsj !=null and shtgsj != ''">
+			,shtgsj = cast(#{shtgsj} as timestamp)
+		</if>
+		<where>
+			htfkid = #{htfkid}
+		</where>
+	</update>
+	
+	<!-- 删除合同付款维护 -->
+	<update id="deleteFkqk" parameterType="HtfkqkDto">
+		update igams_htfkqk set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			htfkid = #{htfkid}
+		</where>
+	</update>
+
+	<update id="delete" parameterType="HtfkqkDto">
+		update igams_htfkqk set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			htfkid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!--查询所有信息 -->
+	<select id="getPagedAuditHtfkqk" parameterType="HtfkqkDto" resultType="HtfkqkDto">
+		select htfkid,lrry
+		from igams_htfkqk
+		<where>
+			scbj!='1'
+			<if test="zt !=null and zt !=''">
+				and zt = #{zt}
+			</if>
+			<if test="fkdh !=null and fkdh != ''">
+				and fkdh ILIKE '%'||#{fkdh}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="getAuditListHtfkqk" parameterType="List" resultType="HtfkqkDto">
+		select
+		fk.htfkid,fk.fkrq,fk.fkzje,fk.lrry,fk.lrsj,fk.xgry,fk.xgsj,fk.ykbm,ykbm.jgmc ykbmmc,
+		jg.jgmc sqbmmc,fk.fkfs,fk.zfdx,fk.zffkhh,fk.zffyhzh,fk.bz,fkfs.csmc fkfsmc,
+		fkf.csmc fkfmc,fk.fksy,to_char(fk.zwzfrq,'YYYY-mm-dd') zwzfrq,fk.fkf,fk.ddslid,gys.gysmc zfdxmc,fk.bz,yh.zsxm sqrmc,fk.fkdh,fk.zffkhh,fk.zffyhzh,fk.zt,
+		shxx_shxxid,shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_gwmc,shxx_shyj
+		from 
+		<foreach collection="list" separator="union" open="(" close=") "
+				 item="item" index="index">
+			select #{item.htfkid} htfkid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+		</foreach>
+		tmp
+		left join igams_htfkqk fk on fk.htfkid=tmp.htfkid 
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+		left join matridx_jcsj fkf on fkf.csid = fk.fkf and fkf.scbj='0'
+		left join matridx_jcsj fkfs on fkfs.csid = fk.fkfs and fkfs.scbj='0'
+		left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid = fk.ykbm and ykbm.scbj='0'
+		order by tmp.rownum
+	</select>
+
+	<update id="updateDdslidToNull" parameterType="HtfkqkDto">
+		update igams_htfkqk set ddslid=null
+			<where>
+				htfkid=#{htfkid}
+			</where>
+	</update>
+
+	<select id="getDjhSerial" parameterType="String" resultType="String">
+		SELECT  lpad(cast((CAST(coalesce(MAX(substring(fkdh,LENGTH(fkdh)-strpos(reverse(fkdh),'-')+2,LENGTH(fkdh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+		FROM igams_htfkqk
+		<where>
+			scbj = '0' AND fkdh like #{prefix}||'%'
+		</where>
+	</select>
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="HtfkqkDto"
+			resultType="java.lang.Integer">
+		select count(fk.htfkid) from igams_htfkqk fk
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+		left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid=fk.ykbm and ykbm.scbj='0'
+		<where>
+			fk.scbj != '1'
+			<if test="entire!=null and entire!=''">
+				and (fk.fkdh ILIKE '%'||#{entire}||'%'
+				or gys.gysmc ILIKE '%'||#{entire}||'%'
+				or fk.fksy ILIKE '%'||#{entire}||'%'
+				or yh.zsxm ILIKE '%'||#{entire}||'%'
+				or jg.jgmc ILIKE '%'||#{entire}||'%')
+			</if>
+			<if test="fkdh !=null and fkdh != ''">
+				and fk.fkdh ILIKE '%'||#{fkdh}||'%'
+			</if>
+			<if test="zfdxmc != null and zfdxmc != ''">
+				and gys.gysmc ILIKE '%'||#{zfdxmc}||'%'
+			</if>
+			<if test="fksy != null and fksy != ''">
+				and fk.fksy ILIKE '%'||#{fksy}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+				and yh.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="fksjstart != null and fksjstart != ''">
+				and to_char(fk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+			</if>
+			<if test="fksjend != null and fksjend != ''">
+				and to_char(fk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+			</if>
+			<if test="shtgsjstart != null and shtgsjstart != ''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &gt;= #{shtgsjstart}
+			</if>
+			<if test="shtgsjend !=null and shtgsjend !=''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &lt;= #{shtgsjend}
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and fk.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="getListForSearchExp" parameterType="HtfkqkDto" resultType="HtfkqkDto">
+		select fk.htfkid ${sqlParam}
+		from igams_htfkqk fk
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+		left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid=fk.ykbm and ykbm.scbj='0'
+		<where>
+			fk.scbj != '1'
+			<if test="entire!=null and entire!=''">
+				and (fk.fkdh ILIKE '%'||#{entire}||'%'
+				or gys.gysmc ILIKE '%'||#{entire}||'%'
+				or fk.fksy ILIKE '%'||#{entire}||'%'
+				or yh.zsxm ILIKE '%'||#{entire}||'%'
+				or jg.jgmc ILIKE '%'||#{entire}||'%')
+			</if>
+			<if test="fkdh !=null and fkdh != ''">
+				and fk.fkdh ILIKE '%'||#{fkdh}||'%'
+			</if>
+			<if test="zfdxmc != null and zfdxmc != ''">
+				and gys.gysmc ILIKE '%'||#{zfdxmc}||'%'
+			</if>
+			<if test="fksy != null and fksy != ''">
+				and fk.fksy ILIKE '%'||#{fksy}||'%'
+			</if>
+			<if test="sqrmc != null and sqrmc != ''">
+				and yh.zsxm ILIKE '%'||#{sqrmc}||'%'
+			</if>
+			<if test="sqbmmc != null and sqbmmc != ''">
+				and jg.jgmc ILIKE '%'||#{sqbmmc}||'%'
+			</if>
+			<if test="fksjstart != null and fksjstart != ''">
+				and to_char(fk.fkrq,'yyyy-mm-dd') &gt;= #{fksjstart}
+			</if>
+			<if test="fksjend != null and fksjend != ''">
+				and to_char(fk.fkrq,'yyyy-mm-dd') &lt;= #{fksjend}
+			</if>
+			<if test="shtgsjstart != null and shtgsjstart != ''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &gt;= #{shtgsjstart}
+			</if>
+			<if test="shtgsjend !=null and shtgsjend !=''">
+				and to_char(fk.shtgsj,'yyyy-mm-dd') &lt;= #{shtgsjend}
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and fk.zt in
+				<foreach collection="zts" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="HtfkqkDto" resultType="HtfkqkDto">
+		select fk.htfkid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+				 separator=" union all ">
+			select #{item,jdbcType=VARCHAR} htfkid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_htfkqk fk on tmp.htfkid = fk.htfkid
+		left join igams_gysxx gys on gys.gysid = fk.zfdx and gys.scbj!='1'
+		left join matridx_xtyh yh on yh.yhid = fk.sqr and yh.scbj='0'
+		left join matridx_jgxx jg on jg.jgid = fk.sqbm and jg.scbj='0'
+		left join matridx_jgxx ykbm on ykbm.jgid=fk.ykbm and ykbm.scbj='0'
+		order by tmp.ordernum
+	</select>
+</mapper>
+

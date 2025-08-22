@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.matridxsql.InvPositionSumDao" >
+	<insert id="insertDtos" parameterType="List">
+		insert into InvPositionSum(
+			cWhCode,cPosCode,cInvCode,iQuantity,inum,cBatch,cMassUnit,iMassDate,dMadeDate,dVDate
+			,iTrackid,iExpiratDateCalcu,cFree1,cFree2,cFree3,cFree4,cFree5,
+			cFree6,cFree7,cFree8,cFree9,cFree10,cvmivencode,cInVouchType
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.cWhCode},#{item.cPosCode},#{item.cInvCode},#{item.iQuantity},#{item.inum}
+					,#{item.cBatch},#{item.cMassUnit},#{item.iMassDate},#{item.dMadeDate},#{item.dVDate}
+					,0,0,'','','','','','','','','','','','')
+			</foreach>
+		</if>		
+	</insert>
+	
+	<select id="getDto" parameterType="InvPositionSumDto" resultType="InvPositionSumDto">
+		select cWhCode,cPosCode,cInvCode,iQuantity,inum,cBatch,cMassUnit,iMassDate,dMadeDate,dVDate,Autoid
+		from InvPositionSum
+		<where>
+			cWhCode=#{cWhCode} and cPosCode=#{cPosCode} and cInvCode=#{cInvCode}
+			 	and cBatch=#{cBatch}
+		</where>
+	</select>
+	
+	<update id="updateDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update InvPositionSum
+			<set>
+				<trim prefixOverrides=",">
+					<if test="item.jsbj == '0'.toString()">
+						,iQuantity=iQuantity + #{item.iQuantity}
+					</if>
+					<if test="item.jsbj == '1'.toString()">
+						,iQuantity=iQuantity - #{item.iQuantity}
+					</if>
+				</trim>
+			</set>
+			<where>
+				Autoid=#{item.Autoid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+	<update id="updateByHwxx" parameterType="InvPositionSumDto">
+		update InvPosition set
+		iQuantity=#{iQuantity}
+		where  cWhCode= #{cWhCode}
+		and cPosCode = #{cPosCode}
+		and cInvCode = #{cInvCode}
+		and cBatch = #{cBatch}
+	</update>
+	
+	<update id="update" parameterType="InvPositionSumDto">
+		update InvPositionSum set
+		iQuantity=#{iQuantity}
+		where  cWhCode= #{cWhCode}
+		and cPosCode = #{cPosCode}
+		and cInvCode = #{cInvCode}
+		and cBatch = #{cBatch}
+	</update>
+</mapper>

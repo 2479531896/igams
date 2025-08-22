@@ -1,0 +1,1033 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IWjglDao" >
+	<sql id="SEARCH_TERMS">
+		wj.scbj != '1'
+		<if test="nwjid != null and nwjid != ''">
+			and wj.wjid != #{nwjid}
+		</if>
+		<if test="jsid != null and jsid != ''">
+			and (exists(select qx.wjid from igams_wjqx qx where qx.jsid = #{jsid} and qx.wjid = wj.wjid) or wj.lrry = #{yhid})
+		</if>
+		<if test="wjbh != null and wjbh != ''">
+			and upper(wj.wjbh) like concat(concat('%',upper(#{wjbh})),'%')
+		</if>
+		<if test="wjmc != null and wjmc != ''">
+			and trim(replace(upper(wj.wjmc),' ','-')) like trim(replace(concat(concat('%',upper(#{wjmc})),'%'),' ','-'))
+		</if>
+		<if test="bbh != null and bbh != ''">
+			and wj.bbh like '%'||#{bbh}||'%'
+		</if>
+		<if test="jgmc != null and jgmc != ''">
+			and jg.jgmc like '%'||#{jgmc}||'%'
+		</if>
+		<if test="gzjl != null and gzjl != ''">
+			and wj.gzjl like '%'||#{gzjl}||'%'
+		</if>
+		<if test="bz != null and bz != ''">
+			and wj.bz like '%'||#{bz}||'%'
+		</if>
+		<if test="bzsjstart != null and bzsjstart != ''">
+			and to_char(wj.bzsj,'YYYY-MM-dd') &gt;= #{bzsjstart}
+		</if>
+		<if test="bzsjend != null and bzsjend != ''">
+			and to_char(wj.bzsj,'YYYY-MM-dd') &lt;= #{bzsjend}
+		</if>
+		<if test="sxrqstart != null and sxrqstart != '' and sxrqstart!='undefined'">
+			and to_char(wj.sxrq,'YYYY-MM-dd') &gt;= #{sxrqstart}
+		</if>
+		<if test="sxrqend != null and sxrqend != '' and sxrqend!='undefined'">
+			and to_char(wj.sxrq,'YYYY-MM-dd') &lt;= #{sxrqend}
+		</if>
+		<if test = "wjfls != null and wjfls.length > 0 "  >
+			and wj.wjfl in 
+			<foreach collection="wjfls" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "wjlbs != null and wjlbs.length > 0 "  >
+			and wj.wjlb in 
+			<foreach collection="wjlbs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and wj.zt in 
+			<foreach collection="zts" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "scbjs != null and scbjs.length > 0 "  >
+			and wj.scbj in 
+			<foreach collection="scbjs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "ffzts != null and ffzts.length > 0 "  >
+			and wj.ffzt in
+			<foreach collection="ffzts" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "scbjs == null or scbjs.length == 0 "  >
+			and wj.scbj = '0'
+		</if>
+	</sql>
+<!--	文件新增统计-->
+	<select id="getInsertStatsInfo" parameterType="WjglDto" resultType="WjglDto">
+		select
+		<if test="cs != null and cs != '' and cs == 'lrsjDay'">
+			to_char(lrsj,'yyyy-mm-dd') lrsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'lrsjMonth'">
+			to_char(lrsj,'yyyy-mm') lrsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'lrsjYear'">
+			to_char(lrsj,'yyyy') lrsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'lrsjWeek'">
+			to_char(lrsj::DATE-(extract(dow from lrsj::TIMESTAMP)-1||'day')::interval,'yyyy-mm-dd') lrsjStats,
+		</if>
+		count(lrsj) num
+		from igams_wjgl
+		where scbj != '1' and ywjid is null and lrsj is not null
+		<if test="startTimeLr != null and startTimeLr != ''">
+			and to_char(lrsj,'YYYY-MM-dd') &gt;= #{startTimeLr}
+		</if>
+		<if test="endTimeLr != null and endTimeLr != ''">
+			and to_char(lrsj,'YYYY-MM-dd') &lt;= #{endTimeLr}
+		</if>
+		group by lrsjStats order by lrsjStats
+	</select>
+
+	<!--	文件修订统计-->
+	<select id="getUpdateStatsInfo" parameterType="WjglDto" resultType="WjglDto">
+		select
+		<if test="cs != null and cs != '' and cs == 'xgsjDay'">
+			to_char(xgsj,'yyyy-mm-dd') xgsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'xgsjMonth'">
+			to_char(xgsj,'yyyy-mm') xgsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'xgsjYear'">
+			to_char(xgsj,'yyyy') xgsjStats,
+		</if>
+		<if test="cs != null and cs != '' and cs == 'xgsjWeek'">
+			to_char(xgsj::DATE-(extract(dow from xgsj::TIMESTAMP)-1||'day')::interval,'yyyy-mm-dd') xgsjStats,
+		</if>
+		count(lrsj) num
+		from igams_wjgl
+		where scbj = '0' and ywjid is not null and xgsj is not null
+		<if test="startTimeXg != null and startTimeXg != ''">
+			and to_char(xgsj,'YYYY-MM-dd') &gt;= #{startTimeXg}
+		</if>
+		<if test="endTimeXg != null and endTimeXg != ''">
+			and to_char(xgsj,'YYYY-MM-dd') &lt;= #{endTimeXg}
+		</if>
+		group by xgsjStats order by xgsjStats
+	</select>
+
+	<!-- 获取文件管理的清单 -->
+	<select id="getPagedDtoList" parameterType="WjglDto" resultType="WjglDto">
+		select tmp.wjid,tmp.wjfl,tmp.wjlb,tmp.wjbh,tmp.wjmc,tmp.bbh,tmp.sxrq,tmp.gzjl,tmp.bz,tmp.glwjid,tmp.zt,tmp.bzry,tmp.bzsj,tmp.shry,
+		tmp.shsj,tmp.pzry,tmp.pzsj,tmp.lrry,tmp.lrsj,tmp.xgry,tmp.xgsj,tmp.scry,tmp.scsj,tmp.scbj,tmp.gwjid,tmp.ywjid,tmp.jgid,tmp.jgmc,tmp.ggly,tmp.syxwj,tmp.ffzt
+		,tmp.wjflmc,tmp.wjlbmc,tmp.num,tmp.wjm,tmp.fjid
+		from (
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,jg.jgid,jg.jgmc,wj.ggly,wj.syxwj,wj.ffzt
+			,wjfl.csmc as wjflmc,wjlb.csmc as wjlbmc,count(fjcfb.fjid) as num,max(fjcfb.wjm) as wjm,max(fjcfb.fjid) as fjid
+		from igams_wjgl wj
+			left join igams_wjssdw wjss on wjss.wjid=wj.wjid
+			left join matridx_jgxx jg on jg.jgid=wjss.jgid
+			left join matridx_jcsj wjfl on wjfl.csid=wj.wjfl
+			left join matridx_jcsj wjlb on wjlb.csid=wj.wjlb
+			left join matridx_fjcfb fjcfb on fjcfb.ywid=wj.wjid
+			<where>
+				(wjfl.cskz2 is null or wjfl.cskz2 != '1') and
+				<include refid="SEARCH_TERMS"></include>
+			</where>
+		group by wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+		wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,jg.jgid,jg.jgmc,wj.ggly,wj.syxwj,wj.ffzt
+		,wjfl.csmc,wjlb.csmc
+		union all
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+		wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,jg.jgid,jg.jgmc,wj.ggly,wj.syxwj,wj.ffzt
+		,wjfl.csmc as wjflmc,wjlb.csmc as wjlbmc,count(fjcfb.fjid) as num,max(fjcfb.wjm) as wjm,max(fjcfb.fjid) as fjid
+		from igams_wjgl wj
+		left join igams_wjssdw wjss on wjss.wjid=wj.wjid
+		left join matridx_jgxx jg on jg.jgid=wjss.jgid
+		left join matridx_jcsj wjfl on wjfl.csid=wj.wjfl
+		left join matridx_jcsj wjlb on wjlb.csid=wj.wjlb
+		left join matridx_fjcfb fjcfb on fjcfb.ywid=wj.wjid
+		<where>
+			wjfl.cskz2 is not null and wjfl.cskz2 = '1' and
+			wj.scbj != '1'
+			<if test="nwjid != null and nwjid != ''">
+				and wj.wjid != #{nwjid}
+			</if>
+			<if test="wjbh != null and wjbh != ''">
+				and upper(wj.wjbh) like concat(concat('%',upper(#{wjbh})),'%')
+			</if>
+			<if test="wjmc != null and wjmc != ''">
+				and trim(replace(upper(wj.wjmc),' ','-')) like trim(replace(concat(concat('%',upper(#{wjmc})),'%'),' ','-'))
+			</if>
+			<if test="bbh != null and bbh != ''">
+				and wj.bbh like '%'||#{bbh}||'%'
+			</if>
+			<if test="jgmc != null and jgmc != ''">
+				and jg.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="gzjl != null and gzjl != ''">
+				and wj.gzjl like '%'||#{gzjl}||'%'
+			</if>
+			<if test="bz != null and bz != ''">
+				and wj.bz like '%'||#{bz}||'%'
+			</if>
+			<if test="bzsjstart != null and bzsjstart != ''">
+				and to_char(wj.bzsj,'YYYY-MM-dd') &gt;= #{bzsjstart}
+			</if>
+			<if test="bzsjend != null and bzsjend != ''">
+				and to_char(wj.bzsj,'YYYY-MM-dd') &lt;= #{bzsjend}
+			</if>
+			<if test="sxrqstart != null and sxrqstart != '' and sxrqstart!='undefined'">
+				and to_char(wj.sxrq,'YYYY-MM-dd') &gt;= #{sxrqstart}
+			</if>
+			<if test="sxrqend != null and sxrqend != '' and sxrqend!='undefined'">
+				and to_char(wj.sxrq,'YYYY-MM-dd') &lt;= #{sxrqend}
+			</if>
+			<if test = "wjfls != null and wjfls.length > 0 "  >
+				and wj.wjfl in
+				<foreach collection="wjfls" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "wjlbs != null and wjlbs.length > 0 "  >
+				and wj.wjlb in
+				<foreach collection="wjlbs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and wj.zt in
+				<foreach collection="zts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "scbjs != null and scbjs.length > 0 "  >
+				and wj.scbj in
+				<foreach collection="scbjs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ffzts != null and ffzts.length > 0 "  >
+				and wj.ffzt in
+				<foreach collection="ffzts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "scbjs == null or scbjs.length == 0 "  >
+				and wj.scbj = '0'
+			</if>
+		</where>
+		group by wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+		wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,jg.jgid,jg.jgmc,wj.ggly,wj.syxwj,wj.ffzt
+		,wjfl.csmc,wjlb.csmc)tmp
+	</select>
+	<!-- 根据文件ID获取文件信息 -->
+	<select id="getDtoById" parameterType="String" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,wj.ggly,wj.syxwj,
+			jc.csmc wjflmc,zlbjc.csmc wjlbmc,jc.csdm wjfldm,zlbjc.csdm wjlbdm,yh.zsxm,wjdw.jgid,wj.sfth,wj.zhgz,wj.cskz1,wj.cskz2,wj.cskz3,jg.jgmc,wj.ffzt
+			,sbglwj.sbglwjid,sbglwj.sbglid,sbglwj.lb,sbglwj.sbysid,sbys.sbmc,sbys.sbbh,sbys.xlh,sbys.gdzcbh,sbys.sbccbh,zlbjc.cskz2 zlbcskz2,yh.yhm
+			from igams_wjgl wj
+			left join igams_sbglwj sbglwj on sbglwj.wjid = wj.wjid
+			left join igams_sbys sbys on sbys.sbysid = sbglwj.sbysid
+			left outer join matridx_jcsj jc on wj.wjfl = jc.csid
+			left outer join matridx_jcsj zlbjc on wj.wjlb = zlbjc.csid
+			left outer join matridx_xtyh yh on yh.yhid = wj.bzry
+			left outer join igams_wjssdw wjdw on wjdw.wjid = wj.wjid
+			left join matridx_jgxx jg on jg.jgid=wjdw.jgid
+			<where>
+				wj.scbj !='1' and wj.wjid = #{wjid}
+			</where>
+	</select>
+	<!-- 根据文件IDs获取文件信息 -->
+	<select id="getDtoByIds" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,wj.ggly,wj.syxwj,
+			jc.csmc wjflmc,zlbjc.csmc wjlbmc,jc.csdm wjfldm,zlbjc.csdm wjlbdm,yh.zsxm,wjdw.jgid,wj.sfth,wj.zhgz,wj.cskz1,wj.cskz2,wj.cskz3,jg.jgmc,wj.ffzt
+			from igams_wjgl wj
+			left outer join matridx_jcsj jc on wj.wjfl = jc.csid
+			left outer join matridx_jcsj zlbjc on wj.wjlb = zlbjc.csid
+			left outer join matridx_xtyh yh on yh.yhid = wj.bzry
+			left outer join igams_wjssdw wjdw on wjdw.wjid = wj.wjid
+			left join matridx_jgxx jg on jg.jgid=wjdw.jgid
+			<where>
+				wj.scbj !='1' and
+				wj.wjid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</where>
+	</select>
+	<!-- 根据文件ID查询附件业务类型 -->
+	<select id="selectYwlxByYwid" parameterType="String" resultType="String">
+		select fjcfb.ywlx
+			from igams_wjgl wj
+			left outer join matridx_fjcfb fjcfb on wj.wjid = fjcfb.ywid
+			<where>
+				fjcfb.scbj !='1' and fjcfb.ywid= #{wjid}
+			</where>
+	</select>
+	<!-- 根据文件ID查询附件表信息 -->
+	<select id="selectFjcfbDtoByWjid" parameterType="String" resultType="FjcfbDto">
+		select fjcfb.fjid,fjcfb.ywid,fjcfb.zywid,fjcfb.ywlx,fjcfb.xh,fjcfb.fq,fjcfb.wjm,fjcfb.wjlj,fjcfb.zhbj,fjcfb.fwjlj,fjcfb.fwjm,fjcfb.yswjlj,fjcfb.yswjm,
+			fjcfb.lyid,fjcfb.zhcs,fjcfb.scry,fjcfb.scsj,fjcfb.scbj 
+			from igams_wjgl wj
+			left outer join matridx_fjcfb fjcfb on wj.wjid = fjcfb.ywid
+			<where>
+				fjcfb.scbj !='1' and fjcfb.ywid= #{wjid}
+			</where>
+	</select>
+	<!-- 根据文件ID获取文件信息 -->
+	<select id="getDto" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,wj.ggly,wj.syxwj,
+			jc.csmc wjflmc,zlbjc.csmc wjlbmc,jc.csdm wjfldm,zlbjc.csdm wjlbdm,wj.cskz1,wj.cskz2,wj.cskz3,sbglwj.sbglwjid,sbglwj.sbglid,sbglwj.lb,sbglwj.sbysid,sbys.sbmc,
+		    zlbjc.cskz2 wjlbcskz2
+			from igams_wjgl wj
+			left join igams_sbglwj sbglwj on sbglwj.wjid = wj.wjid
+			left join igams_sbys sbys on sbys.sbysid = sbglwj.sbysid
+			left outer join matridx_jcsj jc on wj.wjfl = jc.csid
+			left outer join matridx_jcsj zlbjc on wj.wjlb = zlbjc.csid
+			<where>
+				wj.scbj !='1' 
+				<if test="wjid != null and wjid != ''">
+					and wj.wjid = #{wjid}
+				</if>
+			</where>
+	</select>
+	<!-- 根据根文件ID获取文件信息 -->
+	<select id="getDtoListByGwjid" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,wj.ywjid,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,to_char(wj.lrsj,'YYYY-MM-DD') AS flrsj,
+			jc.csmc wjflmc,zlbjc.csmc wjlbmc,jc.csdm wjfldm,zlbjc.csdm wjlbdm,wj.cskz1,wj.cskz2,wj.cskz3
+			from igams_wjgl wj
+			left outer join matridx_jcsj jc on wj.wjfl = jc.csid
+			left outer join matridx_jcsj zlbjc on wj.wjlb = zlbjc.csid
+			<where>
+				wj.scbj !='1' 
+				<if test="gwjid != null and gwjid != ''">
+					and gwjid = #{gwjid}
+				</if>
+			</where>
+			order by wj.lrsj desc
+	</select>
+	<!-- 更改文件删除标记 -->
+	<update  id="delete" parameterType="WjglModel">
+		update igams_wjgl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			<if test="wjid !=null and wjid != ''">
+				or wjid = #{wjid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or wjid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 更新文件信息 -->
+	<update  id="update" parameterType="WjglModel">
+		update igams_wjgl
+		<set>
+		<if test="wjfl !=null and wjfl != ''">
+			wjfl = #{wjfl},
+		</if>
+		<if test="wjlb !=null and wjlb != ''">
+			wjlb = #{wjlb},
+		</if>
+		<if test="wjbh !=null and wjbh != ''">
+			wjbh = #{wjbh},
+		</if>
+		<if test="wjmc !=null and wjmc != ''">
+			wjmc = #{wjmc},
+		</if>
+		<if test="bbh !=null and bbh != ''">
+			bbh = #{bbh},
+		</if>
+		<if test="sxrq !=null and sxrq != ''">
+			sxrq = cast(#{sxrq} as date),
+		</if>
+		<if test="gzjl !=null and gzjl != ''">
+			gzjl = #{gzjl},
+		</if>
+		<if test="bz !=null and bz != ''">
+			bz = #{bz},
+		</if>
+		<if test="glwjid !=null and glwjid != ''">
+			glwjid = #{glwjid},
+		</if>
+		<if test="zt !=null and zt != ''">
+			zt = #{zt},
+		</if>
+		<if test="bzry !=null and bzry != ''">
+			bzry = #{bzry},
+		</if>
+		<if test="bzsj !=null and bzsj != ''">
+			bzsj = cast(#{bzsj} as date),
+		</if>
+		<if test="shry !=null and shry != ''">
+			shry = #{shry},
+		</if>
+		<if test="shsj !=null and shsj != ''">
+			shsj = cast(#{shsj} as date),
+		</if>
+		<if test="pzry !=null and pzry != ''">
+			pzry = #{pzry},
+		</if>
+		<if test="pzsj !=null and pzsj != ''">
+			pzsj = cast(#{pzsj} as date),
+		</if>
+		<if test="scbj !=null and scbj != ''">
+			scbj = #{scbj},
+		</if>
+		<if test="ggly !=null and ggly != ''">
+			ggly = #{ggly},
+		</if>
+		<if test="syxwj !=null and syxwj != ''">
+			syxwj = #{syxwj},
+		</if>
+		<if test="zhgz !=null and zhgz != ''">
+			zhgz = #{zhgz},
+		</if>
+		<if test="sfth !=null and sfth != ''">
+			sfth = #{sfth},
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			cskz1 = #{cskz1},
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			cskz2 = #{cskz2},
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			cskz3 = #{cskz3},
+		</if>
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			wjid = #{wjid}
+		</where>
+	</update>
+	<!-- 更新文件发放状态 -->
+	<update  id="updateFfzt" parameterType="WjglModel">
+		update igams_wjgl set ffzt = #{ffzt}
+		<where>
+			wjid = #{wjid}
+		</where>
+	</update>
+	<!-- 新增文件信息 -->
+	<insert id="insert" parameterType="WjglModel">
+		insert into igams_wjgl(wjid,bzsj,bzry
+		<if test="wjfl !=null and wjfl != ''">
+			,wjfl
+		</if>
+		<if test="wjlb !=null and wjlb != ''">
+			,wjlb
+		</if>
+		<if test="wjbh !=null and wjbh != ''">
+			,wjbh
+		</if>
+		<if test="wjmc !=null and wjmc != ''">
+			,wjmc
+		</if>
+		<if test="bbh !=null and bbh != ''">
+			,bbh
+		</if>
+		<if test="sxrq !=null and sxrq != ''">
+			,sxrq
+		</if>
+		<if test="gzjl !=null and gzjl != ''">
+			,gzjl
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="glwjid !=null and glwjid != ''">
+			,glwjid
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="shry !=null and shry != ''">
+			,shry
+		</if>
+		<if test="shsj !=null and shsj != ''">
+			,shsj
+		</if>
+		<if test="pzry !=null and pzry != ''">
+			,pzry
+		</if>
+		<if test="pzsj !=null and pzsj != ''">
+			,pzsj
+		</if>
+		<if test="gwjid ==null || gwjid == ''">
+			,gwjid
+		</if>
+		<if test="gwjid !=null and gwjid != ''">
+			,gwjid
+		</if>
+		<if test="ywjid !=null and ywjid != ''">
+			,ywjid
+		</if>
+		<if test="ggly !=null and ggly != ''">
+			,ggly
+		</if>
+		<if test="syxwj !=null and syxwj != ''">
+			,syxwj
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,cskz1
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,cskz2
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,cskz3
+		</if>
+		<if test="ffzt !=null and ffzt != ''">
+			,ffzt
+		</if>
+		,lrry,lrsj,scbj) values(#{wjid},LOCALTIMESTAMP,#{bzry}
+		<if test="wjfl !=null and wjfl != ''">
+			,#{wjfl}
+		</if>
+		<if test="wjlb !=null and wjlb != ''">
+			,#{wjlb}
+		</if>
+		<if test="wjbh !=null and wjbh != ''">
+			,#{wjbh}
+		</if>
+		<if test="wjmc !=null and wjmc != ''">
+			,#{wjmc}
+		</if>
+		<if test="bbh !=null and bbh != ''">
+			,#{bbh}
+		</if>
+		<if test="sxrq !=null and sxrq != ''">
+			,cast(#{sxrq} as date)
+		</if>
+		<if test="gzjl !=null and gzjl != ''">
+			,#{gzjl}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="glwjid !=null and glwjid != ''">
+			,#{glwjid}
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="shry !=null and shry != ''">
+			,#{shry}
+		</if>
+		<if test="shsj !=null and shsj != ''">
+			,cast(#{shsj} as date)
+		</if>
+		<if test="pzry !=null and pzry != ''">
+			,#{pzry}
+		</if>
+		<if test="pzsj !=null and pzsj != ''">
+			,cast(#{pzsj} as date)
+		</if>
+		<if test="gwjid ==null || gwjid == ''">
+			,#{wjid}
+		</if>
+		<if test="gwjid !=null and gwjid != ''">
+			,#{gwjid}
+		</if>
+		<if test="ywjid !=null and ywjid != ''">
+			,#{ywjid}
+		</if>
+		<if test="ggly !=null and ggly != ''">
+			,#{ggly}
+		</if>
+		<if test="syxwj !=null and syxwj != ''">
+			,#{syxwj}
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,#{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,#{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,#{cskz3}
+		</if>
+		<if test="ffzt !=null and ffzt != ''">
+			,#{ffzt}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<insert id="insertWjglDtos" parameterType="List">
+		insert into igams_wjgl(wjid,gwjid,bzsj,bzry,wjfl,wjlb,wjbh,wjmc,bbh,sxrq,gzjl,bz,glwjid,zt,ggly,syxwj,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.wjid},#{item.gwjid},LOCALTIMESTAMP,
+				<if test="item.bzry !=null and item.bzry != ''">
+					#{item.bzry},
+				</if>
+				<if test="item.bzry ==null or item.bzry == ''">
+					null,
+				</if>
+				#{item.wjfl},#{item.wjlb},#{item.wjbh},
+				#{item.wjmc},#{item.bbh},
+				<if test="item.sxrq !=null and item.sxrq != ''">
+					cast(#{item.sxrq} as date),
+				</if>
+				<if test="item.sxrq ==null or item.sxrq == ''">
+					null,
+				</if>
+				#{item.gzjl},#{item.bz},#{item.glwjid},
+				#{item.zt},#{item.ggly},#{item.syxwj},#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+
+	<!-- 获取文件申请审核的ID列表 -->
+	<select id="getPagedAuditIdList" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.lrsj,ssdw.jgid
+			from igams_wjgl wj
+			left outer join igams_wjssdw ssdw on wj.wjid = ssdw.wjid  and ssdw.xh = '1'
+			<where>
+				wj.scbj !='1' 
+				<if test="wjbh != null and wjbh != ''">
+					and upper(wj.wjbh) like concat(concat('%',upper(#{wjbh})),'%')
+				</if>
+				<if test="wjmc != null and wjmc != ''">
+					and trim(replace(upper(wj.wjmc),' ','-')) like trim(replace(concat(concat('%',upper(#{wjmc})),'%'),' ','-'))
+				</if>
+				<if test="zt != null and zt != ''">
+					and wj.zt = #{zt}
+				</if>
+				<if test = "wjfls != null and wjfls.length > 0 "  >
+					and wj.wjfl in 
+					<foreach collection="wjfls" separator="," open="(" close=") "
+					item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+				<if test = "wjlbs != null and wjlbs.length > 0 "  >
+					and wj.wjlb in 
+					<foreach collection="wjlbs" separator="," open="(" close=") "
+					item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 临时表分页查询-审核列表-->
+	<select id="getAuditListByIds" parameterType="List"
+		resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,wj.shsj,wj.pzry,wj.pzsj,wj.lrry,
+			wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,shxx_shyj
+			from 
+			<foreach collection="list" separator="union" open="(" close=") "
+					item="item" index="index">
+				select #{item.wjid} wjid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{item.shxx_shyj} shxx_shyj,#{index} rownum
+			</foreach>
+			tmp
+			left join igams_wjgl wj on wj.wjid = tmp.wjid	
+		order by tmp.rownum
+	</select>
+	<!--更新文件申请的状态信息-->
+	<update id="updateZt" parameterType="WjglModel">
+		update igams_wjgl set zt = #{zt,jdbcType=VARCHAR},xgry = #{xgry},xgsj = LOCALTIMESTAMP,shry = #{xgry}
+		<if test="shsj != null and shsj != ''">
+			,shsj = LOCALTIMESTAMP
+		</if>
+		where wjid = #{wjid}
+	</update>
+	<!--更新文件申请的状态信息-->
+	<update id="updatePzsj" parameterType="WjglModel">
+		update igams_wjgl set zt = #{zt,jdbcType=VARCHAR},xgry = #{xgry},xgsj = LOCALTIMESTAMP,pzry = #{xgry}
+		<if test="pzsj != null and pzsj != ''">
+			,pzsj = LOCALTIMESTAMP
+		</if>
+		<if test="sxrq != null and sxrq != ''">
+			,sxrq = cast(#{sxrq} as TIMESTAMP)
+		</if>
+		<if test="shsj != null and shsj != ''">
+			,shsj = LOCALTIMESTAMP
+		</if>
+		<if test="sfth != null and sfth != ''">
+			,sfth = #{sfth}
+		</if>
+		<if test="zhgz != null and zhgz != ''">
+			,zhgz = #{zhgz}
+		</if>
+		where wjid = #{wjid}
+	</update>
+	<!-- 根据关联文件id查询文件信息 -->
+	<select id="selectByGlwjid" parameterType="String" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,wj.shsj,wj.pzry,wj.pzsj,wj.lrry,
+			wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid
+			from igams_wjgl wj
+			where wj.glwjid = #{wjid}
+	</select>
+	<!--清空关联文件ID-->
+	<update id="updateGlwjid" parameterType="WjglDto">
+		update igams_wjgl set glwjid = null, scbj = '0'
+		where wjid = #{wjid}
+	</update>
+	<!-- 根据关联文件ID修改删除标记 -->
+	<update id="updateScbj" parameterType="WjglDto">
+		update igams_wjgl set scbj = '2',scry = #{scry},scsj = LOCALTIMESTAMP
+		where glwjid = #{wjid}
+	</update>
+	<!-- 根据文件ID修改时间 -->
+	<update id="updateTimeByWjid" parameterType="WjglDto">
+		update igams_wjgl
+		<set>
+		<if test="shsj !=null and shsj != ''">
+			shsj = cast(#{shsj} as date),
+		</if>
+		<if test="bzsj !=null and bzsj != ''">
+			bzsj = cast(#{bzsj} as date),
+		</if>
+		<if test="pzsj !=null and pzsj != ''">
+			pzsj = cast(#{pzsj} as date),
+		</if>
+		</set>
+		where wjid = #{wjid}
+	</update>
+	<!-- 根据文件ID查询任务进度 -->
+	<select id="selectGzglByWjid" parameterType="WjglDto" resultType="GzglDto">
+		select gzgl.rwmc,gzgl.zt,gzgl.fzr,yh.zsxm,gzgl.ywmc,gzgl.qwwcsj,gzgl.wcsj,gzgl.ywdz,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+			from igams_wjgl wj
+			left outer join igams_gzgl gzgl on wj.wjid = gzgl.ywid
+			left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+			<where>
+				gzgl.scbj !='1' and gzgl.ywid= #{wjid}
+			</where>
+	</select>
+	<!-- 根据文件ID查询任务完成人数 -->
+	<select id="selectCountByWjid" parameterType="WjglDto" resultType="java.lang.Integer">
+		select count(gzgl.fzr)
+			from igams_wjgl wj
+			left outer join igams_gzgl gzgl on wj.wjid = gzgl.ywid
+			<where>
+				gzgl.scbj !='1' and gzgl.ywid= #{wjid} and gzgl.zt != '00'
+			</where>
+	</select>
+	<!-- 根据文件ID(复数)查询任务信息  -->
+	<select id="selectGzglByWjids" parameterType="list" resultType="Map">
+		select gzgl.ywid,cast(count(gzgl.ywid) as varchar ) countall,cast(count(case when gzgl.zt != '00' then gzgl.ywid else null end) as varchar )countoff
+		from igams_wjgl wj
+		left outer join igams_gzgl gzgl on wj.wjid = gzgl.ywid
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		<where>
+			gzgl.scbj !='1' and gzgl.ywid in 
+			<foreach collection="list" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+			group by gzgl.ywid
+		</where>
+	</select>
+	<!-- 根据文件ID通过关联文件ID查询文件数量 -->
+	<select id="selectGlwjidCountByWjid" parameterType="WjglDto" resultType="java.lang.Integer">
+		select count(wj.wjid)
+			from igams_wjgl wj
+			<where>
+				wj.scbj !='1' and wj.glwjid = #{wjid}
+			</where>
+	</select>
+	<!-- 根据角色ID查询新增用户信息 -->
+	<select id="selectAddXtyhByJsid" parameterType="java.util.Map" resultType="WjglDto">
+		select distinct yh.yhid,ssjg.jgid,yh.ddid,yh.zsxm,yh.yhm
+			from matridx_yhjs yhjs
+			left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+			left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+			left outer join  matridx_yhjs yhjs2  on yhjs2.yhid = yhjs.yhid  
+			<if test="wjglList !=null and wjglList.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="wjglList" open="(" close=")" separator="," item="item">
+					#{item.jsid}
+				</foreach>
+			</if>
+			<if test="jsidList !=null and jsidList.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="jsidList" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsidList ==null or jsidList.size == 0">
+				<if test="wjglList ==null or wjglList.size == 0">
+					and 1=2
+				</if>
+			</if>
+			<where>
+				yh.scbj !='1' and yhjs2.yhid is null and yh.sfsd!='1'
+				<if test="jsids !=null and jsids.size > 0">
+				and yhjs.jsid in
+					<foreach collection="jsids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 根据角色ID查询删除用户信息 -->
+	<select id="selectDelXtyhByJsid" parameterType="java.util.Map" resultType="WjglDto">
+		select yh.yhid,ssjg.jgid,yh.ddid,yh.zsxm
+			from matridx_yhjs yhjs
+			left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+			left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+			left outer join  matridx_yhjs yhjs2  on yhjs2.yhid = yhjs.yhid  
+			and ( 1=2 
+				<if test="jsids !=null and jsids.size > 0">
+				or yhjs2.jsid in
+					<foreach collection="jsids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+				<if test="jsidList !=null and jsidList.size > 0">
+				or yhjs2.jsid in
+					<foreach collection="jsidList" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			)
+			<where>
+				yh.scbj !='1' and yhjs2.yhid is null
+				<if test="wjglList !=null and wjglList.size > 0">
+				and yhjs.jsid in
+					<foreach collection="wjglList" open="(" close=")" separator="," item="item">
+						#{item.jsid}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 根据用户ID删除工作信息 -->
+	<update id="deleteGzglByYhid" parameterType="WjglDto">
+		update igams_gzgl set scbj = '1',scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			scbj != '1'
+			<if test="yhids !=null and yhids.size > 0">
+			and fzr in
+				<foreach collection="yhids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			and ywid = #{wjid}
+		</where>
+	</update>
+	<!-- 根据角色ID查询人员信息 -->
+	<select id="selectDtoByJsids" parameterType="WjglDto" resultType="WjglDto">
+		select yh.yhid,ssjg.jgid,yh.ddid,yh.zsxm
+			from matridx_yhjs yhjs
+			left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+			left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+			<where>
+				yh.scbj !='1' and yh.yhid is not null and yh.sfsd!='1'
+				<if test="jsids !=null and jsids.size > 0">
+				and yhjs.jsid in
+					<foreach collection="jsids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 查询文件是否重复 -->
+	<select id="selectDocumentRepeat" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid
+			from igams_wjgl wj
+			<where>
+				wj.scbj !='1' and (wj.wjmc = #{wjmc} or wj.wjbh = #{wjbh})
+			</where>
+	</select>
+	<!-- 获取文件列表 -->
+	<select id="getPagedListDocument" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+			wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid,jg.jgid,jg.jgmc,wj.ggly,wj.syxwj
+			from igams_wjgl wj
+			left join igams_wjssdw wjss on wjss.wjid=wj.wjid
+			left join matridx_jgxx jg on jg.jgid=wjss.jgid
+			<where>
+				wj.scbj = '0' and wj.glwjid is null and wj.wjid != #{wjid}
+				<if test="wjbh != null and wjbh != ''">
+					and upper(wj.wjbh) like concat(concat('%',upper(#{wjbh})),'%')
+				</if>
+				<if test="wjmc != null and wjmc != ''">
+					and trim(replace(upper(wj.wjmc),' ','-')) like trim(replace(concat(concat('%',upper(#{wjmc})),'%'),' ','-'))
+				</if>
+				<if test="bbh != null and bbh != ''">
+					and wj.bbh like '%'||#{bbh}||'%'
+				</if>
+			</where>
+	</select>
+	<!-- 修改旧版本文件 -->
+	<update id="updatePreviousDto" parameterType="WjglDto">
+		update igams_wjgl set xgry = #{xgry}, xgsj = LOCALTIMESTAMP, glwjid = #{gwjid},scbj = '2'
+		where wjid = #{prewjid}
+	</update>
+	<!-- 修改新版本文件 -->
+	<update id="updateCurrentDto" parameterType="WjglDto">
+		update igams_wjgl set xgry = #{xgry}, xgsj = LOCALTIMESTAMP, ywjid = #{prewjid}
+		where wjid = #{gwjid}
+	</update>
+	<!-- 修改新版本根文件ID -->
+	<update id="updateCurGwjid" parameterType="WjglDto">
+		update igams_wjgl set xgry = #{xgry}, xgsj = LOCALTIMESTAMP, gwjid = #{pregwjid}
+		where gwjid = #{gwjid}
+	</update>
+	
+	<select id="getListForSelectExp" parameterType="WjglDto" resultType="WjglDto">
+	select wj.wjid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids" separator=" union all ">  
+		   select #{item,jdbcType=VARCHAR} wjid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_wjgl wj on tmp.wjid = wj.wjid
+		<include refid="OUT_SEARCH_JOINS"></include>
+	order by tmp.ordernum
+	</select>
+	
+	<sql id="OUT_SEARCH_JOINS">
+		<if test="wjlb_flg != null">
+			left join matridx_jcsj wjlb on wjlb.csid= wj.wjlb
+		</if>
+		<if test="wjfl_flg !=null">
+			left join matridx_jcsj wjfl on wjfl.csid= wj.wjfl
+		</if>
+	</sql>
+	
+	<select id="getCountForSearchExp"  parameterType="WjglDto" resultType="java.lang.Integer">
+		select count(wj.wjid) from igams_wjgl wj
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	
+	<select id="getListForSearchExp" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid ${sqlParam} from (
+		select wj.wjid  
+			from igams_wjgl wj
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+		) t_wj
+		left outer join igams_wjgl wj on t_wj.wjid = wj.wjid
+		<include refid="OUT_SEARCH_JOINS"></include>
+		order by 
+		<if test="sortName != null and sortName != ''">
+		${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select>
+
+	<select id="getDocumentClassStats" parameterType="WjglDto" resultType="WjglDto">
+		select
+		wjgl.wjfl,COALESCE(count(wjgl.wjid),0) wjsl
+		from igams_wjgl wjgl
+		where wjgl.scbj='0'
+		group by wjgl.wjfl
+	</select>
+
+	<select id="getDocumentMonthStats" parameterType="WjglDto" resultType="WjglDto">
+		SELECT
+		tab.lrsj,
+		string_agg ( tab.wjsl || '-' || tab.scbj, ',' ) wjsl
+		FROM
+		(
+		(
+		SELECT
+		to_char( wjgl.lrsj, 'MM' ) lrsj,
+		COALESCE ( COUNT ( wjgl.wjid ), 0 ) wjsl,
+		scbj
+		FROM
+		igams_wjgl wjgl
+		left join igams_wjssdw ssdw on ssdw.wjid=wjgl.wjid
+		WHERE
+		wjgl.ywjid IS NULL
+		<if test="year !=null and year != ''">
+			and to_char( wjgl.lrsj, 'yyyy' )=#{year}
+		</if>
+		<if test="jgid !=null and jgid != ''">
+			and ssdw.jgid=#{jgid}
+		</if>
+		GROUP BY
+		to_char( wjgl.lrsj, 'MM' ),
+		wjgl.scbj
+		ORDER BY
+		to_char( wjgl.lrsj, 'MM' ) ASC
+		) UNION ALL
+		(
+		SELECT
+		to_char( wjgl.lrsj, 'MM' ) lrsj,
+		COALESCE ( COUNT ( wjgl.wjid ), 0 ) wjsl,
+		'3' scbj
+		FROM
+		igams_wjgl wjgl
+		left join igams_wjssdw ssdw on ssdw.wjid=wjgl.wjid
+		WHERE
+		wjgl.ywjid IS NOT NULL
+		<if test="year !=null and year != ''">
+			and to_char( lrsj, 'yyyy' )=#{year}
+		</if>
+		<if test="jgid !=null and jgid != ''">
+			and ssdw.jgid=#{jgid}
+		</if>
+		GROUP BY
+		to_char( wjgl.lrsj, 'MM' )
+		ORDER BY
+		to_char( wjgl.lrsj, 'MM' ) ASC
+		)
+		) tab
+		GROUP BY
+		tab.lrsj
+		ORDER BY
+		tab.lrsj ASC
+	</select>
+
+	<select id="getYearGroup" resultType="WjglDto">
+    select  to_char( lrsj, 'yyyy' ) lrsj from igams_wjgl  GROUP BY
+        to_char( lrsj, 'yyyy' )
+    ORDER BY
+        to_char( lrsj, 'yyyy' ) desc
+	</select>
+
+	<select id="queryWjglDto" parameterType="WjglDto" resultType="WjglDto">
+		select wj.wjid,wj.wjfl,wj.wjlb,wj.wjbh,wj.wjmc,wj.bbh,wj.sxrq,wj.gzjl,wj.bz,wj.glwjid,wj.zt,wj.bzry,wj.bzsj,wj.shry,
+		wj.shsj,wj.pzry,wj.pzsj,wj.lrry,wj.lrsj,wj.xgry,wj.xgsj,wj.scry,wj.scsj,wj.scbj,wj.gwjid,wj.ywjid
+		from igams_wjgl wj
+		<where>
+			wj.scbj !='1' and
+				wj.wjbh in
+				<foreach collection="wjbhs" open="(" close=")" separator="," item="itemt">
+					#{itemt}
+				</foreach>
+		</where>
+	</select>
+</mapper>

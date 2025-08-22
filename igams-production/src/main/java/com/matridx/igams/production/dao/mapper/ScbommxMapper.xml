@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IScbommxDao">
+    <select id="getDtoList" parameterType="BommxDto" resultType="BommxDto">
+        SELECT
+            bommx.zjwlid,bommx.bzyl,bommx.bomid,bommx.bommxid,wlgl.wlmc,wlgl.wlbm,wlgl.jldw,wlgl.scs,wlgl.gg,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,zlbtc.csmc wlzlbtcmc,wlgl.ychh,wlgl.wlid,
+        coalesce (ckhwxx.kcl,'0') as kcl
+        FROM
+            igams_bommx bommx
+                LEFT JOIN igams_bomgl bomgl ON bomgl.bomid = bommx.bomid
+                LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = bommx.zjwlid
+                left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+                left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+                left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+                left join (select wlid,sum(COALESCE(kcl,0)) kcl  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = wlgl.wlid
+        <where>
+            bommx.scbj ='0'
+            <if test="bomid!=null and bomid!=''">
+                and bommx.bomid = #{bomid}
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and bommx.bommxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <insert id="insert" parameterType="BommxDto">
+        insert into igams_bommx(
+        bommxid,bomid
+        <if test="zjwlid !=null and zjwlid !=''">
+            ,zjwlid
+        </if>
+        <if test="bzyl !=null and bzyl !=''">
+            ,bzyl
+        </if>
+        ,lrry,lrsj,scbj
+        )values(
+        #{bommxid},#{bomid}
+        <if test="zjwlid !=null and zjwlid !=''">
+            ,#{zjwlid}
+        </if>
+        <if test="bzyl !=null and bzyl !=''">
+            ,cast (#{bzyl} as numeric)
+        </if>
+        ,#{lrry}
+        ,LOCALTIMESTAMP
+        ,'0'
+        )
+    </insert>
+    <insert id="insertBommxDtos" parameterType="List">
+        insert into igams_bommx(bommxid,bomid,zjwlid,bzyl,lrry,lrsj,scbj)
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.bommxid}, #{item.bomid},
+            #{item.zjwlid},
+            cast (#{item.bzyl} as numeric),
+            #{item.lrry},
+            LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+    <!-- 批量修改BOM明细信息 -->
+    <update id="updateBommxDtos" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_bommx set
+                xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                <if test="item.bzyl !=null and  item.bzyl !=''">
+                    ,bzyl=cast(#{item.bzyl} as numeric)
+                </if>
+                <where>
+                    bommxid=#{item.bommxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <delete id="delete" parameterType="BommxDto">
+        update igams_bommx set scbj ='1' , scry = #{scry}
+        where bommxid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <delete id="deleteByBomIds" parameterType="BommxDto">
+        update igams_bommx set scbj ='1' , scry = #{scry}
+        where bomid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <select id="getDtoById" parameterType="String" resultType="BommxDto">
+        SELECT
+        bommx.zjwlid,bommx.bzyl,bommx.bomid,bommx.bommxid,wlgl.wlmc,wlgl.wlbm,wlgl.jldw,wlgl.scs,wlgl.gg,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,zlbtc.csmc wlzlbtcmc,wlgl.ychh,wlgl.wlid,
+        ckhwxx.kcl
+        FROM
+        igams_bommx bommx
+        LEFT JOIN igams_bomgl bomgl ON bomgl.bomid = bommx.bomid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = bommx.zjwlid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join (select wlid,sum(COALESCE(kcl,0)) kcl  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid = wlgl.wlid
+        <where>
+            bommx.scbj ='0' and bommx.bommxid=#{bommxid}
+        </where>
+    </select>
+    <select id="getProduceReceiveBom" parameterType="BommxDto" resultType="BommxDto">
+        SELECT
+        bommx.zjwlid wlid,ckhwxx.kcl,ckhwxx.yds,wlgl.wlbm wlbm,wlgl.wlmc wlmc,
+        wlgl.gg gg,wlgl.scs scs,wlgl.jldw jldw,COALESCE(ckhwxx.kcl,0)-COALESCE(ckhwxx.yds,0) as klsl ,
+        jc.csmc wllbmc,zlbjc.csmc wlzlbmc,zlbtcjc.csmc wlzlbtcmc,ckhwxx.ckhwid,
+        lbjc.csmc lbmc,wlgl.ychh ychh,lbjc.cskz1 lbcskz1,ckxx.ckid,ckxx.ckmc,bommx.bzyl
+        FROM
+        igams_bomgl bomgl
+        left join igams_bommx bommx on bomgl.bomid = bommx.bomid and bommx.scbj='0'
+        LEFT JOIN igams_ckhwxx ckhwxx on ckhwxx.wlid = bommx.zjwlid
+        <if test="(xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+            and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+            left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+            where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+        </if>
+        LEFT JOIN igams_ckxx ckxx ON ckxx.ckid = ckhwxx.ckid
+        LEFT JOIN igams_wlgl wlgl ON wlgl.wlid = bommx.zjwlid AND wlgl.scbj!='1'
+        left outer join matridx_jcsj jc on wlgl.wllb = jc.csid
+        left outer join matridx_jcsj zlbjc on wlgl.wlzlb = zlbjc.csid
+        left outer join matridx_jcsj lbjc on wlgl.lb = lbjc.csid
+        left outer join matridx_jcsj zlbtcjc on wlgl.wlzlbtc = zlbtcjc.csid
+        WHERE
+        bomgl.scbj ='0' and bomgl.mjwlid = #{mjwlid}
+    </select>
+</mapper>

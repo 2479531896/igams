@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.storehouse.dao.post.ILlcglDao" >
+	
+	<select id="getLlcDtoList" parameterType="LlcglDto" resultType="LlcglDto">
+		select llc.ckhwid,llc.ryid,wl.wlid,wl.wlbm,wl.wllb,wl.wlzlb,wl.wlmc,wl.dlgys,wl.scs,wl.ychh,wl.gg,wl.jldw,wl.bctj,wl.bzq,wl.sfwxp,wl.zt,wl.bzqflg
+			,wl.jwlbm,wl.lb,wl.aqkc,wl.qdl,wl.hq,wl.zdcgl,wl.wlzlbtc,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,wlzlbtc.csmc wlzlbtcmc,wlzlb.cskz1 cskz1
+			,ckhwxx.kcl,ckhwxx.yds,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as kqls,ckqx.csmc as ckqxmc,ckhwxx.ckqxlx,lb_jc.cskz1 lbcskz1,ckxx.ckmc,ckxx.ckid
+		from igams_llcgl llc
+		left join igams_ckhwxx ckhwxx on ckhwxx.ckhwid=llc.ckhwid
+		left join igams_ckxx ckxx on ckxx.ckid=ckhwxx.ckid
+		left join igams_wlgl wl on wl.wlid=ckhwxx.wlid
+		left join matridx_jcsj lb_jc on wl.lb=lb_jc.csid
+		left join matridx_jcsj wllb on wl.wllb=wllb.csid
+		left join matridx_jcsj wlzlb on wl.wlzlb=wlzlb.csid
+		left join matridx_jcsj wlzlbtc on wl.wlzlbtc=wlzlbtc.csid
+		left join matridx_jcsj ckqx on ckqx.csid = ckhwxx.ckqxlx
+		<where>
+			llc.ryid=#{ryid}
+		</where>
+	</select>
+	
+	<delete id="delete" parameterType="LlcglDto">
+		delete from igams_llcgl 
+		<where>
+			ryid=#{ryid} 
+			<if test="ckhwid != null and ckhwid != ''">
+			and ckhwid=#{ckhwid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and ckhwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<insert id="insert" parameterType="LlcglDto">
+		insert into igams_llcgl(ryid,ckhwid,lrsj)
+		values(#{ryid},#{ckhwid},LOCALTIMESTAMP)
+	</insert>
+	
+	<select id="getDtoList" parameterType="LlcglDto" resultType="LlcglDto">
+		select llcgl.ryid,llcgl.ckhwid
+		from igams_llcgl llcgl
+		<where>
+			llcgl.ryid=#{ryid}
+		</where>
+	</select>
+
+	<select id="getDto" parameterType="LlcglDto" resultType="LlcglDto">
+		select llcgl.ryid,llcgl.ckhwid
+		from igams_llcgl llcgl
+		<where>
+			llcgl.ryid=#{ryid} and llcgl.ckhwid=#{ckhwid}
+		</where>
+	</select>
+	<select id="getDtoById" parameterType="LlcglDto" resultType="LlcglDto">
+		select llcgl.ryid,llcgl.ckhwid
+		from igams_llcgl llcgl
+		<where>
+			llcgl.ckhwid=#{ckhwid}
+		</where>
+	</select>
+	<insert id="insertLlxxList" parameterType="List">
+		insert into igams_llcgl(ryid,ckhwid,lrsj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.ryid},#{item.ckhwid},LOCALTIMESTAMP
+				)
+			</foreach>
+		</if>
+	</insert>
+	<delete id="deleteLlxxlist" parameterType="List">
+		<if test="list !=null and list.size > 0">
+		<foreach collection="list" separator=";" item="item" index="index">
+			delete from igams_llcgl
+			where ckhwid=#{item.ckhwid} and ryid=#{item.ryid}
+		</foreach>
+		</if>
+	</delete>
+
+	<insert id="insetLlcglDtos" parameterType="List">
+		insert into igams_llcgl(ryid,ckhwid,lrsj)
+		values
+		<if test="ids !=null and ids.size > 0">
+			<foreach collection="ids" separator="," item="item" index="index">
+				(
+				#{ryid},#{item},LOCALTIMESTAMP
+				)
+			</foreach>
+		</if>
+	</insert>
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.warehouse.dao.post.IGfjxmxDao" >
+    <select id="queryDtoList" resultType="GfjxmxDto">
+        select nr.csid as nr,xm.csmc as xmmc,nr.csmc as nrmc,nr.cskz1 as bizmc,nr.cskz2 as bizfs
+        from matridx_jcsj nr
+        left join matridx_jcsj xm on xm.csid=nr.fcsid and xm.jclb='EVALUATION_ITEM'
+        where nr.jclb='EVALUATION_CONTENT' and nr.scbj='0' and xm.scbj='0'
+        order by xm.cspx,nr.cspx
+    </select>
+
+    <select id="getDtoList" resultType="GfjxmxDto" parameterType="GfjxmxDto">
+        select jxmx.jxmxid,jxmx.gfjxid,jxmx.bz,jxmx.df,jxmx.lrry,jxmx.lrsj,jxmx.scbj,jxmx.nr,
+        nr.csid as nr,xm.csmc as xmmc,nr.csmc as nrmc,nr.cskz1 as bizmc,nr.cskz2 as bizfs,jxmx.dfbj
+        from igams_gfjxmx jxmx
+        left join matridx_jcsj nr on nr.csid=jxmx.nr and nr.jclb='EVALUATION_CONTENT'
+        left join matridx_jcsj xm on xm.csid=nr.fcsid and xm.jclb='EVALUATION_ITEM'
+        where jxmx.scbj='0'
+        <if test="gfjxid != null and gfjxid != ''">
+            and jxmx.gfjxid=#{gfjxid}
+        </if>
+        order by xm.cspx,nr.cspx
+    </select>
+
+    <insert id="insertGfjxmxDtos" parameterType="List">
+        insert into igams_gfjxmx(jxmxid,gfjxid,nr,bz,df,dfbj,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.jxmxid},#{item.gfjxid},#{item.nr},#{item.bz},cast(#{item.df} as decimal),#{item.dfbj},#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateGfjxmxDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="gfjxmxDtoList" separator=";" item="item" index="index">
+                update igams_gfjxmx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.xgry != null and item.xgry != ''">
+                        ,xgry=#{item.xgry}
+                    </if>
+                    <if test="item.jxmxid != null and item.jxmxid != ''">
+                        ,jxmxid=#{item.jxmxid}
+                    </if>
+                    <if test="item.gfjxid != null and item.gfjxid != ''">
+                        ,gfjxid=#{item.gfjxid}
+                    </if>
+                    <if test="item.bz != null and item.bz != ''">
+                        ,bz=#{item.bz}
+                    </if>
+                    <if test="item.df != null and item.df != ''">
+                        ,df=cast(#{item.df} as decimal)
+                    </if>
+                    <if test="item.dfbj != null and item.dfbj != ''">
+                        ,dfbj=#{item.dfbj}
+                    </if>
+                    <if test="item.dfbj == null or item.dfbj == ''">
+                        ,dfbj=null
+                    </if>
+                    <if test="item.nr !=null and  item.nr !=''">
+                        ,nr=#{item.nr}
+                    </if>
+                </set>
+                <where>
+                    jxmxid=#{item.jxmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="delete" parameterType="GfjxmxDto">
+        update igams_gfjxmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+        <where>
+            gfjxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

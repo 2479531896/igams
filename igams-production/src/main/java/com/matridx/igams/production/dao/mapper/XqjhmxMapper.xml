@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IXqjhmxDao">
+    <select id="getDtoList" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,
+        xqjhmx.lrry,xqjhmx.lrsj,xqjhmx.xgry,xqjhmx.xgsj,xqjhmx.scry,xqjhmx.scsj,xqjhmx.scbj,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,cpxqjh.bz,xqjhmx.sfsc,wlgl.jldw,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,zlbtc.csmc wlzlbtcmc,wlgl.ychh
+        ,case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+        when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' when sczlmx.zt='00' then '待生产' end ztmc
+	,case when xqjhmx.sfsc='0' then '无需生产' when xqjhmx.sfsc='1' then '需要生产' else '' end sfscmc,tmpt.kcl
+        <if test="lllb !=null and lllb == '1'.toString()">
+            ,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as klsl,ckhwxx.kcl,ckhwxx.ckhwid,ckhwxx.ckid,ckxx.ckmc
+        </if>
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join (select sum(kcl) as kcl,wlid
+        from igams_ckhwxx
+        group by wlid
+        )tmpt on tmpt.wlid=wlgl.wlid
+        <if test="lllb !=null and lllb == '1'.toString()">
+            left join igams_ckhwxx ckhwxx on wlgl.wlid = ckhwxx.wlid
+            left join igams_ckxx ckxx on ckxx.ckid = ckhwxx.ckid
+        </if>
+        where xqjhmx.scbj ='0'
+        <if test="lllb !=null and lllb == '1'.toString()">
+            and (ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) &gt; 0
+        </if>
+        <if test="(lllb !=null and lllb == '1'.toString()) and (xzbj != null and xzbj != '' and xzbj == '1'.toString()) and (jsid != null and jsid != '') ">
+            and ckhwxx.ckid in (select ckjgxx.ckid from matridx_jsdwqx jsdwqx
+            left join igams_ckjgxx ckjgxx on ckjgxx.jgid = jsdwqx.jgid
+            where jsdwqx.jsid =#{jsid} and ckjgxx.ckid is not null)
+        </if>
+        <if test="xqjhid !=null and xqjhid != ''">
+            and xqjhmx.xqjhid = #{xqjhid}
+        </if>
+        <if test="xqjhmxid !=null and xqjhmxid != ''">
+            and xqjhmx.xqjhmxid = #{xqjhmxid}
+        </if>
+        <if test="ids !=null and ids.size >0">
+            and xqjhmx.xqjhmxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDto" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,
+        xqjhmx.lrry,xqjhmx.lrsj,xqjhmx.xgry,xqjhmx.xgsj,xqjhmx.scry,xqjhmx.scsj,xqjhmx.scbj,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,xqjhmx.sfsc
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        where xqjhmx.scbj ='0'
+        <if test="xqjhmxid !=null and xqjhmxid != ''">
+            and xqjhmx.xqjhmxid = #{xqjhmxid}
+        </if>
+    </select>
+    <select id="getDtoByXqjhid" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select wlgl.wlbm,wlgl.wlmc,wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.wlid
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        where xqjhmx.scbj ='0'
+        <if test="xqjhid !=null and xqjhid != ''">
+            and xqjhmx.xqjhid = #{xqjhid}
+        </if>
+        group by wlgl.wlbm,wlgl.wlmc,wlgl.scs,wlgl.gg,wlgl.jldw,wlgl.wlid
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,
+        xqjhmx.lrry,xqjhmx.lrsj,xqjhmx.xgry,xqjhmx.xgsj,xqjhmx.scry,xqjhmx.scsj,xqjhmx.scbj,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,xqjhmx.sfsc,(ckhwxx.kcl-COALESCE(ckhwxx.yds,0)) as klsl,
+        cpxqjh.sqr,xtyh.yhm,cpxqjh.xqdh,cpxqjh.xqrq
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join (select wlid,sum(COALESCE(kcl,0)) kcl,sum(COALESCE(yds,0)) yds  from igams_ckhwxx ckhwxx group by wlid) ckhwxx on ckhwxx.wlid=xqjhmx.wlid
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid=xqjhmx.xqjhid
+        left join matridx_xtyh xtyh on xtyh.yhid=cpxqjh.sqr
+        where
+       xqjhmx.xqjhmxid = #{xqjhmxid}
+    </select>
+    <insert id="insertList" parameterType="List">
+        insert into igams_xqjhmx(xqjhmxid,xqjhid,wlid,sl,scsl,yq,lrry,lrsj,scbj,sfsc)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.xqjhmxid},#{item.xqjhid},#{item.wlid},cast(#{item.sl} as numeric),cast(#{item.scsl} as numeric)
+                ,#{item.yq},#{item.lrry},LOCALTIMESTAMP,'0',#{item.sfsc}
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateDtoList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_xqjhmx xqjhmx
+                <set>
+                    <trim prefixOverrides=",">
+                        <if test="item.scslbj =='1'.toString()">
+                            ,scsl=COALESCE(scsl,0) - cast(#{item.scsl} as numeric)
+                        </if>
+                        <if test="item.scslbj =='0'.toString()">
+                            ,scsl=COALESCE(scsl,0) + cast(#{item.scsl} as numeric)
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    xqjhmx.xqjhmxid=#{item.xqjhmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_xqjhmx xqjhmx
+                <set>
+                    <trim prefixOverrides=",">
+                        <if test="item.sl !=null and item.sl !=''">
+                            ,sl=cast(#{item.sl} as numeric)
+                        </if>
+                        <if test="item.scsl !=null and item.scsl !=''">
+                            ,scsl=cast(#{item.scsl} as numeric)
+                        </if>
+                        <if test="item.yq !=null and item.yq !=''">
+                            ,yq==#{item.yq}
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    xqjhmx.xqjhmxid=#{item.xqjhmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+    <delete id="delete" parameterType="List">
+        update igams_xqjhmx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="scry != null and scry != ''">
+                    ,scry = #{scry},scsj = LOCALTIMESTAMP
+                </if>
+                <if test="scbj != null and scbj != ''">
+                    ,scbj = #{scbj}
+                </if>
+            </trim>
+        </set>
+        where xqjhid = #{xqjhid}
+    </delete>
+
+    <update id="deleteByCpxqids" parameterType="XqjhmxDto">
+        update igams_xqjhmx set
+        scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+        <where>
+            scbj = '0' and
+            xqjhid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="update" parameterType="XqjhmxDto">
+        update igams_xqjhmx set
+        scbj='0'
+        <if test="scslbj =='1'.toString()">
+            ,scsl=COALESCE(scsl,0) - cast(#{scsl} as numeric)
+        </if>
+        <if test="scslbj =='0'.toString()">
+            ,scsl=COALESCE(scsl,0) + cast(#{scsl} as numeric)
+        </if>
+        <where>
+            scbj = '0' and
+            xqjhmxid = #{xqjhmxid}
+        </where>
+    </update>
+
+    <update id="updateDto" parameterType="XqjhmxDto">
+        update igams_xqjhmx set
+            sfsc=#{sfsc}
+        <where>
+            xqjhid=#{xqjhid} and scbj='0'
+        </where>
+    </update>
+    <update id="updateListSczt" parameterType="list">
+        update igams_xqjhmx xqjhmx set
+        sfsc=tmp.sfsc
+        from(
+        <foreach collection="list" separator="union" item="item" index="index">
+        select #{item.xqjhmxid} xqjhmxid,#{item.sfsc} sfsc
+        </foreach
+        >) tmp where xqjhmx.xqjhmxid=tmp.xqjhmxid
+    </update>
+
+
+    <select id="getPagedDtoList" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,
+        xqjhmx.lrry,xqjhmx.lrsj,xqjhmx.xgry,xqjhmx.xgsj,xqjhmx.scry,xqjhmx.scsj,xqjhmx.scbj,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,cpxqjh.bz,xqjhmx.sfsc
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        where xqjhmx.scbj ='0'
+    </select>
+    <sql id="selectWhere">
+        xqjhmx.scbj ='0'
+        <if test="entire != null and entire != ''">
+            and (
+            sqr.zsxm ILIKE '%'||#{entire}||'%'
+            or cpxqjh.xqdh ILIKE '%'||#{entire}||'%'
+            or wlgl.wlbm ILIKE '%'||#{entire}||'%'
+            or wlgl.wlmc ILIKE '%'||#{entire}||'%'
+            or wlgl.ychh ILIKE '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="sqrmc !=null and sqrmc != ''">
+            and sqr.zsxm ILIKE '%'||#{sqrmc}||'%'
+        </if>
+        <if test="xqdh !=null and xqdh != ''">
+            and cpxqjh.xqdh ILIKE '%'||#{xqdh}||'%'
+        </if>
+        <if test="wlbm !=null and wlbm != ''">
+            and wlgl.wlbm ILIKE '%'||#{wlbm}||'%'
+        </if>
+        <if test="wlmc !=null and wlmc != ''">
+            and wlgl.wlmc ILIKE '%'||#{wlmc}||'%'
+        </if>
+        <if test="ychh !=null and ychh != ''">
+            and wlgl.ychh ILIKE '%'||#{ychh}||'%'
+        </if>
+        <if test="rkzts !=null and rkzts.length >0">
+            and (case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+            when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' else '待生产' end) in
+            <foreach collection="rkzts" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="rksjstart != null and rksjstart != ''">
+            and to_char(rkgl.lrsj,'yyyy-mm-dd') &gt;= #{rksjstart}
+        </if>
+        <if test="rksjend != null and rksjend != ''">
+            and to_char(rkgl.lrsj,'yyyy-mm-dd') &lt;= #{rksjend}
+        </if>
+        <if test="sqsjstart != null and sqsjstart != ''">
+            and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &gt;= #{sqsjstart}
+        </if>
+        <if test="sqsjend != null and sqsjend != ''">
+            and to_char(cpxqjh.xqrq,'yyyy-mm-dd') &lt;= #{sqsjend}
+        </if>
+        <if test="zts !=null and zts.length >0">
+            and cpxqjh.zt in
+            <foreach collection="zts" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedACMaterials" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,cpxqjh.xqrq,cpxqjh.xqdh,cpxqjh.cpxqid,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+        when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' else '待生产' end rkzt,to_char(rkgl.lrsj,'yyyy-mm-dd hh24:mi:ss') rksj,hwxx.sl dhsl,sqr.zsxm sqrmc,
+        wlgl.ychh,cpxqjh.zt
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join matridx_xtyh sqr on sqr.yhid=cpxqjh.sqr
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+    </select>
+    <select id="getACMaterialDto" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+         select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,cpxqjh.xqrq,cpxqjh.xqdh,cpxqjh.cpxqid,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,to_char(rkgl.lrsj,'yyyy-mm-dd hh24:mi:ss') rksj,hwxx.sl dhsl,sqr.zsxm sqrmc,
+        case when rkgl.zt='80' then '已入库' when rkgl.zt='10' then '入库审批中' when hwxx.zt='03' then '待入库' when dhjy.zt='10' then '质检中'
+        when hwxx.zt='02' then '待质检' when sczlmx.zt='80' and dhjy.zt is null then '待交接' when sczlmx.zt='10' then '生产中' else '待生产' end rkzt,
+        wlgl.ychh
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join matridx_xtyh sqr on sqr.yhid=cpxqjh.sqr
+        where xqjhmx.xqjhmxid=#{xqjhmxid}
+    </select>
+
+    <!-- 导出 -->
+    <select id="getCountForSearchExp" parameterType="XqjhmxDto"
+            resultType="java.lang.Integer">
+        select count(xqjhmx.xqjhmxid)
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join matridx_xtyh sqr on sqr.yhid=cpxqjh.sqr
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid ${sqlParam}
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join matridx_xtyh sqr on sqr.yhid=cpxqjh.sqr
+        <where>
+            <include refid="selectWhere"></include>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getListForSelectExp" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} xqjhmxid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left outer join igams_xqjhmx xqjhmx on xqjhmx.xqjhmxid=tmp.xqjhmxid
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        left join igams_sczlmx sczlmx on sczlmx.xqjhmxid=xqjhmx.xqjhmxid and sczlmx.scbj='0'
+        left join igams_hwxx hwxx on hwxx.sczlmxid=sczlmx.sczlmxid and hwxx.scbj='0'
+        left join igams_rkgl rkgl on rkgl.rkid=hwxx.rkid
+        left join igams_dhjy dhjy on dhjy.dhjyid=hwxx.dhjyid
+        left join igams_qgmx qgmx on qgmx.qgmxid=hwxx.qgmxid
+        left join matridx_xtyh sqr on sqr.yhid=cpxqjh.sqr
+        order by tmp.ordernum
+    </select>
+
+    <select id="getDtoListById" parameterType="XqjhmxDto" resultType="XqjhmxDto">
+        select xqjhmx.xqjhmxid,xqjhmx.xqjhid,xqjhmx.wlid,xqjhmx.sl,xqjhmx.scsl,xqjhmx.yq,
+        xqjhmx.lrry,xqjhmx.lrsj,xqjhmx.xgry,xqjhmx.xgsj,xqjhmx.scry,xqjhmx.scsj,xqjhmx.scbj,
+        wlgl.wlbm,wlgl.wlmc,wlgl.gg,wlgl.jldw,wlgl.scs,cpxqjh.bz,xqjhmx.sfsc,wlgl.jldw,wllb.csmc wllbmc,wlzlb.csmc wlzlbmc,zlbtc.csmc wlzlbtcmc,wlgl.ychh
+        ,case when xqjhmx.sfsc='0' then '无需生产' when xqjhmx.sfsc='1' then '需要生产' else '' end sfscmc, (cast(xqjhmx.sl as decimal)-cast(coalesce(xqjhmx.scsl,0) as decimal)) as kscsl
+        from igams_xqjhmx xqjhmx
+        left join igams_wlgl wlgl on wlgl.wlid = xqjhmx.wlid and wlgl.scbj = '0'
+        left join igams_cpxqjh cpxqjh on cpxqjh.cpxqid = xqjhmx.xqjhid
+        left join matridx_jcsj wllb on wllb.csid=wlgl.wllb
+        left join matridx_jcsj wlzlb on wlzlb.csid=wlgl.wlzlb
+        left join matridx_jcsj zlbtc on zlbtc.csid=wlgl.wlzlbtc
+        where xqjhmx.scbj ='0'
+        <if test="xqjhid !=null and xqjhid != ''">
+            and xqjhmx.xqjhid = #{xqjhid}
+        </if>
+        <if test="xqjhmxid !=null and xqjhmxid != ''">
+            and xqjhmx.xqjhmxid = #{xqjhmxid}
+        </if>
+        <if test="ids !=null and ids.size >0">
+            and xqjhmx.xqjhmxid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>

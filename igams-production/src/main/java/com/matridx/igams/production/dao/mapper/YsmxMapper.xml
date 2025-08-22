@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.production.dao.post.IYsmxDao" >
+
+    <select id="getDtoList" parameterType="YsmxDto" resultType="YsmxDto">
+        select ysmx.ysmxid,ysmx.ysglid,ysmx.kmdl,ysmx.kmfl,ysmx.ysje,kmdl.csmc as kmdlmc,kmfl.csmc as kmflmc
+        from igams_ysmx ysmx
+        left join  matridx_jcsj kmdl on kmdl.csid=ysmx.kmdl and kmdl.scbj='0'
+        left join  matridx_jcsj kmfl on kmfl.csid=ysmx.kmfl and kmfl.scbj='0'
+        <where>
+            ysmx.scbj='0' and ysmx.ysglid=#{ysglid}
+        </where>
+        order by kmdl.cspx asc ,kmdl.cspx asc
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_ysmx(ysmxid,ysglid,kmdl,kmfl,ysje,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.ysmxid},#{item.ysglid},#{item.kmdl},#{item.kmfl},cast(#{item.ysje} as numeric),#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+    
+    <delete id="delObsoleteData" parameterType="YsmxDto">
+        delete from igams_ysmx
+        <where>
+            scbj='1' and ysglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+    <update id="delete" parameterType="YsmxDto">
+        update igams_ysmx
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            ysglid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>
