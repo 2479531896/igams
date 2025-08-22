@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.bioinformation.dao.post.IRwglDao" >
+    <select id="getDtoList" parameterType="RwglDto" resultType="RwglDto">
+        select rwid,rwmc,rwzt,lrry,to_char(lrsj,'yyyy-MM-dd HH24:mi') lrsj,uri,docker,scbj from igams_rwgl
+        <where>
+            scbj != '1' and rwzt != '0' and rwzt != '3' and rwzt != '4'
+        </where>
+    </select>
+
+    <select id="getInfoList" parameterType="RwglDto" resultType="RwglDto">
+        select rwid,rwmc from igams_rwgl
+        <where>
+            scbj = '0' and  jxid = #{jxid}
+        </where>
+    </select>
+
+    <select id="getOverdueList" parameterType="RwglDto" resultType="RwglDto">
+        select rwid,rwmc,rwzt,lrry,to_char(lrsj,'yyyy-MM-dd HH24:mi') lrsj,uri,docker,scbj from igams_rwgl
+        <where>
+            scbj = '0' and rwzt != '2' and rwzt != '1' and to_char(lrsj,'YYYY-MM-dd') &lt; #{lrsj}
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="RwglDto" resultType="RwglDto">
+        select rwgl.rwid,rwgl.rwmc,rwgl.jxid,rwgl.sj,rwgl.rwzt,rwgl.lrry,to_char(rwgl.lrsj,'yyyy-MM-dd HH24:mi') lrsj,jxgl.jxmc,rwgl.uri,rwgl.image,rwgl.docker,rwgl.scbj,inspect,logs
+        from igams_rwgl rwgl
+        left join igams_jxgl jxgl on jxgl.jxid = rwgl.jxid
+        <where>
+            rwgl.scbj != '1'
+            <if test="rwid != '' and rwid != null">
+                and rwgl.rwid = #{rwid}
+            </if>
+            <if test="rwmc != '' and rwmc != null">
+                and rwgl.rwmc = #{rwmc}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoInfo" parameterType="RwglDto" resultType="RwglDto">
+        select rwgl.rwid,rwgl.rwmc,rwgl.jxid,rwgl.sj,rwgl.rwzt,rwgl.lrry,to_char(rwgl.lrsj,'yyyy-MM-dd HH24:mi') lrsj,jxgl.jxmc,rwgl.uri,rwgl.image,rwgl.docker,rwgl.scbj,inspect,logs
+        from igams_rwgl rwgl
+        left join igams_jxgl jxgl on jxgl.jxid = rwgl.jxid
+        <where>
+            rwgl.scbj != '1'
+            <if test="rwid != '' and rwid != null">
+                and rwgl.rwid != #{rwid}
+            </if>
+            <if test="rwmc != '' and rwmc != null">
+                and rwgl.rwmc = #{rwmc}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="RwglDto" resultType="RwglDto">
+        select rwid,rwmc,rwzt,jxid,jxmc,rwgl.lrry,to_char(rwgl.lrsj,'yyyy-MM-dd HH24:mi') lrsj,lr.zsxm lrrymc,image,docker,rwgl.scbj
+        from igams_rwgl rwgl
+        left join matridx_xtyh lr on rwgl.lrry = lr.yhid
+        <where>
+            rwgl.scbj != '1'
+            <if test="val != '' and val != null">
+                and (rwmc like concat(concat('%',#{val}),'%')
+                or lr.zsxm like concat(concat('%',#{val}),'%'))
+            </if>
+            <if test="jxid != '' and jxid != null">
+                and jxid = #{jxid}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertDto" parameterType="RwglDto">
+        insert into igams_rwgl(rwid,rwmc,jxid,jxmc,sj,uri,lrry,lrsj,scbj,rwzt,image,docker)
+        values (#{rwid},#{rwmc},#{jxid},#{jxmc},#{sj},#{uri},#{lrry},LOCALTIMESTAMP,'0','0',#{image},#{docker})
+    </insert>
+
+    <update id="update" parameterType="RwglDto">
+        UPDATE igams_rwgl set
+        <trim prefixOverrides=",">
+        <if test="xgry != '' and xgry != null">
+            ,xgsj = LOCALTIMESTAMP ,xgry = #{xgry}
+        </if>
+        <if test="scbj != '' and scbj != null">
+            ,scsj = LOCALTIMESTAMP ,scbj = #{scbj},scry = #{scry}
+        </if>
+        <if test="rwzt != '' and rwzt != null">
+            ,rwzt = #{rwzt}
+        </if>
+        <if test="newrwmc != '' and newrwmc != null">
+            ,rwmc = #{newrwmc}
+        </if>
+        <if test="rwmc != '' and rwmc != null">
+            ,rwmc = #{rwmc}
+        </if>
+        <if test="jxid != '' and jxid != null">
+            ,jxid = #{jxid}
+        </if>
+        <if test="jxmc != '' and jxmc != null">
+            ,jxmc = #{jxmc}
+        </if>
+        <if test="image != '' and image != null">
+            ,image = #{image}
+        </if>
+        <if test="sj != '' and sj != null">
+            ,sj = #{sj}
+        </if>
+        <if test="uri != '' and uri != null">
+            ,uri = #{uri}
+        </if>
+        <if test="docker != '' and docker != null">
+            ,docker = #{docker}
+        </if>
+        </trim>
+        where rwid= #{rwid}
+    </update>
+
+    <update id="updateList" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_rwgl set rwzt = #{item.rwzt}
+            <if test="item.inspect != '' and item.inspect != null">
+                ,inspect = #{item.inspect}
+            </if>
+            <if test="item.logs != '' and item.logs != null">
+                ,logs = #{item.logs}
+            </if>
+            <if test="item.scbj != '' and item.scbj != null and item.scbj == '2'">
+                ,scbj = #{item.scbj},scsj = LOCALTIMESTAMP
+            </if>
+            where rwid = #{item.rwid}
+        </foreach>
+    </update>
+
+    <select id="getEndDtoList" parameterType="List" resultType="RwglDto">
+        select rwid,rwmc,rwzt,docker,uri from igams_rwgl
+        where scbj = '0' and (rwzt ='1' or rwzt ='2')
+        <if test="list !=null and list.size >0" >
+            and docker not in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateDto" parameterType="RwglDto">
+        UPDATE igams_rwgl set scbj  = '1' ,scry = #{scry},scsj = LOCALTIMESTAMP where rwid= #{rwid}
+    </update>
+</mapper>

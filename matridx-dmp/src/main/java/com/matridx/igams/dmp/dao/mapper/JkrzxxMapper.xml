@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.dmp.dao.post.IJkrzxxDao" >
+
+	<sql id="SEARCH_TERMS">
+		jk.scbj != '1'
+		<if test="rzyhm != null and rzyhm != ''">
+			and jk.rzyhm like '%'||#{rzyhm}||'%'
+		</if>
+	</sql>
+	<!-- 获取数据平台用户的列表 -->
+	<select id="getPagedDtoList" parameterType="JkrzxxDto" resultType="JkrzxxDto">
+		select jk.rzid,jk.rzyhdm,jk.rzkey,jk.rzyhm,jk.bz,jk.lrry,jk.lrsj,jk.xgry,jk.xgsj,jk.scry,jk.scsj,jk.scbj
+			from igams_jkrzxx jk
+			<where>
+				<include refid="SEARCH_TERMS"></include>
+			</where>
+	</select>
+	<!-- 根据认证ID获取注册用户信息 -->
+	<select id="getDtoById" parameterType="String" resultType="JkrzxxDto">
+		select jk.rzid,jk.rzyhdm,jk.rzkey,jk.rzyhm,jk.bz,jk.lrry,jk.lrsj,jk.xgry,jk.xgsj,jk.scry,jk.scsj,jk.scbj
+			from igams_jkrzxx jk
+			<where>
+				jk.scbj !='1' and jk.rzid = #{rzid}
+			</where>
+	</select>
+	
+	<!-- 根据认证ID获取注册用户信息 -->
+	<select id="getDto" parameterType="JkrzxxDto" resultType="JkrzxxDto">
+		select jk.rzid,jk.rzyhdm,jk.rzkey,jk.rzyhm,jk.bz,jk.lrry,jk.lrsj,jk.xgry,jk.xgsj,jk.scry,jk.scsj,jk.scbj
+			from igams_jkrzxx jk
+			<where>
+				jk.scbj !='1'
+				<if test="rzyhdm !=null and rzyhdm != ''">
+					and rzyhdm = #{rzyhdm}
+				</if>
+			</where>
+	</select>
+	<!-- 新增注册用户信息 -->
+	<insert id="insert" parameterType="JkrzxxModel">
+		insert into igams_jkrzxx(rzid
+		<if test="rzyhdm !=null and rzyhdm != ''">
+			,rzyhdm
+		</if>
+		<if test="rzkey !=null and rzkey != ''">
+			,rzkey
+		</if>
+		<if test="rzyhm !=null and rzyhm != ''">
+			,rzyhm
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		,lrry,lrsj,scbj) values(#{rzid}
+		<if test="rzyhdm !=null and rzyhdm != ''">
+			,#{rzyhdm}
+		</if>
+		<if test="rzkey !=null and rzkey != ''">
+			,#{rzkey}
+		</if>
+		<if test="rzyhm !=null and rzyhm != ''">
+			,#{rzyhm}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!--更新注册用户信息-->
+	<update  id="update" parameterType="JkrzxxModel">
+		update igams_jkrzxx 
+		<set>
+		<if test="rzyhdm !=null and rzyhdm != ''">
+			rzyhdm = #{rzyhdm},
+		</if>
+		<if test="rzkey !=null and rzkey != ''">
+			rzkey = #{rzkey},
+		</if>
+		<if test="rzyhm !=null and rzyhm != ''">
+			rzyhm = #{rzyhm},
+		</if>
+		<if test="bz !=null and bz != ''">
+			bz = #{bz},
+		</if>
+			xgsj = LOCALTIMESTAMP,
+			xgry = #{xgry}
+		</set>
+		<where>
+			rzid = #{rzid}
+		</where>
+	</update>
+	
+	<!--更新注册用户的删除状态-->
+	<update  id="delete" parameterType="JkrzxxModel">
+		update igams_jkrzxx set scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			<if test="rzid !=null and rzid != ''">
+				or rzid = #{rzid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or rzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+</mapper>

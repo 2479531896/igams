@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.bioinformation.dao.post.IJxcmdDao" >
+    <update id="updateDto" parameterType="JxcmdDto">
+        UPDATE igams_jxcmd set scbj  = '1'
+        <if test="scry != '' and scry != null">
+            ,scry = #{scry},scsj = LOCALTIMESTAMP
+        </if>
+        where ywid= #{ywid}
+    </update>
+
+    <update id="update" parameterType="JxcmdDto">
+        UPDATE igams_jxcmd set ywid= #{ywid}
+        <if test="xgry != '' and xgry != null">
+            ,xgry = #{scry},xgsj = LOCALTIMESTAMP
+        </if>
+        where ywid= #{ywid}
+    </update>
+
+
+    <select id="getDtoList" parameterType="JxcmdDto" resultType="JxcmdDto">
+        select jxcmd.ywid,jxcmd.jxcmdid,jxcmd.lx,jxcmd.mrz,jxcmd.lrry,to_char(jxcmd.lrsj,'yyyy-MM-dd HH24:mi') lrsj,jxcmd.xh,jxcmd.max,jxcmd.min,jxcmd.key,jxcmd.ss,jxcmd.xzbs,jxcmd.sfxs,jxcmd.csms,jxcmd.ljglid,ljgl.ljmc,ljgl.lj
+        from igams_jxcmd jxcmd
+        left join igams_ljgl ljgl on ljgl.ljglid = jxcmd.ljglid
+        <where>
+            jxcmd.scbj = '0'
+        <if test="ywid != '' and ywid != null">
+            and jxcmd.ywid = #{ywid}
+        </if>
+        <if test="ss != '' and ss != null">
+            and jxcmd.ss = #{ss}
+        </if>
+        </where>
+    </select>
+
+
+
+    <insert id="batchInsert" parameterType="List">
+        insert into igams_jxcmd(jxcmdid,ywid,lx,mrz,lrry,lrsj,scbj,xh,min,max,ss,key,xzbs,sfxs,csms,ljglid)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.jxcmdid},#{item.ywid},#{item.lx},#{item.mrz},#{item.lrry},LOCALTIMESTAMP,'0',#{item.xh},#{item.min},#{item.max},#{item.ss},#{item.key},#{item.xzbs},#{item.sfxs},#{item.csms},#{item.ljglid}
+                )
+            </foreach>
+        </if>
+    </insert>
+</mapper>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>送检统计（周报）</title>
+	<script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+    <script type="text/javascript" src="/js/wechat/statistics/statistics_weekly_lead_jcdw.js"></script>
+    <style type="text/css">
+	.titletop{
+		position: absolute;
+		padding:15px;
+		padding-top:22px;
+		left:0px;
+		top:-5px;
+	}
+	
+	#leadStatis .ocFlag{
+		padding-left:22px;
+	}
+    </style>
+</head>
+<body>
+	<div class="body-content tab-content" id="weekly_Statis_jcdw">
+		<input type="hidden" name="jsrqstart" id="jsrqstart" th:value="${sjxxDto.jsrqstart}"/>
+		<input type="hidden" name="jsrqend" id="jsrqend" th:value="${sjxxDto.jsrqend}"/>
+		<input type="hidden" name="load_flg" id="load_flg" th:value="${load_flg}"/>
+		<div class="row" id="all">
+			<div class="col-md-12 col-sm-12 col-xs-12 padding_t7">
+				<input th:if="${load_flg=='0'}" class="btn btn-primary" type="button" onclick="javascript:window.history.back()" value="返回"/>
+				<input th:if="${load_flg=='1'}" class="btn btn-primary" type="button" onclick="weekiy_back()" value="返回"/>
+			</div>
+			<div class="col-md-3 col-sm-6 col-xs-12 padding_t7">
+				<span style="color:#000000;">各检测单位测试数情况</span>	
+				<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+				<!-- 条件选择框 -->
+				<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;"> 
+					<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+						<a href="javascript:void(0);" id="tj1q" class="tj1 ocFlag pull-right" method="getAlljcdwByYear" title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+						<a href="javascript:void(0);" id="tj1m" class="tj1 ocFlag pull-right" method="getAlljcdwByMon" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+						<a href="javascript:void(0);" id="tj1w" class="tj1 ocFlag pull-right" method="getAlljcdwByWeek" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"></i></span></a>
+						<a href="javascript:void(0);" id="tj1d" class="tj1 ocFlag pull-right bechoosed" method="getAlljcdwByDay" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;margin-left:30%;">D</i></span></a>
+					</div> 
+				</div> 
+				<div id="echarts_week_lead_jcdwtj" style="height:300px;top:20px;"></div>
+	 		</div>
+	 		<div th:id="${jcdwDto.jcdwmc}" class="col-md-3 col-sm-6 col-xs-12 padding_t7" th:each="jcdwDto:${jcdwDtos}" style="height:420px;">
+				<span th:text="${jcdwDto.jcdwmc}"></span>
+				<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+				<!-- 条件选择框 -->
+				<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;z-index:98;"> 
+					<div th:id="'ybxxhead_'+${jcdwDto.jcdw}" name="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+						<a href="javascript:void(0);" th:id="'tj1q_'+${jcdwDto.jcdw}" name="tj1q" th:dm="${jcdwDto.jcdw}" method="getHbByYear" class="tj1 ocFlag pull-right " title="年" th:onclick="clickjcdwtj([[${jcdwDto.jcdw}]],'getjcdwByYear','tj1q_','year')"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+						<a href="javascript:void(0);" th:id="'tj1m_'+${jcdwDto.jcdw}" name="tj1m" th:dm="${jcdwDto.jcdw}" method="getHbByMon" class="tj1 ocFlag pull-right" title="月" th:onclick="clickjcdwtj([[${jcdwDto.jcdw}]],'getjcdwByMon','tj1m_','mon')"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+						<a href="javascript:void(0);" th:id="'tj1w_'+${jcdwDto.jcdw}" name="tj1w" th:dm="${jcdwDto.jcdw}" method="getHbByWeek" class="tj1 ocFlag pull-right " title="周" th:onclick="clickjcdwtj([[${jcdwDto.jcdw}]],'getjcdwByWeek','tj1w_','day')"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" ></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw" ></i></span></a>
+						<a href="javascript:void(0);" th:id="'tj1d_'+${jcdwDto.jcdw}" name="tj1d" th:dm="${jcdwDto.jcdw}" method="getHbByDay" class="tj1 ocFlag pull-right bechoosed" title="日" th:onclick="clickjcdwtj([[${jcdwDto.jcdw}]],'getjcdwByDay','tj1d_','day')"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="margin-left:30%;color: #20dbfd;text-shadow: 0 0 25px #00d8ff;">D</i></span></a>
+					</div> 
+				</div>
+				<div th:id="'echarts_week_lead_jcdwtj_'+${jcdwDto.jcdw}" th:dm="${jcdwDto.jcdw}" name="echarts_week_lead_jcdwtj" style="height:300px;top:50px;"></div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

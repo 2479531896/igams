@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.las.netty.dao.post.IWkmxDao">
+	<insert id="saveWkmx" parameterType="WkmxDto">
+		insert into igams_wkmx(
+		wkmxid,
+		ysybid,
+		wkxzb,
+		wkyzb,
+		blgxzb,
+		blgyzb,
+		pcrkw,
+		wkid,
+		wkmc,
+		ybdxsysj,
+		ybdygdlsj,
+		ybhhsj,
+		quantity,
+		dycpcrid,
+		decpcrid,
+		hsxzb,
+		hsyzb,
+		scbj,
+		scsj,
+		lrsj,
+		nbbh
+		)
+		VALUES
+		<foreach collection="list" separator="," open="" close=""
+			item="item" index="index">
+			( #{item.wkmxid},
+			#{item.ysybid},
+			#{item.wkxzb},
+			#{item.wkyzb},
+			#{item.blgxzb},
+			#{item.blgyzb},
+			#{item.pcrkw},
+			#{item.wkid},
+			#{item.wkmc},
+			#{item.ybdxsysj},
+			#{item.ybdygdlsj},
+			#{item.ybhhsj},
+			#{item.quantity},
+			#{item.dycpcrid},
+			#{item.decpcrid},
+			#{item.hsxzb},
+			#{item.hsyzb},
+			#{item.scbj},
+			#{item.scsj},
+			LOCALTIMESTAMP,
+			#{item.nbbh}
+			 )
+		</foreach>
+	</insert>
+	<!-- 根据原始样本id获取样本明细信息 -->
+	<select id="getWkmxByYsybid" parameterType="WkmxDto"
+		resultType="WkmxDto">
+		select * from igams_wkmx where ysybid = #{ysybid}
+	</select>
+	<!-- 根据原始样本wkmxid获取样本明细信息 -->
+	<select id="getWkmxByWkid" parameterType="WkmxDto"
+			resultType="WkmxDto">
+		select * from igams_wkmx where wkid = #{wkid}
+		<if test="wkid != null and wkid != ''">
+			and nbbh=#{nbbh}
+		</if>
+	</select>
+	<select id="getWkmxList" parameterType="WkmxDto"
+			resultType="WkmxDto">
+		select * from igams_wkmx where wkid = #{wkid}
+	</select>
+
+	<!-- 根据wkmxid修改 -->
+	<update id="updateByWkmxId" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item"
+				index="index">
+				update igams_wkmx
+				<set>
+					<if test="item.dycpcrid != null and item.dycpcrid != ''">
+						dycpcrid=#{item.dycpcrid},
+					</if>
+					<if test="item.decpcrid != null and item.decpcrid != ''">
+						decpcrid=#{item.decpcrid},
+					</if>
+					<if test="item.quantity != null and item.quantity != ''">
+						quantity=#{item.quantity},
+					</if>
+					<if test="item.pcrkw != null and item.pcrkw != ''">
+						pcrkw=#{item.pcrkw},
+					</if>
+				</set>
+				<where>
+					wkmxid = #{item.wkmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<select id="generateReportList" parameterType="String" resultType="WkmxDto">
+		select case when substring(wkmx.nbbh,1,1)='X'  or substring(wkmx.nbbh,1,1)='Y' then 'MD'||wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') 
+			when substring(wkmx.nbbh,1,2)='SP' then wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') else 'MDL001-' || wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') end libraryName,wkmx.quantity
+		from igams_wkmx wkmx
+		left join igams_ysybxx ysyb on ysyb.ysybid=wkmx.ysybid
+		where wkmx.wkid=#{wkid}
+	</select>
+	
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_wkmx
+			<set>		    
+				wkyyjytj=#{item.wkyyjytj},wkxsyjytj=#{item.wkxsyjytj}
+			</set>
+			<where>
+				wkmc=#{item.wkmc}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<update id="updateListByWkidAndNbbh" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_wkmx
+				<set>
+                    blgxzb=#{item.blgxzb},blgyzb=#{item.blgyzb}
+				</set>
+				<where>
+					wkid=#{item.wkid} and nbbh=#{item.nbbh}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	
+	<update id="updateWkmc" parameterType="String">
+	with recursive t (wkmxid,libraryName) as (
+		select wkmx.wkmxid,case when substring(wkmx.nbbh,1,1)='X'  or substring(wkmx.nbbh,1,1)='Y' then 'MD'||wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD')
+			when substring(wkmx.nbbh,1,2)='SP' then wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') else 'MDL001-' || wkmx.nbbh || '-' || ysyb.jth || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') end libraryName
+		from igams_wkmx wkmx
+		left join igams_ysybxx ysyb on ysyb.ysybid=wkmx.ysybid
+		where wkmx.wkid=#{wkid}
+		)
+
+		update igams_wkmx wkmx set wkmc=(select libraryName from t where wkmxid=wkmx.wkmxid)
+	 	where wkmx.wkmxid in (
+	 			select wkmxid from t
+	 		)
+	</update>
+
+	<select id="getDaoInfo" parameterType="WkmxDto" resultType="WkmxDto">
+		select ysybid from igams_wkmx where wkid=#{wkid} and nbbh=#{nbbh}
+	</select>
+</mapper>

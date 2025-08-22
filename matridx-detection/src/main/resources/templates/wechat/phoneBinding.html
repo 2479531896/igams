@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="referrer" content="never">
+    <meta content="webkit" name="renderer" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Copyright" content="matridx" />
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+    <title>手机绑定</title>
+    <link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+    <link rel="stylesheet" href="/css/weui.css">
+    <style>
+        /**蓝色按钮*/
+        .weui-btn_bule,.weui-btn_primary {
+            color: white;
+            background-color: #00AFEC;
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+            color: rgba(0, 208, 236, 0.98);
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+            background-color: #00e4ec;
+        }
+    </style>
+</head>
+<body style="background-color: var(--weui-BG-0);" data-weui-theme="light">
+<div id="app">
+    <div class="container">
+        <div id="phoneBinding" class="box">
+            <form id="phoneBinding_form" action="">
+                <input id="wxid" type="hidden" name="wxid" th:value="${wxid}">
+                <div id="hzxxInfo" class="page__bd">
+                    <div style="margin: 10px;border-radius: 10px;">
+                        <!--基本信息-->
+                        <div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;font-size: medium">
+                            <div class="weui-cell" style="font-weight: bolder">
+                                请绑定手机号码
+                            </div>
+                            <!--手机号码-->
+                            <div class="weui-cell weui-cell_access">
+                                <div class="weui-cell__hd">
+                                    <label class="weui-label"><i class="weui-icon-phone"></i>手机号：</label>
+                                </div>
+                                <div class="weui-cell__bd">
+                                    <input type="number" pattern="[0-9]*" maxlength="11" id="sjh" name="sjh" class="weui-input"  placeholder="请输入手机号码" onblur="PhoneVerify()">
+                                </div>
+<!--                                <div class="weui-cell__ft"></div>-->
+                            </div>
+                            <!--验证码-->
+                            <div class="weui-cell weui-cell_vcode">
+                                <div class="weui-cell__hd">
+                                    <label class="weui-label"><i class="weui-icon-vcode"></i>验证码：</label>
+                                </div>
+                                <div class="weui-cell__bd">
+                                    <input class="weui-input" type="number" pattern="[0-9]*" maxlength="6" id="yzm" name="yzm" placeholder="请输入验证码">
+                                </div>
+                                <div class="weui-cell__ft">
+                                    <button type="button" id="sendMsm" class="weui-vcode-btn" onclick="sendCode()" style="color: #00AFEC">&nbsp;获取验证码&nbsp;</button>
+                                </div>
+                            </div>
+                            <div class="weui-cell">
+                                <button type="button" class="weui-btn weui-btn_bule" onclick="Phonebinding()" id="binding" style="width: 100%;margin: 20px;border-radius: 20px">绑定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!--                <div class="help" style="text-align: left"><span>请绑定手机号码：</span></div>-->
+<!--                <div class="item-input" style="padding: 0">-->
+<!--                    <label for="" style="padding-right: 0"> 手机号：</label>-->
+<!--                    <input type="number" pattern="[0-9]*" maxlength="11" id="sjh" name="sjh" placeholder="请输入手机号" onblur="PhoneVerify()">-->
+<!--                </div>-->
+<!--                <div class="item-input" style="padding: 0;justify-content: normal">-->
+<!--                    <label for="" style="padding-right: 0"> 验证码：</label>-->
+<!--                    <input ttype="number" pattern="[0-9]*" maxlength="6" id="yzm" name="yzm" placeholder="请输入验证码" style="width: 50%"/>-->
+<!--                    <a onclick="sendCode()" id="sendMsm" class="weui-btn weui-btn_mini weui-btn_primary" style="margin: 0;width: 50%">短信验证</a>-->
+<!--                </div>-->
+<!--                <div class="weui-form__extra-area" style="margin: 30px 0 0 0">-->
+<!--                    <input type="button" class="weui-btn weui-btn_primary weui-btn" onclick="Phonebinding()" id="binding" value="绑定">-->
+<!--                    <div class="weui-footer"></div>-->
+<!--                </div>-->
+            </form>
+        </div>
+        <div id="erroPage" class="box">
+            <form id="erroPage_form" action="">
+                <div class="weui-msg" style="margin: 20px;border-radius: 15px;">
+                    <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
+                    <div class="weui-msg__text-area">
+                        <h2 class="weui-msg__title" style="color:#191919;margin: 50px 0">未获取到您的微信</h2>
+                        <h2 class="weui-msg__title" style="color:#191919;margin: 50px 0">请重新至公众号打开网页</h2>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/phoneBinding.js?v=20220531"></script>
+</body>
+</html>

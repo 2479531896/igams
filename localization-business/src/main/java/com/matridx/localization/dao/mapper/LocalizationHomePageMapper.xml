@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.localization.dao.post.ILocalizationHomePageDao" >
+    <sql id="SEARCH_SQL">
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            AND sjxx.jsrq &gt; #{year}::DATE  - INTERVAL '1 year'
+            AND sjxx.jsrq &lt; #{year}::DATE + INTERVAL '1 day'
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            AND sjxx.jsrq &gt;  #{month}::DATE - INTERVAL '1 Month'
+            AND sjxx.jsrq &lt;  #{month}::DATE + INTERVAL '1 day'
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            <!--只要传递一个日期即可 会自动计算哪个周-->
+            AND sjxx.jsrq &gt; #{week}::DATE - INTERVAL '1 week'
+            AND sjxx.jsrq &lt;  #{week}::DATE + INTERVAL '1 day'
+        </if>
+        <if test="day !=null and day !=''  and tjlx !='week'">
+            AND sjxx.jsrq &gt;= #{day}::DATE
+            AND sjxx.jsrq &lt; #{day}::DATE + INTERVAL '1 day'
+        </if>
+    </sql>
+    <sql id="PURVIEW_SQL">
+        <if test="sjhbs != null and sjhbs.size()>0">
+            and sjxx.db in
+            <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jcdws !=null and jcdws.size()> 0">
+            and sjxx.jcdw in
+            <foreach collection="jcdws" open="(" close=")" separator="," index="index"  item="item">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <!--获取年龄范围与性别-->
+    <select id="getAgeRangeAndGender" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select tmp.xb,SUM(tmp.cslr) cslr,SUM(tmp.lnr) lnr,SUM(tmp.nqlnr) nqlnr,SUM(tmp.znr) znr,SUM(tmp.nqr) nqr,SUM(tmp.wcnr) wcnr from (
+        select
+        sjxx.xb,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=90 then count(sjxx.sjid) else 0 end cslr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=75 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=89 then count(sjxx.sjid) else 0 end lnr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=60 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=74 then count(sjxx.sjid) else 0 end nqlnr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=45 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=59 then count(sjxx.sjid) else 0 end znr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=18 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=44 then count(sjxx.sjid) else 0 end nqr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &lt;=17 then count(sjxx.sjid) else 0 end wcnr
+        from
+        igams_sjxx sjxx
+        where sjxx.scbj ='0' and sjxx.sfjs = '1' and sjxx.nl ~ '^[0-9]+$'
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        and sjxx.xb in ('1','2')
+        group by sjxx.xb,sjxx.nl) tmp
+        group by tmp.xb
+    </select>
+    <!--获取样本类型对应数量-->
+    <select id="getSampleTypeTotal" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select yblx.csmc yblxmc,count(sjxx.sjid) bbs
+        from igams_sjxx sjxx
+        left join matridx_jcsj yblx on yblx.csid = sjxx.yblx
+        where sjxx.scbj ='0' and sjxx.sfjs = '1' and yblx.csmc is not null
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        group by yblx.csmc
+        order by bbs desc
+    </select>
+    <!--科室分布-->
+    <select id="getInspectionDepartment" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sjdwxx.dwmc ksmc,count(sjxx.sjid) bbs
+        from igams_sjxx sjxx
+        left join igams_sjdwxx sjdwxx on sjxx.ks = sjdwxx.dwid
+        where sjxx.scbj ='0' and sjxx.sfjs = '1' and sjdwxx.dwmc is not null
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        group by sjdwxx.dwmc
+        order by bbs desc
+    </select>
+    <!--月物种预警-->
+    <select id="getMicrobeChange" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select tmpp.wzid,tmpp.wzzwm,max(tmpp.jz) jz,max(tmpp.gl) gl,max(tmpp.bzc) bzc,max(tmpp.addfm)addfm,max(cast(tmpp.gl as numeric)-cast(tmpp.addfm as numeric)) tsl
+        from(
+        select tmp.*,case when tmp.gl>tmp.addfm then 1 else 0 end yj
+        from(
+        select tt.wzzwm,tt.jz,tt.bzc,tt.wzid,sum(cast(cn as numeric))cn,sum(cast(sjcn as numeric))sjcn,round(sum(cast(cn as numeric))*100.0/sum(cast(sjcn as numeric)),2)gl,(cast(tt.jz as numeric)+cast(tt.bzc as numeric)) addfm from(
+        select ie.wzzwm,ie.wzid,ie.sj,ie.cn,ie.sjcn,ie.rq,ie2.fc,ie2.jz,ie2.bzc
+        from igams_etiology ie
+        left outer join igams_wzgl wzgl on wzgl.zbx in ('pathogenic','likely pathogenic') and ie.wzid = wzgl.wzid
+        left join (
+        select * from igams_etiology
+        where lx= 'TOTAL_SD_MEAN'
+        )ie2 on ie.wzid=ie2.wzid
+        where ie.lx='DAY_ETIOLOGY' and wzgl.wzid is not null
+        and ie.rq &lt;=to_char(now() ,'YYYY-MM-DD')
+        and ie.rq &gt;=to_char(now() - interval '29 days','YYYY-MM-DD')
+        )tt
+        group by tt.wzzwm,tt.wzid,tt.jz,tt.bzc
+        )as tmp
+        )as tmpp
+        where tmpp.yj='1' and tmpp.wzid is not null
+        group by tmpp.wzid,tmpp.wzzwm
+        order by tsl desc
+        limit 10
+    </select>
+    <!--周物种预警-->
+    <select id="getSampleCountChange" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select tmpp.wzid,tmpp.wzzwm,max(tmpp.jz) jz,max(tmpp.gl) gl,max(tmpp.bzc) bzc,max(tmpp.addfm)addfm,max(cast(tmpp.gl as numeric)-cast(tmpp.addfm as numeric)) tsl
+        from(
+        select tmp.*,case when tmp.gl>tmp.addfm then 1 else 0 end yj
+        from(
+        select tt.wzzwm,tt.jz,tt.bzc,tt.wzid,sum(cast(cn as numeric))cn,sum(cast(sjcn as numeric))sjcn,round(sum(cast(cn as numeric))*100.0/sum(cast(sjcn as numeric)),2)gl,(cast(tt.jz as numeric)+cast(tt.bzc as numeric)) addfm from(
+        select ie.wzzwm,ie.wzid,ie.sj,ie.cn,ie.sjcn,ie.rq,ie2.fc,ie2.jz,ie2.bzc
+        from igams_etiology ie
+        left outer join igams_wzgl wzgl on wzgl.zbx in ('pathogenic','likely pathogenic') and ie.wzid = wzgl.wzid
+        left join (
+        select * from igams_etiology
+        where lx= 'TOTAL_SD_MEAN'
+        )ie2 on ie.wzid=ie2.wzid
+        where ie.lx='DAY_ETIOLOGY' and wzgl.wzid is not null
+
+        and ie.rq &lt;=to_char(now() ,'YYYY-MM-DD')
+        and ie.rq &gt;=to_char(now() - interval '6 days','YYYY-MM-DD')
+        )tt
+        group by tt.wzzwm,tt.wzid,tt.jz,tt.bzc
+        )as tmp
+        )as tmpp
+        where tmpp.yj='1' and tmpp.wzid is not null
+        group by tmpp.wzid,tmpp.wzzwm
+        order by tsl desc
+        limit 10
+    </select>
+    <!--报告阳性率-->
+    <select id="getPositiveRate" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(ybs) ybs,sum(bgs) bgs,sum(yxs) yxs,
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            to_char(tmp.rq,'yyyy')
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            to_char(tmp.rq,'yyyy-MM')
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            to_char(tmp.rq,'yyyy-MM-dd')
+        </if>
+        rq from (
+            WITH week_dates AS (
+                SELECT generate_series(
+                    <if test="year!=null and year !=''  and tjlx !='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '6 years',date_trunc(#{tjlx}, CURRENT_DATE),'1 year' ) AS day
+                    </if>
+                    <if test="month!=null and month !=''  and tjlx !='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '6 months',date_trunc(#{tjlx}, CURRENT_DATE),'1 month' ) AS day
+                    </if>
+                    <if test="week !=null and week !='' and  tjlx =='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE),date_trunc(#{tjlx}, CURRENT_DATE) + INTERVAL '6 days','1 day' ) AS day
+                    </if>
+            )
+            select wd.day AS rq,
+                count(sjxx.sjid)  AS ybs,
+                case when sjxx.bgrq is not null then count(sjxx.sjid) else 0 end bgs,
+                case when sjxx.jyjg ='1' then count(sjxx.sjid) else 0 end yxs
+            FROM
+                week_dates wd
+                <if test="year!=null and year !=''  and tjlx !='week'">
+                    LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 year'
+                </if>
+                <if test="month!=null and month !=''  and tjlx !='week'">
+                    LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 month'
+                </if>
+                <if test="week !=null and week !='' and  tjlx =='week'">
+                    LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 day'
+                </if>
+            where  sjxx.scbj = '0' and sjxx.sfjs = '1'
+            <include refid="PURVIEW_SQL"/>
+            GROUP BY
+                wd.day,sjxx.bgrq,sjxx.jyjg
+        ) tmp
+        group by tmp.rq
+        order by tmp.rq
+    </select>
+    <!--耐药基因检测结果-->
+    <select id="getDrugResistGeneCount" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(tmp.jys) jys,case when xh> 9 then 'other' else tmp.jyjzmc end jyjzmc from (
+            select count(nyjyzsgl.nyjyid) jys,nyjyzsgl.jyjzmc,row_number() OVER(ORDER by count(nyjyzsgl.nyjyid) desc) xh  from igams_sjxx sjxx
+            left join igams_sjnyx sjnyx on sjnyx.sjid = sjxx.sjid
+            left join igams_nyjyzsgl nyjyzsgl on nyjyzsgl.nyjyid  = sjnyx.nyjyid and nyjyzsgl.scbj ='0'
+            where sjxx.scbj ='0' and sjxx.sfjs ='1' and nyjyzsgl.jyjzmc is not null
+            <include refid="SEARCH_SQL"/>
+            <include refid="PURVIEW_SQL"/>
+            group by nyjyzsgl.jyjzmc
+            order by jys
+        ) tmp
+        group by case when xh> 9 then 'other' else tmp.jyjzmc end
+        order by sum(tmp.jys)
+    </select>
+    <!--检出微生物信息-->
+    <select id="getMicrobeInfo" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(wznum) wznum,wzfl,wzywm,wzzwm from (
+            select wznum,wzfl,case when ind &lt;=3 then wzywm else 'other' end wzywm,case when ind &lt;=3 then wzzwm else 'other' end wzzwm from (
+                select count(sjwzxx.wzid) as wznum,sjwzxx.wzfl ,wzywm,wzzwm,row_number() over(partition by sjwzxx.wzfl order by count(sjwzxx.wzid) desc) ind
+                from igams_sjxx sjxx
+                left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid
+                where sjwzxx.scbj!='1' and (jglx ='pathogen' or jglx ='possible') and sjxx.scbj ='0' and sjxx.sfjs = '1'
+                and sjwzxx.wzfl is not null
+                <include refid="SEARCH_SQL"/>
+                <include refid="PURVIEW_SQL"/>
+                group by sjwzxx.wzfl ,sjwzxx.wzid,wzywm,wzzwm
+            ) tmp
+        ) tp
+        group by wzfl,wzywm,wzzwm
+        order by wzfl,wznum
+    </select>
+    <!--获取样本数、报告数、阳性数-->
+    <select id="getSampleCountAndReportCountAndPositiveCount" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(ybs) ybs,sum(bgs) bgs,sum(yxs) yxs  from (select count(sjid) ybs,
+        case when sjxx.bgrq is not null then count(sjid) else 0 end bgs,
+        case when sjxx.jyjg = '1' then count(sjid) else 0 end yxs
+        from igams_sjxx sjxx
+        where sjxx.scbj ='0' and sjxx.sfjs ='1'
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        group by sjxx.bgrq,sjxx.jyjg) tmp
+    </select>
+    <!--获取样本数、报告数、阳性数(不限制伙伴、单位)-->
+    <select id="getSampleCountAndReportCountAndPositiveCountMapWhole" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(ybs) ybs,sum(bgs) bgs,sum(yxs) yxs  from (select count(sjid) ybs,
+        case when sjxx.bgrq is not null then count(sjid) else 0 end bgs,
+        case when sjxx.jyjg = '1' then count(sjid) else 0 end yxs
+        from igams_sjxx sjxx
+        where sjxx.scbj ='0' and sjxx.sfjs ='1'
+        <include refid="SEARCH_SQL"/>
+        group by sjxx.bgrq,sjxx.jyjg) tmp
+    </select>
+    <!--年龄段的检出微生物占比-->
+    <select id="getMicrobeInfoForAgeRange" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select sum(wznum) wznum,wzfl,wzywm,wzzwm from (
+        select wznum,wzfl,case when ind &lt;=3 then wzywm else 'other' end wzywm,case when ind &lt;=3 then wzzwm else 'other' end wzzwm from (
+        select count(sjwzxx.wzid) as wznum,sjwzxx.wzfl ,wzywm,wzzwm,row_number() over(partition by sjwzxx.wzfl order by count(sjwzxx.wzid) desc) ind
+        from igams_sjxx sjxx
+        left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid
+        where sjwzxx.scbj!='1' and (jglx ='pathogen' or jglx ='possible') and sjxx.scbj ='0' and sjxx.sfjs = '1' and sjxx.nl ~ '^[0-9]+$'
+        and sjwzxx.wzfl is not null
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        <if test="ageRange =='cslr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &gt;=90
+        </if>
+        <if test="ageRange =='lnr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &gt;=75 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=89
+        </if>
+        <if test="ageRange =='nqlnr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &gt;=60 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=74
+        </if>
+        <if test="ageRange =='znr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &gt;=45 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=59
+        </if>
+        <if test="ageRange =='nqr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &gt;=18 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=44
+        </if>
+        <if test="ageRange =='wcnr'">
+            and cast(coalesce(sjxx.nl,'0') as integer) &lt;=17
+        </if>
+        group by sjwzxx.wzfl ,sjwzxx.wzid,wzywm,wzzwm
+        ) tmp
+        ) tp
+        group by wzfl,wzywm,wzzwm
+        order by wzfl,wznum
+    </select>
+    <!--检出这个微生物的样本类型的分布-->
+    <select id="getSampleTypeTotalForMicrobe" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select yblx.csmc yblxmc,count(sjxx.sjid) bbs
+        from igams_sjxx sjxx
+        left join matridx_jcsj yblx on yblx.csid = sjxx.yblx
+        left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid and sjwzxx.scbj!='1' and (sjwzxx.jglx ='pathogen' or sjwzxx.jglx ='possible')
+        where sjxx.scbj ='0' and sjxx.sfjs = '1' and yblx.csmc is not null
+        and sjwzxx.wzzwm = #{microorganismName}
+        <include refid="SEARCH_SQL"/>
+        <include refid="PURVIEW_SQL"/>
+        group by yblx.csmc
+        order by bbs desc
+    </select>
+    <!--指定样本类型的检出微生物检出趋势-->
+    <select id="microbeTrendForSampleType" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            to_char(tmp.rq,'yyyy')
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            to_char(tmp.rq,'yyyy-MM')
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            to_char(tmp.rq,'yyyy-MM-dd')
+        </if>
+        rq,sum(tmp.wznum) num,SUM(tmp.cslr) cslr,SUM(tmp.lnr) lnr,SUM(tmp.nqlnr) nqlnr,SUM(tmp.znr) znr,SUM(tmp.nqr) nqr,SUM(tmp.wcnr) wcnr from (
+            WITH week_dates AS (
+                SELECT generate_series(
+                    <if test="year!=null and year !=''  and tjlx !='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '6 years',date_trunc(#{tjlx}, CURRENT_DATE),'1 year' ) AS day
+                    </if>
+                    <if test="month!=null and month !=''  and tjlx !='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '12 months',date_trunc(#{tjlx}, CURRENT_DATE),'1 month' ) AS day
+                    </if>
+                    <if test="week !=null and week !='' and  tjlx =='week'">
+                        date_trunc(#{tjlx}, CURRENT_DATE),date_trunc(#{tjlx}, CURRENT_DATE) + INTERVAL '6 days','1 day' ) AS day
+                    </if>
+            )
+            select wd.day rq,count(sjwzxx.wzid) as wznum,sjwzxx.wzfl,wzzwm,row_number() over(partition by sjwzxx.wzfl order by count(sjwzxx.wzid) desc) ind,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=90 then count(sjwzxx.wzid) else 0 end cslr,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=75 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=89 then count(sjwzxx.wzid) else 0 end lnr,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=60 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=74 then count(sjwzxx.wzid) else 0 end nqlnr,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=45 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=59 then count(sjwzxx.wzid) else 0 end znr,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=18 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=44 then count(sjwzxx.wzid) else 0 end nqr,
+            case when cast(coalesce(sjxx.nl,'0') as integer) &lt;=17 then count(sjwzxx.wzid) else 0 end wcnr
+            from week_dates wd
+            <if test="year!=null and year !=''  and tjlx !='week'">
+                LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 year'
+            </if>
+            <if test="month!=null and month !=''  and tjlx !='week'">
+                LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 month'
+            </if>
+            <if test="week !=null and week !='' and  tjlx =='week'">
+                LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 day'
+            </if>
+            left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid and sjwzxx.scbj!='1' and (jglx ='pathogen' or jglx ='possible')
+            left join matridx_jcsj yblx on yblx.csid = sjxx.yblx
+            where sjxx.scbj ='0' and sjxx.sfjs = '1'  and sjxx.nl ~ '^[0-9]+$'
+            <include refid="PURVIEW_SQL"/>
+            <if test="sampleType !=null and sampleType !=''">
+                and yblx.csmc = #{sampleType}
+            </if>
+            <if test="microorganismName !=null and microorganismName !=''">
+                and sjwzxx.wzzwm = #{microorganismName}
+            </if>
+            group by wd.day,sjwzxx.wzfl ,sjwzxx.wzid,sjwzxx.wzzwm,sjxx.nl
+        ) tmp
+        group by tmp.rq
+        order by tmp.rq
+    </select>
+    <!--指定样本类型的所有检出微生物-->
+    <select id="allMicrobeForSampleType" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        WITH week_dates AS (
+        SELECT generate_series(
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '6 years',date_trunc(#{tjlx}, CURRENT_DATE),'1 year' ) AS day
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '12 months',date_trunc(#{tjlx}, CURRENT_DATE),'1 month' ) AS day
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            date_trunc(#{tjlx}, CURRENT_DATE),date_trunc(#{tjlx}, CURRENT_DATE) + INTERVAL '6 days','1 day' ) AS day
+        </if>
+        )
+        select
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            to_char(wd.day,'yyyy')
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            to_char(wd.day,'yyyy-MM')
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            to_char(wd.day,'yyyy-MM-dd')
+        </if> rq,count(sjwzxx.wzid) as wznum
+        from week_dates wd
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 year'
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 month'
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 day'
+        </if>
+        left outer join igams_sjwzxx sjwzxx on sjwzxx.sjid = sjxx.sjid and sjwzxx.scbj!='1' and (jglx ='pathogen' or jglx ='possible')
+        left join matridx_jcsj yblx on yblx.csid = sjxx.yblx
+        where sjxx.scbj ='0' and sjxx.sfjs = '1'  and sjxx.nl ~ '^[0-9]+$'
+        <include refid="PURVIEW_SQL"/>
+        <if test="sampleType !=null and sampleType !=''">
+            and yblx.csmc = #{sampleType}
+        </if>
+        group by wd.day
+        order by wd.day
+    </select>
+    <!--各个年龄段的指定耐药基因的检出趋势-->
+    <select id="ageRangeTrendForDrugResistGene" parameterType="com.matridx.localization.dao.entities.LocalizationStatisticsDto" resultType="Map">
+        select
+        <if test="year!=null and year !=''  and tjlx !='week'">
+           to_char(tmp.rq,'yyyy')
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            to_char(tmp.rq,'yyyy-MM')
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            to_char(tmp.rq,'yyyy-MM-dd')
+        </if>
+        rq,SUM(tmp.cslr) cslr,SUM(tmp.lnr) lnr,SUM(tmp.nqlnr) nqlnr,SUM(tmp.znr) znr,SUM(tmp.nqr) nqr,SUM(tmp.wcnr) wcnr from (
+        WITH week_dates AS (
+        SELECT generate_series(
+            <if test="year!=null and year !=''  and tjlx !='week'">
+                date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '6 years',date_trunc(#{tjlx}, CURRENT_DATE),'1 year' ) AS day
+            </if>
+            <if test="month!=null and month !=''  and tjlx !='week'">
+                date_trunc(#{tjlx}, CURRENT_DATE) - INTERVAL '12 months',date_trunc(#{tjlx}, CURRENT_DATE),'1 month' ) AS day
+            </if>
+            <if test="week !=null and week !='' and  tjlx =='week'">
+                date_trunc(#{tjlx}, CURRENT_DATE),date_trunc(#{tjlx}, CURRENT_DATE) + INTERVAL '6 days','1 day' ) AS day
+            </if>
+        )
+        select wd.day AS rq,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=90 then count(sjxx.sjid) else 0 end cslr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=75 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=89 then count(sjxx.sjid) else 0 end lnr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=60 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=74 then count(sjxx.sjid) else 0 end nqlnr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=45 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=59 then count(sjxx.sjid) else 0 end znr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &gt;=18 and cast(coalesce(sjxx.nl,'0') as integer) &lt;=44 then count(sjxx.sjid) else 0 end nqr,
+        case when cast(coalesce(sjxx.nl,'0') as integer) &lt;=17 then count(sjxx.sjid) else 0 end wcnr
+        from
+        week_dates wd
+        <if test="year!=null and year !=''  and tjlx !='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 year'
+        </if>
+        <if test="month!=null and month !=''  and tjlx !='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 month'
+        </if>
+        <if test="week !=null and week !='' and  tjlx =='week'">
+            LEFT join igams_sjxx sjxx ON sjxx.jsrq &gt;= wd.day AND sjxx.jsrq &lt;  wd.day + INTERVAL '1 day'
+        </if>
+        left join igams_sjnyx sjnyx on sjnyx.sjid = sjxx.sjid
+        left join igams_nyjyzsgl nyjyzsgl on nyjyzsgl.nyjyid  = sjnyx.nyjyid and nyjyzsgl.scbj ='0'
+        where sjxx.scbj ='0' and sjxx.sfjs = '1' and sjxx.nl ~ '^[0-9]+$'
+        <include refid="PURVIEW_SQL"/>
+        and nyjyzsgl.jyjzmc = #{allergyGeneName}
+        group by wd.day,sjxx.nl) tmp
+        group by tmp.rq
+        order by tmp.rq
+    </select>
+</mapper>

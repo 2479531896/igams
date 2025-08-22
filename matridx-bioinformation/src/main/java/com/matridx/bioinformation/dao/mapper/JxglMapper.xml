@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.bioinformation.dao.post.IJxglDao" >
+
+    <select id="getDtoList" parameterType="JxglDto" resultType="JxglDto">
+        select jxid,jxmc,image,lrry,to_char(lrsj,'yyyy-MM-dd HH24:mi') lrsj,sj from igams_jxgl
+        <where>
+        scbj = '0'
+            <if test="jxmc != '' and jxmc != null">
+                and jxmc like concat(concat('%',#{jxmc}),'%')
+            </if>
+            <if test="jxid != '' and jxid != null">
+                and jxid = #{jxid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="JxglDto" resultType="JxglDto">
+        select jxid,sj,image,jxmc,fjid,wjlj from igams_jxgl jxgl
+        <where>
+            scbj = '0'
+            <if test="jxid != '' and jxid != null">
+                and jxid = #{jxid}
+            </if>
+            <if test="jxmc != '' and jxmc != null">
+                and jxmc = #{jxmc}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" parameterType="JxglDto" resultType="JxglDto">
+        select jxid,jxmc,image,jxgl.lrry,to_char(jxgl.lrsj,'yyyy-MM-dd HH24:mi') lrsj,jxgl.xgry,to_char(jxgl.xgsj,'yyyy-MM-dd HH24:mi') xgsj,xg.zsxm xgrymc,lr.zsxm lrrymc,fjid,wjlj from igams_jxgl jxgl
+        left join matridx_xtyh lr on jxgl.lrry = lr.yhid
+        left join matridx_xtyh xg on jxgl.xgry = xg.yhid
+        <where>
+            jxgl.scbj = '0'
+            <if test="val != '' and val != null">
+                and (jxmc like concat(concat('%',#{val}),'%')
+                or xg.zsxm like concat(concat('%',#{val}),'%')
+                or lr.zsxm like concat(concat('%',#{val}),'%'))
+            </if>
+        </where>
+    </select>
+
+    <update id="updateDto" parameterType="JxglDto">
+        UPDATE igams_jxgl set scbj  = '1' ,scry = #{scry},scsj = LOCALTIMESTAMP where jxid= #{jxid}
+    </update>
+
+    <update id="update" parameterType="JxglDto">
+        UPDATE igams_jxgl set
+        xgsj = LOCALTIMESTAMP ,xgry = #{xgry}
+        <if test="jxmc != '' and jxmc != null">
+            ,jxmc = #{jxmc}
+        </if>
+        <if test="image != '' and image != null">
+            ,image = #{image}
+        </if>
+        <if test="sj != '' and sj != null">
+            ,sj = #{sj}
+        </if>
+        <if test="fjid != '' and fjid != null">
+            ,fjid = #{fjid}
+        </if>
+        <if test="wjlj != '' and wjlj != null">
+            ,wjlj = #{wjlj}
+        </if>
+        where jxid= #{jxid}
+    </update>
+
+
+    <insert id="insertDto" parameterType="JxglDto">
+        insert into igams_jxgl(jxid,sj,jxmc,lrry,lrsj,scbj,image,fjid,wjlj)
+        values (#{jxid},#{sj},#{jxmc},#{lrry},LOCALTIMESTAMP,'0',#{image},#{fjid},#{wjlj})
+    </insert>
+</mapper>

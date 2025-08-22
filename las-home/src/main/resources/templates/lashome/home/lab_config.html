@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" src="/js/lashome/home/lab_config.js" charset="utf-8"></script>
+		<style type="text/css">
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+		</style>
+	</head>
+	<body>
+		<form id="labConfig_Form" action ="/lashome/home/labConfig" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+			<div class="body-content">
+				<div class="row">
+					<input type="hidden" name="access_token"/>
+					<input type="hidden" name="sysid" th:value="${sysszDto.sysid}">
+					<input type="hidden" name="fjids" id="fjids"/>
+					<input type="hidden" id="ywlx" name="ywlx" th:value="${sysszDto.ywlx}">
+					<div class="col-md-12 col-sm-12">
+			        	<div class="form-group">
+			    			<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+			    				<div th:id="${fjcfbDto.fjid}" >
+			    					<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="实验室结构图"></label>
+			    					<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+				    				<div class="col-sm-9 col-xs-9 col-md-9">
+				    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+				    					<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+					    					<span th:text="${fjcfbDto.wjm}"></span>
+					    					<span class="glyphicon glyphicon glyphicon-save"></span>
+				    					</button>
+				    					<button title="预览" class="f_button" type="button">
+				    						<span class="glyphicon glyphicon-eye-open" th:onclick="view([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]]);"></span>
+				    					</button>
+				    					<button title="删除" class="f_button" type="button">
+				    						<span class="glyphicon glyphicon-remove" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></span>
+				    					</button>			    					
+				    				</div>
+				    			</div>
+			    			</div>
+			   			</div>
+					</div>
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>检测单位
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8" th:if="${unitlist != null && unitlist.size() > 0}">
+								<select id="jcdw" name="jcdw" th:value="${sysszDto.jcdw}" class="form-control chosen-select" validate="{required:true}" style="height: 34px;">
+									<option value="">--请选择--</option>
+									<option th:each="list:${unitlist}" th:value="${list.csid}" th:text="${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq sysszDto.jcdw}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>负责人
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<div class="input-group">
+									<input type="text" id="fzrmc" name="fzrmc" th:value="${sysszDto.fzrmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="fzr" name="fzr" th:value="${sysszDto.fzr}" class="form-control"/>
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseFzr()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>上传结构图
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8" style="line-height:28px;">
+								<a href="javascript:void(0);" onclick="editfile()" id="file_btn" style="display:inline-block;width:100%;;border:1px solid #CCCCCC;border-radius:3px;">
+			            			<span id="fileclick" title="点击上传"  style="display:inline-block;width:100%;color:#A6A6A6;font-size:12px;padding-left:10px;">点击展开上传文件</span>
+			            		</a>
+			            		<div id="fileDiv" style="display:none;">
+									<input id="lab_file" name="lab_file" type="file">
+									<button class="btn btn-default" type="button" style="margin-left:77%;width:23%;margin-top:10px;" onclick="cancelfile()">隐藏</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+		</form>
+	</body>
+</html>

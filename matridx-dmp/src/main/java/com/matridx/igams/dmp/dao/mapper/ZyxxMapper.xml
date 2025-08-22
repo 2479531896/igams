@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.dmp.dao.post.IZyxxDao" >
+
+	<sql id="SEARCH_TERMS">
+		<if test="zydm != null and zydm != ''">
+			and zyxx.zydm like '%'||#{zydm}||'%'
+		</if>
+		<if test="zymc != null and zymc != ''">
+			and zyxx.zymc like '%'||#{zymc}||'%'
+		</if>
+	</sql>
+	<!-- 获取数据平台的列表 -->
+	<select id="getPagedDtoList" parameterType="ZyxxDto" resultType="ZyxxDto">
+		select zyxx.zyid,zyxx.zydm,zyxx.zymc,zyxx.tgfid,zyxx.djfs,zyxx.glid,zyxx.jknr,zyxx.cs1,zyxx.cs2,zyxx.cs3,zyxx.cs4,
+			zytgf.tgfmc,zytgf.tgfdm
+			from igams_zyxx zyxx
+			left outer join igams_zytgf zytgf on zytgf.tgfid = zyxx.tgfid
+			<where>
+				<include refid="SEARCH_TERMS"></include>
+			</where>
+	</select>
+	<!-- 获取数据用户权限列表 -->
+    <select id="getZyxxTreeList" parameterType="ZyxxDto" resultType="ZyxxDto">
+		select zyxx.zyid,zyxx.zymc,
+			zytgf.tgfid,zytgf.tgfmc,rzqx.rzid
+	    from igams_zytgf zytgf
+	    left join igams_zyxx zyxx on zytgf.tgfid = zyxx.tgfid
+	    left join igams_rzqx rzqx on rzqx.zyid = zyxx.zyid and rzqx.rzid = #{rzid} and rzqx.scbj != '1'
+	    where zyxx.zyid is not null
+	    order by zyxx.tgfid,zyxx.zyid
+    </select>
+   	<!-- 根据认证ID更新权限删除状态 -->
+	<update id="updateRzqx" parameterType="ZyxxDto">
+		update igams_rzqx
+		set scbj = '1', scry = #{xgry}, scsj = LOCALTIMESTAMP
+		where rzid=#{rzid}
+	</update>
+	<!-- 批量新增权限 -->
+    <insert id="batchSaveRzqx" parameterType="list">
+	    insert into igams_rzqx (qxid,rzid,zyid,lrry,lrsj,scbj)
+	    values
+	    <if test="list !=null and list.size > 0">
+		    <foreach collection="list" item="item" index="index" separator=",">  
+		    	(#{item.qxid},#{item.rzid},#{item.zyid},#{item.lrry},LOCALTIMESTAMP,0 )
+		    </foreach>
+		</if>
+	</insert>
+	<!-- 增加资源信息 -->
+	<insert id="insert" parameterType="ZyxxModel">
+		insert into igams_zyxx(zyid
+		<if test="zydm !=null and zydm != ''">
+			,zydm
+		</if>
+		<if test="zymc !=null and zymc != ''">
+			,zymc
+		</if>
+		<if test="tgfid !=null and tgfid != ''">
+			,tgfid
+		</if>
+		<if test="djfs !=null and djfs != ''">
+			,djfs
+		</if>
+		<if test="glid !=null and glid != ''">
+			,glid
+		</if>
+		<if test="jknr !=null and jknr != ''">
+			,jknr
+		</if>
+		<if test="cs1 !=null and cs1 != ''">
+			,cs1
+		</if>
+		<if test="cs2 !=null and cs2 != ''">
+			,cs2
+		</if>
+		<if test="cs3 !=null and cs3 != ''">
+			,cs3
+		</if>
+		<if test="cs4 !=null and cs4 != ''">
+			,cs4
+		</if>
+		) values(#{zyid}
+		<if test="zydm !=null and zydm != ''">
+			,#{zydm}
+		</if>
+		<if test="zymc !=null and zymc != ''">
+			,#{zymc}
+		</if>
+		<if test="tgfid !=null and tgfid != ''">
+			,#{tgfid}
+		</if>
+		<if test="djfs !=null and djfs != ''">
+			,#{djfs}
+		</if>
+		<if test="glid !=null and glid !=''">
+			,#{glid}
+		</if>
+		<if test="jknr !=null and jknr !=''">
+			,#{jknr}
+		</if>
+		<if test="cs1 !=null and cs1 !=''">
+			,#{cs1}
+		</if>
+		<if test="cs2 !=null and cs2 !=''">
+			,#{cs2}
+		</if>
+		<if test="cs3 !=null and cs3 !=''">
+			,#{cs3}
+		</if>
+		<if test="cs4 !=null and cs4 !=''">
+			,#{cs4}
+		</if>
+		)
+	</insert>	
+	
+	<!-- 根据用户代码和资源代码，获取用户授权信息 -->
+    <select id="getAuthList" parameterType="ZyxxDto" resultType="ZyxxDto">
+		select zyxx.zyid,zyxx.zymc,zyxx.zydm,zyxx.tgfid,zyxx.djfs,zyxx.glid,zyxx.cs1,zyxx.cs2,zyxx.cs3,zyxx.cs4,
+			rzqx.qxid,rzxx.rzid,rzxx.rzyhdm,rzxx.rzkey,rzxx.rzyhm
+	    from igams_zyxx zyxx
+	    left join igams_rzqx rzqx on rzqx.zyid = zyxx.zyid and rzqx.scbj != '1'
+	    left join igams_jkrzxx rzxx on rzxx.rzid = rzqx.rzid and rzxx.scbj != '1'
+	    where 
+	    zyxx.zydm = #{zydm} and rzxx.rzyhdm = #{rzyhdm} 
+	    order by zyxx.zyid
+    </select>
+</mapper>

@@ -1,0 +1,17 @@
+package com.matridx.las.frame.netty.channel.codec;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
+
+public class StrEncoder extends MessageToByteEncoder<String>{
+
+	@Override
+	protected void encode(ChannelHandlerContext ctx, String msg, ByteBuf out) throws Exception {
+		// TODO Auto-generated method stub
+		byte[] data = msg.getBytes();	
+		out.writeInt(data.length);
+		out.writeBytes(data);
+	}
+
+}

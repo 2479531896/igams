@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.las.home.dao.post.IYqxxInfoDao" >
+
+	<!-- 新增实验室信息 -->
+	<insert id="insertYqxxInfo" parameterType="List">
+		insert into matridx_yqxxinfo(yqxxid
+			,yqid
+			,sysid
+			,style
+			,fqy
+			,fqyid
+			,deviceid
+			,wz
+			,qy
+			,pzwz
+			,name
+			,commanddeviceid
+			,bz
+		    ,csdm
+		    ,scbj)
+		VALUES
+		<foreach collection="list" separator="," open="" close=""
+				 item="item" index="index">
+		 	(#{item.yqxxid}
+			,#{item.yqid}
+			,#{item.sysid}
+			,#{item.style}
+			,#{item.fqy}
+			,#{item.fqyid}
+			,#{item.deviceid}
+			,#{item.wz}
+			,#{item.qy}
+			,#{item.pzwz}
+			,#{item.name}
+			,#{item.commanddeviceid}
+			,#{item.bz}
+			,#{item.csdm}
+			,'0')
+		</foreach>
+	</insert>
+	
+	<!-- 查询信息 -->
+	<select id="getYqxxList" parameterType="YqxxInfoDto" resultType="YqxxInfoDto">
+		select yqinfo.yqxxid,yqinfo.yqid,yqinfo.bz, yqinfo.sysid,yqinfo.name, yqxx.yqmc, yqxx.lx, yqxx.yq,fj.fjid,yqinfo.style,yqinfo.fqy,yqinfo.fqyid,yqinfo.csdm,yqinfo.deviceid,yqinfo.commanddeviceid,yqxx.lx,yqinfo.qy,yqinfo.wz,yqinfo.pzwz
+		from matridx_yqxxinfo yqinfo
+		left outer join igams_yqxx yqxx on yqinfo.yqid = yqxx.yqid and yqxx.scbj = '0'
+		left outer join matridx_fjcfb fj on fj.ywid = yqinfo.yqid and fj.scbj = '0'
+		<where>
+			yqinfo.scbj != '1'
+			<if test="sysid !=null and sysid != ''">
+				and yqinfo.sysid = #{sysid}
+			</if>
+		</where>
+		order by yqinfo.fqy desc
+	</select>
+	
+	<!-- 查询信息 -->
+	<select id="getDtoById" parameterType="String" resultType="YqxxInfoDto">
+		select yqinfo.yqid, yqinfo.sysid,yqinfo.bz, yqxx.yqmc,,yqinfo.name yqxx.lx, yqxx.yq,fj.fjid,yqinfo.style,yqinfo.fqy,yqinfo.fqyid,yqinfo.csdm,yqinfo.deviceid,yqinfo.commanddeviceid,yqinfo.qy,yqinfo.wz,yqinfo.pzwz
+		from matridx_yqxxinfo yqinfo
+		left outer join igams_yqxx yqxx on yqinfo.yqid = yqxx.yqid and yqxx.scbj = '0'
+		left outer join matridx_fjcfb fj on fj.ywid = yqinfo.yqid and fj.scbj = '0'
+		<where>
+			yqinfo.scbj != '1' and yqinfo.yqxxid = #{yqxxid}
+		</where>
+	</select>
+	<!-- 查询信息 -->
+	<select id="getDtoByfqyid" parameterType="YqxxInfoDto" resultType="YqxxInfoDto">
+		select yqinfo.yqid, yqinfo.sysid,yqinfo.bz,yqinfo.name, yqxx.yqmc,yqxx.yq, yqxx.lx,fj.fjid,yqinfo.style,yqinfo.fqy,yqinfo.fqyid,yqinfo.csdm,yqinfo.deviceid,yqinfo.commanddeviceid,yqinfo.qy,yqinfo.wz,yqinfo.pzwz
+		from matridx_yqxxinfo yqinfo
+		left outer join igams_yqxx yqxx on yqinfo.yqid = yqxx.yqid and yqxx.scbj = '0'
+		left outer join matridx_fjcfb fj on fj.ywid = yqinfo.yqid and fj.scbj = '0'
+		<where>
+			yqinfo.scbj != '1' and yqinfo.fqyid = #{fqy}
+		</where>
+		LIMIT 1 OFFSET 0
+	</select>
+	<!--删除全部信息-->
+	<update id="updateBySysId" parameterType="YqxxInfoDto">
+		update matridx_yqxxinfo set scbj = '1' where
+		sysid= #{sysid}
+	</update>
+
+	<!--根据id删除设备-->
+	<update id="updateById" parameterType="YqxxInfoDto">
+		update matridx_yqxxinfo set scbj = '1' where yqxxid= #{yqxxid}
+	</update>
+	
+
+</mapper>

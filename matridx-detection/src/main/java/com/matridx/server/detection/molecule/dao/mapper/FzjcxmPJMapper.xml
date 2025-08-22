@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.detection.molecule.dao.post.IFzjcxmPJDao" >
+
+   <delete id="delFzjcxmByFzjcid" parameterType="FzjcxxDto">
+      delete from igams_fzjcxm where fzjcid =#{fzjcid}
+   </delete>
+
+   <!--根据送检ID查询检测项目清单-->
+   <select id="getDtoList" parameterType="FzjcxmDto" resultType="FzjcxmDto">
+      select xm.*,sj.csdm,sj.csmc,sj.cskz1,sj.cskz3
+      from igams_fzjcxm xm
+      left outer join matridx_jcsj sj on xm.jcxmid = sj.csid
+      <where>
+         fzjcid = #{fzjcid} and xm.scbj='0'
+      </where>
+      order by xh
+   </select>
+
+   <insert id="insertList" parameterType="list" >
+      <if test="list !=null and list.size > 0">
+         <foreach collection="list" separator=";" item="item" index="index">
+            insert into igams_fzjcxm(fzxmid
+            <if test="item.fzjcid != null and item.fzjcid != ''">
+               ,fzjcid
+            </if>
+            <if test="item.fzjcxmid != null and item.fzjcxmid != ''">
+               ,fzjcxmid
+            </if>
+            <if test="item.fzjczxmid != null and item.fzjczxmid != ''">
+               ,fzjczxmid
+            </if>
+            <if test="item.lrry != null and item.lrry != ''">
+               ,lrry
+            </if>
+            ,lrsj,scbj,zt
+            )values(#{item.fzxmid}
+            <if test="item.fzjcid != null and item.fzjcid != ''">
+               ,#{item.fzjcid}
+            </if>
+            <if test="item.fzjcxmid != null and item.fzjcxmid != ''">
+               ,#{item.fzjcxmid}
+            </if>
+            <if test="item.fzjczxmid != null and item.fzjczxmid != ''">
+               ,#{item.fzjczxmid}
+            </if>
+            <if test="item.lrry != null and item.lrry != ''">
+               ,#{item.lrry}
+            </if>
+            ,LOCALTIMESTAMP,'0','00'
+            )
+         </foreach>
+      </if>
+   </insert>
+
+   <select id="getDtoListByFzjcid" parameterType="String" resultType="FzjcxmDto">
+      select fzjcxm.fzxmid,fzjcxm.fzjcid,fzjcxm.fzjcxmid,fzjcxm.fzjczxmid,jc_jcxm.csmc jcxmmc,jc_jczxm.csmc jczxmmc,fzjcjg.jcjg,jcjg.csmc jcjgmc,
+      to_char(fzjcxm.bgrq,'yyyy-mm-dd') bgrq
+      from igams_fzjcxm fzjcxm
+      left join matridx_jcsj jc_jcxm on jc_jcxm.csid=fzjcxm.fzjcxmid
+      left join matridx_jcsj jc_jczxm on jc_jczxm.csid=fzjcxm.fzjczxmid
+      left join igams_fzjcjg fzjcjg on fzjcjg.fzxmid=fzjcxm.fzxmid
+      left join matridx_jcsj jcjg on jcjg.csid=fzjcjg.jcjg
+      <where>
+         fzjcxm.fzjcid=#{fzjcid}
+      </where>
+      order by fzjcxm.fzjcxmid asc
+   </select>
+   <update id="delFzjcxmByIds" parameterType="FzjcxmDto">
+      update igams_fzjcxm set scbj ='1' ,scry = #{scry}, scsj = LOCALTIMESTAMP where fzxmid in
+      <foreach collection="ids" item="item" separator="," open="(" close=")">
+         #{item}
+      </foreach>
+   </update>
+   <!--更新申请的状态信息-->
+   <update id="updateZt" parameterType="FzjcxmDto">
+      update igams_fzjcxm set
+      xgry = #{xgry},xgsj = LOCALTIMESTAMP
+      <if test="zt !=null and zt !=''">
+         ,zt = #{zt}
+      </if>
+      <if test="bgrq !=null and bgrq !=''">
+         ,bgrq = cast(#{bgrq} as timestamp)
+      </if>
+      where fzxmid = #{fzxmid}
+   </update>
+   <update id="delFzjcxmByFzjc" parameterType="FzjcxmDto">
+      update igams_fzjcxm set scbj ='1' ,scry = #{scry}, scsj = LOCALTIMESTAMP where scbj ='0' and fzjcid in
+      <foreach collection="ids" item="item" separator="," open="(" close=")">
+         #{item}
+      </foreach>
+   </update>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.las.netty.dao.post.IJkywzszDao" >
+
+	<select id="queryById" parameterType="String" resultType="JkywzszDto">	
+		select wzszid,jkywzbh,jkytdh,deviceid,jkykgmwzbh,bz,csdm
+		from igams_jkywzsz
+		where jkytdh = #{jkytdh} and scbj != '1'
+	</select>
+
+	<select id="getDtoList" parameterType="JkywzszDto" resultType="JkywzszDto">
+		select wzszid,jkywzbh,jkytdh,deviceid,jkykgmwzbh,bz,csdm
+		from igams_jkywzsz
+		where scbj != '1'
+		<if test="deviceid !=null and deviceid != ''">
+			and deviceid = #{deviceid}
+		</if>
+	</select>
+	<update id="updateDto" parameterType="JkywzszDto">
+		update igams_jkywzsz set  scbj = '1'
+		where  deviceid = #{deviceid}
+	</update>
+	<insert id="insertList"  parameterType="List">
+		insert into igams_jkywzsz(wzszid,jkykgmwzbh
+		,jkywzbh
+		,jkytdh
+		,lrry
+		,lrsj
+		,deviceid,bz,csdm
+		,scbj)
+		VALUES
+		<foreach collection="list" separator="," open="" close=""
+				 item="item" index="index">
+			(#{item.wzszid},#{item.jkykgmwzbh}
+			,#{item.jkywzbh}
+			,#{item.jkytdh}
+			,#{item.lrry}
+			,LOCALTIMESTAMP
+			,#{item.deviceid},#{item.bz},#{item.csdm}
+			,'0')
+		</foreach>
+	</insert>
+	<update id="updateList"  parameterType="List">
+		<foreach collection="list" separator=";" open="" close=""
+				 item="item" index="index">
+		update  igams_jkywzsz set jkykgmwzbh=#{item.jkykgmwzbh},
+			jkywzbh=#{item.jkywzbh},
+			jkytdh=#{item.jkytdh},
+			xgry=#{item.xgry},
+			xgsj=LOCALTIMESTAMP,
+			<if test="#{item.scbj} !=null and #{item.scbj} != ''">
+			scbj=#{item.scbj},
+			</if>
+			deviceid = #{item.deviceid}
+			where  wzszid=#{item.wzszid}
+		</foreach>
+	</update>
+	<update id="updateTdhById" parameterType="JkywzszDto">
+		update igams_jkywzsz set  jkytdh = #{jkytdh}
+		where  wzszid = #{wzszid} and scbj !='1'
+	</update>
+	<select id="getTdhList" parameterType="JkywzszDto" resultType="String">
+		select jkytdh
+		from igams_jkywzsz
+		where scbj != '1'
+		<if test="deviceid !=null and deviceid != ''">
+			and deviceid = #{deviceid}
+		</if>
+	</select>
+	<update id="delJkywzsz" parameterType="String">
+		update igams_jkywzsz set  scbj = '1'
+		where  deviceid in (${deviceid})
+	</update>
+	<update id="delJkywzszAll" >
+		update igams_jkywzsz set  scbj = '1'
+		where  scbj != '1'
+	</update>
+</mapper>

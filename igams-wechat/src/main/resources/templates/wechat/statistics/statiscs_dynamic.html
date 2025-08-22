@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>动态数据显示</title>
+<script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+<script type="text/javascript" src="/js/wechat/statistics/statiscs_dynamic.js" charset="utf-8"></script>
+<style>
+ 	.margin_5{
+ 		margin-bottom: 10px;
+ 	}
+ 	.align{
+ 		text-align: right;
+ 	}
+ 	.inp_height{
+ 		height:27px;
+ 	}
+</style>
+</head>
+<body>
+	<div id="customDiv" class="panel panel-default" style="color:#000;">
+		<div class="panel-body">
+			<div class="row">
+				<div class="col-md-10 col-sm-10 margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							统计图样式：
+						</label>
+						<div class="col-md-10 col-sm-8"> 
+							<label class="radio-inline col-md-2 col-sm-2" >
+								<input type="radio" name="statis" value="Table" checked="checked" class="tjtys">表格
+							</label>
+							<label class="radio-inline col-md-2 col-sm-2">
+								<input type="radio" name="statis" value="Bar" class="tjtys">柱状
+							</label>
+							<label class="radio-inline col-md-2 col-sm-2">
+								<input type="radio" name="statis" value="Pie" class="tjtys">圆饼
+							</label>
+						</div>
+					</div>
+				</div>
+				<div id="tjzq_div" class="col-md-10 col-sm-10  margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							统计周期：
+						</label>
+						<div class="col-md-10 col-sm-8"> 
+							<label class="radio-inline col-md-2 col-sm-2" >
+								<input type="radio" name="cycle" value="day" id="day" class="tjzq">日
+							</label>
+							<label class="radio-inline col-md-2 col-sm-2">
+								<input type="radio" name="cycle" value="month" id="mon" class="tjzq">月
+							</label>
+							<label class="radio-inline col-md-2 col-sm-2">
+								<input type="radio" name="cycle" value="year" id="year" class="tjzq">年
+							</label>
+							<label class="radio-inline col-md-2 col-sm-2">
+								<input type="radio" name="cycle" checked="checked" value="all" id="all" class="tjzq">全
+							</label>
+						</div>
+					</div>
+				</div> 
+				<div class="col-md-1 col-sm-1" style="position: absolute;right:0px;">
+					<button type="button" class="btn btn-success" onclick="configuration()">统计</button>					
+				</div>
+				<div class="col-md-10 col-sm-10  margin_5" >
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							接收周期：
+						</label>
+						<div class="col-md-10 col-sm-8" style="padding:0px;"> 
+							<div class="col-md-2 col-sm-4">
+								<input type="text" id="custom_jsrqstart" class="form-control inp_height" /> 
+							</div>
+							<div class="col-md-1 col-sm-4" style="text-align: center;">
+								~
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<input type="text" id="custom_jsrqend"  class="form-control inp_height" />
+							</div>
+						</div>
+					</div>
+				</div> 
+				<div class="col-md-10 col-sm-10  margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							报告周期：
+						</label>
+						<div class="col-md-10 col-sm-8" style="padding:0px;"> 
+							<div class="col-md-2 col-sm-4">
+								<input type="text" id="custom_bgrqstart" class="form-control inp_height" /> 
+							</div>
+							<div class="col-md-1 col-sm-4" style="text-align: center;">
+								~
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<input type="text" id="custom_bgrqend"  class="form-control inp_height" />
+							</div>
+						</div>
+					</div>
+				</div> 
+				<div class="col-md-10 col-sm-10  margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							统计字段：
+						</label>
+						<div id="tjzd_div" class="col-md-10 col-sm-8" style="padding:0px;">
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select inp_height">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd">
+								</select>
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd inp_height">
+								</select>
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd inp_height">
+								</select>
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd inp_height">
+								</select>
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd inp_height">
+								</select>
+							</div>
+							<div class="col-md-2 col-sm-4">
+								<select  class="form-control chosen-select">
+									<option  th:each="list:${listMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjzd inp_height">
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>	
+				<div class="col-md-10 col-sm-10  margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							统计条件：
+						</label>
+						<div class="col-md-10 col-sm-8" style="padding:0px;">
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"  class="form-control tj_value"  />
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"   class="form-control tj_value" />
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"   class="form-control tj_value" />
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"  class="form-control tj_value" />
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"   class="form-control tj_value" />
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-12" style="padding:0px;margin-bottom: 5px;">
+								<div class="col-md-4 col-sm-5">
+									<select  class="form-control chosen-select">
+										<option  th:each="list:${tjtjMap}" th:text="${list.value}" th:value="${list.code}" th:mainSelect="${list.mainSelect}" th:mainGroup="${list.mainGroup}" th:selzd="${list.selectzd}"  th:groupzd="${list.groupzd}" class="tjtj">
+									</select>
+								</div>
+								<div class="col-md-1 col-sm-2">=</div>
+								<div class="col-md-4 col-sm-5">
+									<input type="text"   class="form-control tj_value"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>	
+				<div class="col-md-10 col-sm-10  margin_5">
+					<div class="form-group">
+						<label for="" class="col-md-2 col-sm-4 control-label align">
+							统计图大小：
+						</label>
+						<div class="col-md-10 col-sm-8" style="padding:0px;">
+							<div class="col-md-2 col-sm-8">
+								<input type="text" id="statisWidth" value="1000"  class="form-control" placeholder="宽"/>
+							</div>
+							<div class="col-md-2 col-sm-8">
+								<input type="text" id="statisHeight" value="500" class="form-control" placeholder="高"/>
+							</div>
+						</div >
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="statisDiv" class="panel panel-default" style="color:#000;">
+		<div class="panel-body">
+			<div style="width:100%;height:100%;overflow:scroll;">
+				<div id="echarts_custom_statis_sjxxStatis"></div>
+				<div id="tbale_list"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

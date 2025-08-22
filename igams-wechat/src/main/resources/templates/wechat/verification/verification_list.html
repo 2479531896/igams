@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>送检验证列表</title>
+	<script type="text/javascript" src="/js/wechat/verification/verification_list.js?v=20231225v1" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+ 	<form id="verification_formSearch" class="form-horizontal form-inline">
+ 		<input type="hidden" id ="auditType" name="auditType"  th:value="${sjyzDto.auditType}">
+		<input type="hidden" id ="load_flag" name="load_flag"  th:value="${sjyzDto.load_flag}">
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+				<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+		                	<option value="5">全部</option>
+		                	<option value="0">标本编号</option>
+		                	<option value="1">内部编码</option>
+		                	<option value="2">患者姓名</option>
+		                	<option value="3">合作伙伴</option>
+		                	<option value="4">备注</option>
+		         		</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+			       		onkeydown="if(event.keyCode==13) {searchVerificationResult(true); return false;}"/>
+					</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+		   			<span class="tit">已选条件：</span>
+		  			<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+		        		<ul id="sl_add_ul"></ul>
+		     		</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;" >
+		       	 	<div class="tab-content sl_sel_con row" id="sl_sel_con" style="padding-bottom: 10px;min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+			       	  	<div class="tab-pane active" id="tab06">
+							<div id="sfnbbm_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="有内部编码">有无编码：</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfnbbm','1','verification_formSearch');"
+												   id="sfnbbm_id_1"><span>有内部编码</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfnbbm','0','verification_formSearch');"
+												   id="sfnbbm_id_0"><span>无内部编码</span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="jcdw_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测单位">检测单位：</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${detectionUnit!=null && detectionUnit.size() >0}" th:each="dto:${detectionUnit}">
+												<a style='text-decoration:none;cursor:pointer;'
+												   th:onclick="addTj([[jcdw]],[[${dto.csid}]],[[verification_formSearch]]);"
+												   th:id="'jcdw_id_'+${dto.csid}">
+													<span th:text="${dto.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+			       	  		<div id="yzlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="验证类别">验证类别：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${verificationList !=null && verificationList.size() >0}" th:each="list:${verificationList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yzlb]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'yzlb_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                       		<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="yzjg_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="验证结果">验证结果：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${verificationresultList !=null && verificationresultList.size() >0}" th:each="list:${verificationresultList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yzjg]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'yzjg_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="khtz_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="客户通知">客户通知：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${clientnoticeList !=null && clientnoticeList.size() >0}" th:each="list:${clientnoticeList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[khtz]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'khtz_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="qf_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="区分">区&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;分：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${distinguishList !=null && distinguishList.size() >0}" th:each="list:${distinguishList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[qf]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'qf_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="jcxm_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检测项目">检测项目：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${detectlist !=null && detectlist.size() >0}" th:each="list:${detectlist}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[jcxm]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'jcxm_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                       		<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="yblx_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="标本类型">标本类型：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${samplelist !=null && samplelist.size() >0}" th:each="list:${samplelist}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yblx]],[[${list.csid}]],[[verification_formSearch]]);" th:id="'yblx_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                       		<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+			                 		</div>
+			             		</div>
+			             	</div>
+							<div id="shzt_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态" >审核状态：</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration:none;cursor:pointer;' onclick="addTj('shzt','00','verification_formSearch');" id="shzt_id_00"><span>未提交</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;' onclick="addTj('shzt','10','verification_formSearch');" id="shzt_id_10"><span>审核中</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;' onclick="addTj('shzt','80','verification_formSearch');" id="shzt_id_80"><span>审核通过</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;' onclick="addTj('shzt','15','verification_formSearch');" id="shzt_id_15"><span>审核不通过</span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="lcxh_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核岗位">审核岗位：</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${xtshDtos !=null && xtshDtos.size() >0}" th:each="list:${xtshDtos}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[lcxh]],[[${list.lcxh}]],[[verification_formSearch]]);" th:id="'lcxh_id_'+${list.lcxh}">
+													<span th:text="${list.spgwmc}"></span>
+												</a>
+											</li>
+										</ul>
+										<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+									</div>
+								</div>
+							</div>
+							<div id="lrsj_format_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="录入时间">录入时间：</label>
+									<div class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+										&nbsp;&nbsp;<input id="start" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+										<input id="end" class="form-control" placeholder="结束日期" validate="{required:true}" />
+									</div>
+								</div>
+							</div>
+			       	  	</div>
+			       	</div>
+			    </div>
+			</div>
+		</div>
+		<input  type="hidden" id="lcxh_id_tj" name="lcxh_id_tj">
+		<input  type="hidden" id="yzlb_id_tj" name="yzlb_id_tj">
+		<input type="hidden" id="sfnbbm_id_tj" name="sfnbbm_id_tj">
+		<input  type="hidden" id="yzjg_id_tj" name="yzjg_id_tj">
+		<input  type="hidden" id="khtz_id_tj" name="khtz_id_tj">
+		<input  type="hidden" id="qf_id_tj" name="qf_id_tj">
+		<input  type="hidden" id="yblx_id_tj" name="yblx_id_tj">
+		<input  type="hidden" id="jcxm_id_tj" name="jcxm_id_tj">
+		<input  type="hidden" id="jcdw_id_tj" name="jcdw_id_tj">
+		<input  type="hidden" id="shzt_id_tj" name="shzt_id_tj">
+		<input  type="hidden" id="lrsj_format_tj" name="lrsj_format_tj">
+		<div th:include="common/btn/ancz.html"></div>
+		<table id="verification_list" class="table table-hover table-bordered table-hidden"></table>
+	</form>
+</div>
+</body>
+</html>

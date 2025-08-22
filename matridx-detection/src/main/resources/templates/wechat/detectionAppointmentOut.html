@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="referrer" content="never">
+    <meta content="webkit" name="renderer" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Copyright" content="matridx" />
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+    <title>检测预约</title>
+    <script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+    <script type="text/javascript" src="/js/plugins/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/plugins/vue/vue.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="/css/weui.css">
+    <link rel="stylesheet" href="/css/appointment.css">
+    <style>
+        input::-webkit-input-placeholder {
+            /* placeholder颜色  */
+            color: #aab2bd;
+        }
+        .weui-btn_disabled{
+            color: rgba(0,0,0,0.2);
+            background-color: #f2f2f2;
+        }
+    </style>
+
+</head>
+<body style="font-size: 12px; background:#3c7bfb">
+<input id="wxid" type="hidden" name="wxid" th:value="${wxid}">
+<input id="hzxxDto" type="hidden" name="hzxxDto" th:value="${hzxxDto}">
+<input id="hzid" type="hidden" name="hzid" th:value="${hzxxDto.hzid}">
+<input id="zjlxid" type="hidden" name="zjlxid" th:value="${hzxxDto.zjlx}">
+<input id="xb" type="hidden" name="xb" th:value="${hzxxDto.xb}">
+<input id="nl" type="hidden" name="nl" th:value="${hzxxDto.nl}">
+<input id="jcxmlist" type="hidden" name="jcxmlist" th:value="${jcxmlist}">
+<input id="updateFlag" type="hidden" name="updateFlag" th:value="${updateFlag}">
+<input id="sfqr" type="hidden" name="sfqr" th:value="${hzxxDto.sfqr}">
+<input id="sfid" type="hidden" name="sf" th:value="${hzxxDto.sf}">
+<input id="csid" type="hidden" name="cs" th:value="${hzxxDto.cs}">
+<input id="qyid" type="hidden" name="qy" th:value="${hzxxDto.qy}">
+<input id="cyd" type="hidden" name="cyd" th:value="${hzxxDto.cyd}">
+<input id="fkje" type="hidden" name="fkje" th:value="${fkje}">
+<input id="fzjcid" type="hidden" name="fzjcid" th:value="${hzxxDto.fzjcid}">
+<input type="hidden" id="ywlx" name="ywlx" th:value="${ywlx}">
+<div id="app">
+    <div class="progress">
+        <img src="/images/logoIn-biology-b.png" style="width: 25%">
+    </div>
+    <div class="container" id="appointmentInfo">
+        <div id="appointment" class="box">
+            <form id="detectionAppointment_form" onchange="completeAll()" action="/wechat/detectionAppointmentSave">
+                <div class="help" style="text-align: left"><span>请填写个人信息</span></div>
+
+                <div class="item-input">
+                    <label for="">真实姓名<span style="color: red;">*</span></label>
+                    <input type="text" id="xm" autocomplete="off" th:readonly="${hzxxDto.sfqr eq '1'}" onblur="getXm()" placeholder="请输入真实姓名" th:value="${hzxxDto.xm}">
+                </div>
+                <div class="item-input" onclick="getZjlx()">
+                    <label for="">证件类型<span style="color: red;">*</span></label>
+                    <input type="text" id="zjlx" readonly autocomplete="off" th:value="${hzxxDto.zjlxmc}"/>
+                </div>
+                <div class="item-input">
+                    <label for="">证件号码<span style="color: red;">*</span></label>
+                    <input type="text" id="zjh" autocomplete="off" th:readonly="${hzxxDto.sfqr eq '1' || updateFlag eq 'updateFlag'}" onblur="IDCardNumberComplete()" placeholder="请输入证件号码" th:value="${hzxxDto.zjh}">
+                </div>
+                <div class="item-input">
+                    <label for="">手机号码<span style="color: red;">*</span></label>
+                    <input type="number" id="sj" autocomplete="off" onblur="PhoneVerify()" maxlength="11" placeholder="请输入手机号码" th:value="${hzxxDto.sj}">
+                </div>
+                <div class="item-input">
+                    <label for="">现居住地<span style="color: red;">*</span></label>
+                    <input type="text" id="sf" onclick="changeProvince()" readonly autocomplete="off" placeholder="请选择省份">
+                    <input type="text" id="cs" onclick="changeCity()" readonly autocomplete="off" placeholder="请选择城市">
+                </div>
+                <div class="item-input">
+                    <input type="text" id="xxdz" autocomplete="off" placeholder="请输入详细地址" th:value="${hzxxDto.xxdz}">
+                </div>
+                <div class="item-input" style="height: auto;min-height: .88rem;">
+                    <label for="">检测项目<span style="color: red;">*</span></label>
+                    <div class="RadioStyle" id="jcxms" onchange="getJcxms()" th:if="${jcxmlist!=null && jcxmlist.size() > 0}">
+                        <div th:each="jcxm:${jcxmlist}">
+                            <input type="checkbox" th:id="${jcxm.csid}" th:name="jcxms" style="display: none" th:value="${jcxm.csmc}" th:checked="${jcxm.checked eq '1'}"/>
+                            <label th:for="${jcxm.csid}" th:text="${jcxm.csmc}"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-input" onclick="getYyjcrq()">
+                    <label for="">检测时间<span style="color: red;">*</span></label>
+                    <input type="text" id="yyjcrq" readonly autocomplete="off" placeholder="请选择检测时间" th:value="${hzxxDto.yyjcrq}">
+                </div>
+                <!--<div class="item-input" style="height: auto;min-height: .88rem;" onclick="changeJcddz()">
+                    <label for="">检测地址<span style="color: red;">*</span></label>
+                    <div class="weui-cell__bd weui-flex" style="padding: 5px 0">
+                        <p id="jcddz" disabled style="color:#aab2bd" th:text="请选择采样点"></p>
+                    </div>
+                </div>-->
+                <div class="weui-form__tips-area" style="margin: 0 -10px;">
+                    <label id="erroMsg" for="weuiAgreeCheckbox" class="weui-agree" style="padding: 8px 0 0 0;">
+                        <span class="weui-agree__text" style="color: black;" ><span style="font-weight: bolder">注： </span>本采样点仅对<span style="font-weight: bolder;color: #FF5722;">&nbsp;绿码&nbsp;</span>人员进行检测，<br/><span style="font-weight: bolder;color: #FF5722;">橙码、黄码、红码&nbsp;</span>人员请自行前往就近医院进行检测。</span>
+                    </label>
+                </div>
+                <div class="weui-form__tips-area">
+                    <label id="weuiAgree" for="weuiAgreeCheckbox" class="weui-agree">
+                        <input id="weuiAgreeCheckbox" type="checkbox" class="weui-agree__checkbox" style="color:#aab2bd">
+                        <span class="weui-agree__text" style="color:#aab2bd">阅读并同意<a onclick="getWeuiAgree()">《相关条款》</a></span>
+                    </label>
+                </div>
+                <div class="weui-form__extra-area" style="margin:0">
+                    <input type="button" class="weui-btn weui-btn_primary weui-btn" id="submitAppointment" onclick="editconfirm(event);" style="margin-bottom: 10px" th:value="${updateFlag eq 'updateFlag'?'修改':'预约'}">
+                    <div class="weui-footer"></div>
+                </div>
+            </form>
+        </div>
+        <div id="agreeBook" class="box" style="height: 70%" hidden>
+            <form id="agreeBook_form">
+                <div class="help" style="text-align: center;font-size: 0.4rem"><span>知情同意书</span></div>
+                <div class="item-input" style="height: auto;padding: 0;display: block;color: black">
+                    <div>
+                        <p>1.我已阅读并充分理解本知情同意书内容，包括检测性质、必要性、检测范围、预期目的、局限性、潜在风险等，所有疑问已得到解答，经本人及家属慎重考虑，同意进行检测并配合提交必要真实信息。我理解检测结果需由医师结合临床信息综合判断，我接受回访。</p>
+                        <p>2.我理解检测机构将按有关规定保留标本和数据用于复核。</p>
+                    </div>
+                    <div style="text-align: center">检测知情同意书</div>
+                    <div>
+                        <p>1.检测项目概况</p>
+                        <p>本检测采用PCR扩增和荧光探针相结合的方法，针对“2019新型冠状病毒”的高度保守区域以及内参基因设计荧光检测的特异性的引物探针进行检测，实现对标本中2019新型冠状病毒核酸的定性检测，辅助临床诊断。</p>
+                        <p>2.标本检测流程</p>
+                        <p>受检者按照标准标本采集及送检流程采集咽拭子和或肺泡灌洗液标本，经送检单位灭活处理和妥善包装后，由合规物流送至检测机构进行检测分析。报告以 PDF 电子版形式发送给送检单位后转交受检者；或通过“杰毅医检”公众号自助查询报告。</p>
+                        <p>3.检测局限性</p>
+                        <p>3.1本检测技术检测限为100copies/mL，低于该检测限不能保证可以检出。</p>
+                        <p>3.2本检测结果仅供参考，对疑似病人的诊治应由医师结合症状、病史、其他实验室检查等情况综合考虑。</p>
+                        <p>3.3有关不准确结果的可能性分析：不合理的标本采集、转运及处理、标本中RNA含量过低均可导致检测失败或结果不准确；检测的靶序列区域出现变异或者其他原因导致的序列改变可能会导致不准确结果；未经验证的其他干扰因素或者核酸反应抑制因子也可能导致不准确结果等。</p>
+                        <p>4.检测结果与报告</p>
+                        <p>本检测只对本次送检的标本负责，如果检测者采样后与潜伏期或新冠状病毒感染患者接触而受感染不在此次检测范围内。</p>
+                    </div>
+                </div>
+                <div class="weui-form__extra-area" style="margin:0">
+                    <div type="button" class="weui-btn weui-btn_primary weui-btn" id="closeWeuiAgree" onclick="closeWeuiAgree()" style="margin-top: 10px">确定</div>
+                    <div class="weui-footer"></div>
+                </div>
+            </form>
+        </div>
+        <div id="qrCodePage" class="box" hidden>
+            <form id="qrCodePage_form" action="">
+                <div class="weui-msg" style="background-color: white;padding-top: 0;">
+                    <div class="weui-msg__text-area" style="padding: 10px;margin: 0">
+                        <h5 class="weui-msg__title" style="color:#07c160;margin: 0;padding:0">预约成功！</h5>
+                        <h5 id="info" class="weui-msg__title" style="color:#191919;margin: 0;padding:0"></h5>
+                        <div id="qrcode" style="margin: 10px"></div>
+                        <h5 class="weui-msg__title" style="color:#191919;margin: 0;padding:0">请截屏保存</h5>
+                        <h5 id="cyddz" class="weui-msg__title" style="color:#191919;margin: 0;padding:0"></h5>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="copyright">
+        <p>杭州杰毅生物技术有限公司</p>
+        <p>Hangzhou Matridx Biotechnology Co.,Ltd.</p>
+    </div>
+</div>
+<script type="text/javascript" src="/js/weui/zepto.min.js"></script>
+<script type="text/javascript" src="/js/weui/jweixin-1.0.0.js"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/wechat/detectionAppointmentOut.js?v=2022030701"></script>
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>送检统计（周报）</title>
+	<script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+	<script type="text/javascript" src="/js/wechat/statistics/statistics_weekly_lead.js"></script>
+	<script type="text/javascript" src="/js/plugins/echarts/china.js"></script>
+	<script type="text/javascript" src="/js/wechat/statistics/chartMap_lead.js"></script>
+	<style type="text/css">
+		.titletop{
+			position: absolute;
+			padding:15px;
+			padding-top:22px;
+			left:0px;
+			top:-5px;
+		}
+
+		#leadStatis .ocFlag{
+			padding-left:22px;
+		}
+		#tab1{
+			width:100%;
+			border:1px solid #C9C9C9;
+		}
+		#tab1 thead tr{
+			background-color:#00B2EE;
+			height:40px;
+		}
+		#tab1 th{
+			border:1px solid #C9C9C9;
+			text-align: center;
+		}
+		#tab1 td{
+			border:1px solid #C9C9C9;
+			text-align: center;
+		}
+		#tab1 .yblx_td{
+			width:25%;
+		}
+
+		#tab1 tbody .yblx_td{
+			background-color:#E0FFFF;
+		}
+		#tab1 .other_td{
+			width:25%;
+		}
+		#tab2{
+			width:100%;
+			border:1px solid #C9C9C9;
+		}
+		#tab2 thead tr {
+			height:35px;
+		}
+		#tab2 thead tr th {
+			border:1px solid #C9C9C9;
+			padding:5px;
+			text-align:center;
+		}
+		#tab2 tbody tr td {
+			border:1px solid #C9C9C9;
+			padding:5px;
+			text-align:center;
+		}
+		#tab2 .first_td:nth-child(odd){
+			background:#E0EEE0;
+		}
+		#tabAttainmentRate{
+			width:100%;
+			border:1px solid #C9C9C9;
+		}
+		#tabAttainmentRate thead tr{
+			background-color:#00B2EE;
+			height:40px;
+		}
+		#tabAttainmentRate tr{
+			cursor: pointer;
+		}
+		#tabAttainmentRate th{
+			border:1px solid #C9C9C9;
+			text-align: center;
+		}
+		#tabAttainmentRate td{
+			border:1px solid #C9C9C9;
+			text-align: center;
+		}
+		#tabAttainmentRate .qu_td{
+			width:25%;
+		}
+
+		#tabAttainmentRate tbody .qu_td{
+			background-color:#E0FFFF;
+		}
+		#tabAttainmentRate .other_td{
+			width:25%;
+		}
+	</style>
+</head>
+<body>
+<div class="body-content tab-content" id="weeklyStatis">
+	<input type="hidden" name="jsrqstart" id="jsrqstart" th:value="${sjxxDto.jsrqstart}"/>
+	<input type="hidden" name="jsrqend" id="jsrqend" th:value="${sjxxDto.jsrqend}"/>
+	<input type="hidden" name="load_flg" id="load_flg" th:value="${load_flg}">
+	<div class="row" id="all">
+		<div class="col-md-12 col-sm-12 col-xs-12 padding_t7">
+			<div class="alert alert-info" role="alert">
+				温馨提醒：D,W,M,Q,Y为切换按钮。D为按天数据统计，W为按周数据统计，M为按月数据统计，Q为按季度统计，Y为按年数据统计
+			</div>
+		</div>
+		<!--<div class="col-md-12 col-sm-12 col-xs-12 padding_t7">
+			<div style="padding-bottom: 10px;border: 1px solid #bce8f1;margin-bottom: 10px;">
+				<button id="qytj_default" name="qytj" type="button" class="btn btn-primary btn-xs" style="margin-top:10px;margin-left:10px;" onclick="qytjlistweekly()">
+					区域统计 <span class="glyphicon glyphicon-chevron-right"></span>
+				</button>
+			</div>
+		</div>-->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span>实验标本数信息</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj5q" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj5m" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj5w" class="tj1 ocFlag pull-right" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"></i></span></a>
+					<a href="javascript:void(0);" id="tj5d" class="tj1 ocFlag pull-right bechoosed" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_ybqk" style="height: 300px;margin-top:40px;">
+			</div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span>ResFirst™标本数</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+<!--			<div class="col-sm-5 col-sm-5 col-xs-5" style="position: absolute;top:35px;padding-right:5px;padding-left:5px;z-index:99;">-->
+<!--				<div class="form-group">-->
+<!--					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">-->
+<!--						周期-->
+<!--					</label>-->
+<!--					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">-->
+<!--						<input type="number" id="zq_rfs" name="zq" dm="rfs" tjm="" class="form-control " value="7"/>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead_rfs" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="rfs5q" class="tj1 ocFlag pull-right" title="年" dm="rfs" method="getRfsSjxxYearBySy"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="rfs5m" class="tj1 ocFlag pull-right" title="月" dm="rfs" method="getRfsSjxxMonBySy"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="rfs5w" class="tj1 ocFlag pull-right" title="周" dm="rfs" method="getRfsSjxxWeekBySy"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"></i></span></a>
+					<a href="javascript:void(0);" id="rfs5d" class="tj1 ocFlag pull-right bechoosed" title="日" dm="rfs" method="getRfsSjxxDayBySy"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_rfs" style="height: 300px;margin-top:40px;">
+			</div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">标本类型</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj1q" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj1m" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj1w" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="tj1d" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_ybtj" style="height:300px;margin-top:40px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">实验测试数信息</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj2q" class="tj1 ocFlag pull-right"  title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj2m" class="tj1 ocFlag pull-right"  title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj2w" class="tj1 ocFlag pull-right"  title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" ></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw" ></i></span></a>
+					<a href="javascript:void(0);" id="tj2d" class="tj1 ocFlag pull-right bechoosed" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="margin-left:30%;color: #20dbfd;text-shadow: 0 0 25px #00d8ff;">D</i></span></a>
+					<a id="jcdw_sys" name="jcdw" class="btn btn-primary btn-xs tj1 ocFlag pull-right" style="margin-right: 10px;line-height:25px">其他统计 <span class="glyphicon glyphicon-chevron-right"></span></a>
+				</div>
+			</div>
+
+			<div id="echarts_week_lead_jcxmnum" style="height:300px;margin-top:40px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">实验收费测试数</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj4q" class="tj1 ocFlag pull-right"  title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj4m" class="tj1 ocFlag pull-right"  title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj4w" class="tj1 ocFlag pull-right"  title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" ></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw" ></i></span></a>
+					<a href="javascript:void(0);" id="tj4d" class="tj1 ocFlag pull-right bechoosed" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="margin-left:30%;color: #20dbfd;text-shadow: 0 0 25px #00d8ff;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_ybxxType" style="height:300px;margin-top:40px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span>ResFirst™平均用时(分)</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div class="col-sm-5 col-sm-5 col-xs-5" style="position: absolute;top:35px;padding-right:5px;padding-left:5px;z-index:99;">
+				<div class="form-group">
+					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">
+						周期
+					</label>
+					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">
+						<input type="number" id="zq_rfspjys" name="zq" dm="rfspjys" tjm="" class="form-control " value="7"/>
+					</div>
+				</div>
+			</div>
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead_rfspjys" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="rfspjys5q" class="tj1 ocFlag pull-right" title="年" dm="rfspjys" method="getRFSAvgTimeByYear"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="rfspjys5m" class="tj1 ocFlag pull-right" title="月" dm="rfspjys" method="getRFSAvgTimeByMon"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="rfspjys5w" class="tj1 ocFlag pull-right" title="周" dm="rfspjys" method="getRFSAvgTimeByWeek"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"></i></span></a>
+					<a href="javascript:void(0);" id="rfspjys5d" class="tj1 ocFlag pull-right bechoosed" title="日" dm="rfspjys" method="getRFSAvgTimeByDay"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_rfspjys" style="height: 300px;margin-top:40px;">
+			</div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span>ResFirst™生命周期(时)</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div class="col-sm-5 col-sm-5 col-xs-5" style="position: absolute;top:35px;padding-right:5px;padding-left:5px;z-index:99;">
+				<div class="form-group">
+					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">
+						周期
+					</label>
+					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">
+						<input type="number" id="zq_rfszq" name="zq" dm="rfszq" tjm="" class="form-control " value="7"/>
+					</div>
+				</div>
+			</div>
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead_rfszq" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="rfszq5q" class="tj1 ocFlag pull-right" title="年" dm="rfszq" method="getRfsZqByYear"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="rfszq5m" class="tj1 ocFlag pull-right" title="月" dm="rfszq" method="getRfsZqByMon"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="rfszq5w" class="tj1 ocFlag pull-right" title="周" dm="rfszq" method="getRfsZqByWeek"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"></i></span></a>
+					<a href="javascript:void(0);" id="rfszq5d" class="tj1 ocFlag pull-right bechoosed" title="日" dm="rfszq" method="getRfsZqByDay"><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_rfszq" style="height: 300px;margin-top:40px;">
+			</div>
+		</div>
+		<!-- 统计上上周的反馈信息 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">上上周临床反馈统计</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div id="echarts_week_lead_lcfkList" style="height:300px;"></div>
+		</div>
+
+		<!--标本合作伙伴 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">标本阳性率</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj8q" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj8m" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj8w" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="tj8d" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<span id="tjsj_jyjgOfYblx" style="width:100%;display:inline-block;font-size: 13px !important;color:#A9A9A9;margin-top:40px;"></span>
+			<div id="jyjgOfYblx"  class="col-md-12 col-sm-12 col-xs-12" style="margin-top:10px;height:220px; padding-left:2px;padding-right:3px;"></div>
+		</div>
+
+		<!-- 科室的圆饼统计图 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">送检科室</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj6q" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj6m" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj6w" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="tj6d" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_ksList" style="height:300px;margin-top:20px;"></div>
+		</div>
+
+		<!-- 增加合作医院数，科室数，医生数的统计表 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">合作医疗机构</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<span id="tjsj_sjdwOfsjysOfks" style="width:100%;display:inline-block;font-size: 13px !important;color:#A9A9A9;margin-top:20px;"></span>
+			<div id="sjdwOfsjysOfks"  class="col-md-12 col-sm-12 col-xs-12"  style="height:260px;margin-top:10px;  padding-left:2px;padding-right:3px"></div>
+		</div>
+
+		<!-- 合作伙伴 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">送检排名</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="tj3q" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="tj3m" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="tj3w" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="tj3d" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_dbtj" style="height:300px;margin-top:20px;"></div>
+		</div>
+		<!-- 复检情况 -->
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">复测情况</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="fjq" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="fjm" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="fjw" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="fjd" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_fjsq" style="height:300px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">废弃标本</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<!-- 条件选择框 -->
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+				<div id="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" id="fqq" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" id="fqm" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" id="fqw" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" id="fqd" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+				</div>
+			</div>
+			<div id="echarts_week_lead_fqyb" style="height:300px;margin-top:20px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">标本日期统计</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div id="echarts_week_lead_rqtj" style="height:300px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">报告结果统计</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div id="echarts_week_lead_bgjgtj" style="height:300px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:400px;">
+			<span style="color:#000000;">标本周统计</span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+			<div id="echarts_week_lead_weektj" style="height:300px;"></div>
+		</div>
+		<!--<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" th:each="sjhbxxDto:${sjhbxxDtos}" style="height:430px;margin-top:20px;">
+			<span th:text="${sjhbxxDto.flmc}+'测试数'"></span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div class="col-sm-12 col-sm-12 col-xs-12" style="position:absolute;padding:0px;">
+				<div class="col-sm-5 col-sm-5 col-xs-5" style="top:50px;padding-right:5px;padding-left:5px;z-index:109;">
+					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">
+						类别
+					</label>
+					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">
+						<select th:id="'zfl_'+${sjhbxxDto.fl}" name="zfl" value=""  class="form-control chosen-select" style="height:34px">
+							<option  value="">全部</option>
+							<option  th:if="${sjhbxxDto.zfllist!=null && sjhbxxDto.zfllist.size() > 0}" th:each="zfllist:${sjhbxxDto.zfllist}" th:value="${zfllist.zfl}" th:text="${zfllist.zflmc}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="col-sm-6 col-sm-6 col-xs-6" style="top:50px;padding-right:5px;padding-left:5px;z-index:109;">
+					<button th:id="'hzhb_'+${sjhbxxDto.fl}" name="hzhb" type="button" class="btn btn-primary btn-xs pull-right info_clear">
+						合作伙伴 <span class="glyphicon glyphicon-chevron-right"></span>
+					</button>
+				</div>
+			</div>
+			<div class="col-sm-5 col-sm-5 col-xs-5" style="position: absolute;top:35px;padding-right:5px;padding-left:5px;z-index:99;">
+				<div class="form-group">
+					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">
+						周期
+					</label>
+					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">
+						<input type="number" th:id="'zq_'+${sjhbxxDto.fl}" name="zq" th:dm="${sjhbxxDto.fl}" tjm="fltj" class="form-control " value="7"/>
+					</div>
+				</div>
+			</div>
+			&lt;!&ndash; 条件选择框 &ndash;&gt;
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;z-index:98;">
+				<div th:id="'ybxxhead_'+${sjhbxxDto.fl}" name="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" th:id="'tj7q_'+${sjhbxxDto.fl}" name="tj7q" th:dm="${sjhbxxDto.fl}" class="tj1 ocFlag pull-right" method="getFlByYear" title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7m_'+${sjhbxxDto.fl}" name="tj7m" th:dm="${sjhbxxDto.fl}" class="tj1 ocFlag pull-right" method="getFlByMon" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7w_'+${sjhbxxDto.fl}" name="tj7w" th:dm="${sjhbxxDto.fl}" class="tj1 ocFlag pull-right" method="getFlByWeek" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" ></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw" ></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7d_'+${sjhbxxDto.fl}" name="tj7d" th:dm="${sjhbxxDto.fl}" class="tj1 ocFlag pull-right bechoosed" method="getFlByDay" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="margin-left:30%;color: #20dbfd;text-shadow: 0 0 25px #00d8ff;">D</i></span></a>
+				</div>
+			</div>
+			<div th:id="'echarts_week_lead_fltj_'+${sjhbxxDto.fl}" th:dm="${sjhbxxDto.fl}" name="echarts_week_lead_fltj" style="height:300px;top:100px;"></div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;margin-top:20px;">
+			<span th:text="未分类测试数"></span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			<div class="col-sm-12 col-sm-12 col-xs-12" style="position:absolute;padding:0px;">
+				<div class="col-sm-11 col-sm-11 col-xs-11" style="top:50px;padding-right:5px;padding-left:5px;z-index:109;">
+					<button th:id="'hzhb_default'" name="hzhb" type="button" class="btn btn-primary btn-xs pull-right info_clear">
+						合作伙伴 <span class="glyphicon glyphicon-chevron-right"></span>
+					</button>
+				</div>
+			</div>
+			<div class="col-sm-5 col-sm-5 col-xs-5" style="position: absolute;top:35px;padding-right:5px;padding-left:5px;z-index:99;">
+				<div class="form-group">
+					<label for="" class="col-sm-4 col-sm-4 col-xs-4 control-label" style="padding-right:2px;padding-left:5px;padding-top:7px;">
+						周期
+					</label>
+					<div class="col-sm-8 col-sm-8 col-xs-8" style="padding:0px;">
+						<input type="number" th:id="'zq_default'" name="zq" th:dm="default" tjm="fltj" class="form-control " value="7"/>
+					</div>
+				</div>
+			</div>
+			&lt;!&ndash; 条件选择框 &ndash;&gt;
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;z-index:98;">
+				<div th:id="'ybxxhead_default'" name="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" th:id="'tj7q_default'" name="tj7q" th:dm="default" class="tj1 ocFlag pull-right" method="getFlByYear" title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7m_default'" name="tj7m" th:dm="default" class="tj1 ocFlag pull-right" method="getFlByMon" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7w_default'" name="tj7w" th:dm="default" class="tj1 ocFlag pull-right" method="getFlByWeek" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" ></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw" ></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj7d_default'" name="tj7d" th:dm="default" class="tj1 ocFlag pull-right bechoosed" method="getFlByDay" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class=" roundw" style="margin-left:30%;color: #20dbfd;text-shadow: 0 0 25px #00d8ff;">D</i></span></a>
+				</div>
+			</div>
+			<div th:id="'echarts_week_lead_fltj_default'" th:dm="default" name="echarts_week_lead_fltj" style="height:300px;top:100px;"></div>
+		</div>-->
+		<!--<div class="col-md-3 col-sm-6 col-xs-12 padding_t7" th:each="xszbDto:${xszbDtos}" style="height:430px;margin-top:20px;">
+			<span th:text="${xszbDto.qymc}+'销售达成率'"></span>
+			<img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+			&lt;!&ndash; 条件选择框 &ndash;&gt;
+			<div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;z-index:98;">
+				<div th:id="'ybxxhead_'+${xszbDto.qyid}" name="ybxxhead" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+					<a href="javascript:void(0);" th:id="'tj9y_'+${xszbDto.qyid}" name="tj9y" th:dm="${xszbDto.qyid}" class="tj9 ocFlag pull-right" method="getFlByYear" title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundy" ></i><i  class="fa fa-yahoo fa-stack-1x roundy"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj9q_'+${xszbDto.qyid}" name="tj9q" th:dm="${xszbDto.qyid}" class="tj9 ocFlag pull-right bechoosed" method="getFlByQuarter" title="季度" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-quora fa-stack-1x roundq" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+					<a href="javascript:void(0);" th:id="'tj9m_'+${xszbDto.qyid}" name="tj9m" th:dm="${xszbDto.qyid}" class="tj9 ocFlag pull-right" method="getFlByMon" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm" ></i><i  class="fa fa-maxcdn fa-stack-1x roundm"  ></i></span></a>
+				</div>
+			</div>
+			<span th:id="'tjsj_salesAttainmentRate_'+${xszbDto.qyid}" style="width:100%;display:inline-block;font-size: 13px !important;color:#A9A9A9;margin-top:20px;"></span>
+			<div th:id="'echarts_week_lead_salesAttainmentRate_'+${xszbDto.qyid}"  th:dm="${xszbDto.qyid}" name="salesAttainmentRate" class="col-md-12 col-sm-12 col-xs-12"
+				 style="margin-top:30px;height:300px; padding-left:2px;padding-right:3px;overflow-y: auto;width:100%"></div>
+		</div>-->
+		<div class="col-sm-12 col-sm-12 col-xs-12" id="centerleadmap" style="height:270px;width:100%;margin-top:0px;padding:0px;">
+			<img src="/images/censusimages/ksh42.png" style="position:absolute;left:0;top:0;">
+			<img src="/images/censusimages/ksh43.png" style="position:absolute;right:0;top:0;">
+			<img src="/images/censusimages/ksh45.png" style="position:absolute;left:0;bottom:0;">
+			<img src="/images/censusimages/ksh44.png" style="position:absolute;right:0;bottom:0;">
+			<div class="col-sm-12 col-sm-12 col-xs-12" id="leadmap" style="height:100%;"></div>
+		</div>
+	</div>
+</div>
+</body>
+
+</html>

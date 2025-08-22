@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.las.netty.dao.post.IWksyypDao" >
+<update id="updateSyypList" parameterType="List">
+<foreach collection="list" separator=";" open=""
+				close=" " item="item" index="index">
+	update igams_wksyyp set xx=#{item.xx},yx=#{item.yx}		
+	where nbbh=#{item.ybbh}	and x=#{item.x}	and y=#{item.y}
+	and wkid = #{item.wkid}
+</foreach>
+</update>
+<select id="getWzxxMapList" parameterType="Map"
+		resultType="Map">
+		SELECT
+		xx,yx,nbbh ybbh,
+		wjyytj,
+		wjxsyjytj
+		
+		FROM
+		igams_wksyyp 
+		WHERE
+		 wkid = #{wkid}
+	</select>
+	
+	<select id="generateReportList" parameterType="String" resultType="WksyypDto">
+       select case when substring(wksyyp.nbbh,1,1)='X'  or substring(wksyyp.nbbh,1,1)='Y' then 'MD'||wksyyp.nbbh || '-' || wksyyp.xx || '-' || wksyyp.yx || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') when substring(wksyyp.nbbh,1,2)='SP' then wksyyp.nbbh || '-' || wksyyp.xx || '-' || wksyyp.yx || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') else 'MDL001-' || wksyyp.nbbh || '-' || wksyyp.xx || '-' || wksyyp.yx || '-' || to_char(LOCALTIMESTAMP,'YYYYMMDD') end libraryName,wksyyp.quantity
+		from igams_wksyyp wksyyp
+		<where>
+			 wksyyp.wkid=#{wkid}
+		</where>     
+   	</select>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_wksyyp
+			<set>		    
+				wjyytj=#{item.wjyytj},wjxsyjytj=#{item.wjxsyjytj}
+			</set>
+			<where>
+				nbbh=#{item.nbbh} and xx=#{item.xx} and yx=#{item.yx}
+			</where>
+			</foreach>
+		</if>
+	</update>
+
+	<insert id="insertList" parameterType="List">
+		insert into igams_wksyyp(sjypid,nbbh)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.sjypid},#{item.nbbh}
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	<update id="update" parameterType="WksyypDto">
+		update igams_wksyyp 
+		<set>
+			gdid=#{gdid}
+		</set>
+		<where>
+			sjypid=#{sjypid}
+		</where>
+	</update>
+	
+	<update id="updateDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_wksyyp
+			<set>		    
+				zbf=#{item.zbf},nbbh=#{item.nbbh},tcsjph=#{item.tcsjph},jksjph=#{item.jksjph},jth=#{item.jth}
+			</set>
+			<where>
+				sjypid=#{item.sjypid}
+			</where>
+			</foreach>
+		</if>
+	</update>
+</mapper>

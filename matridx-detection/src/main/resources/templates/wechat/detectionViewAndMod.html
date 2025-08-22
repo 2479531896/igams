@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="referrer" content="never">
+        <meta content="webkit" name="renderer"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="Copyright" content="matridx"/>
+        <link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+        <title>查看/修改已预约的检测</title>
+        <script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+        <script type="text/javascript" src="/js/plugins/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+        <link rel="stylesheet" href="/css/weui.css">
+        <!--<link rel="stylesheet" href="/css/appointment.css">-->
+        <style>
+            .weui-btn_disabled {
+                color: rgba(0, 0, 0, 0.2);
+                background-color: #f2f2f2;
+            }
+
+            .chooseBtn {
+                color: #00AFEC;
+                /*border-bottom: 2px solid #00AFEC;*/
+
+            }
+            .unChooseBtn {
+                background-color: white;
+            }
+
+            .weui-form-preview__hd {
+                background-color: white;
+            }
+
+            .weui-form-preview__hd:after {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                color: rgba(0, 0, 0, 0.1);
+            }
+
+            .weui-form-preview__bd {
+                background-color: white;
+            }
+
+            .weui-form-preview__ft:before {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                color: rgba(0, 0, 0, 0.1);
+            }
+
+            .weui-form-preview__ft {
+                background-color: white;
+            }
+
+            .weui-form-preview__btn:after {
+                border-left: 1px solid rgba(0, 0, 0, 0.1);
+                color: rgba(0, 0, 0, 0.1);
+            }
+
+            .weui-form-preview__label {
+                color: rgba(0, 0, 0, 0.5)
+            }
+
+            .weui-form-preview__value {
+                color: rgba(0, 0, 0, 0.9)
+            }
+
+            .weui-form-preview__btn_default {
+                color: rgba(0, 0, 0, 0.9);
+            }
+
+            .btn-viewChooseNormal {
+                display: block;
+                /*width: %;*/
+                padding: 10px 16px;
+                font-size: 20px;
+                font-family: "微软雅黑";
+                /* color: #fff; */
+                line-height: 1.5;
+                border-radius: 30px;
+                border: none;
+                background-color: rgba(0, 0, 0, 0.39);
+            }
+
+            @-webkit-keyframes circle {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(-360deg)
+                }
+            }
+
+            .weui-loadmore__tips {
+                color: rgba(0, 0, 0, 0.9);
+            }
+
+            /*.container .box .errorPage {*/
+            /*width: 100%;*/
+            /*padding: 0.45rem 0.25rem 0.4rem 0.25rem;*/
+            /*}*/
+            .weui-navbar__item{
+                position: unset;
+            }
+            html{
+                background-color: #F5F5F5;
+                width: 100%;
+                height: 100%;
+            }
+            ::after{
+                margin: auto;
+                width: 90%;
+            }
+            ::before{
+                margin: auto;
+                width: 90%;
+                height: 1px;
+            }
+            .weui-navbar__item{
+                padding: 0;
+                font-size: 14px;
+                line-height: 40px;
+                font-weight: 600;
+            }
+            .weui-form-preview:after {
+                position: unset;
+            }
+            .weui-panel:after{
+                position: unset;
+            }
+            .weui-panel {
+                margin-top: 8px;
+            }
+            .weui-navbar__item:after {
+                position: unset;
+                border-right: 0px solid rgba(0,0,0,0.1);
+                border-right: 0px solid var(--weui-FG-3);
+            }
+            .weui-navbar:after {
+                border-bottom: 0px solid rgba(0, 0, 0, 0.1);
+                border-bottom: 0px solid var(--weui-FG-3);
+            }
+
+
+            /*#entire:before{*/
+                /*content: " ";*/
+                /*position: absolute;*/
+                /*left: 0;*/
+                /*bottom: 0;*/
+                /*right: 0;*/
+                /*height: 1px;*/
+                /*border-bottom: 2px solid #00AFEC;*/
+                /*width: 15px;*/
+                /*margin: auto;*/
+            /*}*/
+            /*按钮下的横杠*/
+            .anhg:before{
+                content: " ";
+                position: absolute;
+                left: auto;
+                bottom: 0;
+                right: auto;
+                height: 1px;
+                border-bottom: 2px solid #00AFEC;
+                width: 15px;
+            }
+        </style>
+    </head>
+    <body data-weui-theme="light">
+        <div id="app">
+            <div class="container" id="container">
+                <div class="weui-navbar" style="margin: 8px auto; color: black;border-radius: 16px; caret-color: transparent; height: 40px;padding: 0 20px;">
+                    <div id="entire" onclick="getEntire()" class="weui-navbar__item chooseBtn anhg">
+                        <span style="margin-left: -5px;">全部</span>
+                    </div>
+                    <div id="undetect" onclick="getUndetect()" class="weui-navbar__item">
+                        <span style="margin-left: -13px;">待接收</span>
+                    </div>
+                    <div id="detected" onclick="getDetected()" class="weui-navbar__item">
+                        <span style="margin-left: -13px;">已接收</span>
+                    </div>
+                    <div id="overdue" onclick="getOverdue()" class="weui-navbar__item">
+                        <span style="margin-left: -13px;">已过期</span><div class="box1"></div>
+                    </div>
+                </div>
+                <input id="fkje" type="hidden" name="fkje" th:value="${fkje}">
+                <input id="fzjcid" type="hidden" name="fzjcid" th:value="${fzjcid}">
+                <input id="orderno" type="hidden" name="orderno" th:value="${orderno}">
+                <input type="hidden" id="ywlx" name="ywlx" th:value="${ywlx}">
+                <input id="wxid" type="hidden" name="wxid" th:value="${wxid}">
+                <input id="nowDate" type="hidden" name="nowDate" th:value="${nowDate}">
+                <div style="border-radius: 10px 0px 10px 10px;padding-bottom: 5px;">
+                    <div class="page__bd" style="padding: 0px 8px;">
+                        <div id="hzxxList">
+
+                        </div>
+                        <div id="hzxxEntireList">
+
+                        </div>
+                        <div id="hzxxUndetectList">
+
+                        </div>
+                        <div id="hzxxDetectedList">
+
+                        </div>
+                        <div id="hzxxOverdueList">
+
+                        </div>
+                        <div class="weui-loadmore" id="loadMore" hidden>
+                        <span class="weui-primary-loading">
+                          <i class="weui-primary-loading__dot"></i>
+                        </span>
+                            <span class="weui-loadmore__tips">正在加载</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container" id="erroPage" hidden style="padding: 20px 10px">
+                <div class="box">
+                    <form id="erroPage_form" class="errorPage" action="">
+                        <div class="weui-msg" style="background-color:white;">
+                            <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
+                            <div class="weui-msg__text-area" style="padding: 0;">
+                                <h2 class="weui-msg__title" style="color:#191919;">未获取到您的微信</h2>
+                                <h2 class="weui-msg__title" style="color:#191919;">请重新至公众号打开网页</h2>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="container" id="qrCodePage" hidden>
+                <div class="box" style="width: 94%;margin: 3% auto;">
+                    <form id="qrCodePage_form"  action="">
+                        <div class="weui-msg" style="background-color: white;padding-top: 0;border-radius: 16px;height: 700px;">
+                            <div class="weui-msg__text-area" style="padding: 0">
+                                <h2 id="info" class="weui-msg__title" style="color:#666666;font-size: 16px;text-align: left;margin-top: 5%;margin-left: 3%;margin-bottom: 0;"></h2>
+                                <h2 id="dqcyddz" class="weui-msg__title" style="margin-bottom: 50px;color:#666666;font-size: 16px;text-align: left;margin-left: 3%"></h2>
+                                <div id="qrcode" style="margin-bottom: 20px;"></div>
+                                <span style="font-size: 26px;font-weight: 600;">预约码</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="/js/weui/zepto.min.js"></script>
+        <script type="text/javascript" src="/js/weui/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/wechat/detectionViewAndMod.js?v=20220914"></script>
+    </body>
