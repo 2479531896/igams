@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="referrer" content="never">
+	<meta content="webkit" name="renderer"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="Copyright" content="matridx"/>
+	<link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+	<title>完善用户信息</title>
+	<link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+	<link rel="stylesheet" href="/css/weui.css">
+	<style>
+		/**蓝色按钮*/
+		.weui-btn_bule,.weui-btn_primary {
+			color: white;
+			background-color: #00AFEC;
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+			color: rgba(0, 208, 236, 0.98);
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+			background-color: #00e4ec;
+		}
+		#ajaxForm .weui-cell__bd {
+			padding-left: 20px;
+		}
+		.weui-form-preview:before {
+			border: none;
+		}
+	</style>
+</head>
+<body style="background-color: #F5F5F5" data-weui-theme="light">
+<form data-bs-toggle="validation" th:action="${submitUrl}" method="post" id="ajaxForm" class="form-horizontal sl_all_form">
+	<input type="hidden" id="fkje" name="fkje" th:value="${sjxxDto.fkje}"/>
+	<input type="hidden" id="fkbj" name="fkbj" th:value="${sjxxDto.fkbj}"/>
+	<input type="hidden" id="sflx" name="sflx" th:value="${wxyhDto.sflx}"/>
+	<input type="hidden" id="wxid" name="wxid" th:value="${wxyhDto.wxid}"/>
+	<input type="hidden" id="sign" name="sign" th:value="${sign}"/>
+	<input type="hidden" id="fy" name="fy"/>
+	<div class="page__bd">
+		<div class="weui-cells__title" style="margin-top: 8px;">
+			<div>核对用户信息</div>
+		</div>
+		<div style="margin: 10px;border-radius: 10px;background-color: white">
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;font-size: medium">
+				<!--样本编号-->
+				<div class="weui-cell" id="ybbhDiv">
+					<div  class="weui-cell__hd">
+						<label>标本编号<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="ybbh" name="ybbh" th:value="${sjxxDto.ybbh}" type="text" ref="ybbh" class="weui-input" placeholder="请输入标本编号" validate="{required:true,stringMaxLength:32}">
+					</div>
+					<div class="weui-cell__ft">
+						<button id="getQRCode" type="button" class="weui-icon-scan" style="color: #00AFEC"></button>
+					</div>
+				</div>
+				<!--患者姓名-->
+				<div class="weui-cell" id="hzxmDiv">
+					<div class="weui-cell__hd">
+						<label>患者姓名<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="hzxm" name="hzxm" th:value="${sjxxDto.hzxm}" class="weui-input" placeholder="请填写患者姓名" validate="{required:true}">
+					</div>
+				</div>
+				<!--医生电话-->
+				<div class="weui-cell" id="ysdhDiv">
+					<div class="weui-cell__hd">
+						<label>手机号码<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="sj" name="sj" th:value="${wxyhDto.sj}" class="weui-input" placeholder="请填写手机号码" readonly>
+					</div>
+				</div>
+				<!--待付金额-->
+				<div class="weui-cell" id="dfjeDiv" style="display: none">
+					<div class="weui-cell__hd">
+						<label>待付金额<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="pay_je" class="weui-input" type="number" th:value="${sjxxDto.hzxm}" placeholder="请填写患者姓名">
+					</div>
+				</div>
+				<div class="weui-cell" style="padding: 0">
+					<button id="checkUserInfoButton" type="button" class="weui-btn weui-btn_bule" onclick="checkUserInfo();" style="width: 100%;margin: 20px;border-radius: 20px;">查询报告</button>
+					<button id="searchReportListButton" type="button" class="weui-btn weui-btn_bule" onclick="searchReportList();" style="width: 100%;margin: 20px;border-radius: 20px;">查询</button>
+					<button id="pay" type="button" class="weui-btn weui-btn_bule" style="width: 100%;margin: 20px;border-radius: 20px;display: none">付款</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="page__bd" id="reportList" style="font-size: 12px">
+
+	</div>
+	<div id="loading" class="weui-loadmore">
+		<i class="weui-loading"></i>
+		<span class="weui-loadmore__tips">正在加载</span>
+	</div>
+	<div id="noInfo" class="weui-loadmore weui-loadmore_line">
+		<span class="weui-loadmore__tips" style="background-color: #F5F5F5">暂无数据</span>
+	</div>
+	<div id="loadComplete" class="weui-loadmore weui-loadmore_line">
+		<span class="weui-loadmore__tips" style="background-color: #F5F5F5">加载完成</span>
+	</div>
+</form>
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script src="/js/wechat/informed/jquery-labelauty.js"></script>
+<script src="/js/plugins/validation/jquery.validate-min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/informed/wechat_getUserInfo.js?v=20220704.1"></script>
+</body>
+</html>

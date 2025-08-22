@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="referrer" content="never">
+    <meta content="webkit" name="renderer"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Copyright" content="matridx"/>
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+    <title>调整实验室</title>
+    <link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+    <link rel="stylesheet" href="/css/weui.css">
+    <style>
+        .weui-mask {
+            visibility: visible;
+        }
+        /**蓝色按钮*/
+        .weui-btn_bule,.weui-btn_primary {
+            color: white;
+            background-color: #00AFEC;
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+            color: rgba(0, 208, 236, 0.98);
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+            background-color: #00e4ec;
+        }
+    </style>
+</head>
+<body style="background-color: #F5F5F5" data-weui-theme="light">
+<input type="hidden" id="db" name="db" th:value="${db}"/>
+<input type="hidden" id="ids" name="ids" th:value="${ids}"/>
+<input type="hidden" id="sjid" name="sjid" th:value="${sjid}"/>
+<input type="hidden" id="wxid" name="wxid" th:value="${wxid}"/>
+<div  th:if="${sjsyglDtos != null && sjsyglDtos.size() >0}">
+    <div style="font-size: 12px">
+        <div style="background-color: #00AFEC;height: 120px;width: 100%;text-align: center;">
+            <div style="display: flex">
+                <div class="weui-form-preview__item" style="flex: 12;">
+                    <label class="" th:text="${hzxm}" style=" color: rgba(255, 255, 255, 1);font-size:20px;font-family: SourceHanSansCN-Medium;font-weight: 500;padding-top: 30px"></label>
+                </div>
+            </div>
+            <div style="display: flex">
+                <div class="weui-form-preview__item" style="flex: 12;">
+                    <label class="" th:text="'样本编号:'+${ybbh}" style=" color: rgba(255, 255, 255, 1);font-size:16px;font-family: SourceHanSansCN-Regular;font-weight: 500"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="position: absolute;top: 85px;width: 100%">
+        <div style=" background-color: rgba(255, 255, 255, 1);border-radius: 16px;width: 90%;margin-left: 5%;margin-top: 15px;" th:each="dto:${sjsyglDtos}">
+            <div class="weui-form-preview__bd" style="font-size: 14px;font-weight: bolder;padding: 0px 10px">
+                <div style="display: flex">
+                    <div class="weui-form-preview__item" style="flex: 12"><label class=""
+                                                                                 style="float: left;margin-right: 2px;">检测项目：</label>
+                        <span class="weui-form-preview__value"
+                              style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.jcxmmc}"></span>
+                    </div>
+                </div>
+                <div style="display: flex">
+                    <div class="weui-form-preview__item" style="flex: 12"><label class=""
+                                                                                 style="float: left;margin-right: 2px;">检测类型：</label>
+                        <span class="weui-form-preview__value"
+                              style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.jclxdm}"></span>
+                    </div>
+                </div>
+                <div style="display: flex" th:onclick="chooseJcdw([[${dto.syglid}]],[[${dto.sfjs}]]);">
+                    <div class="weui-form-preview__item" style="flex: 12"><label class=""
+                                                                                 style="float: left;margin-right: 2px;">检测单位：</label>
+                        <span class="weui-form-preview__value jcdw"
+                              style="color:#00AFEC;text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:id="${dto.syglid+'_mc'}" th:text='${dto.jcdwmc}'>
+
+                         </span>
+
+                        <input type="hidden" th:id="${dto.syglid+'_id'}" th:value="${dto.jcdw}" readonly/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 15px;" >
+            <button class="weui-btn weui-btn_bule" style="width: 80%;border-radius: 50px;"  onclick="saveSjsy()">保   存</button>
+        </div>
+        <div style="height: 30px"></div>
+    </div>
+
+</div>
+
+<div class="weui-form-preview__bd" style="font-size: 20px;font-weight: bolder;text-align: center;margin-top: 70%;"
+     th:if="${sjsyglDtos == null || sjsyglDtos.size() ==0}">
+    <img src="/images/inspectionServices/inspectionBox.png" style="padding-bottom: 15px">
+    <div style="display: flex">
+        <div class="weui-form-preview__item" style="flex: 12;color: #666666;font-size: 16px;font-family: SourceHanSansCN-Regular;"><label class="" >暂无可调整信息</label>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/informed/wechat_adjust.js?v=20240122v1"></script>
+</body>
+</html>
