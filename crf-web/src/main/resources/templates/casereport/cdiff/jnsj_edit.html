@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+    <meta charset="UTF-8">
+
+    <!--    <script type="text/javascript" src="/js/casereport/cdiff/jnsj_edit.js"></script>-->
+    <script type="text/javascript" src="/js/casereport/vue.js"></script>
+    <script type="text/javascript" src="/js/casereport/element-ui.js"></script>
+    <link   href="/css/casereport/element-ui.css" rel="stylesheet" />
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        .el-input__inner{
+            height: 28px;
+        }
+
+        .sjdiv .el-input__prefix{
+            
+        }
+        .el-table .el-input__prefix{
+            top: -7px;
+        }
+        .el-table .el-input--prefix .el-input__inner {
+            padding-right: 0px;
+            width: 175px;
+        }
+        .el-radio{
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 8px;
+        }
+        .jzdiv .el-radio{
+            margin-left: -5px;
+
+            margin-right: 0px;
+        }
+        .jzdiv .el-radio__label{
+            margin-left: -5px;
+        }
+    </style>
+</head>
+<body >
+<div id="app">
+    <el-form  id="ajaxForm"  ref="ajaxForm" class="form-horizontal sl_all_form" :model="dataResModel" theme="simple" data-bs-toggle="validation">
+        <input type="hidden" name="access_token" />
+        <input type="hidden" name="nxakssJson" id="nxakssJson"/>
+        <input type="hidden"  id="jnsjbgid" name="jnsjbgid"/>
+        <ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+            <li class=" nav-item"><a class="nav-link active" href="#jnsjJnsjHzxxTab" role="tab" data-bs-toggle="tab">患者信息</a></li>
+            <li class=" nav-item"><a href="#jnsjbgTab" class="nav-link" role="tab" data-bs-toggle="tab">艰难梭菌报告</a></li>
+        </ul>
+        <div class="body-content tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="jnsjJnsjHzxxTab" aria-labelledby="home-tab">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>患者姓名</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入患者姓名', trigger: 'blur' },
+                                            ]"
+                                            prop="xm"
+                                        >
+                                    <!--  <input type="text" id="xm" name="xm" th:value="${jnsjhzxxDto.xm}" validate="{required:true,stringMaxLength:128}" class="form-control" maxlength="64"></input>-->
+                                    <el-input v-model="dataResModel.xm" placeholder="请输入患者姓名" maxlength="64" ></el-input>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>年龄(岁)</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入年龄', trigger: 'blur' },
+                                            ]"
+                                            prop="nl"
+                                    >
+                                    <el-input v-model.number="dataResModel.nl" placeholder="请输入年龄" maxlength="32" ></el-input>
+                                    </el-form-item>
+                                    <!--                                <input type="text" id="nl" name="nl" th:value="${jnsjhzxxDto.nl}" validate="{required:true,stringMaxLength:10}" class="form-control"  maxlength="32"></input>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>性别 </label>
+                                <div class="col-sm-8 col-xs-12 radio_div">
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="xb" th:checked="${'1' eq jnsjhzxxDto.xb}" validate="{required:true}">男</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="2" name="xb" th:checked="${'2' eq jnsjhzxxDto.xb}" validate="{required:true}">女</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="xb" th:checked="${'0' eq jnsjhzxxDto.xb}" validate="{required:true}">未知</label>-->
+                                    <el-radio v-model="dataResModel.xb" label="1" class="sexradio">男</el-radio>
+                                    <el-radio v-model="dataResModel.xb" label="2" class="sexradio">女</el-radio>
+                                    <el-radio v-model="dataResModel.xb" label="0" class="sexradio">未知</el-radio>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>基础疾病、个人史 </strong>(注："不清楚"是指有相应症状，但未能确诊)
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label" style="margin-top: 8px">COPD：</label>
+                                <div class="col-sm-8 col-xs-12 radio_div" style="margin-top: 8px">
+                                    <!--                  copd           -->
+                                    <el-radio v-model="dataResModel.copd" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.copd" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.copd" label="2">不清楚</el-radio>
+
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label" style="margin-top: 8px">血液系统恶性肿瘤：</label>
+                                <div class="col-sm-8 col-xs-12" style="margin-top: 8px">
+                                    <!--                  xyxtexzl           -->
+                                    <el-radio v-model="dataResModel.xyxtexzl" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.xyxtexzl" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.xyxtexzl" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">实体器官移植：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  stqgyz           -->
+                                    <el-radio v-model="dataResModel.stqgyz" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.stqgyz" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.stqgyz" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">长期接受激素治疗：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  cqjsjszl           -->
+                                    <el-radio v-model="dataResModel.cqjsjszl" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.cqjsjszl" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.cqjsjszl" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">自身免疫性疾病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  zsmyjb           -->
+                                    <el-radio v-model="dataResModel.zsmyjb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.zsmyjb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.zsmyjb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">糖尿病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  tnb           -->
+                                    <el-radio v-model="dataResModel.tnb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.tnb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.tnb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">肿瘤性疾病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  zlxjb           -->
+                                    <el-radio v-model="dataResModel.zlxjb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.zlxjb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.zlxjb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">冠心病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  gxb           -->
+                                    <el-radio v-model="dataResModel.gxb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.gxb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.gxb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">脑血管疾病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  nxgjb           -->
+                                    <el-radio v-model="dataResModel.nxgjb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.nxgjb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.nxgjb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">慢性肾病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  mxsb           -->
+                                    <el-radio v-model="dataResModel.mxsb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.mxsb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.mxsb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">炎症性肠病：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  yzxcb           -->
+                                    <el-radio v-model="dataResModel.yzxcb" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.yzxcb" label="0">否</el-radio>
+                                    <el-radio v-model="dataResModel.yzxcb" label="2">不清楚</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">三个月前是否有住院史：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sgyqsfyzys           -->
+                                    <el-radio v-model="dataResModel.sgyqsfyzys" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sgyqsfyzys" label="0">否</el-radio>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>入院时间：</label>
+                                <div class="col-sm-8 col-xs-12 sjdiv">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入入院时间', trigger: 'blur' },
+                                            ]"
+                                            prop="rysj"
+                                    >
+                                    <!--               rysj                 -->
+                                    <el-date-picker
+                                            v-model="dataResModel.rysj"
+                                            align="right"
+                                            type="date"
+                                            value-format="yyyy-MM-dd"
+                                            placeholder="入院时间"
+                                            format="yyyy-MM-dd"
+                                    >
+                                    </el-date-picker>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>出院时间：</label>
+                                <div class="col-sm-8 col-xs-12 sjdiv">
+                                    <!--               cysj                 -->
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入出院时间', trigger: 'blur' },
+                                            ]"
+                                            prop="cysj"
+                                    >
+                                    <el-date-picker
+                                            v-model="dataResModel.cysj"
+                                            align="right"
+                                            type="date"
+                                            placeholder="出院时间"
+                                            value-format="yyyy-MM-dd"
+                                            format="yyyy-MM-dd"
+                                    >
+                                    </el-date-picker>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>住院花费(元)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入住院花费', trigger: 'blur' },
+                                            ]"
+                                            prop="zyhf"
+                                    >
+
+                                    <!--             zyhf                   -->
+                                    <el-input v-model="dataResModel.zyhf" placeholder="请输入住院花费(元)" maxlength="64"></el-input>
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">出院诊断(疾病名)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             cyzd                   -->
+                                    <el-input v-model="dataResModel.cyzd" placeholder="请输入出院诊断(疾病名)" maxlength="64"></el-input>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane fade" id="jnsjbgTab" aria-labelledby="profile-tab">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>入组单位：</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入病理入组单位', trigger: 'blur' },
+                                            ]"
+                                            prop="blrzdw"
+                                    >
+
+                                    <!--               blrzdw                 -->
+                                        <el-select v-model="dataResModel.blrzdw" placeholder="请选择入组单位" @change="rzdwChange($event)">
+
+                                            <el-option
+                                                    v-for="item in dataResModel.jnsjdw"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <!--                                <input type="text" id="blrzdw" name="blrzdw" th:value="${jnsjbgjlDto.blrzdw}" validate="{required:true,stringMaxLength:128}" class="form-control" maxlength="64"></input>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>入组编号：</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入病理入组编号', trigger: 'blur' },
+                                            ]"
+                                            prop="blrzbh"
+                                    >
+                                    <!--               blrzbh                 -->
+                                    <el-input v-model="dataResModel.blrzbh" placeholder="请输入病理入组编号" maxlength="32"></el-input>
+                                    </el-form-item>
+                                    <!--                                <input type="text" id="blrzbh" name="blrzbh" th:value="${jnsjbgjlDto.blrzbh}" validate="{required:true,stringMaxLength:128}" class="form-control" maxlength="64"></input>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>填表时间：</label>
+                                <div class="col-sm-7 sjdiv">
+                                    <!--               tbsj                 -->
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入填表时间', trigger: 'blur' },
+                                            ]"
+                                            prop="tbsj"
+                                    >
+                                    <el-date-picker
+                                            v-model="dataResModel.tbsj"
+                                            align="right"
+                                            type="date"
+                                            placeholder="请输入填表时间"
+                                            value-format="yyyy-MM-dd"
+                                            format="yyyy-MM-dd"
+                                    >
+                                    </el-date-picker>
+                                    <!--                                <input type="text" id="tbsj" name="tbsj" th:value="${jnsjbgjlDto.tbsj}" validate="{required:true,stringMaxLength:32}" class="form-control"  maxlength="32"></input>-->
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>住院号：</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入住院号', trigger: 'blur' },
+                                            ]"
+                                            prop="zyh"
+                                    >
+                                    <!--               zyh                 -->
+                                    <el-input v-model="dataResModel.zyh" placeholder="请输入住院号" maxlength="32"></el-input>
+                                    <!--                                <input type="text" id="zyh" name="zyh" th:value="${jnsjbgjlDto.zyh}" validate="{required:true,astringMaxLength:10}" class="form-control"  maxlength="32"></input>-->
+                                    </el-form-item>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>科室：</label>
+                                <div class="col-sm-7">
+                                    <el-form-item
+                                            :rules="[
+                                              { required: true, message: '请输入科室', trigger: 'blur' },
+                                            ]"
+                                            prop="ks"
+                                    >
+                                    <!--               ks                 -->
+                                    <el-select v-model="dataResModel.ks" placeholder="请选择科室">
+                                        <el-option
+                                                v-for="item in dataResModel.jnsjks"
+                                                :key="item.csid"
+                                                :label="item.csmc"
+                                                :value="item.csid">
+                                        </el-option>
+                                    </el-select>
+<!--                                    <el-input v-model="dataResModel.ks" placeholder="请输入科室" maxlength="32"></el-input>-->
+                                    </el-form-item>
+                                    <!--                                <input type="text" id="ks" name="ks" th:value="${jnsjbgjlDto.ks}" validate="{required:true,stringMaxLength:128}" class="form-control" maxlength="64"></input>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>就诊类型：</label>
+                                <div class="col-sm-8 col-xs-12 jzdiv">
+                                    <!--                  jzlx           -->
+                                    <el-radio v-model="dataResModel.jzlx" label="1">门、急诊</el-radio>
+                                    <el-radio v-model="dataResModel.jzlx" label="2">住普通病房</el-radio>
+                                    <el-radio v-model="dataResModel.jzlx" label="0">住ICU</el-radio>
+                                </div>
+                                <!--                            <div class="col-sm-8 col-xs-12">-->
+                                <!--                                <label class="radio-inline"><input type="radio" value="1" name="xb" th:checked="${'1' eq jnsjbgjlDto.jzlx}">门、急诊</label>-->
+                                <!--                                <label class="radio-inline"><input type="radio" value="2" name="xb" th:checked="${'2' eq jnsjbgjlDto.jzlx}">住普通病房</label>-->
+                                <!--                                <label class="radio-inline"><input type="radio" value="0" name="xb" th:checked="${'0' eq jnsjbgjlDto.jzlx}">住ICU</label>-->
+                                <!--                            </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>艰难梭菌检测时间结果</strong>
+                            </h2>
+
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" style="margin-top: 10px;">
+                        <div class="form-group" style="margin-left: 46%">
+                            <el-button size="mini" @click="addjcjg()">结果多次</el-button>
+                        </div>
+                    </div>
+                    <div  style="margin-bottom: 10px" v-for="(item,index) in dataResModel.jcsjjgList">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12 " style="margin-top: 10px" >
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>艰难梭菌检测时间：</label>
+                                    <div class="col-sm-8 col-xs-12 sjdiv">
+                                        <!--               jnsjjcsj                 -->
+                                        <el-form-item
+                                                :rules="[
+                                              { required: true, message: '请输入艰难梭菌检测时间', trigger: 'blur' },
+                                            ]"
+                                                :prop="'jcsjjgList.'+index+'.jnsjjcsj'"
+                                        >
+                                            <el-date-picker
+                                                    v-model="item.jnsjjcsj"
+                                                    align="right"
+                                                    type="date"
+                                                    placeholder="艰难梭菌检测时间"
+                                                    value-format="yyyy-MM-dd"
+                                            >
+                                            </el-date-picker>
+                                        </el-form-item>
+                                        <!--                                <input id="jnsjjcsj" name="jnsjjcsj" class="form-control" th:value="${jnsjbgjlDto.jnsjjcsj}" placeholder="" validate="{required:true}" />-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>GDH结果：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <div class="col-sm-8 col-xs-12" style="margin-left: -14px">
+                                            <!--                  gdhjg           -->
+                                            <el-radio v-model="item.gdhjg" label="0">阴性</el-radio>
+                                            <el-radio v-model="item.gdhjg" label="1">阳性</el-radio>
+                                        </div>
+                                        <!--                                <label class="radio-inline"><input type="radio" value="0" name="gdhjg" th:checked="${'0' eq jnsjbgjlDto.gdhjg}" validate="{required:true}">阴性</label>-->
+                                        <!--                                <label class="radio-inline"><input type="radio" value="1" name="gdhjg" th:checked="${'1' eq jnsjbgjlDto.gdhjg}" validate="{required:true}">阳性</label>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>TOXIN结果：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <!--                  toxinjg           -->
+                                        <el-radio v-model="item.toxinjg" label="0">阴性</el-radio>
+                                        <el-radio v-model="item.toxinjg" label="1">阳性</el-radio>
+                                        <!--                                <label class="radio-inline"><input type="radio" value="0" name="toxinjg" th:checked="${'0' eq jnsjbgjlDto.toxinjg}" validate="{required:true}">阴性</label>-->
+                                        <!--                                <label class="radio-inline"><input type="radio" value="1" name="toxinjg" th:checked="${'1' eq jnsjbgjlDto.toxinjg}" validate="{required:true}">阳性</label>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>大便艰难梭菌培养结果：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <!--                  dbjnsjpyjg           -->
+                                        <el-radio v-model="item.dbjnsjpyjg" label="0">阴性</el-radio>
+                                        <el-radio v-model="item.dbjnsjpyjg" label="1">阳性</el-radio>
+                                        <!--                                <label class="radio-inline"><input type="radio" value="0" name="dbjnsjpyjg" th:checked="${'0' eq jnsjbgjlDto.dbjnsjpyjg}" validate="{required:true}">阴性</label>-->
+                                        <!--                                <label class="radio-inline"><input type="radio" value="1" name="dbjnsjpyjg" th:checked="${'1' eq jnsjbgjlDto.dbjnsjpyjg}" validate="{required:true}">阳性</label>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label"><span style="color: red;">*</span>艰难梭菌毒素培养结果：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <!--                  jnsjmspyjg           -->
+                                        <el-radio v-model="item.jnsjmspyjg" label="0">阴性</el-radio>
+                                        <el-radio v-model="item.jnsjmspyjg" label="1">阳性</el-radio>
+                                        <!--                                <label class="radio-inline"><input type="radio" value="0" name="jnsjmspyjg" th:checked="${'0' eq jnsjbgjlDto.jnsjmspyjg}" validate="{required:true}">阴性</label>-->
+                                        <!--                                <label class="radio-inline"><input type="radio" value="1" name="jnsjmspyjg" th:checked="${'1' eq jnsjbgjlDto.jnsjmspyjg}" validate="{required:true}">阳性</label>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12" style="margin-left: 45%">
+                                <el-button size="mini" @click="scjcjg(index)">删除结果</el-button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>临床表现</strong>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否腹泻(>3次)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sffx           -->
+                                    <el-radio v-model="dataResModel.sffx" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sffx" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="" th:checked="${'1' eq jnsjbgjlDto.sffx}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sffx" th:checked="${'0' eq jnsjbgjlDto.sffx}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">腹泻频率(天)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  fxpl           -->
+                                    <el-radio v-model="dataResModel.fxpl" label="0">4-5次</el-radio>
+                                    <el-radio v-model="dataResModel.fxpl" label="1">5-6次</el-radio>
+                                    <el-radio v-model="dataResModel.fxpl" label="2">6次以上</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="fxpl" th:checked="${'0' eq jnsjbgjlDto.fxpl}">4-5次</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="fxpl" th:checked="${'1' eq jnsjbgjlDto.fxpl}">5-6次</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="2" name="fxpl" th:checked="${'2' eq jnsjbgjlDto.fxpl}">6次以上</label>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否腹胀：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sffz           -->
+                                    <el-radio v-model="dataResModel.sffz" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sffz" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sffz" th:checked="${'1' eq jnsjbgjlDto.sffz}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sffz" th:checked="${'0' eq jnsjbgjlDto.sffz}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否有中毒性巨结肠：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sfyzdxjjc           -->
+                                    <el-radio v-model="dataResModel.sfyzdxjjc" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfyzdxjjc" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfyzdxjjc" th:checked="${'1' eq jnsjbgjlDto.sfyzdxjjc}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sfyzdxjjc" th:checked="${'0' eq jnsjbgjlDto.sfyzdxjjc}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否有肠梗阻：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sfcgz           -->
+                                    <el-radio v-model="dataResModel.sfcgz" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfcgz" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfcgz" th:checked="${'1' eq jnsjbgjlDto.sfcgz}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sfcgz" th:checked="${'0' eq jnsjbgjlDto.sfcgz}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否休克：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sfxk           -->
+                                    <el-radio v-model="dataResModel.sfxk" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfxk" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfxk" th:checked="${'1' eq jnsjbgjlDto.sfxk}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sfxk" th:checked="${'0' eq jnsjbgjlDto.sfxk}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否低血压(低于90/60mmHg或12/8kPa)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                  sfdxy           -->
+                                    <el-radio v-model="dataResModel.sfdxy" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfdxy" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfdxy" th:checked="${'1' eq jnsjbgjlDto.sfdxy}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="0" name="sfdxy" th:checked="${'0' eq jnsjbgjlDto.sfdxy}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>重点实验室和功能检查 </strong>（入组日期附近）
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">大便性状：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             dbxz                   -->
+                                    <el-select v-model="dataResModel.dbxz" placeholder="请选择大便性状">
+                                        <el-option
+                                                :key="0"
+                                                label="稀便"
+                                                value="稀便">
+                                        </el-option>
+                                        <el-option
+                                                :key="1"
+                                                label="软便"
+                                                value="软便">
+                                        </el-option>
+                                        <el-option
+                                                :key="2"
+                                                label="水样便"
+                                                value="水样便">
+                                        </el-option>
+                                    </el-select>
+                                    <!--                            <input id="dbxz" name="dbxz" class="form-control" th:value="${jnsjbgjlDto.dbxz}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">粪红细胞：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             fhxb                   -->
+                                    <el-input v-model="dataResModel.fhxb" placeholder="请输入粪红细胞" maxlength="64"></el-input>
+                                    <!--                            <input id="fhxb" name="fhxb" class="form-control" th:value="${jnsjbgjlDto.fhxb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">粪白细胞：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             fbxb                   -->
+                                    <el-input v-model="dataResModel.fbxb" placeholder="请输入粪白细胞" maxlength="64"></el-input>
+                                    <!--                            <input id="fbxb" name="fbxb" class="form-control" th:value="${jnsjbgjlDto.fbxb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">粪酵母样真菌：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             fjmyzj                   -->
+                                    <el-input v-model="dataResModel.fjmyzj" placeholder="请输入粪酵母样真菌" maxlength="64"></el-input>
+                                    <!--                            <input id="fjmyzj" name="fjmyzj" class="form-control" th:value="${jnsjbgjlDto.fjmyzj}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">粪隐血：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             fyx                   -->
+                                    <el-input v-model="dataResModel.fyx" placeholder="请输入粪隐血" maxlength="64"></el-input>
+                                    <!--                            <input id="fyx" name="fyx" class="form-control" th:value="${jnsjbgjlDto.fyx}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">转铁蛋白：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             ztdb                   -->
+                                    <el-input v-model="dataResModel.ztdb" placeholder="请输入转铁蛋白" maxlength="64"></el-input>
+                                    <!--                            <input id="ztdb" name="ztdb" class="form-control" th:value="${jnsjbgjlDto.ztdb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">钙卫蛋白：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             gwdb                   -->
+                                    <el-input v-model="dataResModel.gwdb" placeholder="请输入钙卫蛋白" maxlength="64"></el-input>
+                                    <!--                            <input id="gwdb" name="gwdb" class="form-control" th:value="${jnsjbgjlDto.gwdb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">WBC(109/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             wbc                   -->
+                                    <el-input v-model="dataResModel.wbc" placeholder="请输入WBC(109/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="wbc" name="wbc" class="form-control" th:value="${jnsjbgjlDto.wbc}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">N(%)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             n                   -->
+                                    <el-input v-model="dataResModel.n" placeholder="请输入N(%)" maxlength="64"></el-input>
+                                    <!--                            <input id="n" name="n" class="form-control" th:value="${jnsjbgjlDto.n}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">L(%)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             l                   -->
+                                    <el-input v-model="dataResModel.l" placeholder="请输入L(%)" maxlength="64"></el-input>
+                                    <!--                            <input id="l" name="l" class="form-control" th:value="${jnsjbgjlDto.l}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">Hb(g/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             hb                  -->
+                                    <el-input v-model="dataResModel.hb" placeholder="请输入Hb(g/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="hb" name="hb" class="form-control" th:value="${jnsjbgjlDto.hb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">Plt(109/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             plt                  -->
+                                    <el-input v-model="dataResModel.plt" placeholder="请输入Plt(109/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="plt" name="plt" class="form-control" th:value="${jnsjbgjlDto.plt}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">ALB(g/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             alb                  -->
+                                    <el-input v-model="dataResModel.alb" placeholder="请输入ALB(g/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="alb" name="alb" class="form-control" th:value="${jnsjbgjlDto.alb}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">CK(U/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             ck                  -->
+                                    <el-input v-model="dataResModel.ck" placeholder="请输入CK(U/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="ck" name="ck" class="form-control" th:value="${jnsjbgjlDto.ck}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">TBIL(umol/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             tbtl                  -->
+                                    <el-input v-model="dataResModel.tbil" placeholder="请输入TBIL(umol/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="tbil" name="tbil" class="form-control" th:value="${jnsjbgjlDto.tbil}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">BUN(mmol/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             bun                  -->
+                                    <el-input v-model="dataResModel.bun" placeholder="请输入BUN(mmol/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="bun" name="bun" class="form-control" th:value="${jnsjbgjlDto.bun}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">Cr(umol/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             cr                  -->
+                                    <el-input v-model="dataResModel.cr" placeholder="请输入Cr(umol/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="cr" name="cr" class="form-control" th:value="${jnsjbgjlDto.cr}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">ESR(mm/hr)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             esr                  -->
+                                    <el-input v-model="dataResModel.esr" placeholder="请输入ESR(mm/hr)" maxlength="64"></el-input>
+                                    <!--                            <input id="esr" name="esr" class="form-control" th:value="${jnsjbgjlDto.esr}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">CRP(mg/L)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             crp                  -->
+                                    <el-input v-model="dataResModel.crp" placeholder="请输入CRP(mg/L)" maxlength="64"></el-input>
+                                    <!--                            <input id="crp" name="crp" class="form-control" th:value="${jnsjbgjlDto.crp}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">PCT(ng/ml)：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--             pct                  -->
+                                    <el-input v-model="dataResModel.pct" placeholder="请输入PCT(ng/ml)" maxlength="64"></el-input>
+                                    <!--                            <input id="pct" name="pct" class="form-control" th:value="${jnsjbgjlDto.pct}" placeholder=""  />-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>肠镜检查</strong>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">是否有伪模性肠炎：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                sfywmxcy                -->
+                                    <el-radio v-model="dataResModel.sfywmxcy" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfywmxcy" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfywmxcy" th:checked="${'0' eq jnsjbgjlDto.sfywmxcy}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="2" name="sfywmxcy" th:checked="${'1' eq jnsjbgjlDto.sfywmxcy}">否</label>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>发生CDI之前用药史</strong> （门诊和社区获得性CDI可不填）
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">β内酰胺类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addnxakss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.nxakssList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="ywzlx"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.nxakssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="qtywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delnxakss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">大环内酯类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="adddhnzlkss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.dhnzlkssList.list "
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.dhnzlkssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="deldhnzlkss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">氨基甙类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addajglkss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.ajglkssList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.ajglkssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delajglkss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">四环素类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addshslkss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.shslkssList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.shslkssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delshslkss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">林可霉素类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addlkmslkss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.lkmslkssList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.lkmslkssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="dellkmslkss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">氯霉素类抗生素：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addlmslkss()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.lmslkssList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.lmslkssList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="dellmslkss(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">万古霉素类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addwgmsl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.wgmslList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.wgmslList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delwgmsl(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">喹诺酮类药物：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addkntlyw()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.kntllList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.kntllList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                type="date"
+                                                value-format="yyyy-MM-dd"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delkntlyw(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">质子泵抑制剂(抑酸类)：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addzzbyzj()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.zzbyzjList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.zzbyzjList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delzzbyzj(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">细胞毒性类(抗肿瘤)：</label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">生物碱类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addswjl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.swjlList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.swjlList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delswjl(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">代谢类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="adddxl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.dxlList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.dxlList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                type="date"
+                                                value-format="yyyy-MM-dd"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="deldxl(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">抗生素类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addkssl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.ksslList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.ksslList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delkssl(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">烷化剂类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addwhjl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.whjlList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.whjlList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delwhjl(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                        <div class=" col-md-12 col-sm-12 col-xs-12"   >
+                            <div class="col-md-6 col-sm-12" style="margin-top: 10px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">铂剂类：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <el-button size="mini" @click="addbjl()">添加行</el-button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <el-table
+                                    :data="dataResModel.bjlList.list"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="date"
+                                        label="治疗药物子类型"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-select v-model="scope.row.ywzlx" placeholder="请选择">
+                                            <el-option
+                                                    v-for="item in dataResModel.bjlList.selectList"
+                                                    :key="item.csid"
+                                                    :label="item.csmc"
+                                                    :value="item.csid">
+                                            </el-option>
+                                        </el-select>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="ywmc"
+                                        label="药物名称"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入药物名称" v-model="scope.row.qtywmc" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jl"
+                                        label="剂量">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容"  v-model="scope.row.jl" maxlength="64"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                type="date"
+                                                value-format="yyyy-MM-dd"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="jssj"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.tyrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button @click="delbj(scope.$index)">删除行</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>治疗</strong>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class=" col-md-12 col-sm-12 col-xs-12">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 control-label">目前是否治疗CDI：</label>
+                                    <div class="col-sm-8 col-xs-12">
+                                        <!--                mqsfzlcdi                -->
+                                        <el-radio v-model="dataResModel.sfzlcdi" label="1">是</el-radio>
+                                        <el-radio v-model="dataResModel.sfzlcdi" label="0">否</el-radio>
+                                        <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfywmxcy" th:checked="${'0' eq jnsjbgjlDto.sfywmxcy}">是</label>-->
+                                        <!--                                <label class="radio-inline"><input type="radio" value="2" name="sfywmxcy" th:checked="${'1' eq jnsjbgjlDto.sfywmxcy}">否</label>-->
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <el-table
+                                    :data="dataResModel.zlList"
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="zlyw"
+                                        label="治疗药物"
+                                        width="150">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="dcjl"
+                                        label="单次剂量"
+                                        width="150">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入单次剂量" v-model="scope.row.dcjl" maxlength="128"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="syff"
+                                        label="使用方法">
+                                    <template slot-scope="scope">
+                                        <el-input  placeholder="请输入内容" v-model="scope.row.syff" type="textarea" maxlength="256"></el-input>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="kssj"
+                                        label="开始时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.ksrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="结束时间"
+                                        label="结束时间">
+                                    <template slot-scope="scope">
+                                        <el-date-picker
+                                                v-model="scope.row.jsrq"
+                                                value-format="yyyy-MM-dd"
+                                                type="date"
+                                                placeholder="选择日期">
+                                        </el-date-picker>
+                                    </template>
+                                </el-table-column>
+
+                            </el-table>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading col-md-12 col-sm-12 col-xs-12">
+                        <div class="col-md-10 col-sm-10 col-xs-10">
+                            <h2 class="panel-title">
+                                <strong><span style="color: red;">*</span>临床结局和转归</strong>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="" class="col-sm-4 control-label">三十天内是否死亡：</label>
+                                <div class="col-sm-8 col-xs-12">
+                                    <!--                sstnsfsw                -->
+                                    <el-radio v-model="dataResModel.sfsw" label="1">是</el-radio>
+                                    <el-radio v-model="dataResModel.sfsw" label="0">否</el-radio>
+                                    <!--                                <label class="radio-inline"><input type="radio" value="1" name="sfywmxcy" th:checked="${'0' eq jnsjbgjlDto.sfywmxcy}">是</label>-->
+                                    <!--                                <label class="radio-inline"><input type="radio" value="2" name="sfywmxcy" th:checked="${'1' eq jnsjbgjlDto.sfywmxcy}">否</label>-->
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+    </el-form >
+</div>
+
+<script th:inline="javascript">
+    let yysjcsj=[[${yysjcsj}]];
+    let jnsjks=[[${jnsjks}]];
+    let jnsjdw=[[${jnsjdw}]];
+    let dataMap=[[${dataMap}]];
+    let   nxakssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"1"};
+    let   dhnzlkssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"2"};
+    let   ajglkssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"3"};
+    let   shslkssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"4"};
+    let   lkmslkssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"5"};
+    let   lmslkssList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"6"};
+    let    wgmslList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"7"};
+    let    kntllList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"8"};
+    let   zzbyzjList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"9"};
+    let    swjlList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"10"};
+    let    dxlList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"11"};
+    let    ksslList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"12"};
+    let   whjlList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"13"};
+    let   bjlList={list:[{ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""}],selectList:[],ywlx:"14"};
+
+
+
+    let dataResModel={
+        xm:"",
+        nl:"",
+        xb:"0",
+        copd:"0",
+        xyxtexzl:"0",
+        stqgyz:"0",
+        cqjsjszl:"0",
+        mxsb:"0",
+        tnb:"0",
+        zlxjb:"0",
+        gxb:"0",
+        nxgjb:"0",
+        yzxcb:"0",
+        zsmyjb:"0",
+        sgyqsfyzys:"0",
+        rysj:"",
+        cysj:"",
+        zyhf:"",
+        cyzd:"",
+        zyh:"",
+        jcsjjgList:[{ jnsjjcsj:"",
+            gdhjg:"0",
+            toxinjg:"0",
+            dbjnsjpyjg:"0",
+            jnsjmspyjg:"0",}],
+        blrzdw:"",
+        tbrxm:"",
+        idh:"",
+        blrzbh:"",
+        tbsj:"",
+        ks:"",
+        jzlx:"0",
+        dhnzlkssList:dhnzlkssList,
+        ajglkssList:ajglkssList,
+        shslkssList:shslkssList,
+        shslkssList:shslkssList,
+        lkmslkssList:lkmslkssList,
+        lmslkssList:lmslkssList,
+        wgmslList:wgmslList,
+        kntllList:kntllList,
+        zzbyzjList:zzbyzjList,
+        swjlList:swjlList,
+        dxlList:dxlList,
+        ksslList:ksslList,
+        ksslList:ksslList,
+        whjlList:whjlList,
+        bjlList:bjlList,
+        sffx:"0",
+        fxpl:"0",
+        sffz:"0",
+        sfyzdxjjc:"0",
+        sfcgz:"0",
+        sfxk:"0",
+        sfdxy:"0",
+        dbxz:"",
+        fhxb:"",
+        fbxb:"",
+        fjmyzj:"",
+        fyx:"",
+        ztdb:"",
+        gwdb:"",
+        wbc:"",
+        n:"",
+        l:"",
+        hb:"",
+        plt:"",
+        alb:"",
+        ck:"",
+        tbil:"",
+        bun:"",
+        cr:"",
+        esr:"",
+        crp:"",
+        pct:"",
+        sfywmxcy:"0",
+        nxakssList:nxakssList,
+        jnsjks:jnsjks,
+        jnsjdw:jnsjdw,
+        zlList:[{zlyw:"甲硝唑",dcjl:"",syff:"",ksrq:"",jsrq:""},{zlyw:"万古霉素（）",dcjl:"",syff:"",ksrq:"",jsrq:""},{zlyw:"替加环素",dcjl:"",syff:"",ksrq:"",jsrq:""}],
+        sfzlcdi:"0",
+        sfsw:"0"
+    };
+
+    if(dataMap !=null){
+        $("#jnsjbgid").val(dataMap.jnsjbgid);
+        dataResModel=dataMap;
+        dataResModel["jnsjks"]=jnsjks;
+        dataResModel["jnsjdw"]=jnsjdw;
+        for(var i=0;i<yysjcsj.length;i++){
+            var selectModel={csid:yysjcsj[i].csid,csmc:yysjcsj[i].csmc}
+            if(yysjcsj[i].fcsid=="1"){
+                dataResModel.nxakssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="2"){
+                dataResModel.dhnzlkssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="3"){
+                dataResModel.ajglkssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="4"){
+                dataResModel.shslkssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="5"){
+                dataResModel.lkmslkssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="6"){
+                dataResModel.lmslkssList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="7"){
+                dataResModel.wgmslList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="8"){
+                dataResModel.kntllList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="9"){
+                dataResModel.zzbyzjList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="10"){
+                dataResModel.swjlList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="11"){
+                dataResModel.dxlList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="12"){
+                dataResModel.ksslList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="13"){
+                dataResModel.whjlList.selectList.push(selectModel);
+            }else if(yysjcsj[i].fcsid=="14"){
+                dataResModel.bjlList.selectList.push(selectModel);
+            }
+
+        }
+    }
+    for(var i=0;i<yysjcsj.length;i++){
+        var selectModel={csid:yysjcsj[i].csid,csmc:yysjcsj[i].csmc}
+        if(yysjcsj[i].fcsid=="1"){
+            nxakssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="2"){
+            dhnzlkssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="3"){
+            ajglkssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="4"){
+            shslkssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="5"){
+            lkmslkssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="6"){
+            lmslkssList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="7"){
+            wgmslList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="8"){
+            kntllList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="9"){
+            zzbyzjList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="10"){
+            swjlList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="11"){
+            dxlList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="12"){
+            ksslList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="13"){
+            whjlList.selectList.push(selectModel);
+        }else if(yysjcsj[i].fcsid=="14"){
+            bjlList.selectList.push(selectModel);
+        }
+
+    }
+    console.log(dataResModel)
+    let objcs=new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                dataResModel:dataResModel,
+                checkFlag:false,
+            }
+        },
+        methods:{
+            //β内酰胺类抗生素
+            addnxakss(){
+                this.dataResModel.nxakssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delnxakss(index){
+                this.dataResModel.nxakssList.list.splice(index,1)
+            },
+            //大环内酯类抗生素
+            adddhnzlkss(){
+                this.dataResModel.dhnzlkssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            deldhnzlkss(index){
+                this.dataResModel.dhnzlkssList.list.splice(index,1)
+            },
+            //氨基甙类抗生素
+            addajglkss(){
+                this.dataResModel.ajglkssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delajglkss(index){
+                this.dataResModel.ajglkssList.list.splice(index,1)
+            },
+            //四环素类抗生素
+            addshslkss(){
+                this.dataResModel.shslkssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delshslkss(index){
+                this.dataResModel.shslkssList.list.splice(index,1)
+            },
+            //林可霉素类抗生素
+            addlkmslkss(){
+                this.dataResModel.lkmslkssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            dellkmslkss(index){
+                this.dataResModel.lkmslkssList.list.splice(index,1)
+            },
+            //氯霉素类抗生素
+            addlmslkss(){
+                this.dataResModel.lmslkssList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            dellmslkss(index){
+                this.dataResModel.lmslkssList.list.splice(index,1)
+            },
+            //万古霉素类
+            addwgmsl(){
+                this.dataResModel.wgmslList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delwgmsl(index){
+                this.dataResModel.wgmslList.list.splice(index,1)
+            },
+            //喹诺酮类药物
+            addkntlyw(){
+                this.dataResModel.kntllList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delkntlyw(index){
+                this.dataResModel.kntllList.list.splice(index,1)
+            },
+            //质子泵抑制剂(抑酸类药物)
+            addzzbyzj(){
+                this.dataResModel.zzbyzjList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delzzbyzj(index){
+                this.dataResModel.zzbyzjList.list.splice(index,1)
+            },
+            //生物碱类
+            addswjl(){
+                this.dataResModel.swjlList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delswjl(index){
+                this.dataResModel.swjlList.list.splice(index,1)
+            },
+            //代谢类
+            adddxl(){
+                this.dataResModel.dxlList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            deldxl(index){
+                this.dataResModel.dxlList.list.splice(index,1)
+            },
+            //抗生素类
+            addkssl(){
+                this.dataResModel.ksslList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delkssl(index){
+                this.dataResModel.ksslList.list.splice(index,1)
+            },
+            //抗生素类
+            addwhjl(){
+                this.dataResModel.whjlList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delwhjl(index){
+                this.dataResModel.whjlList.list.splice(index,1)
+            },
+            //抗生素类
+            addbjl(){
+                this.dataResModel.bjlList.list.push({ywzlx:"",qtywmc:"",jl:"",ksrq:"",tyrq:""})
+            },
+            delbj(index){
+                this.dataResModel.bjlList.list.splice(index,1)
+            },
+            //艰难梭菌检测时间结果
+            addjcjg(){
+                this.dataResModel.jcsjjgList.push({ jnsjjcsj:"",
+                    gdhjg:"0",
+                    toxinjg:"0",
+                    dbjnsjpyjg:"0",
+                    jnsjmspyjg:"0"});
+
+            },
+            scjcjg(index){
+                this.dataResModel.jcsjjgList.splice(index,1)
+            },
+            submitForm() {
+                this.$refs["ajaxForm"].validate((valid) => {
+                    if (valid) {
+                        this.checkFlag= true;
+                    } else {
+
+                        this.checkFlag= false;
+                    }
+                });
+            },
+            rzdwChange(event){
+                console.log(event)
+                obj = this.dataResModel.jnsjdw.find((item)=>{//这里的userList就是上面遍历的数据源
+                    return item.csid === event;//筛选出匹配数据
+                });
+                var _this=this
+                $.ajax({
+                    url: "/crf/cdiff/getrzbhsize",
+                    type: "post",
+                    dataType: 'json',
+                    data: {"blrzdw":this.dataResModel.blrzdw,"access_token":$("#ac_tk").val()},
+                    success: function(data) {
+                        // _this.dataResModel.blrzbh=obj.cskz1+parseInt(data.size+1);
+                        _this.dataResModel.blrzbh= data.size;
+                    },
+                    error: function (data) {
+                    }
+                })
+
+            },
+        },
+
+
+    })
+    function setDataModel(){
+
+        return objcs.dataResModel
+    }
+    function getCheck(){
+        objcs.submitForm()
+        console.log( objcs.checkFlag);
+        return objcs.checkFlag;
+    }
+</script>
+</body>
+
+</html>

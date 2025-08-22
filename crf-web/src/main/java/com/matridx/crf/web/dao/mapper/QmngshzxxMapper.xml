@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.crf.web.dao.post.IQmngshzxxDao">
+    <select id="getPagedDtoList" parameterType="QmngshzxxDto" resultType="QmngshzxxDto">
+        select
+        hz.qmngshzid,
+        hz.xmsx,
+        hz.hzsjh,
+        hz.lxdh,
+        jccl.csmc ylzxbh,
+        to_char(hz.hzrzsj,'yyyy-mm-dd') hzrzsj,
+        to_char(hz.txrq,'yyyy-mm-dd') txrq,
+        hz.txhzxm,
+        hz.nl,
+        case hz.xb when '1' then
+        '男' when '2' then '女' else '未知' end xb ,
+        case hz.sjfzjg when '0' then
+        '对照组' when '1' then '试验组' else '' end sjfzjg ,
+        jcgr.csmc grxgzd,
+        hz.kjzlzlc,
+        case hz.sfkjjjtzl
+        when '0' then '否' when '1' then '是' else '' end sfkjjjtzl,
+        to_char(hz.zgcysj,'yyyy-mm-dd hh24:mi') zgcysj,
+        jccy.csmc cyzt
+        from crf_qmngshzxx hz
+        left join matridx_jcsj jcgr on jcgr.csid=hz.grxgzd
+        left join matridx_jcsj jccy on jccy.csid=hz.cyzt
+        left join matridx_jcsj jccl on jccl.csid=hz.ylzxbh
+        where hz.scbj = '0'
+        <if test="yyxz !=null and yyxz.size()>0">
+            and hz.ylzxbh in
+            <foreach collection="yyxz" open="(" close=")" index="index" item="item"  separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="qmngshzid != null and qmngshzid != ''">
+            and hz.qmngshzid = #{qmngshzid}
+        </if>
+        <if test="hzrzsjstart != null and hzrzsjstart != ''">
+            and to_char(hz.hzrzsj,'yyyy-mm-dd') &gt;= #{hzrzsjstart}
+        </if>
+        <if test="hzrzsjend !=null and hzrzsjend !=''">
+            and to_char(hz.hzrzsj,'yyyy-mm-dd') &lt;= #{hzrzsjend}
+        </if>
+        <if test="txrqstart != null and txrqstart != ''">
+            and to_char(hz.txrq,'yyyy-mm-dd') &gt;= #{txrqstart}
+        </if>
+        <if test="txrqend !=null and txrqend !=''">
+            and to_char(hz.txrq,'yyyy-mm-dd') &lt;= #{txrqend}
+        </if>
+        <if test="zgcysjstart != null and zgcysjstart != ''">
+            and to_char(hz.zgcysj,'yyyy-mm-dd') &gt;= #{zgcysjstart}
+        </if>
+        <if test="zgcysjend !=null and zgcysjend !=''">
+            and to_char(hz.zgcysj,'yyyy-mm-dd') &lt;= #{zgcysjend}
+        </if>
+        <if test="xmsx !=null and xmsx !=''">
+            and hz.xmsx like '%'||#{xmsx}||'%'
+        </if>
+        <if test="lxdh !=null and lxdh !=''">
+            and hz.lxdh like '%'||#{lxdh}||'%'
+        </if>
+        <if test="hzsjh !=null and hzsjh !=''">
+            and hz.hzsjh like '%'||#{hzsjh}||'%'
+        </if>
+        <if test="ylzxbh !=null and ylzxbh !=''">
+            and hz.ylzxbh like '%'||#{ylzxbh}||'%'
+        </if>
+        <if test="ylzxmc !=null and ylzxmc !=''">
+            and hz.ylzxbh like '%'||#{ylzxbh}||'%'
+        </if>
+        <if test="txhzxm !=null and txhzxm !=''">
+            and txhzxm like '%'||#{txhzxm}||'%'
+        </if>
+        <if test="nl !=null and nl !=''">
+            and hz.nl like '%'||#{nl}||'%'
+        </if>
+        <if test="kjzlzlc !=null and kjzlzlc !=''">
+            and hz.kjzlzlc like '%'||#{kjzlzlc}||'%'
+        </if>
+        <if test="sfkjjjtzls != null and sfkjjjtzls.length > 0 ">
+            and hz.sfkjjjtzl in
+            <foreach collection="sfkjjjtzls" separator="," open="("
+                     close=") " item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="cyzts != null and cyzts.length > 0 ">
+            and hz.cyzt in
+            <foreach collection="cyzts" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sjfzjgs != null and sjfzjgs.length > 0 ">
+            and hz.sjfzjg in
+            <foreach collection="sjfzjgs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="xbs != null and xbs.length > 0 ">
+            and hz.xb in
+            <foreach collection="xbs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="grxgzds != null and grxgzds.length > 0 ">
+            and hz.grxgzd in
+            <foreach collection="grxgzds" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--根据角色权限查询可显示的医院细信息 -->
+    <select id="getHospitailList" parameterType="String" resultType="Map">
+        SELECT
+        jc.csmc,
+        jc.csid
+        FROM
+        matridx_jcsj jc
+        WHERE
+        jc.jclb = 'HOSPITAL'
+        AND jc.csid IN ( SELECT yyid FROM crf_jsyyqx js WHERE js.jsid = #{dqjs} )
+        order by jc.cspx asc
+    </select>
+    <!--insert保存 -->
+    <insert id="insert" parameterType="QmngshzxxDto">
+        INSERT INTO crf_qmngshzxx (
+        qmngshzid,
+        xmsx,
+        hzsjh,
+        blh,
+        ylzxbh,
+        ylzxmc,
+        <if test="hzrzsj !=null and hzrzsj !=''">
+            hzrzsj,
+        </if>
+        txhzxm,
+        lxdh,
+        <if test="txrq !=null and txrq !=''">
+            txrq,
+        </if>
+        sfcr,
+        sfrr,
+        pfdye,
+        sfqstys,
+        sfjjzl,
+        sfzlhzzsmyjb,
+        yfhxys,
+        wqszqtys,
+        nl,
+        xb,
+        jwhbz,
+        grbw,
+        <if test="rysj !=null and rysj !=''">
+            rysj,
+        </if>
+        <if test="rzsj !=null and rzsj !=''">
+            rzsj,
+        </if>
+        dycqmngs,
+        dycjg,
+        sfpdwzrzbwsw,
+        decqmngs,
+        decjg,
+        <if test="sjsj !=null and sjsj !=''">
+            sjsj,
+        </if>
+        bblxjz,
+        bblx,
+        grxglclxpd,
+        sfkjjjtzl,
+        kjzlzlc,
+        <if test="xghxytysj !=null and xghxytysj !=''">
+            xghxytysj,
+        </if>
+        <if test="crrttysj !=null and crrttysj !=''">
+            crrttysj,
+        </if>
+        <if test="hxjtysj !=null and hxjtysj !=''">
+            hxjtysj,
+        </if>
+        <if test="cicusj !=null and cicusj !=''">
+            cicusj,
+        </if>
+        cicuzt,
+        <if test="zgcysj !=null and zgcysj !=''">
+            zgcysj,
+        </if>
+        cyzt,
+        grxgzd,
+        stgrxglclxpd,
+        lrry,
+        lrsj,
+        sjfzjg,
+        qtgrbw,
+        <if test="kjywkssj !=null and kjywkssj !=''">
+            kjywkssj,
+        </if>
+        <if test="kjywtzsj !=null and kjywtzsj !=''">
+            kjywtzsj,
+        </if>
+        <if test="xghxykssj !=null and xghxykssj !=''">
+            xghxykssj,
+        </if>
+        <if test="crrtkssj !=null and crrtkssj !=''">
+            crrtkssj,
+        </if>
+        <if test="hxjkssj !=null and hxjkssj !=''">
+            hxjkssj,
+        </if>
+        <if test="ricusj !=null and ricusj !=''">
+            ricusj,
+        </if>
+        <if test="zgrysj !=null and zgrysj !=''">
+            zgrysj,
+        </if>
+        scbj
+        )
+        VALUES
+        (
+        #{qmngshzid},
+        #{xmsx},
+        #{hzsjh},
+        #{blh},
+        #{ylzxbh},
+        #{ylzxmc},
+        <if test="hzrzsj !=null and hzrzsj !=''">
+            cast(#{hzrzsj} as timestamp),
+        </if>
+        #{txhzxm},
+        #{lxdh},
+        <if test="txrq !=null and txrq !=''">
+            cast(#{txrq} as timestamp),
+        </if>
+        #{sfcr},
+        #{sfrr},
+        #{pfdye},
+        #{sfqstys},
+        #{sfjjzl},
+        #{sfzlhzzsmyjb},
+        #{yfhxys},
+        #{wqszqtys},
+        #{nl},
+        #{xb},
+        #{jwhbz},
+        #{grbw},
+        <if test="rysj !=null and rysj !=''">
+            cast(#{rysj} as timestamp),
+        </if>
+        <if test="rzsj !=null and rzsj !=''">
+            cast(#{rzsj} as timestamp),
+        </if>
+        #{dycqmngs},
+        #{dycjg},
+        #{sfpdwzrzbwsw},
+        #{decqmngs},
+        #{decjg},
+        <if test="sjsj !=null and sjsj !=''">
+            cast(#{sjsj} as timestamp),
+        </if>
+        #{bblxjz},
+        #{bblx},
+        #{grxglclxpd},
+        #{sfkjjjtzl},
+        #{kjzlzlc},
+        <if test="xghxytysj !=null and xghxytysj !=''">
+            cast(#{xghxytysj} as timestamp),
+        </if>
+        <if test="crrttysj !=null and crrttysj !=''">
+            cast(#{crrttysj} as timestamp),
+        </if>
+        <if test="hxjtysj !=null and hxjtysj !=''">
+            cast(#{hxjtysj} as timestamp),
+        </if>
+        <if test="cicusj !=null and cicusj !=''">
+            cast(#{cicusj} as timestamp),
+        </if>
+        #{cicuzt},
+        <if test="zgcysj !=null and zgcysj !=''">
+            cast(#{zgcysj} as timestamp),
+        </if>
+        #{cyzt},
+        #{grxgzd},
+        #{stgrxglclxpd},
+        #{lrry},
+        LOCALTIMESTAMP,
+        #{sjfzjg},
+        #{qtgrbw},
+
+        <if test="kjywkssj !=null and kjywkssj !=''">
+            cast(#{kjywkssj} as timestamp),
+        </if>
+        <if test="kjywtzsj !=null and kjywtzsj !=''">
+            cast(#{kjywtzsj} as timestamp),
+        </if>
+        <if test="xghxykssj !=null and xghxykssj !=''">
+            cast(#{xghxykssj} as timestamp),
+        </if>
+        <if test="crrtkssj !=null and crrtkssj !=''">
+            cast(#{crrtkssj} as timestamp),
+        </if>
+        <if test="hxjkssj !=null and hxjkssj !=''">
+            cast(#{hxjkssj} as timestamp),
+        </if>
+        <if test="ricusj !=null and ricusj !=''">
+            cast(#{ricusj} as timestamp),
+        </if>
+        <if test="zgrysj !=null and zgrysj !=''">
+            cast(#{zgrysj} as timestamp),
+        </if>
+        '0'
+        );
+
+    </insert>
+    <update id="updateDto" parameterType="QmngshzxxDto">
+        UPDATE crf_qmngshzxx
+        SET xmsx = #{xmsx},
+        hzsjh = #{hzsjh},
+        ylzxbh = #{ylzxbh},
+        ylzxmc = #{ylzxmc},
+        blh = #{blh},
+        <choose>
+            <when  test="hzrzsj !=null and hzrzsj != ''">
+                hzrzsj=cast(#{hzrzsj} as timestamp),
+            </when>
+            <otherwise>
+                hzrzsj=null,
+            </otherwise>
+        </choose>
+        txhzxm = #{txhzxm},
+        lxdh = #{lxdh},
+        <if test="txrq !=null and txrq !=''">
+            txrq=cast(#{txrq} as timestamp),
+        </if>
+        sfcr = #{sfcr},
+        sfrr = #{sfrr},
+        pfdye = #{pfdye},
+        sfqstys = #{sfqstys},
+        sfjjzl = #{sfjjzl},
+        sfzlhzzsmyjb = #{sfzlhzzsmyjb},
+        yfhxys = #{yfhxys},
+        wqszqtys = #{wqszqtys},
+        nl = #{nl},
+        xb = #{xb},
+        jwhbz = #{jwhbz},
+        grbw = #{grbw},
+        <choose>
+            <when  test="rysj !=null and rysj != ''">
+                rysj=cast(#{rysj} as timestamp),
+            </when>
+            <otherwise>
+                rysj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="rzsj !=null and rzsj != ''">
+                rzsj=cast(#{rzsj} as timestamp),
+            </when>
+            <otherwise>
+                rzsj=null,
+            </otherwise>
+        </choose>
+        dycqmngs = #{dycqmngs},
+        dycjg = #{dycjg},
+        sfpdwzrzbwsw = #{sfpdwzrzbwsw},
+        decqmngs = #{decqmngs},
+        decjg = #{decjg},
+        <choose>
+            <when  test="sjsj !=null and sjsj != ''">
+                sjsj=cast(#{sjsj} as timestamp),
+            </when>
+            <otherwise>
+                sjsj=null,
+            </otherwise>
+        </choose>
+        bblxjz = #{bblxjz},
+        bblx = #{bblx},
+        grxglclxpd = #{grxglclxpd},
+        sfkjjjtzl = #{sfkjjjtzl},
+        kjzlzlc = #{kjzlzlc},
+        <choose>
+            <when  test="xghxytysj !=null and xghxytysj != ''">
+                xghxytysj=cast(#{xghxytysj} as timestamp),
+            </when>
+            <otherwise>
+                xghxytysj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="crrttysj !=null and crrttysj != ''">
+                crrttysj=cast(#{crrttysj} as timestamp),
+            </when>
+            <otherwise>
+                crrttysj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="hxjtysj !=null and hxjtysj != ''">
+                hxjtysj=cast(#{hxjtysj} as timestamp),
+            </when>
+            <otherwise>
+                hxjtysj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="cicusj !=null and cicusj != ''">
+                cicusj=cast(#{cicusj} as timestamp),
+            </when>
+            <otherwise>
+                cicusj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="zgcysj !=null and zgcysj != ''">
+                zgcysj=cast(#{zgcysj} as timestamp),
+            </when>
+            <otherwise>
+                zgcysj=null,
+            </otherwise>
+        </choose>
+        cicuzt = #{cicuzt},
+        cyzt = #{cyzt},
+        grxgzd = #{grxgzd},
+        stgrxglclxpd = #{stgrxglclxpd},
+        sjfzjg = #{sjfzjg},
+        qtgrbw = #{qtgrbw},
+        <choose>
+            <when  test="kjywkssj !=null and kjywkssj != ''">
+                kjywkssj=cast(#{kjywkssj} as timestamp),
+            </when>
+            <otherwise>
+                kjywkssj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="kjywtzsj !=null and kjywtzsj != ''">
+                kjywtzsj=cast(#{kjywtzsj} as timestamp),
+            </when>
+            <otherwise>
+                kjywtzsj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="xghxykssj !=null and xghxykssj != ''">
+                xghxykssj=cast(#{xghxykssj} as timestamp),
+            </when>
+            <otherwise>
+                xghxykssj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="crrtkssj !=null and crrtkssj != ''">
+                crrtkssj=cast(#{crrtkssj} as timestamp),
+            </when>
+            <otherwise>
+                crrtkssj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="hxjkssj !=null and hxjkssj != ''">
+                hxjkssj=cast(#{hxjkssj} as timestamp),
+            </when>
+            <otherwise>
+                hxjkssj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="ricusj !=null and ricusj != ''">
+                ricusj=cast(#{ricusj} as timestamp),
+            </when>
+            <otherwise>
+                ricusj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="zgrysj !=null and zgrysj != ''">
+                zgrysj=cast(#{zgrysj} as timestamp),
+            </when>
+            <otherwise>
+                zgrysj=null,
+            </otherwise>
+        </choose>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        WHERE
+        qmngshzid = #{qmngshzid};
+    </update>
+    <select id="getDto" resultType="QmngshzxxDto" parameterType="QmngshzxxDto">
+        select qmngshzid, xmsx, hzsjh, ylzxbh, ylzxmc, to_char(hzrzsj,'yyyy-mm-dd')hzrzsj, txhzxm, lxdh, to_char(txrq,'yyyy-mm-dd')txrq, sfcr, sfrr, pfdye, sfqstys, sfjjzl, sfzlhzzsmyjb, yfhxys, wqszqtys, nl,
+               xb, jwhbz, grbw, to_char(rysj,'yyyy-mm-dd')rysj, rzsj, dycqmngs, dycjg, sfpdwzrzbwsw, decqmngs,  decjg, sjsj, bblxjz, bblx, grxglclxpd, sfkjjjtzl, kjzlzlc, to_char(crrttysj,'yyyy-mm-dd hh24:mi:ss')crrttysj,
+               to_char(hxjtysj,'yyyy-mm-dd hh24:mi:ss')hxjtysj, to_char(cicusj,'yyyy-mm-dd hh24:mi:ss')cicusj, cicuzt, to_char(zgcysj,'yyyy-mm-dd hh24:mi:ss')zgcysj, cyzt, grxgzd, stgrxglclxpd, lrry, lrsj, xgry, xgsj, scry, scsj, scbj, sjfzjg, qtgrbw, to_char(xghxytysj,'yyyy-mm-dd hh24:mi:ss')xghxytysj, to_char(kjywkssj,'yyyy-mm-dd hh24:mi:ss')kjywkssj,
+               to_char(kjywtzsj,'yyyy-mm-dd hh24:mi:ss')kjywtzsj, to_char(xghxykssj,'yyyy-mm-dd hh24:mi:ss')xghxykssj, to_char(crrtkssj,'yyyy-mm-dd hh24:mi:ss')crrtkssj, to_char(hxjkssj,'yyyy-mm-dd hh24:mi:ss')hxjkssj, to_char(ricusj,'yyyy-mm-dd hh24:mi:ss')ricusj, to_char(zgrysj,'yyyy-mm-dd hh24:mi:ss')zgrysj, blh
+        from crf_qmngshzxx where scbj!='1' and  qmngshzid = #{qmngshzid}
+    </select>
+    
+    <select id="getDtoById" parameterType="String" resultType="QmngshzxxDto">
+    	select hz.xmsx,hz.hzsjh, jc_ylzx.csmc ylzxbh,hz.ylzxmc,to_char(hz.hzrzsj,'yyyy-mm-dd') as hzrzsj, hz.blh,
+    	hz.txhzxm,hz.lxdh,  hz.kjzlzlc,hz.kjywkssj,hz.kjywtzsj,hz.xghxykssj,hz.crrtkssj,hz.hxjkssj,hz.ricusj,hz.zgrysj,
+    	to_char(hz.txrq,'yyyy-mm-dd') as txrq, case hz.sfcr when '1' then '是' when '0' then '否' else '' end sfcr,
+    	case hz.sfrr when '1' then '是' when '0' then '否' else '' end sfrr,
+    	case hz.pfdye when '1' then '是' when '0' then '否' else '' end pfdye,
+    	case hz.sfqstys when '1' then '是' when '0' then '否' else '' end sfqstys,
+    	case hz.sfjjzl when '1' then '是' when '0' then '否' else '' end sfjjzl,
+    	case hz.sfzlhzzsmyjb when '1' then '是' when '0' then '否' else '' end sfzlhzzsmyjb,
+    	case hz.yfhxys when '1' then '是' when '0' then '否' else '' end yfhxys,
+    	case hz.wqszqtys when '1' then '是' when '0' then '否' else '' end wqszqtys,
+    	hz.nl, case hz.xb when '1' then  '男' when '2' then '女' else '未知' end xb ,
+    	case hz.sjfzjg when '0' then '对照组' when '1' then '试验组' else '' end sjfzjg ,
+    	hz.jwhbz,hz.grbw,to_char(hz.rysj,'yyyy-mm-dd') as rysj,
+    	to_char(hz.zgcysj,'yyyy-mm-dd hh24:mi:ss') as zgcysj,
+    	hz.dycjg,case hz.dycqmngs when '0' then '阳性' when '1' then '阴性' else '' end dycqmngs,
+    	case hz.sfpdwzrzbwsw when '1' then '是' when '0' then '否' else '' end sfpdwzrzbwsw,
+    	hz.decjg,case hz.decqmngs when '0' then '阳性' when '1' then '阴性' else '' end decqmngs,
+    	to_char(hz.sjsj,'yyyy-mm-dd hh24:mi:ss') as sjsj,hz.bblxjz,hz.bblx,
+    	grxglclxpd.csmc as grxglclxpd,case hz.sfkjjjtzl when '1' then '是' when '0' then '否' else '' end sfkjjjtzl,
+    	hz.xghxytysj,to_char(hz.crrttysj,'yyyy-mm-dd hh24:mi:ss') as crrttysj,
+    	to_char(hz.hxjtysj,'yyyy-mm-dd hh24:mi:ss') as hxjtysj,to_char(hz.cicusj,'yyyy-mm-dd hh24:mi:ss') as cicusj,
+    	to_char(hz.rzsj,'yyyy-mm-dd hh24:mi:ss') as rzsj,jc_cicu.csmc as cicuzt,jc_cy.csmc as cyzt,
+    	jcgr.csmc as grxgzd,jc_qtgr.csmc as stgrxglclxpd,hz.qtgrbw
+	from crf_qmngshzxx hz
+        left join matridx_jcsj jcgr on jcgr.csid=hz.grxgzd
+        left join matridx_jcsj grxglclxpd on grxglclxpd.csid=hz.grxglclxpd
+        left join matridx_jcsj jc_cicu on jc_cicu.csid=hz.cicuzt
+        left join matridx_jcsj jc_cy on jc_cy.csid=hz.cyzt
+        left join matridx_jcsj jc_qtgr on jc_qtgr.csid=hz.stgrxglclxpd
+        left join matridx_jcsj jc_ylzx on jc_ylzx.csid=hz.ylzxbh
+	where hz.scbj = '0' and hz.qmngshzid=#{qmngshzid}
+    </select>
+    <update id="delDto" parameterType="QmngshzxxDto">
+        UPDATE crf_qmngshzxx
+        SET scbj='1',
+        scry = #{scry},
+        scsj = LOCALTIMESTAMP
+        WHERE
+        qmngshzid = #{qmngshzid};
+    </update>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.crf.web.dao.post.IQmngsshDao" >
+    <select id="getSjz" parameterType="QmngsshDto" resultType="QmngsshDto">
+        select sh.qmngsndzjlid,sh.jyxm,sh.sjz,sj.csmc,sj.csid,sj.csdm,sj.cskz1,sj.cskz2 from
+        matridx_jcsj sj
+        left outer join crf_qmngssh sh on sj.csid =sh.jyxm and sh.qmngsndzjlid = #{qmngsndzjlid}
+        <where>
+            sj.jclb='QMNGSBIOCHEMISTRY' and sj.scbj!='1'
+        </where>
+        order by sj.cspx,sj.csid
+    </select>
+    <select id="getSjzName" parameterType="QmngsshDto" resultType="Map">
+        select cskz1,sjz from (select * from crf_qmngssh where qmngsndzjlid =#{qmngsndzjlid} ) ndz
+        left join  matridx_jcsj js on js.jclb='QMNGSBIOCHEMISTRY' and ndz.jyxm= js.csid
+    </select>
+    <delete id="deleteByNdz" parameterType="QmngsndzxxjlDto">
+        delete from crf_qmngssh
+        <where>
+            qmngsndzjlid = #{qmngsndzjlid}
+        </where>
+    </delete>
+
+    <!-- 增加动脉血气信息 -->
+    <insert  id="insertSh" parameterType="List">
+        insert into crf_qmngssh (qmngsndzjlid, jyxm,sjz)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.qmngsndzjlid},#{item.jyxm},#{item.sjz})
+            </foreach>
+        </if>
+    </insert>
+    
+     <select id="queryShpz" parameterType="String" resultType="QmngsshDto">
+        select dmxq.qmngsndzjlid,dmxq.jyxm,dmxq.sjz,sj.csmc,sj.csid,sj.csdm,sj.cskz1,sj.cskz2,jl.jldjt
+        from crf_qmngssh dmxq
+        left join matridx_jcsj sj on sj.csid =dmxq.jyxm
+        left join crf_qmngsndzxxjl jl on jl.qmngsndzjlid=dmxq.qmngsndzjlid
+        <where>
+            sj.scbj!='1' and jl.qmngshzid=#{qmngshzid}
+        </where>
+        order by sj.cspx
+    </select>
+</mapper>

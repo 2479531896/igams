@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.crf.web.dao.post.INdzxcgDao" >
+<select id="getSjz" parameterType="NdzxcgDto" resultType="NdzxcgDto">
+	  	select xcg.ndzjlid,xcg.jyxm,xcg.sjz,sj.csmc,sj.csid,sj.csdm,sj.cskz1,sj.cskz2 from
+		matridx_jcsj sj 
+		left outer join crf_ndzxcg xcg on sj.csid =xcg.jyxm and xcg.ndzjlid = #{ndzjlid}
+		<where>
+			sj.jclb='BLOODTEST' and sj.scbj!='1'
+		</where>
+		order by sj.cspx,sj.csid
+	</select>
+	<select id="getSjzName" parameterType="NdzxcgDto" resultType="Map">
+	  select cskz1,sjz from (select * from crf_ndzxcg where ndzjlid =#{ndzjlid} ) ndz
+ 		left join  matridx_jcsj js on js.jclb='BLOODTEST' and ndz.jyxm= js.csid
+	</select>
+	
+	<delete id="deleteByNdz" parameterType="NdzxcgDto">
+		delete from crf_ndzxcg
+		<where>
+			ndzjlid = #{ndzjlid}
+		</where>
+	</delete>
+	
+	<!-- 增加动脉血气信息 -->
+	<insert  id="insertXcg" parameterType="List">
+		insert into crf_ndzxcg (ndzjlid, jyxm,sjz)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.ndzjlid},#{item.jyxm},#{item.sjz})
+			</foreach>
+		</if>
+	</insert>
+</mapper>

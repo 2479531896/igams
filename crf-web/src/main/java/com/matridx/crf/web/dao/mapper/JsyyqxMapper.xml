@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.crf.web.dao.post.IJsyyqxDao">
+	<!-- 查询已选医院列表 -->
+	<select id="getPagedYxYyxxList" parameterType="JsyyqxDto"
+		resultType="JsyyqxDto">
+		SELECT
+		jsyy.jsid,
+		jsyy.yyid,
+		jc.csmc yymc
+		FROM
+		crf_jsyyqx jsyy
+		LEFT OUTER JOIN
+		matridx_jcsj jc ON jc.csid = jsyy.yyid
+		and jc.jclb ='HOSPITAL'
+		<where>
+			<if test="jsid != null and jsid != ''">
+				 and jsyy.jsid = #{jsid}
+			</if>
+			</where>
+	</select>
+
+
+	<!-- 查询机构列表(除已选择的) -->
+	<select id="getPagedOtherYyxxList" parameterType="JsyyqxDto"
+		resultType="JsyyqxDto">
+		SELECT
+		jc.csid yyid,
+		jc.csmc yymc
+		FROM
+		matridx_jcsj jc
+		where
+		jc.scbj != '1' and jclb = 'HOSPITAL'
+		AND jc.csid NOT IN ( SELECT yyid FROM crf_jsyyqx WHERE jsid =#{jsid})
+			<if test="yymc !=null and yymc !=''">
+				and jc.csmc like '%'||#{yymc}||'%'
+			</if>
+	</select>
+	
+	<!-- 删除用户角色信息 -->
+	<delete  id="toOptionalYy" parameterType="JsyyqxDto">
+		delete from crf_jsyyqx 
+		<where>
+			<if test="yyid !=null and yyid != ''">
+	        	and yyid = #{yyid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and yyid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	and jsid = #{jsid}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 添加机构信息 -->
+	<insert id="toSelectedYy" parameterType="JsyyqxDto">
+		insert into crf_jsyyqx ( jsid,yyid) 
+		<if test="yyid !=null and yyid != ''">
+        	values (#{jsid},#{yyid})
+		</if>
+		<if test="ids !=null and ids.size > 0">
+        	<foreach collection="ids" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{jsid},#{item}
+			</foreach>
+		</if>
+	</insert>
+</mapper>

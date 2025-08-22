@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.crf.web.dao.post.IQmngskgryDao" >
+    <select id="getDtoList" parameterType="QmngskgryDto" resultType="QmngskgryDto">
+        select kgrywsyid, yw, jl, dw, qt, pc, pcqt, to_char(kssj,'yyyy-MM-dd HH24:mi')kssj, to_char(tzsj,'yyyy-MM-dd HH24:mi')tzsj, yyyj,tyyy, tyyyqt,
+               xspx, qmngshzid, lrry, lrsj, xgry, xgsj, scry, scsj, scbj
+        from crf_qmngskgry where qmngshzid=#{qmngshzid} and scbj!='1' order by xspx asc
+    </select>
+    <delete id="deleQmngskgry" parameterType="QmngskgryDto">
+        delete from crf_qmngskgry where qmngshzid = #{qmngshzid}
+    </delete>
+    <insert id="insertDto" parameterType="QmngskgryDto">
+        INSERT INTO crf_qmngskgry(
+        kgrywsyid,
+        yw,
+        jl,
+        dw,
+        qt,
+        pc,
+        pcqt,
+        <if test="kssj !=null and kssj !=''">
+            kssj,
+        </if>
+        <if test="tzsj !=null and tzsj !=''">
+            tzsj,
+        </if>
+        yyyj,
+        tyyy,
+        tyyyqt,
+        xspx,
+        qmngshzid,
+        lrry,
+        lrsj,
+        scbj
+        )
+        VALUES
+        (
+        #{kgrywsyid},
+        #{yw},
+        #{jl},
+        #{dw},
+        #{qt},
+        #{pc},
+        #{pcqt},
+        <if test="kssj !=null and kssj !=''">
+            cast(#{kssj} as timestamp),
+        </if>
+        <if test="tzsj !=null and tzsj !=''">
+            cast(#{tzsj} as timestamp),
+        </if>
+        #{yyyj},
+        #{tyyy},
+        #{tyyyqt},
+        cast(#{xspx} as numeric),
+        #{qmngshzid},
+        #{lrry},
+        LOCALTIMESTAMP,
+        '0'
+        );
+    </insert>
+    <update id="updateDto" parameterType="QmngskgryDto">
+        UPDATE crf_qmngskgry
+        SET yw = #{yw},
+        jl = #{jl},
+        dw = #{dw},
+        qt = #{qt},
+        pc = #{pc},
+        pcqt = #{pcqt},
+        <choose>
+            <when  test="kssj !=null and kssj != ''">
+                kssj=cast(#{kssj} as timestamp),
+            </when>
+            <otherwise>
+                kssj=null,
+            </otherwise>
+        </choose>
+        <choose>
+            <when  test="tzsj !=null and tzsj != ''">
+                tzsj=cast(#{tzsj} as timestamp),
+            </when>
+            <otherwise>
+                tzsj=null,
+            </otherwise>
+        </choose>
+        yyyj = #{yyyj},
+        tyyy = #{tyyy},
+        tyyyqt = #{tyyyqt},
+        xgry = #{xgry},
+        xgsj =LOCALTIMESTAMP
+        WHERE
+        kgrywsyid = #{kgrywsyid};
+    </update>
+    <update id="delDtoList" parameterType="QmngshzxxDto">
+        UPDATE crf_qmngskgry
+        SET scbj='1',
+        scry = #{scry},
+        scsj = LOCALTIMESTAMP
+        WHERE
+        qmngshzid = #{qmngshzid};
+    </update>
+</mapper>
