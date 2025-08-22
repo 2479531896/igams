@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IShxxDao" >
+	<sql id="columnSql">
+		shxx.shxxid, shxx.gcid, shxx.xh, shxx.ywid, shxx.shid, shxx.lcxh, 
+		to_char(shxx.sqsj,'yyyy-mm-dd hh24:mi:ss') sqsj, 
+		to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss') shsj, 
+		 shxx.sftg, shxx.shyj, shxx.ssyj, shxx.gwid
+		,shxx.lrry
+		,shxx.lrsj,to_char(shxx.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsjStr
+		,shxx.xgry
+		,shxx.xgsj,to_char(shxx.xgsj,'yyyy-mm-dd hh24:mi:ss') xgsjStr
+		,sqr,stshry
+		,shxx.wtshry
+		,shxx.jsid
+	</sql>
+	
+	<insert id="insert" parameterType="ShxxModel">
+    	insert into matridx_shxx(shxxid,
+    		<if test="gcid != null and gcid != ''">
+				gcid,
+			</if>
+			xh,
+			sqsj,
+			ywid,
+			shid,
+			lcxh,
+			shsj,
+			<if test="plbj != null and plbj != ''">
+				plbj,
+			</if>
+			sftg,
+			shyj,
+			ssyj,
+			gwid,
+			lrry,
+			lrsj
+			,sqr
+			,stshry
+			,wtshry
+			,jsid
+    	)
+    	values(#{shxxid}
+    		<if test="gcid != null and gcid != ''">
+   				,#{gcid}
+   			</if>
+   			<choose>
+                <when test="gcid != null and gcid != ''">
+                    ,(select coalesce(max(xx.xh),0)+1 from matridx_shxx xx where xx.gcid=#{gcid} and xx.ywid=#{ywid})
+                    ,coalesce((select sqsj from matridx_shgc gc where gc.gcid=#{gcid}),to_timestamp(#{sqsj,jdbcType=VARCHAR},'yyyy-mm-dd hh24:mi:ss'))
+                </when>
+                <otherwise>
+                    ,1
+                    ,LOCALTIMESTAMP
+                </otherwise>
+            </choose>
+			,#{ywid}
+			,#{shid,jdbcType=VARCHAR}
+			,cast(#{lcxh} as numeric)
+			<if test="shsj != null and shsj != ''">
+				,cast(#{shsj} as timestamp)
+			</if>
+			<if test="shsj == null or shsj == ''">
+				,LOCALTIMESTAMP
+			</if>
+			<if test="plbj != null and plbj != ''">
+				,#{plbj}
+			</if>
+			,#{sftg,jdbcType=VARCHAR}
+			,#{shyj,jdbcType=VARCHAR}
+			,#{ssyj,jdbcType=VARCHAR}
+			,#{gwid,jdbcType=VARCHAR}
+			,#{lrry}
+			,LOCALTIMESTAMP
+			,#{sqr,jdbcType=VARCHAR}
+			,#{stshry,jdbcType=VARCHAR}
+			,#{wtshry,jdbcType=VARCHAR}
+			,#{jsid,jdbcType=VARCHAR}
+    	)
+    </insert>
+    
+    <!-- 获得全部审核信息，按审核时间倒排序 -->
+    <select id="getShxxOrderByShsj" resultType="ShxxDto">
+	select
+		shxx.shxxid,
+		shxx.gcid,
+		shxx.xh,
+		shxx.ywid,
+		shxx.shid,
+		shxx.lcxh,
+		shxx.sqsj,
+		shxx.shsj,
+		shxx.sftg,
+		shxx.shyj,
+		shxx.ssyj,
+		shxx.gwid,
+		shxx.lrry,
+		shxx.lrsj,
+		shxx.lrsjStr,
+		shxx.xgry,
+		shxx.xgsj,
+		shxx.xgsjStr,
+		shxx.shlb,
+		(case shxx.sftg when '0' then '不通过' when '1' then '通过' end) as sftgmc,
+		(case when shxx.stshry is null then (select zsxm from matridx_xtyh yh where yh.yhid = shxx.lrry) else
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.wtshry) || '(委托  ' ||
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.stshry) || ')' end ) as shrmc
+		,shxx.gwmc
+		,shxx.stshry
+		,shxx.jsid,
+		(case when shxx.stshry is null then (select yhm from matridx_xtyh yh where yh.yhid = shxx.lrry) else
+		(select yhm from matridx_xtyh yh where yh.yhid = shxx.wtshry) || '(委托  ' ||
+		(select yhm from matridx_xtyh yh where yh.yhid = shxx.stshry) || ')' end ) as shryhm,
+		(select yhm from matridx_xtyh yh where yh.yhid = shxx.sqr) as sqryhm
+	from
+	(select <include refid="columnSql"></include>,xtsh.shlb,spgw.gwmc
+    	from matridx_shxx shxx
+    	left join matridx_xtsh xtsh on shxx.shid = xtsh.shid
+    	left join matridx_spgw spgw on spgw.gwid = shxx.gwid
+    	<where>
+    		<!-- 获取审核信息的方式 -->
+			<choose>
+				<!-- 直接通过过程id -->
+				<when test="gcid != null and gcid != ''">
+					and shxx.gcid = #{gcid}
+				</when>
+				<otherwise>
+					<!-- 通过审核信息id -->
+		    		<if test="shxxid != null and shxxid != ''">
+		    			and shxx.gcid = (select s_shxx.gcid from matridx_shxx s_shxx where s_shxx.shxxid=#{shxxid})
+		    		</if>
+		    		<!-- 通过审核类别和业务id -->
+		    		<if test="shxxid == null or shxxid == ''">
+		    			<if test = "shlbs != null and shlbs.size > 0 ">
+				    		xtsh.shlb in
+							<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">  
+					   			#{item}
+							</foreach>
+						</if>
+						<if test = "shlbs == null or shlbs.size == 0 ">
+			    			<if test="shlb != null and shlb != ''">
+			    				and xtsh.shlb = #{shlb}
+			    			</if> 
+		    			</if>
+			    		and shxx.ywid = #{ywid}
+		    		</if>
+				</otherwise>
+			</choose>
+			<if test="sftg != null and sftg != ''">
+    			and shxx.sftg = #{sftg}
+    		</if>
+    	</where>
+    	order by shxx.shsj desc) shxx
+    </select>
+    
+    <!--start 当前Dao方法 -->
+	<!-- 获取最新的审核信息 -->
+    <select id="getLastShxx" resultType="ShxxDto">
+	select
+		shxx.shxxid,
+		shxx.gcid,
+		shxx.xh,
+		shxx.ywid,
+		shxx.shid,
+		shxx.lcxh,
+		shxx.sqsj,
+		shxx.shsj,
+		shxx.sftg,
+		shxx.shyj,
+		shxx.ssyj,
+		shxx.gwid,
+		shxx.lrry,
+		shxx.lrsj,
+		shxx.lrsjStr,
+		shxx.xgry,
+		shxx.xgsj,
+		shxx.xgsjStr,
+		shxx.shlb,
+		shxx.wbgw,
+		(case when shxx.stshry is null then (select zsxm from matridx_xtyh yh where yh.yhid = shxx.lrry) else
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.wtshry) || '(委托  ' ||
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.stshry) || ')' end ) as shrmc
+	from
+	(select <include refid="columnSql"></include>,xtsh.shlb,spgw.wbgw
+    	from matridx_shxx shxx
+    	left join matridx_xtsh xtsh on shxx.shid = xtsh.shid
+    	left join matridx_spgw spgw on spgw.gwid = shxx.gwid
+    	<where>
+    		<!-- 获取审核信息的方式 -->
+			<choose>
+				<!-- 直接通过过程id -->
+				<when test="gcid != null and gcid != ''">
+					and shxx.gcid = #{gcid}
+				</when>
+				<otherwise>
+					<!-- 通过审核信息id -->
+		    		<if test="shxxid != null and shxxid != ''">
+		    			and shxx.gcid = (select s_shxx.gcid from matridx_shxx s_shxx where s_shxx.shxxid=#{shxxid})
+		    		</if>
+		    		<!-- 通过审核类别和业务id -->
+		    		<if test="shxxid == null or shxxid == ''">
+		    			and xtsh.shlb = #{shlb} and shxx.xmid = #{xmid}
+		    		</if>
+				</otherwise>
+			</choose>
+			<if test="sftg != null and sftg != ''">
+    			and shxx.sftg = #{sftg}
+    		</if>
+    		<if test="isCommit">
+    			and shxx.sftg is null
+    		</if>
+    	</where>
+    	order by shxx.shsj desc) shxx
+    	limit 1
+    </select>
+    
+    <!-- 删除 -->
+    <delete id="batchDelete" parameterType="List">
+    	delete from matridx_shxx
+  	    where
+			shxxid in
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+			   #{item}
+			</foreach>
+    </delete>
+    
+    <!-- 根据过程ID获取审核信息 -->
+    <select id="getShxxOrderByGcid" parameterType="ShxxDto" resultType="ShxxDto">
+		select shxxid,gcid,t.ywid,shid,t.lrry,to_char(t.shsj,'yyyy-MM-dd') shsj,yhm,orderId,fjcfb.wjlj
+		from
+			(select shxx.shxxid,shxx.gcid,shxx.ywid,shxx.shid,shxx.lrry,shxx.shsj,
+				(select yhm from matridx_xtyh yh where yh.yhid = shxx.lrry) as yhm, 
+				row_number() over(partition by shxx.gwid ) as orderId
+			from matridx_shxx shxx
+			left join matridx_shlc shlc on shlc.shid = shxx.shid
+			where shxx.gcid = #{gcid} and(shxx.sftg = '1' or shxx.sftg = '' or shxx.sftg is null) and shxx.sqsj > shlc.qysj 
+	    		and (shlc.tysj is null or shxx.sqsj &lt; shlc.tysj)
+				order by shlc.lcxh) t 
+			left join matridx_fjcfb fjcfb on fjcfb.ywid = yhm and fjcfb.ywlx = 'IMP_SIGNATURE'
+		where t.orderId = 1 
+		order by t.shsj
+    </select>
+    
+    <!-- 查询业务审核过程 -->
+    <select id="getShxxOrderByPass" parameterType="ShxxDto" resultType="ShxxDto">
+		select tmp.lrry,yh.yhm,to_char(tmp.shsj, 'yyyy-mm-dd') as shsj,tmp.xh,tmp.shid from (
+		SELECT shxx.lrry,shxx.shsj,row_number() over(partition by gwid order by shxx.lrsj desc) xh,shxx.shid
+		FROM matridx_shxx shxx
+			LEFT JOIN matridx_xtsh xtsh ON shxx.shid = xtsh.shid
+		WHERE 
+			<if test = "shlbs != null and shlbs.size > 0 ">
+	    		xtsh.shlb in
+				<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">  
+		   			#{item}
+				</foreach>
+			</if>
+			<if test = "shlbs == null or shlbs.size == 0 ">
+    			xtsh.shlb = #{shlb}
+   			</if>
+			AND shxx.ywid = #{ywid}
+		    AND (shxx.sftg = '1' or shxx.sftg = '' or shxx.sftg is null)
+			)tmp
+			left outer join matridx_xtyh yh on  tmp.lrry = yh.yhid 
+			where tmp.xh = 1 
+			order by tmp.shsj 
+    </select>
+    
+    <!-- 修改审核时间 -->
+    <update id="auditmodSaveTime" parameterType="ShxxDto">
+		update matridx_shxx set shsj = shsj + '${ts}D'
+		from matridx_xtsh xtsh
+		where matridx_shxx.ywid = #{ywid}
+ 		and xtsh.shlb=#{shlb} 
+ 		and xtsh.shid = matridx_shxx.shid
+    </update>
+    
+    <select id="getDtoById" parameterType="String" resultType="ShxxDto">
+	select
+		shxx.shxxid,
+		shxx.gcid,
+		shxx.xh,
+		shxx.ywid,
+		shxx.shid,
+		shxx.lcxh,
+		shxx.sqsj,
+		shxx.shsj,
+		shxx.sftg,
+		shxx.shyj,
+		shxx.ssyj,
+		shxx.gwid,
+		shxx.lrry,
+		shxx.lrsj,
+		shxx.lrsjStr,
+		shxx.xgry,
+		shxx.xgsj,
+		shxx.xgsjStr,
+		shxx.shlb,
+		(case shxx.sftg when '0' then '不通过' when '1' then '通过' end) as sftgmc,
+		(case when shxx.stshry is null then (select zsxm from matridx_xtyh yh where yh.yhid = shxx.lrry) else
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.wtshry) || '(委托  ' ||
+	        (select zsxm from matridx_xtyh yh where yh.yhid = shxx.stshry) || ')' end ) as shrmc
+		,shxx.gwmc
+		,shxx.stshry
+		,shxx.jsid
+	from
+	(select <include refid="columnSql"></include>,xtsh.shlb,spgw.gwmc
+    	from matridx_shxx shxx
+    	left join matridx_xtsh xtsh on shxx.shid = xtsh.shid
+    	left join matridx_spgw spgw on spgw.gwid = shxx.gwid
+    	<where>
+    		shxx.shxxid=#{shxxid}
+    	</where>
+    	order by shxx.shsj desc) shxx
+    </select>
+    
+     <!-- 修改审核时间 -->
+    <update id="update" parameterType="ShxxDto">
+		update matridx_shxx set 
+		<if test="lrry!=null and lrry!=''">
+			lrry=#{lrry},
+		</if>
+		<if test="shsj!=null and shsj!=''">
+			shsj=cast(#{shsj} as timestamp),
+		</if>
+		<if test="shsj!=null and shsj!=''">
+			shyj=#{shyj},
+		</if>
+		xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<where>
+			shxxid=#{shxxid}
+		</where>
+    </update>
+
+	<!-- 获得全部审核信息，按审核时间倒排序 -->
+	<select id="getSecShxxOrderByShsj" resultType="ShxxDto">
+		select
+		shxx.sqr,
+		yh_sqr.zsxm sqrmc,
+		yh_lrry.ddid lrryddid,
+		shxx.shxxid,
+		shxx.gcid,
+		shxx.xh,
+		shxx.ywid,
+		shxx.shid,
+		shxx.lcxh,
+		shxx.sqsj,
+		shxx.shsj,
+		shxx.sftg,
+		shxx.shyj,
+		shxx.ssyj,
+		shxx.gwid,
+		shxx.lrry,
+		shxx.lrsj,
+		shxx.lrsjStr,
+		shxx.xgry,
+		shxx.xgsj,
+		shxx.xgsjStr,
+		shxx.shlb,
+		(case shxx.sftg when '0' then '不通过' when '1' then '通过' end) as sftgmc,
+		(case when shxx.stshry is null then (select zsxm from matridx_xtyh yh where yh.yhid = shxx.lrry) else
+		(select zsxm from matridx_xtyh yh where yh.yhid = shxx.wtshry) || '(委托  ' ||
+		(select zsxm from matridx_xtyh yh where yh.yhid = shxx.stshry) || ')' end ) as shrmc
+		,shxx.gwmc
+		,shxx.stshry
+		,shxx.jsid
+		,shxx.shmc
+		from
+		(select <include refid="columnSql"></include>,xtsh.shlb,spgw.gwmc,xtsh.shmc
+		from matridx_shxx shxx
+		left join matridx_xtsh xtsh on shxx.shid = xtsh.shid
+		left join matridx_spgw spgw on spgw.gwid = shxx.gwid
+		<where>
+			<!-- 获取审核信息的方式 -->
+			<choose>
+				<!-- 直接通过过程id -->
+				<when test="gcid != null and gcid != ''">
+					and shxx.gcid = #{gcid}
+				</when>
+				<otherwise>
+					<!-- 通过审核信息id -->
+					<if test="shxxid != null and shxxid != ''">
+						and shxx.gcid = (select s_shxx.gcid from matridx_shxx s_shxx where s_shxx.shxxid=#{shxxid})
+					</if>
+					<!-- 通过审核类别和业务id -->
+					<if test="shxxid == null or shxxid == ''">
+						<if test = "shlbs != null and shlbs.size > 0 ">
+							xtsh.shlb in
+							<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">
+								#{item}
+							</foreach>
+						</if>
+						<if test = "shlbs == null or shlbs.size == 0 ">
+							<if test="shlb != null and shlb != ''">
+								and xtsh.shlb = #{shlb}
+							</if>
+						</if>
+						and shxx.ywid = #{ywid}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="sftg != null and sftg != ''">
+				and shxx.sftg = #{sftg}
+			</if>
+		</where>
+		order by shxx.shsj desc) shxx
+		left join matridx_xtyh yh_sqr on yh_sqr.yhid=shxx.sqr
+		left join matridx_xtyh yh_lrry on yh_lrry.yhid=shxx.lrry
+	</select>
+
+	<!--获取最新的审核通过的信息-->
+	<select id="getPassShxxBestNew" parameterType="ShxxDto" resultType="ShxxDto">
+		select tmp.lrry,yh.yhm,to_char(tmp.shsj, 'yyyy-mm-dd') as shsj,tmp.xh,tmp.shid,sqr.yhm sqryhm,tmp.sqr from (
+		SELECT shxx.lrry,shxx.shsj,row_number() over(partition by gwid order by shxx.lrsj desc) xh,shxx.shid,shxx.sqr
+		FROM matridx_shxx shxx
+		LEFT JOIN matridx_xtsh xtsh ON shxx.shid = xtsh.shid
+		WHERE
+		<if test = "shlbs != null and shlbs.size > 0 ">
+			xtsh.shlb in
+			<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "shlbs == null or shlbs.size == 0 ">
+			xtsh.shlb = #{shlb}
+		</if>
+		AND shxx.ywid = #{ywid}
+		AND shxx.sftg = '1'
+		)tmp
+		left outer join matridx_xtyh yh on  tmp.lrry = yh.yhid
+		left outer join matridx_xtyh sqr on  tmp.sqr = sqr.yhid
+		order by tmp.shsj
+	</select>
+
+	<!--获取最新的审核通过的信息-->
+	<select id="getPassShxxBestSqr" parameterType="ShxxDto" resultType="ShxxDto">
+		select tmp.lrry,yh.yhm,to_char(tmp.shsj, 'yyyy-mm-dd') as shsj,tmp.xh,tmp.shid,sqr.yhm sqryhm,tmp.sqr from (
+		SELECT shxx.lrry,shxx.shsj,row_number() over(partition by gwid order by shxx.lrsj desc) xh,shxx.shid,shxx.sqr
+		FROM matridx_shxx shxx
+		LEFT JOIN matridx_xtsh xtsh ON shxx.shid = xtsh.shid
+		WHERE
+		<if test = "shlbs != null and shlbs.size > 0 ">
+			xtsh.shlb in
+			<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "shlbs == null or shlbs.size == 0 ">
+			xtsh.shlb = #{shlb}
+		</if>
+		AND shxx.ywid = #{ywid} limit 1
+		)tmp
+		left outer join matridx_xtyh yh on  tmp.lrry = yh.yhid
+		left outer join matridx_xtyh sqr on  tmp.sqr = sqr.yhid
+		order by tmp.shsj
+	</select>
+	<!--获取通过信息-->
+	<select id="getShxxByYwidsTG" parameterType="ShxxDto" resultType="ShxxDto">
+		SELECT
+			shxx.sftg,
+			xtsh.shlb,
+			spgw.gwmc,
+			shgc.xlcxh,
+			shxx.lcxh,
+			shxx.ywid,
+			shxx.shsj,shxx.sqsj
+		FROM
+			matridx_shxx shxx
+			LEFT JOIN matridx_xtsh xtsh ON shxx.shid = xtsh.shid
+			LEFT JOIN matridx_spgw spgw ON spgw.gwid = shxx.gwid
+			LEFT JOIN matridx_shgc shgc ON shgc.gcid = shxx.shid
+		WHERE
+			shxx.lcxh IS NOT NULL
+			AND shxx.ywid in
+			<foreach collection="ywids" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		ORDER BY
+		shxx.lcxh ASC
+	</select>
+	<!--获取提交信息-->
+	<select id="getShxxByYwidsTj" parameterType="ShxxDto" resultType="ShxxDto">
+		SELECT
+			spgw.gwmc,
+			shlc.lcxh,
+			gc.xlcxh,
+			sh.shlb,
+			gc.ywid,
+			tmp.shsj,gc.sqsj
+		FROM
+			matridx_shgc gc
+				JOIN matridx_shlc shlc ON gc.shid = shlc.shid
+				AND gc.sqsj >= shlc.qysj
+				AND ( shlc.tysj IS NULL OR shlc.tysj >= gc.sqsj )
+				JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+				LEFT OUTER JOIN matridx_xtsh sh ON sh.shid = gc.shid
+				LEFT JOIN (
+				SELECT spgw.gwmc,shxx.shsj,shxx.ywid
+				FROM
+					matridx_shxx shxx
+				LEFT JOIN matridx_spgw spgw ON spgw.gwid = shxx.gwid
+				WHERE shxx.lcxh IS NOT NULL
+				AND shxx.ywid in
+					<foreach collection="ywids" item="item" open="(" close=")" separator=",">
+						#{item}
+					</foreach>
+				) tmp ON tmp.gwmc = spgw.gwmc
+				AND tmp.ywid = gc.ywid
+		WHERE
+			gc.ywid in
+		<foreach collection="ywids" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+		ORDER BY
+		shlc.lcxh ASC
+	</select>
+
+	<select id="getShxxGroupByLcxh" parameterType="ShxxDto" resultType="ShxxDto">
+		SELECT
+			shxx.ywid,
+			shxx.lcxh,
+			shxx.sftg,
+			yh.zsxm AS shrmc
+		FROM
+			matridx_shxx shxx
+				LEFT JOIN matridx_xtyh yh ON yh.yhid = shxx.lrry
+				AND yh.scbj = '0'
+				LEFT JOIN (
+				SELECT
+					ywid,
+					lcxh,
+					MAX ( shsj ) AS shsj
+				FROM
+					matridx_shxx
+				WHERE
+					lcxh IS NOT NULL
+				  AND ywid IN
+				<foreach collection="ywids" item="item" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+				GROUP BY
+					ywid,
+					lcxh
+			) tab ON shxx.ywid = tab.ywid
+				AND shxx.lcxh = tab.lcxh
+				AND shxx.shsj = tab.shsj
+		WHERE
+			shxx.lcxh IS NOT NULL
+		  AND shxx.ywid in
+		<foreach collection="ywids" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+		ORDER BY
+			shxx.ywid ASC
+	</select>
+
+	<select id="getShxxByYwid" parameterType="ShxxDto" resultType="ShxxDto">
+		select shxx.shyj,shxx.gcid,shxx.xh,shxx.ywid,shxx.shid,shxx.sqsj,shxx.sqr
+		from matridx_shxx shxx
+		left join matridx_xtsh xtsh on xtsh.shid=shxx.shid
+		where  shxx.ywid=#{ywid}
+		<if test = "shlb != null and shlb !='' ">
+			and xtsh.shlb=#{shlb} and  gwid is null
+		</if>
+		<if test = "shid != null and shid !='' ">
+			and shxx.shid=#{shid}
+		</if>
+		<if test = "gcid != null and gcid !='' ">
+			and shxx.gcid=#{gcid}
+		</if>
+		<if test = "lrry != null and lrry !='' ">
+			and shxx.lrry=#{lrry}
+		</if>
+		<if test = "shsj != null and shsj !='' ">
+			and shxx.shsj=cast(#{shsj} as timestamp)
+		</if>
+		order by shxx.lrsj desc,shxx.xh desc
+		limit 1
+	</select>
+	<select id="getShxxLsit" parameterType="ShxxDto" resultType="ShxxDto">
+		select to_char( sh.shsj,'YYYY年MM月dd日') as shsj,yh.zsxm as shrmc,sh.shyj,sh.xh,sh.*
+		from matridx_shxx sh
+		left join matridx_xtyh yh on yh.yhid=sh.lrry
+		where sh.gcid = (select shxx.gcid
+		from matridx_shxx shxx
+		left join matridx_xtsh xtsh on xtsh.shid = shxx.shid
+		where  shxx.ywid=#{ywid} and xtsh.shlb=#{shlb}
+		order by shsj desc limit 1 )
+		and sh.sqsj >=(select max(sqsj) from matridx_shxx sh
+		where sh.gcid = (select shxx.gcid
+			from matridx_shxx shxx
+			left join matridx_xtsh xtsh on xtsh.shid = shxx.shid
+			where
+				shxx.ywid=#{ywid}
+				and xtsh.shlb=#{shlb}
+				order by shsj desc limit 1
+			)
+		)
+		and sh.sftg ='1' and sh.gwid is null and coalesce (sh.plbj,'0')!='1'
+		order by sh.xh
+	</select>
+
+	<select id="queryShsj" parameterType="ShxxDto" resultType="ShxxDto">
+		select tmp.ywid,to_char(cast(split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',1) as TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as postStart,
+		case when split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2) is not null and split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2)!=''
+		then to_char(cast(split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2) as TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS')
+		else to_char(cast(now() as TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS')
+		end as postEnd,
+		case when split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2) is not null and split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2)!=''
+		then ROUND(cast((EXTRACT(EPOCH FROM cast(split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',2) as TIMESTAMP) - cast(split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',1) as TIMESTAMP)) / 3600) as decimal),2)
+		else ROUND(cast((EXTRACT(EPOCH FROM cast(now() as TIMESTAMP) - cast(split_part(string_agg(tmp.shsj||'',',' order by tmp.shsj),',',1) as TIMESTAMP)) / 3600) as decimal),2)
+		end AS timeLag
+		from (select gw.gwmc,MAX(sh.shsj) as shsj,sh.ywid
+		from matridx_shxx sh
+		left join matridx_spgw gw on gw.gwid=sh.gwid
+		where
+		gw.gwmc in (
+		<if test = "postStart != null and postStart !='' ">
+			#{postStart},
+		</if>
+		<if test = "postEnd != null and postEnd !='' ">
+			#{postEnd}
+		</if>
+		)
+		<if test = "ywid != null and ywid !='' ">
+			and sh.ywid=#{ywid}
+		</if>
+		group by sh.ywid,gw.gwmc)tmp
+		group by tmp.ywid
+	</select>
+	<select id="queryHtShsj" parameterType="ShxxDto" resultType="ShxxDto">
+
+	</select>
+</mapper>

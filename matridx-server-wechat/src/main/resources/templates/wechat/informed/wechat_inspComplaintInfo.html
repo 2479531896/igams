@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="referrer" content="never">
+    <meta content="webkit" name="renderer"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Copyright" content="matridx"/>
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+    <title>投诉详情</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/phonefileinput.min.css">
+    <link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+    <link rel="stylesheet" href="/css/weui.css">
+    <style>
+        .weui-mask {
+            visibility: visible;
+        }
+        .weui-cell:before {
+            left: 0;
+        }
+        label{
+            font-size: 16px;
+            font-weight: normal;
+            margin-bottom: 0
+        }
+        .weui-form-preview__label {
+            min-width: 1em;
+        }
+        #sjycInfo .weui-cell__bd{
+            padding-left: 20px;
+        }
+        /**蓝色按钮*/
+        .weui-btn_bule,.weui-btn_primary {
+            color: white;
+            background-color: #00AFEC;
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+            color: rgba(0, 208, 236, 0.98);
+        }
+        .weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+            background-color: #00e4ec;
+        }
+
+        .weui_loading_toast .weui-toast_content{
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body style="background-color: #F5F5F5" data-weui-theme="light">
+<form id="complaintInfo">
+    <input type="hidden" name="ywid" id="ywid" th:value="${sjycDto.ywid}"/>
+    <input type="hidden" name="wxid" id="wxid" th:value="${sjycDto.twr}"/>
+    <input type="hidden" name="ycid" id="ycid" th:value="${sjycDto.ycid}"/>
+    <input type="hidden" name="wbcxdm" id="wbcxdm" th:value="${wbcxdm}"/>
+    <input type="hidden" name="ycqf" id="ycqf" th:value="${sjycDto.ycqf}"/>
+    <input type="hidden" name="fjids" id="fjids" th:value="${fjids}"/>
+    <input type="hidden" name="ywlx" id="ywlx" th:value="${ywlx}"/>
+    <input type="hidden" name="sign" id="sign" th:value="${sign}"/>
+    <input type="hidden" name="sfjs" id="sfjs" th:value="${sjycDto.sfjs}"/>
+
+    <div class="page__hd" style="display: flex">
+        <h4 class="page__title" style="margin: 8px;flex: 5;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${sjycDto.ycbt}"></h4>
+        <h4 th:style="${'margin: 8px;flex: 1;text-align: center;background-color: bisque;color:'+(sjycDto.sfjs == '1'?'#00AFEC':'#FF4D4F')}" th:text="${sjycDto.sfjs == '1'?'已结束':'未结束'}"></h4>
+<!--        <p class="page__desc">列表</p>-->
+    </div>
+    <div id="hzxxInfo" class="page__bd">
+        <div class="weui-cells__title" style="display: flex;margin-top: 8px;">
+            <div style="flex: 1;">标本信息</div>
+        </div>
+        <div style="margin: 4px 8px;border-radius: 10px;font-size: 12px" th:onclick="reportDealById([[${sjycDto.ywid}]],[[${sjycDto.ybbh}]],[[${sjycDto.hzxm}]])">
+            <div class="weui-panel" style="border-radius: 10px;">
+                <div class="weui-cell__bd" style="border-radius: 10px;">
+                    <div class="weui-form-preview" style="border-radius: 10px;">
+                        <div style="height: 0.1rem;"></div>
+                        <div class="weui-form-preview__bd" style="font-size: 14px;font-weight: normal;padding: 0px 10px">
+                           <div style="display: flex">
+                                <div class="weui-form-preview__item" style="flex: 5">
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;font-size: 14px;" th:text="${sjycDto.ybbh}"></label>
+                                </div>
+                                <div class="weui-form-preview__item" style="flex: 3">
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: center;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;font-size: 14px;" th:text="${sjycDto.hzxm}"></label>
+                                </div>
+                                <div class="weui-form-preview__item" style="flex: 4">
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: right;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;font-size: 14px;" th:text="${sjycDto.yblxmc}"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="height: 0.1rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ycxxInfo" class="page__bd">
+        <div class="weui-cells__title" style="display: flex;margin-top: 8px;">
+            <div style="flex: 1;margin: auto;">异常信息</div>
+            <div th:if="${fjcfbDtos!=null && fjcfbDtos.size()>0}" style="flex: 1;height: 30px;text-align: right">
+                <button type="button" class="weui-btn weui-btn-mini weui-btn_bule" style="font-size: smaller;padding: 0 8px;height: 30px;font-size: smaller;vertical-align: middle;width: auto;margin-right: 0;" th:text="${'查看附件（'+fjcfbDtos.size()+'）'}" onclick="viewSjycFj('sjycFjs')"></button>
+                <input th:each="fjcfbDto:${fjcfbDtos}" th:id="${fjcfbDto.fjid}" th:wjm="${fjcfbDto.wjm}" type="hidden" name="sjycFjs"/>
+            </div>
+        </div>
+        <div style="margin: 4px 8px;border-radius: 10px;font-size: 12px">
+            <div class="weui-panel" style="border-radius: 10px;">
+                <div class="weui-cell__bd" style="border-radius: 10px;">
+                    <div class="weui-form-preview" style="border-radius: 10px;">
+                        <div style="height: 0.1rem;"></div>
+                        <div class="weui-form-preview__bd" style="font-size: 14px;font-weight: normal;padding: 0px 10px">
+                            <div style="display: flex">
+                                <div class="weui-form-preview__item" >
+                                    <label class="" style="float: left;margin-right: 2px;font-size: 12px;">发布信息：</label>
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;font-size: 12px;" th:text="${(sjycDto.twrmc != null && sjycDto.twrmc != '' ? sjycDto.twrmc : '您') + '　发布于　' + sjycDto.lrsj}"></label>
+                                </div>
+                            </div>
+                            <div style="display: flex">
+                                <div class="weui-form-preview__item" style="flex: 7">
+                                    <label class="" style="float: left;margin-right: 2px;font-size: 12px;">投诉类型：</label>
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;font-size: 12px;" th:text="${(sjycDto.lxmc != null && sjycDto.lxmc != '' ? sjycDto.lxmc : '')+(sjycDto.zlxmc != null && sjycDto.zlxmc != '' ? ('-'+sjycDto.zlxmc) : '')}"></label>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="weui-form-preview__item">
+                                    <label class="" style="float: left;margin-right: 2px;font-size: 12px;">投诉内容：</label>
+                                    <label class="weui-form-preview__value" style="font-weight: normal;text-align: left;font-size: 12px;" th:text="${sjycDto.ycxx != null && sjycDto.ycxx != '' ? sjycDto.ycxx : '-'}"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="height: 0.1rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="commentInfo" class="page__bd">
+        <div class="weui-cells__title" style="display: flex;margin-top: 8px;">
+            <div style="flex: 1;">评论信息</div>
+        </div>
+        <div id="commentList" style="margin: 4px 8px;border-radius: 10px;font-size: 12px">
+        </div>
+
+        <div id="loading" class="weui-loadmore" style="margin-bottom: 50px;" hidden="hidden">
+            <i class="weui-loading"></i>
+            <span class="weui-loadmore__tips">正在加载</span>
+        </div>
+        <div id="noInfo" class="weui-loadmore weui-loadmore_line" style="margin-bottom: 50px;" hidden="hidden">
+            <span class="weui-loadmore__tips" style="background-color: #F5F5F5">暂无数据</span>
+        </div>
+        <div id="loadComplete" class="weui-loadmore weui-loadmore_line" style="margin-bottom: 50px;" hidden="hidden">
+            <span class="weui-loadmore__tips" style="background-color: #F5F5F5">加载完成</span>
+        </div>
+    </div>
+    <div class="page searchbar js_show" id="commentArea" tabindex="-1" style="font-size: 16px;padding: 8px 4px;position: fixed;bottom: 0;z-index: 999;right: 0;left: 0;padding-bottom: 10px;background-color: rgb(245, 245, 245);">
+        <div id="discusFjUploadDiv" class="weui-cell weui-cell_access" style="display: none">
+            <div class="weui-cell__hd">
+                <div  class="weui-cell__hd">
+                    <label>附件上传　</label>
+                </div>
+            </div>
+            <div class="weui-cell__bd">
+                <div style="display:none" id="chrom">
+                    <div id="fileDiv">
+                        <input type="file" id="wechat_file" name="wechat_file" />
+                    </div>
+                </div>
+                <div class="weui-cell__bd" style="display: flex;padding: 0" id="phone" >
+                    <div style="padding:0;width: 30%;margin: 0 5px;" id="uploader">
+                        <div style="padding:0;border:1px solid #ccc;">
+                            <img width="100%" height="100%" src="/images/add.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:if="${sjycDto.sfjs!='1'}" id="yinyong" class="weui-cells__title" style="margin: 2px;border: 1px solid;border-radius: 5px;"></div>
+        <div th:if="${sjycDto.sfjs!='1'}" class="page__bd" style="display: flex">
+            <div class="weui-search-bar" id="searchBar" style="border-radius: 4px;flex: 8;padding: 4px;">
+                <form id="searchForm" role="combobox" aria-haspopup="true" aria-expanded="false" aria-owns="searchResult" class="weui-search-bar__form">
+                    <div class="weui-search-bar__box">
+                        <input type="search" aria-controls="searchResult" class="weui-search-bar__input" id="searchInput" autocomplete="off" placeholder="请输入内容" required="true">
+                        <a href="javascript:" role="button" title="清除" class="weui-icon-clear" style="height: 100%" id="searchClear" wah-hotarea="click"></a>
+                    </div>
+                </form>
+            </div>
+            <div style="margin-left: 3px;" id="discusFj" onclick="openFjUploadInfo()">
+                <a class="weui-icon-add" style="height: 40px;width: 40px;color: #00AFEC;"></a>
+            </div>
+            <div style="width: 60px;">
+                <a class="weui-btn weui-btn_bule" style="margin-right: 0;width: 90%;height:40px;line-height:40px;padding: 0;font-weight: bold;vertical-align: middle" onclick="complaintComment()">发送</a>
+            </div>
+        </div>
+    </div>
+</form>
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+<script type='text/javascript' src='/js/swiper.min.js' charset='utf-8'></script>
+<script type="text/javascript" src="/js/wechat/informed/wechat_inspComplaintInfo.js?v=20230704.2"></script>
+</body>
+</html>

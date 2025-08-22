@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISpgwDao" >
+	<!-- 查询审核岗位列表 -->
+	<select id="getDtoList" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc,gw.sfywjs,gw.ywjs,gw.wbgw,gw.sfgb
+		from matridx_spgw gw
+		<where>
+		<if test="gwmc !=null and gwmc != ''">
+			and gwmc =#{gwmc}
+		</if>
+		<if test="extend_2 !=null and extend_2!= ''">
+			and wbgw =#{extend_2}
+		</if>
+		</where>
+	</select>
+	
+	<!-- 查询审核岗位信息 -->
+	<select id="getDtoById" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc,gw.sfywjs,gw.ywjs,gw.wbgw,gw.dwxz,gw.sfgb
+		from matridx_spgw gw
+		where gwid =#{gwid}
+	</select>
+	<!-- 分页查询审核岗位信息列表 -->
+	<select id="getPagedDtoList" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc,gw.sfywjs,gw.ywjs,gw.wbgw,gw.sfgb,gw.dwxz
+		from matridx_spgw gw
+		<where>
+			<if test="entire != null and entire != ''">
+				and (gwmc like '%'||#{entire}||'%'
+				or wbgw like '%'||#{entire}||'%')
+			</if>
+			<if test="gwmc !=null and gwmc != ''">
+				and gwmc like '%'||#{gwmc}||'%'
+			</if>
+			<if test="wbgw !=null and wbgw != ''">
+				and wbgw like '%'||#{wbgw}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 增加审核岗位信息 -->
+	<insert id="insert" parameterType="SpgwModel">
+		insert into matridx_spgw(gwid
+		<if test="gwmc !=null and gwmc != ''">
+			,gwmc
+		</if>
+		<if test="sfywjs !=null and sfywjs != ''">
+			,sfywjs
+		</if>
+		<if test="ywjs !=null and ywjs != ''">
+			,ywjs
+		</if>
+		<if test="wbgw !=null and wbgw != ''">
+			,wbgw
+		</if>
+		<if test="dwxz !=null and dwxz != ''">
+			,dwxz
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb
+		</if>
+		) values(#{gwid}
+		<if test="gwmc !=null and gwmc != ''">
+			,#{gwmc}
+		</if>
+		<if test="sfywjs !=null and sfywjs != ''">
+			,#{sfywjs}
+		</if>
+		<if test="ywjs !=null and ywjs != ''">
+			,#{ywjs}
+		</if>
+		<if test="wbgw !=null and wbgw != ''">
+			,#{wbgw}
+		</if>
+		<if test="dwxz !=null and dwxz != ''">
+			,#{dwxz}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,#{sfgb}
+		</if>
+		)
+	</insert>
+	<!--更新审核岗位信息-->
+	<update  id="update" parameterType="SpgwModel">
+		update matridx_spgw 
+		<set>
+		<if test="gwmc !=null and gwmc != ''">
+			gwmc = #{gwmc},
+		</if>
+		<if test="sfywjs !=null and sfywjs != ''">
+			sfywjs = #{sfywjs},
+		</if>
+		<if test="ywjs !=null and ywjs != ''">
+			ywjs = #{ywjs},
+		</if>
+		<if test="wbgw !=null and wbgw != ''">
+			wbgw = #{wbgw},
+		</if>
+		<if test="dwxz !=null and dwxz != ''">
+			dwxz=#{dwxz},
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			sfgb=#{sfgb}
+		</if>
+		</set>
+		<where>
+			gwid = #{gwid}
+		</where>
+	</update>
+	
+	<!--删除审核岗位-->
+	<delete id="delete" parameterType="SpgwModel">
+		delete from matridx_spgw
+		<where>
+			<if test="gwid !=null and gwid != ''">
+				or gwid = #{gwid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or gwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 查询审核流程未选岗位-->
+	<select id="getPagedOptionalList" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc
+		from matridx_spgw gw
+		<where>
+			not exists (select 1 from matridx_shlc lc where gw.gwid = lc.gwid and lc.shid=#{shid} and lc.tysj is null)
+			<if test="gwmc != null and gwmc != ''">
+				and gw.gwmc like '%'||#{gwmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 查询审核流程已选岗位-->
+	<select id="getPagedSelectedList" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc,lc.lcxh,lc.lclb,jc.csmc lclbmc
+		from matridx_shlc lc
+		left outer join matridx_spgw gw on lc.gwid = gw.gwid
+		left join matridx_jcsj jc on jc.csid = lc.lclb
+		<where>
+			lc.shid = #{shid} and lc.tysj is null and gw.gwid is not null
+			<if test="gwmc != null and gwmc != ''">
+				and gw.gwmc like '%'||#{gwmc}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据ids查询审核岗位 -->
+	<select id="getSpgwByIds" parameterType="SpgwDto" resultType="SpgwDto">
+		select gw.gwid,gw.gwmc,gw.sfywjs,gw.ywjs,gw.wbgw,gw.sfgb
+		from matridx_spgw gw
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				gwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertSpgwDtos" parameterType="List">
+		insert into matridx_spgw(gwid,gwmc,sfywjs,sfgb,wbgw,dwxz)
+		VALUES
+		<foreach collection="list" separator="," item="item">
+			(#{item.gwid}, #{item.gwmc},#{item.sfywjs},#{item.sfgb},#{item.wbgw},#{item.dwxz})
+		</foreach>
+	</insert>
+</mapper>

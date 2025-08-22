@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.web.dao.post.IXtzyDao" >
+	<!-- 根据用户ID查询权限信息 -->
+	<select id="getDtoListById" parameterType="java.lang.String" resultType="XtzyDto">
+		with recursive t (zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zybj,xskzbj,gnm,depth,fbsqz,fwlj) as (
+		select xtzy.zyid,xtzy.fjd,xtzy.zybt,xtzy.btsx,xtzy.zylj,xtzy.tblj,xtzy.xssx,xtzy.cdcc,xtzy.zybj,xtzy.xskzbj,xtzy.gnm,3 as depth,xtzy.fbsqz,xtzy.fwlj
+		from matridx_xtzy xtzy
+		left outer join matridx_jszyczb jscz on jscz.zyid = xtzy.zyid
+		left outer join matridx_xtjs js on js.jsid = jscz.jsid
+		left outer join matridx_jcsj jc on jc.jclb= 'HOME_PAGE_TYPE' and jc.csid = js.sylx
+		WHERE jscz.zyid IS NOT NULL and (xtzy.zyid != jc.cskz2 or jc.cskz2 is null)
+		and jscz.jsid = #{jsid} and jscz.czdm = 'menupower'
+		union all
+		select zy.zyid,zy.fjd,zy.zybt,zy.btsx,zy.zylj,zy.tblj,zy.xssx,zy.cdcc,zy.zybj,zy.xskzbj,zy.gnm,t.depth - 1 as depth,zy.fbsqz,zy.fwlj
+		from matridx_xtzy zy
+		join t on zy.zyid = t.fjd
+		)
+		select zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zybj,xskzbj,gnm,depth,fbsqz,fwlj from t
+		group by zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zybj,xskzbj,gnm,depth,fbsqz,fwlj
+		order by zyid
+	</select>
+	
+	<!-- 根据资源ID查询子菜单 -->
+	<select id="getDtoListByMenuId" parameterType="XtzyDto" resultType="XtzyDto">
+		with recursive t (zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zybj,xskzbj,gnm,depth,czdm) as (
+		select xtzy.zyid,xtzy.fjd,xtzy.zybt,xtzy.btsx,xtzy.zylj,xtzy.tblj,xtzy.xssx,xtzy.cdcc,xtzy.zybj,xtzy.xskzbj,xtzy.gnm,1 as depth,jszy.czdm
+		from matridx_xtzy xtzy
+		left outer join matridx_jszyczb jszy on jszy.zyid = xtzy.zyid
+		where xtzy.zyid=#{zyid} 
+		union all
+		select zy.zyid,zy.fjd,zy.zybt,zy.btsx,zy.zylj,zy.tblj,zy.xssx,zy.cdcc,zy.zybj,zy.xskzbj,zy.gnm,t.depth + 1 as depth,jscz.czdm
+		from matridx_xtzy zy 
+		left outer join matridx_jszyczb jscz on jscz.zyid = zy.zyid and jscz.jsid = #{jsid} and jscz.czdm = 'menupower'
+		join t on zy.fjd = t.zyid
+		)
+		select zyid,fjd,zybt,btsx,zylj,tblj,xssx,cdcc,zybj,xskzbj,gnm,depth,czdm from t
+		where fjd is not null and zyid != #{zyid} 
+		 order by zyid
+	</select>
+	
+	<!-- 获取菜单权限列表 -->
+    <select id="getMenuTreeList" parameterType="XtzyDto" resultType="XtzyDto">
+		select yjcd.zyid    yjzyid,
+	           yjcd.zybt    yjzybt,
+	           ejcd.zyid    ejzyid,
+	           ejcd.zybt    ejzybt,
+	           sjcd.zyid    sjzyid,
+	           sjcd.zybt    sjzybt,
+	           sjcd.zyid    zyid,
+	           zyan.czdm,
+	           zyan.czmc,
+	           jszyczb.jsid
+	    from matridx_xtzy sjcd
+	    left join matridx_xtzy ejcd
+	        on sjcd.fjd = ejcd.zyid
+	    left join matridx_xtzy yjcd
+	        on ejcd.fjd = yjcd.zyid
+	    left outer join (
+	      select zyid,'menupower' czdm,'菜单权限' czmc,0 xssx,'glyphicon glyphicon-search' anys from matridx_xtzy where zyid is not null
+	      union all 
+	      select zyid,zyczb.czdm,czdm.czmc,xssx,anys  from matridx_zyczb zyczb left outer join matridx_czdm czdm on zyczb.czdm = czdm.czdm
+	      ) zyan
+	      on sjcd.zyid =  zyan.zyid
+	    left outer join matridx_jszyczb jszyczb
+	        on zyan.zyid = jszyczb.zyid
+	       and zyan.czdm = jszyczb.czdm
+	       and jszyczb.jsid = #{jsid}
+	    where sjcd.zylj is not null and yjcd.zyid is not null
+	    order by yjcd.xssx,yjcd.zyid,ejcd.xssx,ejcd.zyid,sjcd.xssx,sjcd.zyid,zyan.xssx
+    </select>
+    
+    <!-- 批量保存系统资源权限 -->
+    <insert id="batchSaveXtzyqx" >
+	    insert into matridx_jszyczb (jsid,zyid,czdm)
+	    <foreach collection="list" item="item" index="index" separator=" union all ">  
+	    	(select #{item.jsid}, #{item.zyid},#{item.czdm} )
+	    </foreach>
+	</insert>
+	<!-- 批量保存系统资源权限 -->
+	<insert id="insertXtzyqxList" parameterType="List">
+		insert into matridx_jszyczb (jsid,zyid,czdm) values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.jsid},#{item.zyid},#{item.czdm}
+				)
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 删除系统资源权限 -->
+	<delete id="deleteXtzyqx" parameterType="java.lang.String">
+		delete from matridx_jszyczb jszyczb where jszyczb.jsid=#{jsid}
+	</delete>
+</mapper>

@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matridx.igams.common.dao.post.ICommonDao">
+
+
+	<select id="getSsdwSelectList" resultType="SelectListDto">
+    	select list_id,list_name from (
+	    	select '0' as jgtype,JGID as list_id,JGMC as list_name,jgdm
+	    	from matridx_jgxx xy where xy.scbj = 0
+	    	union all
+	    	select '1' as jgtype,JGID as list_id,JGMC as list_name,jgdm
+	    	from matridx_jgxx xzjg where xzjg.scbj = 0
+    	) tmp 
+    	order by jgtype,jgdm
+    </select>
+	
+    <!--查询所属单位列表-->
+    <select id="getPageSelectUnitList" parameterType="SelectListDto" resultType="SelectListDto">
+		select id jgid,dm jgdm,mc jgmc,fid as fjgid,fmc as fjgmc,dh,wz,jglx,sfkzwdydw
+		from matridx_jgxx jg
+		<where> 1=1
+			<if test="sfxyscbj == null or sfxyscbj == ''">
+				and jg.scbj='0'
+			</if>
+			<if test="sfxyscbj != null or sfxyscbj != ''">
+				and jg.scbj!='1'
+			</if>
+			<if test='sfkzwdydw != null and sfkzwdydw != ""'>
+				and jg.sfkzwdydw = #{sfkzwdydw}
+			</if>
+			<if test="jgdm != null and jgdm != ''">
+				and jg.dm = #{jgdm}
+			</if>
+			<if test="jgmc != null and jgmc != ''">
+				and jg.MC like '%'||#{jgmc}||'%'
+			</if>
+			<if test="jglx != null and jglx != ''">
+				and jglx = #{jglx}
+			</if>
+			<if test="fjgmc != null and fjgmc != ''">
+				and fmc like '%'||#{fjgmc}||'%'
+			</if>
+		</where>
+    </select>
+    
+    <!--查询所属单位列表-->
+    <select id="listOrgByYhid" parameterType="map" resultType="String">
+    	with recursive jg (jgid) as (
+			select t.jgid from matridx_jsdwqx t
+	    	<!-- 只查询限定单位的角色 -->
+	    	join matridx_xtjs js on js.jsid=t.jsid and js.scbj!='1' and js.dwxdbj='1'
+	    	join matridx_yhjs yhjs on yhjs.jsid = js.jsid
+	    	<where>
+				yhjs.yhid = #{user.yhid}
+				<!-- 过滤指定角色的权限 -->
+				and (1=2
+				<if test="user.dqjs !=null and user.dqjs != '' ">
+					or js.jsid = #{user.dqjs}
+				</if>
+				)
+	    	</where>
+	    	union all
+	    	select jgxx.jgid
+			from matridx_jgxx jgxx
+			join jg on jgxx.fjgid = jg.jgid where jgxx.scbj = '0'
+		)
+		select jgid from jg order by jgid
+    </select>
+    
+    <!--查询所属单位列表-->
+    <select id="getJsDtoList" parameterType="map" resultType="map">
+    	select qx.yhid,qx.jsid,js.jsmc,js.fjsid,js.sylx,js.jsdm,yh.yhm yhm,yh.zsxm zsxm,ssjg.jgid,js.dwxdbj
+		from matridx_yhjs qx
+		left outer join matridx_xtjs js on qx.jsid = js.jsid
+		left outer join matridx_xtyh yh on yh.yhid = qx.yhid
+		left outer join matridx_yhssjg ssjg on ssjg.yhid = yh.yhid and ssjg.xh ='1'
+		 <where>
+		 	<if test="yhid != null and yhid != ''">
+		 		and qx.yhid =#{yhid}
+		 	</if>
+		 	<if test="jsid != null and jsid != ''">
+		 		and qx.jsid =#{jsid}
+		 	</if>
+		 </where>
+    </select>
+    
+    <!-- 查询操作权限列表-用于所有地方，登陆时设置 -->
+	<select id="getQxModelList" parameterType="QxModel" resultType="QxModel">
+		select jscz.jsid,jscz.zyid,jscz.czdm,czb.dyym,dm.czmc,dm.xssx,dm.anys,zy.gnm
+		from matridx_jszyczb jscz
+		left outer join matridx_xtzy zy on jscz.zyid = zy.zyid
+		left outer join matridx_zyczb czb on czb.zyid = jscz.zyid and czb.czdm = jscz.czdm
+		left outer join matridx_czdm dm on dm.czdm = czb.czdm
+		 where (czb.czdm is not null or jscz.czdm ='menupower')
+		 <if test="jsid != null and jsid != ''">
+		 	and jsid = #{jsid}
+		 </if>
+		 order by zyid,xssx
+	</select>
+	
+	<!-- 根据员工ID获取员工信息 -->
+	<select id="getZsxmByYhid" parameterType="java.util.List" resultType="User">
+		select zsxm,yhid  from matridx_xtyh 
+		<where> 
+		 1 = 2
+			<foreach collection="list"  item="item" >
+				or yhid = #{item}
+			</foreach>
+		</where>
+	</select>
+	
+	<insert id="insertTest" parameterType="Map">
+		insert into igams_ylqxgl(
+		<if test="qxid != null and qxid != ''">
+			,qxid
+        </if>
+		<if test="zczbh != null and zczbh != ''">
+			,zczbh
+        </if>
+		<if test="zcrmc != null and zcrmc != ''">
+			,zcrmc
+        </if>
+		<if test="zcrzs != null and zcrzs != ''">
+			,zcrzs
+        </if>
+        <if test="scdz != null and scdz != ''">
+			,scdz
+        </if>
+        <if test="dlrmc != null and dlrmc != ''">
+			,dlrmc
+        </if>
+        <if test="dlrzs != null and dlrzs != ''">
+			,dlrzs
+        </if>
+        <if test="cpmc != null and cpmc != ''">
+			,cpmc
+        </if>
+        <if test="xh != null and xh != ''">
+			,xh
+        </if>
+        <if test="jgjzc != null and jgjzc != ''">
+			,jgjzc
+        </if>
+        <if test="syfw != null and syfw != ''">
+			,syfw
+        </if>
+        <if test="qtnr != null and qtnr != ''">
+			,qtnr
+        </if>
+        <if test="pzrq != null and pzrq != ''">
+			,pzrq
+        </if>
+        <if test="bz != null and bz != ''">
+			,bz
+        </if>
+        <if test="yxrq != null and yxrq != ''">
+			,yxrq
+        </if>
+        <if test="cpbz != null and cpbz != ''">
+			,cpbz
+        </if>
+        <if test="bgrq != null and bgrq != ''">
+			,bgrq
+        </if>
+        <if test="yb != null and yb != ''">
+			,yb
+        </if>
+        <if test="zzzc != null and zzzc != ''">
+			,zzzc
+        </if>
+        <if test="yqyt != null and yqyt != ''">
+			,yqyt
+        </if>
+        <if test="cctj != null and cctj != ''">
+			,cctj
+        </if>
+        <if test="spbm != null and spbm != ''">
+			,spbm
+        </if>
+        <if test="bgqk != null and bgqk != ''">
+			,bgqk
+        </if>
+        <if test="z != null and z != ''">
+			,z
+        </if>
+        )values(
+        <if test="qxid != null and qxid != ''">
+			,#{qxid}
+        </if>
+		<if test="zczbh != null and zczbh != ''">
+			,#{zczbh}
+        </if>
+		<if test="zcrmc != null and zcrmc != ''">
+			,#{zcrmc}
+        </if>
+		<if test="zcrzs != null and zcrzs != ''">
+			,#{zcrzs}
+        </if>
+        <if test="scdz != null and scdz != ''">
+			,#{scdz}
+        </if>
+        <if test="dlrmc != null and dlrmc != ''">
+			,#{dlrmc}
+        </if>
+        <if test="dlrzs != null and dlrzs != ''">
+			,#{dlrzs}
+        </if>
+        <if test="cpmc != null and cpmc != ''">
+			,#{cpmc}
+        </if>
+        <if test="xh != null and xh != ''">
+			,#{xh}
+        </if>
+        <if test="jgjzc != null and jgjzc != ''">
+			,#{jgjzc}
+        </if>
+        <if test="syfw != null and syfw != ''">
+			,#{syfw}
+        </if>
+        <if test="qtnr != null and qtnr != ''">
+			,#{qtnr}
+        </if>
+        <if test="pzrq != null and pzrq != ''">
+			,#{pzrq}
+        </if>
+        <if test="bz != null and bz != ''">
+			,#{bz}
+        </if>
+        <if test="yxrq != null and yxrq != ''">
+			,#{yxrq}
+        </if>
+        <if test="cpbz != null and cpbz != ''">
+			,#{cpbz}
+        </if>
+        <if test="bgrq != null and bgrq != ''">
+			,#{bgrq}
+        </if>
+        <if test="yb != null and yb != ''">
+			,#{yb}
+        </if>
+        <if test="zzzc != null and zzzc != ''">
+			,#{zzzc}
+        </if>
+        <if test="yqyt != null and yqyt != ''">
+			,#{yqyt}
+        </if>
+        <if test="cctj != null and cctj != ''">
+			,#{cctj}
+        </if>
+        <if test="spbm != null and spbm != ''">
+			,#{spbm}
+        </if>
+        <if test="bgqk != null and bgqk != ''">
+			,#{bgqk}
+        </if>
+        <if test="z != null and z != ''">
+			,#{z}
+        </if>
+        )
+	</insert>
+	
+	<!-- 查询机构信息 -->
+	<select id="getJgxxList" resultType="DepartmentDto">
+		select jg.jgid,jg.jgmc,jg.fjgid
+		from matridx_jgxx jg
+		<where>
+			jg.scbj='0'
+		</where>
+	</select>
+	<!-- 查询用户列表 -->
+	<select id="getUserList"  resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlsj,yh.ddid,yh.wechatid,yh.gwmc,yh.yhid as csid,yh.zsxm as csmc
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0' and yh.sfsd ='0'
+
+		</where>
+	</select>
+	<!-- 查询用户列表 -->
+	<select id="getAllUserList"  resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlsj,yh.ddid,yh.wechatid,yh.gwmc,yh.scbj
+		from matridx_xtyh yh
+	</select>
+	<!-- 查询角色列表 -->
+	<select id="getRoleList"  resultType="Role">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.jsid as csid,js.jsmc as csmc
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+		</where>
+	</select>
+
+	<select id="getPagedRoleList" parameterType="Role" resultType="Role">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		js.ckqx,jc.csmc sylxmc
+		from matridx_xtjs js
+		left outer join matridx_jcsj jc on jc.csid = js.sylx
+		left outer join matridx_ryczxg czxg on czxg.dxid = js.jsid and czxg.qf = #{qf} and czxg.yhid = #{yhid}
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid = #{jsid}
+			</if>
+			<if test="jsdm != null and jsdm != ''">
+				and js.jsdm like '%'||#{jsdm}||'%'
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据用户名模糊查询 -->
+	<select id="getListByYhm"  parameterType="User" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlsj,yh.ddid,yh.wechatid,yh.gwmc,yh.mrfz
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="yhms != null and yhms.size()>0">
+				and yh.yhm in
+				<foreach collection="yhms" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sfsd != null and sfsd != ''">
+				and yh.sfsd =#{sfsd}
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户Ids查询用户信息 -->
+	<select id="getListByIds"  parameterType="User" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,yh.mrfz
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test = "ids != null and ids.size > 0 ">
+				and yh.yhid in 
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="mrfz !=null and mrfz != '' and mrfz == '1'.toString">
+				and yh.mrfz != '' and yh.mrfz != 'ALL'
+			</if>
+			<if test="mrfz !=null and mrfz != '' and mrfz == 'ALL'.toString">
+				and yh.mrfz = #{mrfz}
+			</if>
+			<if test="sfsd !=null and sfsd != ''">
+				and yh.sfsd = #{sfsd}
+			</if>
+		</where>
+	</select>
+	<!-- 根据用户id查询用户信息 -->
+	<select id="getUserInfoById" parameterType="User" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,
+		js.jsmc dqjsmc,js.jsdm dqjsdm,ssjg.jgid,jg.jgdm,jg.jgmc,qtxx.wbcxid
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		left outer join matridx_yhssjg ssjg on yh.yhid = ssjg.yhid
+		left outer join matridx_jgxx jg on jg.jgid=ssjg.jgid
+		left outer join matridx_yhqtxx qtxx on qtxx.yhid=yh.yhid
+		 where yh.scbj='0' and yh.yhid =#{yhid}
+	</select>
+	<!-- 根据用户ID获取机构信息 -->
+	<select id="getJgxxByYhid" parameterType="DepartmentDto" resultType="DepartmentDto">
+		select yhjg.jgid,yhjg.yhid,jg.jgmc
+		from matridx_yhssjg yhjg
+		left outer join matridx_jgxx jg on jg.jgid = yhjg.jgid
+		<where>
+			yhjg.yhid = #{yhid}
+		</where>
+	</select>
+	<!-- 查询机构列表 -->
+	<select id="getPagedDepartmentList" parameterType="DepartmentDto" resultType="DepartmentDto">  
+        select jg.jgid,jg.jgmc,jg.fjgid,jg.jgdm,jg.kzcs1,wbcx.wbcxmc
+        from matridx_jgxx jg
+		left join matridx_wbcx wbcx on wbcx.wbcxid = jg.wbcxid
+		<where>
+			jg.scbj!='1' and (jg.sfty!='1' or jg.sfty is null)
+			<if test="jgmc !=null and jgmc != ''">
+				and jg.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="jgdm !=null and jgdm != ''">
+				and jg.jgdm = #{jgdm}
+			</if>
+		</where>
+    </select>
+    <!-- 获取机构信息 -->
+	<select id="getJgxxDto" parameterType="DepartmentDto" resultType="DepartmentDto">  
+        select jg.jgid,jg.jgmc,jg.fjgid
+        from matridx_jgxx jg
+		<where>
+			jg.scbj!='1'
+			<if test="jgmc !=null and jgmc != ''">
+				and jg.jgmc like '%'||#{jgmc}||'%'
+			</if>
+		</where>
+    </select>
+    <!-- 根据ID获取机构信息 -->
+	<select id="getJgxxById" parameterType="DepartmentDto" resultType="DepartmentDto">
+		select jg.jgid,jg.jgmc,jg.fjgid
+		from matridx_jgxx jg
+		<where>
+			jg.scbj!='1' and jg.jgid = #{jgid}
+		</where>
+	</select>
+	<!-- 根据机构Ids获取机构列表 -->
+	<select id="getJgListByIds"  parameterType="DepartmentDto" resultType="DepartmentDto">
+		select jg.jgid,jg.jgmc,jg.fjgid
+		from matridx_jgxx jg
+		<where>
+			jg.scbj='0'
+			<if test = "ids != null and ids.size > 0 ">
+				and jg.jgid in 
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据departmentDtos获取信息 -->
+	<select id="getDepartmentListByDtos" parameterType="java.util.List" resultType="Map">
+		select jg.jgid jgid,jg.jgmc jgmc,jg.fjgid fjgid,yh.yhid yhid,yh.zsxm zsxm,tp.xh xh
+		from(
+			<foreach collection="list" separator=" union all " open="" close="" item="item" index="index">
+				select #{item.yhid} yhid, #{item.jgid} jgid, #{item.xh} xh
+			</foreach>
+		) tp
+		left join matridx_xtyh yh on yh.yhid = tp.yhid
+		left join matridx_jgxx jg on jg.jgid = tp.jgid
+	</select>
+	<!-- 根据users获取信息 -->
+	<select id="getUserListByDtos" parameterType="java.util.List" resultType="Map">
+		select yh.yhid yhid,yh.zsxm zsxm,tp.xh xh
+		from(
+			<foreach collection="list" separator=" union all " open="" close="" item="item" index="index">
+				select #{item.yhid} yhid, #{item.xh} xh
+			</foreach>
+		) tp
+		left join matridx_xtyh yh on yh.yhid = tp.yhid
+	</select>
+	<!-- 根据角色ID查询新增用户信息（文件） -->
+	<select id="selectAddXtyhByJsid" parameterType="java.util.Map" resultType="User">
+		select yh.yhid,ssjg.jgid,yh.ddid,yh.zsxm,yh.yhm
+			from matridx_yhjs yhjs
+			left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+			left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+			left outer join  matridx_yhjs yhjs2  on yhjs2.yhid = yhjs.yhid  
+			<if test="wjglList !=null and wjglList.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="wjglList" open="(" close=")" separator="," item="item">
+					#{item.jsid}
+				</foreach>
+			</if>
+			<if test="jsidList !=null and jsidList.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="jsidList" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsidList ==null or jsidList.size == 0">
+				<if test="wjglList ==null or wjglList.size == 0">
+					and 1=2
+				</if>
+			</if>
+			<where>
+				yh.scbj !='1' and yhjs2.yhid is null
+				<if test="jsids !=null and jsids.size > 0">
+				and yhjs.jsid in
+					<foreach collection="jsids" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 根据角色ID查询删除用户信息（文件） -->
+	<select id="selectDelXtyhByJsid" parameterType="java.util.Map" resultType="User">
+		select yh.yhid,ssjg.jgid,yh.ddid,yh.zsxm
+			from matridx_yhjs yhjs
+			left outer join matridx_yhssjg ssjg on ssjg.yhid = yhjs.yhid
+			left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+			left outer join  matridx_yhjs yhjs2  on yhjs2.yhid = yhjs.yhid  
+			<if test="jsids !=null and jsids.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="jsids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsidList !=null and jsidList.size > 0">
+			and yhjs2.jsid in
+				<foreach collection="jsidList" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsidList ==null or jsidList.size == 0">
+				<if test="jsids ==null or jsids.size == 0">
+					and 1=2
+				</if>
+			</if>
+			<where>
+				yh.scbj !='1' and yhjs2.yhid is null
+				<if test="wjglList !=null and wjglList.size > 0">
+				and yhjs.jsid in
+					<foreach collection="wjglList" open="(" close=")" separator="," item="item">
+						#{item.jsid}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	<!-- 根据审批人员的信息，查询限制的机构清单 -->
+	<select id="getJgidsByLimitJs" parameterType="map" resultType="SpgwcyDto">
+		select tp.gwid,tp.yhid,tp.zsxm,tp.yhm,tp.jsid,tp.gwmc
+		from(
+			<foreach collection="list" separator=" union all " open="" close="" item="item" index="index">
+				select #{item.gwid} gwid, #{item.yhid} yhid, #{item.zsxm} zsxm, #{item.yhm} yhm, #{item.jsid} jsid, #{item.gwmc} gwmc
+			</foreach>
+		) tp
+		left outer join matridx_jsdwqx dwqx on dwqx.jsid = tp.jsid
+		left outer join matridx_yhjgqx yhjgqx on yhjgqx.jsid = tp.jsid and yhjgqx.yhid = tp.yhid
+		<where>
+			dwqx.jgid = #{jgid} or yhjgqx.jgid = #{jgid}
+		</where>
+		group by tp.gwid, tp.yhid, tp.jsid,  tp.gwmc, tp.zsxm,tp.yhm
+	</select>
+	
+	<!-- 根据审批人员的信息，查询限制的检测单位 -->
+	<select id="getJcdwsByLimitJs" parameterType="map" resultType="SpgwcyDto">
+		select tp.gwid,tp.yhid,tp.zsxm,tp.yhm,tp.jsid,tp.gwmc
+		from(
+			<foreach collection="list" separator=" union all " open="" close="" item="item" index="index">
+				select #{item.gwid} gwid, #{item.yhid} yhid, #{item.zsxm} zsxm, #{item.yhm} yhm, #{item.jsid} jsid, #{item.gwmc} gwmc
+			</foreach>
+		) tp
+		left outer join matridx_jsjcdw dwqx on dwqx.jsid = tp.jsid
+		<where>
+			dwqx.jcdw = #{jcdw} 
+		</where>
+		group by tp.gwid, tp.yhid, tp.jsid, tp.gwmc, tp.zsxm,tp.yhm
+	</select>
+	
+	<!-- 根据users获取信息 -->
+	<select id="getUserInfoByToken" parameterType="String" resultType="Map">
+		select token_id,client_id
+		from oauth_access_token
+		where token_id =#{token_id}
+	</select>
+	<!-- 根据用户ID查询审批岗位成员信息 -->
+	<select id="selectSpgwcyByYhid" parameterType="String" resultType="SpgwcyDto">
+		select cy.gwid,cy.yhid,cy.jsid,gw.sfgb
+			from matridx_spgwcy cy
+		left join matridx_xtyh yh on yh.yhid = cy.yhid
+		left join matridx_yhjs js on cy.yhid = js.jsid and yh.yhid = js.yhid
+		left join matridx_spgw gw on gw.gwid = cy.gwid 
+			where yh.yhid=#{yhid}
+	</select>
+	
+	<!-- 根据wxid获取同一系统用户的微信用户信息 -->
+	<select id="getListBySameId" parameterType="User" resultType="User">
+		select  wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid as wechatid,wxyh.gzpt,wxyh.xtyhid,wxyh.unionid,yh.ddid
+			from matridx_wxyh wxyh 
+		left join matridx_xtyh yh on yh.yhid = wxyh.xtyhid
+		<where>
+			wxyh.scbj!='1'
+			and (
+				xtyhid = (select xtyhid from matridx_wxyh where wxid=#{wechatid} and scbj!='1' and xtyhid is not null and xtyhid != '')
+				or
+				wxyh.unionid = (select unionid from matridx_wxyh where wxid=#{wechatid} and scbj!='1' and unionid is not null and unionid != '')
+			)
+		</where>
+	</select>
+	
+	<!-- 根据用户名获取用户信息 -->
+	<select id="getUserListByYhms"  parameterType="list" resultType="User">
+		select yhid,ddid,yhm
+		from matridx_xtyh 
+		<where>
+			scbj='0' and (1=2
+				<if test = "list != null and list.size > 0 ">
+					or yhm in 
+					<foreach collection="list" separator="," open="(" close=")" item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+			)
+		</where>
+	</select>
+
+	<select id="getWbcxInfoByWxid"  parameterType="String" resultType="User">
+		select wbcx.wbcxdm,wbcx.wbcxid,wxyh.wxid,wxyh.unionid
+		from matridx_wxyh wxyh
+		left join matridx_wbcx wbcx on wbcx.wbcxid = wxyh.gzpt and wbcx.scbj = '0'
+		where wxyh.scbj='0' and wxid = #{wxid}
+		group by wbcx.wbcxdm,wbcx.wbcxid,wxyh.wxid,wxyh.unionid
+	</select>
+	<!-- 根据钉钉ID查询用户信息 -->
+	<select id="getUserByDdid" parameterType="User" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.dqjs,yh.mm,yh.sfsd,yh.dlsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,js.jsmc dqjsmc,yh.grouping,yh.ddtxlj
+		from matridx_xtyh yh
+		left join matridx_xtjs js on js.jsid=yh.dqjs
+		<where>
+			yh.scbj!='1'
+			and ddid=#{ddid}
+			<if test="yhm !=null and yhm != ''">
+				and yhm = #{yhm}
+			</if>
+		</where>
+		order by yh.sfsd
+		limit 1
+	</select>
+	
+	<!-- 查询机构列表(小程序) -->
+	<select id="getMiniDepartmentList" parameterType="DepartmentDto" resultType="DepartmentDto">  
+        select jg.jgid,jg.jgmc,jg.fjgid,jg.jgdm
+        from matridx_jgxx jg
+		<where>
+			jg.scbj!='1'
+			<if test="entire !=null and entire != ''">
+				and jg.jgmc like '%'||#{entire}||'%'
+			</if>
+		</where>
+		limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+    </select>
+    
+    <!-- 根据用户名模糊查询 -->
+	<select id="getDtoByYhm"  parameterType="String" resultType="User">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlsj,yh.ddid,yh.wechatid,yh.gwmc
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0' and
+			yhm=#{yhm}
+		</where>
+	</select>
+	
+	<!-- 根据用户ID获取钉钉ID -->
+	<select id="getDdidByYhids"  parameterType="list" resultType="User">
+		select yh.ddid,yh.zsxm
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0' 
+			and(
+				1=2
+				<if test = "list != null and list.size > 0 ">
+					or yhid in 
+					<foreach collection="list" separator="," open="(" close=")" item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+			)
+		</where>
+	</select>
+	
+	<!-- 根据用户真实姓名获取用户id -->
+	<select id="getUserId" parameterType="String" resultType="User">
+		select yh.yhid
+		from matridx_xtyh yh
+		 where yh.scbj!='1' and yh.zsxm =#{zsxm}
+		limit 1
+	</select>
+	
+	<!-- 根据ddids获取用户信息 -->
+	<select id="getYhxxsByDdids" parameterType="User" resultType="User">
+		select yhid,ddid,zsxm
+		from matridx_xtyh 
+		<where>
+		scbj='0' and ddid in 
+			<foreach collection="ids" item="item" index="index" separator="," open="(" close=")">
+			#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<!-- 查询机构信息 -->
+	<select id="getJgxxInfo" resultType="DepartmentDto" parameterType="String">
+		select jg.jgid,jg.jgmc,jg.fjgid,jgdm,jg.kzcs1
+		from matridx_jgxx jg
+		<where>
+			jg.scbj='0' and jgid = #{jgid}
+		</where>
+	</select>
+
+	<!-- 根据ddid查找yhid -->
+	<select id="getYhid" resultType="User">
+		select zsxm
+		from matridx_xtyh
+		where scbj!='1' and sfsd='0' and ddid=#{ddid}
+        order by sfsd
+        limit 1
+	</select>
+	<!--查询用户角色列表-->
+	<select id="getYhjsDtos" parameterType="User" resultType="User">
+		SELECT
+		qx.yhid,
+		qx.jsid,
+		js.jsmc,
+		js.fjsid,
+		js.sylx,
+		js.jsdm,
+		yh.yhm yhm,
+		yh.zsxm zsxm,
+		yh.yhid
+		FROM
+		matridx_xtyh yh
+		LEFT OUTER JOIN matridx_yhjs qx ON yh.yhid = qx.yhid
+		LEFT OUTER JOIN matridx_xtjs js ON qx.jsid = js.jsid
+		<where>
+			yh.scbj='0' and js.scbj='0' and yh.sfsd = '0'
+			<if test="yhid != null and yhid != ''">
+				and qx.yhid =#{yhid}
+			</if>
+			<if test="jsid != null and jsid != ''">
+				and qx.jsid =#{jsid}
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="getXtjsDtos" parameterType="User" resultType="User">
+		select js.jsmc,js.jsid
+		from matridx_xtjs js
+		<where>
+			js.scbj='0' and
+			js.jsmc like '%'||#{jsmc}||'%'
+		</where>
+	</select>
+
+	<select id="getOaXtjsList" parameterType="User" resultType="User">
+		select js.jsid,js.jsmc
+		from matridx_xtjs js
+		<where>
+			js.scbj!='1'
+			<if test="entire !=null and entire != ''">
+				and js.jsmc like '%'||#{entire}||'%'
+			</if>
+		</where>
+		limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+
+	<select id="getNoButtonMenu" parameterType="QxModel" resultType="QxModel">
+		select jszy.zyid,xtzy.zylj,xtzy.zybt czmc, jszy.jsid
+		from matridx_jszyczb jszy
+				 left join matridx_xtzy xtzy  on  xtzy.zyid=jszy.zyid
+		where jsid=#{jsid} group by jszy.zyid,xtzy.zylj,xtzy.zybt, jszy.jsid
+	</select>
+
+	<select id="getUsersByYhms" parameterType="User" resultType="User">
+		select ddid,zsxm,yhm,yhid
+		from matridx_xtyh
+		<where>
+			scbj='0' and sfsd='0' and yhm in
+			<foreach collection="ids" item="item" index="index" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+	<!-- 根据钉钉id和wbcxid获取用户信息 -->
+	<select id="getByddwbcxid" parameterType="User" resultType="User">
+		select yh.yhid,yh.zsxm,yh.ddid,yh.yhm
+		from matridx_xtyh yh
+		left join matridx_yhqtxx qt on qt.yhid=yh.yhid
+		<where>
+			yh.scbj!='1' and yh.sfsd!='1' and yh.ddid=#{ddid} and qt.wbcxid=#{wbcxid}
+		</where>
+	</select>
+
+	<select id="getNoClientDdid" resultType="User">
+		SELECT xtyh.yhid,xtyh.yhm,xtyh.zsxm,xtyh.ddid,yhqtxx.wbcxid,wbcx.miniappid FROM matridx_xtyh xtyh
+		LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = xtyh.yhid
+		LEFT JOIN matridx_wbcx wbcx ON wbcx.wbcxid = yhqtxx.wbcxid
+		where
+		xtyh.ddid not in (SELECT client_id FROM oauth_client_details) AND xtyh.scbj = '0'
+	</select>
+	<select id="getClientinfo" parameterType="User" resultType="User">
+		SELECT client_id FROM oauth_client_details
+		where client_id = #{client_id}
+	</select>
+	<select id="getWrongClientinfo" parameterType="User" resultType="User">
+		SELECT yh.ddid,wbcx.miniappid FROM matridx_xtyh yh
+		left JOIN matridx_yhqtxx qtxx on qtxx.yhid = yh.yhid
+		left join  matridx_wbcx wbcx on wbcx.wbcxid = qtxx.wbcxid
+		WHERE yh.ddid in (
+			SELECT client_id FROM "oauth_client_details" where "length"(client_id) >8 and length(split_part(client_id, '@',2) )=0 and client_id NOT LIKE 'o%'
+		) and yh.scbj != '1'
+	</select>
+
+	<insert  id="addClientDetails" parameterType="User">
+		insert into oauth_client_details (
+			client_secret, scope, authorized_grant_types,  client_id)
+		values (#{mm},'all','client_credentials,refresh_token,password,matridx',#{yhm})
+	</insert>
+
+	<select id="getWbQxModelList" parameterType="QxModel" resultType="QxModel">
+		select wbzyqx.jsid,wbzyqx.zyid,zy.fwlj dyym,zy.xssx
+		from matridx_wbzyqx wbzyqx
+		left outer join matridx_wbzy zy on wbzyqx.zyid = zy.zyid
+		<where>
+			<if test="jsid != null and jsid != ''">
+				jsid = #{jsid}
+			</if>
+		</where>
+		UNION all
+		select #{jsid} as jsid,zyid , fwlj AS dyym,xssx FROM matridx_wbzy WHERE mrxs = '1'
+		order by jsid,zyid,xssx
+	</select>
+
+	<select id="getWbQxModelListByJsid"  resultType="QxModel">
+		select wbzyqx.jsid,wbzyqx.zyid,zy.fwlj dyym,zy.xssx
+		from matridx_wbzyqx wbzyqx
+		left outer join matridx_wbzy zy on wbzyqx.zyid = zy.zyid WHERE mrxs != '1'
+	</select>
+
+	<select id="getWbQxModelListByCommon"  resultType="QxModel">
+		select 'COMMONJSID' as jsid,zyid , fwlj AS dyym,xssx FROM matridx_wbzy WHERE mrxs = '1'
+		order by jsid,zyid,xssx
+	</select>
+
+	<insert  id="updateClientDetails" parameterType="User">
+		update oauth_client_details set client_id =#{yhm}, client_secret= #{mm}
+		where client_id =#{yhid}
+	</insert>
+
+	<delete id="deleteXtyh" parameterType="User">
+		delete  from oauth_client_details where client_id in
+		<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<select id="getJsjcdwDtoList" parameterType="map" resultType="map">
+		select jsid ,jcdw,jc_jcdw.csdm
+		from matridx_jsjcdw jsjcdw
+		left outer join matridx_jcsj jc_jcdw on jsjcdw.jcdw = jc_jcdw.csid
+		<where>
+			jsid=#{jsid}
+		</where>
+	</select>
+
+	<select id="getWksjmxList" parameterType="map" resultType="map">
+		select tmp.* from(
+		select wksjmx.wksjmxid,wksjmx.xh,wksjmx.xm,wksjmx.wksjid,wksjmx.jt1 as index,wksjmx.jt2 as index2,wksjmx.ybbh as sample,wksjmx.wkbm as uid,wksjmx.dnand,
+		rank() over(partition by wksjgl.cxy,to_char(wksjgl.lrsj,'yyyy-mm-dd') order by to_char(wksjgl.lrsj,'yyyy-mm-dd HH:mm:ss') desc) desxh,
+		wksjmx.hsnd as condna,wksjmx.wknd as conlib,wksjmx.dlnd,wksjmx.yy as comment,
+		wksjmx.yjxjsjl as goal_reads, case when wksjmx.xsbs is null then '1' else wksjmx.xsbs end dilution_factor,
+		case when sj.nbbm is not null and wksjmx.xmdm is not null then SUBSTRING(wksjmx.xmdm,0,CHAR_LENGTH(wksjmx.xmdm))||SUBSTRING(sj.nbbm,CHAR_LENGTH(sj.nbbm)) else wksjmx.xmdm end xmdm,
+		wksjmx.syglid,spike
+		,sj.nbbm,wksjmx.xmlx project_type,wksjmx.xmlx
+		from igams_wksjgl wksjgl
+		left join igams_cxyxx cxyxx on cxyxx.cxyid=wksjgl.cxyid
+		left join igams_wksjmx wksjmx on wksjmx.wksjid = wksjgl.wksjid
+		left join igams_sjxx sj on sj.ybbh=wksjmx.ybbh and sj.scbj ='0'
+		where
+		wksjgl.scbj ='0'
+		and wksjgl.xpid is null
+		and to_char(wksjgl.lrsj,'yyyy-mm-dd')  &gt;=to_char(CURRENT_DATE - INTERVAL '1 day','yyyy-mm-dd')
+		and to_char(wksjgl.lrsj,'yyyy-mm-dd')  &lt;=to_char(CURRENT_DATE ,'yyyy-mm-dd')
+		<if test="csdm !=null and csdm!=''">
+			and cxyxx.cxybh= #{csdm}
+		</if>
+		) as tmp
+		where tmp.desxh='1'
+	</select>
+</mapper>

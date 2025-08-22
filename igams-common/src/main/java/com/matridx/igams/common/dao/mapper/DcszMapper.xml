@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IDcszDao" >
+
+	<select id="getChoseList" resultType="DcszDto" parameterType="DcszDto">
+    	select sz.ywid, sz.yhid, sz.dczd, sz.dczdmc, xt.xsmc,sz.xsxx ,xt.sqlzd sqlzd,xt.xssx,xt.zdsm,xt.flmc
+    	from matridx_grdcsz sz left join matridx_dcsz xt on sz.ywid = xt.ywid and sz.dczd=xt.dczd
+    	where sz.ywid = #{ywid} and sz.yhid=#{yhid} 
+    	order by sz.xsxx
+    </select>
+    
+	<select id="getCateWaitList" resultType="DcszDto" parameterType="DcszDto">
+		select dc.ywid, dc.ywmc, dc.dczd ,dc.dczdmc,dc.xsmc, dc.xsxx,dc.sqlzd,dc.xssx,dc.zdsm,dc.flmc,dc.flpx,sfbc  from 
+		(select '' ywid,'' ywmc,'' dczd,'' dczdmc,'' xsmc,0 xsxx,'' sqlzd,'' xssx,'' zdsm,d.flmc,d.flpx,'0' sfbc from matridx_dcsz d where d.ywid = #{ywid} group by d.flmc,d.flpx
+		union all
+    	select dc.ywid, dc.ywmc, dc.dczd ,dc.dczdmc,dc.xsmc, dc.xsxx,dc.sqlzd,dc.xssx,dc.zdsm,dc.flmc,dc.flpx,'1' sfbc
+    	from matridx_dcsz dc 
+    	left outer join matridx_grdcsz gr on dc.ywid = gr.ywid and dc.dczd = gr.dczd and gr.yhid = #{yhid}
+    	where dc.ywid = #{ywid} and gr.dczd is null ) dc order by dc.flpx,dc.xsxx,dc.ywid 
+    </select>
+    
+	<select id="deleteLs" parameterType="DcszDto">
+    	delete from matridx_grdcsz where yhid=#{yhid} and ywid=#{ywid}
+    </select>
+    
+    <insert id="batchInsertMap" >
+    	insert into matridx_grdcsz (ywid,yhid,dczd,dczdmc,xsxx
+    	)
+	    <foreach collection="list" item="item" index="idx"
+				separator=" union all ">
+				(select	#{ywid},#{yhid},#{item.dczd},#{item.dczdmc},cast((#{idx}+1) as numeric)
+			   ) 
+		</foreach>
+    </insert>
+    
+    <select id="getSelectedList" resultType="DcszDto" parameterType="Map">
+    	select dc.ywid, dc.dczd, dc.dczdmc, dc.xsmc,dc.xsxx ,dc.sqlzd,dc.xssx,dc.zdsm,dc.flmc,dc.flpx
+    	from (
+			<foreach item="item" index="index" collection="choseList" separator=" union all ">  
+			   select #{item,jdbcType=VARCHAR} dczd,#{index} ordernum
+			</foreach>
+			) tmp
+		left outer join matridx_dcsz dc on tmp.dczd = dc.dczd
+    	where dc.ywid = #{ywid} 
+    	order by tmp.ordernum
+    </select>
+
+	<select id="getListById" resultType="DcszDto" parameterType="String">
+		select dc.ywid, dc.dczd, dc.dczdmc, dc.xsmc,dc.xsxx ,dc.sqlzd,dc.xssx,dc.zdsm,dc.flmc
+		from  matridx_dcsz dc
+		where dc.ywid = #{ywid}
+		order by dc.xsxx asc
+	</select>
+    
+    <select id="getCydcxxs" parameterType="CydcszModel" resultType="CydcxxModel">
+    	select cyid,dczd,dczdmc,xsxx from matridx_cydcxx where cyid = #{cyid} order by xsxx
+    </select>
+    
+     <select id="getCydcszs" parameterType="DcszModel" resultType="CydcszModel">
+    	select cyid,cydm,cymc,cypx,bz from matridx_cydcsz where ywid = #{ywid} order by cypx
+    </select>
+</mapper>

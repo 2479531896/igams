@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="referrer" content="never">
+	<meta content="webkit" name="renderer"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="Copyright" content="matridx"/>
+	<link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+	<title>录入信息</title>
+	<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/phonefileinput.min.css">
+	<link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+	<link rel="stylesheet" href="/css/weui.css">
+	<link rel="stylesheet" type="text/css" href="/css/base.css?v=20241230v3" />
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/api/site.css?v=20250217v2" />
+	<style>
+		.row{
+            display: block ;
+        }
+        @font-face {
+            font-family: 'Glyphicons Halflings';
+            src: url('/fonts/glyphicons-halflings-regular.eot');
+            src: url('/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+        }
+        .glyphicon {
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: normal;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+	</style>
+	<style>
+		label{
+			font-size: 16px;
+			font-weight: normal;
+			margin-bottom: 0
+		}
+		/**蓝色按钮*/
+		.weui-btn_bule,.weui-btn_primary {
+			color: white;
+			background-color: #00AFEC;
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+			color: rgba(0, 208, 236, 0.98);
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+			background-color: #00e4ec;
+		}
+		/**单选框、多选框样式*/
+		.Radio input,
+		.Checkbox input {
+			display: none
+		}
+		.Radio label,
+		.Checkbox label {
+			padding: 0 3px;
+			display: inline-block;
+			cursor: pointer;
+			position: relative
+		}
+		.Radio label:before,
+		.Checkbox label:before {
+			box-sizing: border-box;
+			content: "";
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			border: 1px solid #999;
+			margin: 0 2px;
+			vertical-align: middle;
+			display: inline-block;
+			transition: 0.1S;
+		}
+		.Radio input:checked + label:before {
+			border: 5px solid #00a4ff;
+		}
+		.Checkbox label:before {
+			background: url(/images/ico_tick.svg) no-repeat center;
+			background-size: 0;
+			border-radius: 4px;
+			transition: 0.2S;
+		}
+		.Checkbox input:checked + label:before {
+			background-color: #00a4ff;
+			background-size: 16px;
+			border-color: #00a4ff;
+		}
+		/*选择框样式*/
+		.RadioStyle input {
+			display: none
+		}
+		.RadioStyle label {
+			border: 2px solid #CCC;
+			color: #666;
+			padding: 1px 10px 1px 5px;
+			line-height: 28px;
+			min-width: 40px;
+			text-align: center;
+			float: left;
+			margin: 2px;
+			border-radius: 4px
+		}
+		.RadioStyle input:checked + label {
+			background: url(/images/ico_checkon.svg) no-repeat right bottom;
+			border: 2px solid #00a4ff;
+			background-size: 21px 21px;
+			color: #00a4ff
+		}
+		.RadioStyle input:disabled + label {
+			opacity: 0.7;
+		}
+		#ajaxForm .weui-cell__bd{
+			padding-left: 20px;
+		}
+		.sjdwlistclass .weui-cells:before{
+			left: 0;
+		}
+		.sjdwlistclass .weui-cells .weui-cell:before{
+			left: 0;
+		}
+		.weui-cell {
+			padding: 10px;
+		}
+		.weui-cell:before {
+			right: 10px;
+			left: 10px;
+		}
+		.weui-cells:after,.weui-cells:before {
+			border: none;
+		}
+		.weui-panel:before,.weui-form-preview:before {
+			border-top: none;
+		}
+		.weui-panel:after,.weui-form-preview:after {
+			border-bottom: none;
+		}
+		.weui-picker__indicator{
+			background-color: #00afec21;
+		}
+		.weui-mask {
+			visibility: visible;
+		}
+		.weui-panel_access .weui-panel__bd .weui-media-box .weui-panel {
+			margin-top: 0
+		}
+		.weui-panel_access .weui-panel__hd:after {
+			border-bottom: none;
+		}
+		.weui-media-box .weui-cell_swiped:before {
+			border-top: none;
+		}
+		.weui_loading_toast .weui-toast_content{
+			font-size: 16px;
+		}
+	</style>
+</head>
+<body style="background-color: #F5F5F5" data-weui-theme="light">
+<form id="ajaxForm">
+	<input type="hidden" id="sjid" name="sjid" th:value="${sjxxDto.sjid}"/>
+	<input id="wbcxdm" type="hidden" name="wbcxdm" th:value="${wbcxdm}"/>
+	<input type="hidden" id="actionFlag" name="actionFlag" th:value="${actionFlag}"/>
+	<input type="hidden" id="status" name="status" th:value="${status}"/>
+	<input type="hidden" name="fjids" id ="fjids"/>
+	<input type="hidden" id="wxid" name="wxid" th:value="${sjxxDto.wxid}"/>
+	<input type="hidden" id="ywlx" name="ywlx" th:value="${sjxxDto.ywlx}"/>
+	<input type="hidden" id="xgsj" name="xgsj" th:value="${sjxxDto.xgsj}"/>
+	<input type="hidden" id="dbm" name="dbm" th:value="${sjxxDto.db}"/>
+	<input type="hidden" id="jczxmids" name="jczxmids" th:value="${sjxxDto.jczxmids}"/>
+	<input type="hidden" id="jcxmids" name="jcxmids" th:value="${sjxxDto.jcxmids}"/>
+	<input type="hidden" id="kyxm" name="kyxm" th:value="${sjxxDto.kyxm}"/>
+	<input type="hidden" id="sjdwbj" name="sjdwbj" th:value="${sjxxDto.sjdwbj}"/>
+	<input type="hidden" name="sfzmjc" id ="sfzmjc"/>
+	<input type="hidden" name="sfws" id="sfws" th:value="${sjxxDto.sfws}"/>
+
+	<!--录单页面-->
+	<div id="hzxxInfo" class="page__bd">
+		<div class="weui-cells__title" style="display: flex;margin-top: 8px;">
+			<div onclick="showInfo()" style="flex: 1;">患者信息&nbsp;<span class="weui-icon-info-circle" style="color: #00AFEC"></span></div>
+			<div th:hidden="${actionFlag=='1'}" style="flex: 1;text-align: right;height: 30px">
+				<button th:if="${sjxxDto.sfws != '3'}" id="info_save" type="button" class="weui-btn weui-btn_mini weui-btn_bule" style="height: 100%;font-size: smaller;width: 50px;">暂存</button>
+				<button id="getuser" type="button" class="weui-btn weui-btn_mini weui-btn_default" style="border: 1px solid #00AFEC;color: #00AFEC;font-size: smaller;height: 100%;width: 50px;">提取</button>
+			</div>
+		</div>
+		<div style="margin: 8px;border-radius: 10px;">
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;align-items: flex-start;">
+				<!--附件上传，录单必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<div  class="weui-cell__hd">
+							<label>附件上传<span style="color: red;">*</span></label>
+						</div>
+					</div>
+					<div class="weui-cell__bd">
+						<div style="display:none" id="chrom">
+							<div id="fileDiv">
+								<input type="file" id="wechat_file" name="wechat_file" />
+							</div>
+						</div>
+						<div class="weui-cell__bd" style="display: flex;padding: 0" id="phone" >
+							<div style="padding:0;width: 30%;margin: 0 5px;" id="uploader">
+								<div style="padding:0;border:1px solid #ccc;">
+									<img width="100%" height="100%" src="/images/add.png">
+								</div>
+							</div>
+						</div>
+						<div style="margin: 8px 0;" id="fjcfbDto">
+							<div style="font-size: small;margin: 2px" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}" th:id="${fjcfbDto.fjid}">
+								<button class="weui-icon-delete" style="color: red;margin-top: -15px" type="button" title="删除" th:if="${actionFlag!='1'}" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></button>
+								<span style="white-space: nowrap;display: inline-block;overflow: hidden;text-overflow: ellipsis;max-width: 150px" th:text="${'附件'+(fjcfbDtoStat.index+1)+':'+fjcfbDto.wjm}"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--样本编号，录单必填项-->
+				<div class="weui-cell">
+					<div  class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">样本编号<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" th:readonly="${actionFlag=='1'}" id="ybbh" name="ybbh" th:value="${sjxxDto.ybbh}" placeholder="请输入样本编号,禁用特殊字符" validate="{required:true,stringMaxLength:32}" onblur="clearSpace()"/>
+					</div>
+					<div th:if="${actionFlag!='1'}" class="weui-cell__ft">
+						<button class="weui-icon-scan" style="color: #00AFEC" type="button" id="getQRCode"></button>
+					</div>
+				</div>
+			</div>
+			<!--基本信息-->
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;margin-top: 10px;">
+				<!--姓名，录单必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">姓　　名<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" th:readonly="${actionFlag=='1'}" id="hzxm" name="hzxm" th:value="${sjxxDto.hzxm}" placeholder="请填写姓名" onblur="clearSpace()"/>
+					</div>
+				</div>
+				<!--性别，录单必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">性　　别<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<!--录单时显示内容-->
+					<div th:if="${actionFlag!='1'}" class="weui-cell__bd" style="display: flex">
+						<span class="RadioStyle" style="flex: 1;margin: 0 2px" th:each="gender,stat:${genderlist}">
+							<input type="radio" th:id="${gender.csid}" name="xb" th:value="${gender.csdm}" th:checked="${(sjxxDto.xb!=null &&sjxxDto.xb!='')?(gender.csdm eq sjxxDto.xb):(gender.sfmr eq '1')}" validate="{required:true}"/>
+							<label th:for="${gender.csid}" th:style="${'position: absolute;top: 9%;font-size: small;width: '+(genderlist.size==3?'20%':'25%')+';'}" th:text="${gender.csmc}"></label>
+						</span>
+					</div>
+					<!--完善时显示内容-->
+					<div class="weui-cell__bd" th:each="gender,stat:${genderlist}" th:if="${actionFlag=='1' && ((sjxxDto.xb!=null &&sjxxDto.xb!='')?(gender.csdm eq sjxxDto.xb):(gender.sfmr eq '1'))}">
+						<span class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" th:for="${gender.csid}" th:text="${gender.csmc}"/>
+						<input type="radio" hidden th:id="${gender.csid}" name="xb" th:value="${gender.csdm}" th:checked="${(sjxxDto.xb!=null &&sjxxDto.xb!='')?(gender.csdm eq sjxxDto.xb):(gender.sfmr eq '1')}" validate="{required:true}"/>
+					</div>
+				</div>
+				<!--年龄，录单必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">年　　龄<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" th:readonly="${actionFlag=='1'}" id="nl" name="nl" th:value="${sjxxDto.nl}" placeholder="请填写年龄"/>
+					</div>
+					<!--录单时显示内容-->
+					<div th:if="${actionFlag!='1'}" class="weui-cell__ft" onclick="chooseNldw()">
+						<button class="weui-btn weui-btn_mini weui-btn_default" style="height: 25px;color: #00AFEC;width: 60px;line-height: 25px;" type="button">
+							<input class="weui-input" id="nldw" name="nldw" th:value="${(sjxxDto.nldw!=null&&sjxxDto.nldw!='')?sjxxDto.nldw:'岁'}" validate="{required:true}" readonly/>
+						</button>
+					</div>
+					<!--完善时显示内容-->
+					<div th:if="${actionFlag=='1'}" class="weui-cell__ft">
+						<button class="weui-btn weui-btn_mini weui-btn_default" style="height: 25px;color: #00AFEC;width: 60px;line-height: 25px;" type="button">
+							<input class="weui-input" id="nldw" name="nldw" th:value="${(sjxxDto.nldw!=null&&sjxxDto.nldw!='')?sjxxDto.nldw:'岁'}" validate="{required:true}" readonly/>
+						</button>
+					</div>
+				</div>
+				<!--联系电话，非必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>联系电话&nbsp;</label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" id="dh" name="dh" type="text" th:value="${sjxxDto.dh}" validate="{stringMaxLength:64}" placeholder="请填写联系电话"/>
+					</div>
+				</div>
+				<!--送检医生，完善必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<label>主治医师<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd" onclick="changeSjys()">
+						<input class="weui-input" type="text" id="sjysmc" name="sjysmc" th:value="${sjxxDto.sjys}" validate="{required:true,stringMaxLength:64}" placeholder="请选择主治医师" readonly/>
+						<input type="hidden" id ="sjys" name="sjys" th:value="${sjxxDto.sjys}" readonly/>
+					</div>
+					<div class="weui-cell__ft"></div>
+				</div>
+				<!--医生电话，非必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>医生电话&nbsp;</label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" type="text" id="ysdh" name="ysdh" th:value="${sjxxDto.ysdh}" validate="{stringMaxLength:32}" placeholder="请填写医师电话"/>
+					</div>
+				</div>
+				<!--送检单位，完善必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<label>医院名称<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd" onclick="changeSjys()">
+						<input class="weui-input" id="yymc" name="yymc" th:value="${sjxxDto.yymc}" placeholder="请选择医院名称" readonly/>
+						<input type="hidden" id="sjdwid" name="sjdwid" th:value="${sjxxDto.sjdw}" readonly/>
+					</div>
+					<div class="weui-cell__ft"></div>
+				</div>
+				<!--报告显示单位，完善必填项-->
+				<div class="weui-cell" id="qtdwInput">
+					<div class="weui-cell__hd">
+						<label>报告显示单位<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" type="text" id="sjdwmc" name="sjdwmc" th:value="${sjxxDto.sjdwmc}" placeholder="请填写医院名称"/>
+					</div>
+				</div>
+				<!--科室，完善必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<label>科　　室<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd" onclick="chooseKs(true)">
+						<input class="weui-input" id="ksmc" name="ksmc" th:value="${sjxxDto.ksmc}" placeholder="请选择科室" readonly/>
+						<input type="hidden" id="ksid" name="ksid" th:value="${sjxxDto.ks}" readonly/>
+					</div>
+					<div class="weui-cell__ft"></div>
+				</div>
+				<!--报告显示科室，完善必填项-->
+				<div class="weui-cell" id="qtksInput">
+					<div class="weui-cell__hd">
+						<label>报告显示科室<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" type="text" id="qtks" name="qtks" th:value="${sjxxDto.qtks}" placeholder="请填写报告单上需显示的科室">
+					</div>
+				</div>
+				<!--检测单位，录单必填项-->
+				<div class="weui-cell weui-cell_access">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">检测单位<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<!--录单时显示内容-->
+					<div th:if="${actionFlag!='1'}" class="weui-cell__bd" onclick="chooseJcdw(true)">
+						<input class="weui-input" id="jcdwmc" name="jcdwmc" th:value="${sjxxDto.jcdwmc}" placeholder="请选择检测单位" readonly>
+						<input type="hidden" id ="jcdwid" name="jcdwid" th:value="${sjxxDto.jcdw}" readonly/>
+					</div>
+					<div th:if="${actionFlag!='1'}" class="weui-cell__ft"></div>
+					<div th:if="${actionFlag=='1'}" class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" id="jcdwmc" name="jcdwmc" th:value="${sjxxDto.jcdwmc}" placeholder="请选择检测单位" readonly>
+						<input type="hidden" id ="jcdwid" name="jcdwid" th:value="${sjxxDto.jcdw}" readonly/>
+					</div>
+				</div>
+				<!--送检区分，录单必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">送检区分<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd" style="display: flex">
+						<span  class="RadioStyle" style="flex: 1;margin: 0 2px"id="sjqfGroup" th:each="division,stat:${divisionlist}">
+							<input class="sjqf" type="radio" th:id="'sjqf'+${stat.index}" name="sjqf" th:value="${division.csid}" th:sjqfmc="${division.csmc}" th:checked="${(sjxxDto.sjqf == null && sjxxDto.sjqf == '')?(division.sfmr=='1'):(sjxxDto.sjqf eq division.csid)}" validate="{required:true}"/>
+							<label th:for="'sjqf'+${stat.index}" th:style="${'position: absolute;top: 9%;font-size: small;width:'+(60/divisionlist.size)+'%;'}" th:text="${division.csmc}" ></label>
+						</span>
+					</div>
+				</div>
+				<!--合作伙伴，录单必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">负责人<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" id="db" name="db" th:value="${sjxxDto.db}" placeholder="请填写负责人" onblur="refreshDB()" th:readonly="${actionFlag=='1'}"/>
+					</div>
+					<div th:if="${actionFlag!='1'}" class="weui-cell__ft">
+						<button class="weui-icon-reFlesh" style="color: #00AFEC" type="button" id="refreshJcdw" onclick="refreshDB()"></button>
+					</div>
+				</div>
+				<!--科研项目，录单必填项-->
+				<div class="weui-cell weui-cell_access" style="display: none" id="kyxmDiv">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">立项编号<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd" onclick="chooseKyxm()">
+						<input class="weui-input" id ="kyxmmc" name="kyxmmc" th:value="${sjxxDto.kyxmmc}"placeholder="请选择立项编号" readonly/>
+					</div>
+					<div class="weui-cell__ft"></div>
+				</div>
+				<!--住院号，非必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>住院号&nbsp;　</label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" id="zyh" name="zyh" th:value="${sjxxDto.zyh}" placeholder="请填写住院号"/>
+					</div>
+				</div>
+				<!--床位号，非必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>床位号&nbsp;　</label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" id="cwh" name="cwh" th:value="${sjxxDto.cwh}" placeholder="请填写床位号"/>
+					</div>
+				</div>
+			</div>
+			<!--快递信息-->
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;margin-top: 10px;">
+				<!--快递类型，完善必填项-->
+				<div class="weui-cell" style="align-items: flex-start">
+					<div class="weui-cell__hd">
+						<label>快递类型<span th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<span class="RadioStyle" th:each="kdlx,stat:${sdlist}">
+							<input type="radio" th:id="${kdlx.csid}" name="kdlx" th:value="${kdlx.csid}" th:data-kdlxmc="${kdlx.csmc}" th:data-cskz2="${kdlx.cskz2}" th:data-csdm="${kdlx.csdm}" th:checked="${(sjxxDto.kdlx != null && sjxxDto.kdlx != '')?(kdlx.csid eq sjxxDto.kdlx):(kdlx.sfmr==1)}" validate="{required:true}"/>
+							<label th:for="${kdlx.csid}" style="font-size: small;width:48%" th:text="${kdlx.csmc}"></label>
+						</span>
+					</div>
+				</div>
+				<!--快递号，完善必填项-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label><span id="kdhname">快递单号</span><span id="kdhspan" th:style="'color:'+${actionFlag=='1'?'red':'#00AFEC'}+';'">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" id="kdh" name="kdh" th:value="${sjxxDto.kdh}" pattern="{0,32}" placeholder="请填写快递单号"/>
+					</div>
+					<div class="weui-cell__ft" id="kddhQRCode">
+						<button class="weui-icon-scan" style="color: #00AFEC" type="button" id="getKddhQRCode"></button>
+					</div>
+				</div>
+			</div>
+			<!--检测信息-->
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;margin-top: 10px;">
+				<!--检测项目，录单必填项-->
+				<div class="weui-cell" style="align-items: flex-start">
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">检测项目<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<!--录单时显示内容-->
+					<div class="weui-cell__bd" th:if="${actionFlag!='1'}" id="jcxm">
+					</div>
+					<!--完善时显示内容-->
+					<div th:if="${actionFlag=='1'}" class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" id="jcxmmc" name="jcxmmc" th:value="${sjxxDto.jcxmmc}" placeholder="请选择检测项目" readonly/>
+					</div>
+				</div>
+				<!--检测子项目，录单必填项-->
+				<div class="weui-cell" style="align-items: flex-start" id="jczxmDiv" hidden>
+					<div class="weui-cell__hd">
+						<label th:style="${actionFlag=='1'?'color: darkgray;font-weight: bold;':''}">检测子项目<span th:style="'color:'+${actionFlag=='1'?'#00AFEC':'red'}+';'">*</span></label>
+					</div>
+					<!--录单时显示内容-->
+					<div th:if="${actionFlag!='1'}" class="weui-cell__bd"  id="jczxm">
+					</div>
+					<!--完善时显示内容-->
+					<div th:if="${actionFlag=='1'}" class="weui-cell__bd">
+						<input class="weui-input" th:style="${actionFlag=='1'?'color: darkgray;':''}" id="jczxmmc" th:value="${sjxxDto.jczxmmc}" placeholder="请选择检测子项目" readonly/>
+					</div>
+				</div>
+				<!--关注病原，非必填项-->
+				<div class="weui-cell" style="align-items: flex-start;">
+					<div class="weui-cell__hd">
+						<label>关注病原&nbsp;</label>
+					</div>
+					<div class="weui-cell__bd">
+						<span class="RadioStyle" th:each="pathogeny,stat:${pathogenylist}" th:if="${pathogeny.csmc.length<7}">
+							<input type="checkbox" th:id="${pathogeny.csid}" name="bys" th:value="${pathogeny.csid}" th:checked="${sjxxDto.bys!=null &&sjxxDto.bys.contains(pathogeny.csid)?true:false}"/>
+							<label th:style="${'font-size: small;width:'+(pathogeny.csmc.length>6?'98%':'48%')}" th:for="${pathogeny.csid}" th:text="${pathogeny.csmc}"></label>
+						</span>
+						<span class="RadioStyle" th:each="pathogeny,stat:${pathogenylist}" th:if="${pathogeny.csmc.length>6}">
+							<input type="checkbox" th:id="${pathogeny.csid}" name="bys" th:value="${pathogeny.csid}" th:checked="${sjxxDto.bys!=null &&sjxxDto.bys.contains(pathogeny.csid)?true:false}"/>
+							<label th:style="${'font-size: small;width:'+(pathogeny.csmc.length>6?'98%':'48%')}" th:for="${pathogeny.csid}" th:text="${pathogeny.csmc}"></label>
+						</span>
+					</div>
+				</div>
+			</div>
+			<!--按钮 下一步-->
+			<div class="weui-cells weui-cells_form" style="border-radius: 50px;margin: 0;margin-top: 10px;">
+				<button class="weui-btn weui-btn_bule" style="width: 100%;" id="nextbtn" onclick="">下一步</button>
+			</div>
+		</div>
+	</div>
+	<!--送检医生选择页面-->
+	<div style="display: block;margin: 8px;" id="sjysInfo" hidden>
+		<!--送检医生搜索框-->
+		<div class="weui-search-bar weui-search-bar_focusing" style="background-color: white;margin-bottom: 8px;border-radius: 15px;line-height: 20px;padding: 0;">
+			<div class="weui-search-bar__box">
+				<i class="weui-icon-search"></i>
+				<input class="weui-search-bar__input" type="search" id="sjysCxnr" placeholder="输入医师姓名查询" required="" autocomplete="off" onkeydown="if(event.keyCode==13) {searchSjysList(); return false;}"/>
+				<a style="position: absolute;top: 45%;right: 8px;margin-top: -8px;font-size: small;color: #00AFEC;" onclick="searchSjysList()">搜索</a>
+			</div>
+		</div>
+		<!--送检医生清单-->
+		<div style="margin-bottom: 40px">
+			<!--送检医生展示列表-->
+			<div class="page__bd" style="font-size: 12px" id="sjysList"></div>
+			<!--正在加载动画-->
+			<div class="weui-loadmore" id="loading" hidden>
+				<i class="weui-loading"></i>
+				<span class="weui-loadmore__tips">正在加载</span>
+			</div>
+			<!--加载完成动画1-->
+			<div class="weui-loadmore weui-loadmore_line" id="noInfo" hidden>
+				<span class="weui-loadmore__tips" style="background-color: #F5F5F5">暂无数据</span>
+			</div>
+			<!--加载完成动画2-->
+			<div class="weui-loadmore weui-loadmore_line" id="loadComplete" hidden>
+				<span class="weui-loadmore__tips" style="background-color: #F5F5F5">加载完成</span>
+			</div>
+		</div>
+		<!--送检医生新增按钮-->
+		<div class="weui-cells weui-cells_form" style="width: 90%;position: fixed;border-radius: 50px;margin: 5px 5%;bottom: 0;z-index: 999;">
+			<a href="javascript:;" class="weui-btn weui-btn_bule" style="width: 100%;" onclick="sjysAdd()">新增</a>
+		</div>
+	</div>
+	<!--送检医生新增页面-->
+	<div id="sjysAdd" class="page__bd" hidden>
+		<div class="weui-cells__title">添加医师信息</div>
+		<!--送检医生信息填写-->
+		<div class="weui-cells weui-cells_form" style="margin: 8px;border-radius: 10px;">
+			<!--送检医生-送检医生-->
+			<div class="weui-cell">
+				<div class="weui-cell__hd">
+					<label>主治医师<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd">
+					<input id="sjysadd_ysxm" name="sjysadd_ysxm" class="weui-input" placeholder="请填写主治医师"/>
+				</div>
+			</div>
+			<!--送检医生-送检单位-->
+			<div class="weui-cell weui-cell_access" onclick="changeSjdw()">
+				<div class="weui-cell__hd">
+					<label>医院名称<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd">
+					<input class="weui-input" id="sjdwadd_sjdwmc" name="sjdwadd_sjdwmc" type="text" placeholder="请选择医院名称" readonly/>
+					<input type="hidden" id="sjdwadd_sjdwid" name="sjysadd_sjdwid"/>
+				</div>
+				<div class="weui-cell__ft"></div>
+			</div>
+			<!--送检医生-科室-->
+			<div class="weui-cell weui-cell_access">
+				<div class="weui-cell__hd">
+					<label>科　　室<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd" onclick="chooseKs(false)">
+					<input class="weui-input" id="sjysadd_ksmc" name="sjysadd_ksmc" placeholder="请选择科室" readonly/>
+					<input type="hidden" id ="sjysadd_ks" name="sjysadd_ks"/>
+				</div>
+				<div class="weui-cell__ft"></div>
+			</div>
+			<!--送检医生-报告显示科室-->
+			<div class="weui-cell" type="hidden" id="sjysadd_qtksInput">
+				<div class="weui-cell__hd">
+					<label>报告显示科室<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd">
+					<input class="weui-input" type="text" id="sjysadd_qtks" name="sjysadd_qtks" placeholder="请填写报告单上需显示的科室"/>
+				</div>
+			</div>
+			<!--送检医生-检测单位-->
+			<div class="weui-cell weui-cell_access">
+				<div class="weui-cell__hd">
+					<label>检测单位<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd" onclick="chooseJcdw(false)">
+					<input class="weui-input" id="sjysadd_jcdwmc" name="jcdwmc" placeholder="请选择检测单位" readonly/>
+					<input type="hidden" id ="sjysadd_jcdwid" name="jcdwid" readonly/>
+				</div>
+				<div class="weui-cell__ft"></div>
+			</div>
+			<!--送检医生-医生电话-->
+			<div class="weui-cell">
+				<div class="weui-cell__hd">
+					<label>医师电话&nbsp;</label>
+				</div>
+				<div class="weui-cell__bd">
+					<input class="weui-input" id="sjysadd_ysdh" placeholder="请填写医师电话"/>
+				</div>
+			</div>
+			<!--送检医生-合作伙伴-->
+			<div class="weui-cell">
+				<div class="weui-cell__hd">
+					<label>负责人<span style="color: red;">*</span></label>
+				</div>
+				<div class="weui-cell__bd">
+					<input class="weui-input" id="sjysadd_hzhb" placeholder="请填写负责人" onblur="refreshSjysDB()"/>
+				</div>
+				<div class="weui-cell__ft">
+					<button class="weui-icon-reFlesh" style="color: #00AFEC" type="button" onclick="refreshSjysDB()"></button>
+				</div>
+			</div>
+		</div>
+		<!--保存送检医生按钮-->
+		<div class="weui-cells weui-cells_form" style="width: 90%;border-radius: 50px;margin: 10px;">
+			<a class="weui-btn weui-btn_bule" style="width: 100%;" id="sjysSave" onclick="sjysSave()">保存</a>
+		</div>
+		<!--取消保存送检医生按钮-->
+		<div class="weui-cells weui-cells_form" style="width: 90%;border-radius: 50px;margin: 10px;">
+			<a class="weui-btn weui-btn_default" style="border-radius: 50px;width: 100%;border: 1px solid #00AFEC;color: #00AFEC;" onclick="backSjysList()">取消</a>
+		</div>
+	</div>
+	<!--送检单位选择页面-->
+	<div id="sjdwInfo" hidden style="display: block;margin: 8px;">
+		<!--送检单位搜索框-->
+		<div class="weui-search-bar weui-search-bar_focusing" style="background-color: white;margin-bottom: 8px;border-radius: 15px;line-height: 20px;padding: 0;">
+			<div class="weui-search-bar__box">
+				<i class="weui-icon-search"></i>
+				<input class="weui-search-bar__input" type="search" id="sjdwCxnr" placeholder="输入单位名称查询" required="" autocomplete="off" onkeydown="if(event.keyCode==13) {searchSjdwList(); return false;}">
+				<a style="position: absolute;top: 45%;right: 8px;margin-top: -8px;font-size: small;color: #00AFEC;" onclick="searchSjdwList()">搜索</a>
+			</div>
+		</div>
+		<!--送检单位展示列表-->
+		<div class="page__bd sjdwlistclass" style="font-size: 12px">
+			<div class="weui-cells">
+				<a class="weui-cell weui-cell_access" style="font-weight: bolder;padding: 10px 40px;">
+					<div class="weui-cell__bd" style="padding: 0;">
+						<p style="text-align: left">医院名称</p>
+					</div>
+				</a>
+				<div id="sjdwList">
+				</div>
+			</div>
+		</div>
+		<!--正在加载动画-->
+		<div class="weui-loadmore" id="sjdw_loading" hidden>
+			<i class="weui-loading"></i>
+			<span class="weui-loadmore__tips">正在加载</span>
+		</div>
+		<!--加载完成动画1-->
+		<div class="weui-loadmore weui-loadmore_line" id="sjdw_noInfo" hidden>
+			<span class="weui-loadmore__tips" style="background-color: #F5F5F5">暂无数据</span>
+		</div>
+		<!--加载完成动画2-->
+		<div class="weui-loadmore weui-loadmore_line weui-loadmore_dot" id="sjdw_loadComplete" hidden>
+			<span class="weui-loadmore__tips" style="background-color: #F5F5F5"></span>
+		</div>
+		<!--返回按钮-->
+		<div class="weui-cells weui-cells_form" style="margin: 10px;">
+			<a class="weui-btn weui-btn_default" style="width: 100%;border: 1px solid #00AFEC;color: #00AFEC;" onclick="sjdwBack()">返回</a>
+		</div>
+	</div>
+</form>
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/informed/wechat_inspReport.js?v=20250520v2"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISpgwcyDao" >
+
+	<!-- 查询岗位里未选成员-->
+	<select id="getPagedOptionalList" parameterType="SpgwcyDto" resultType="SpgwcyDto">
+		select yh.yhid,yh.yhm,yh.zsxm,js.jsid,js.jsmc
+		from matridx_yhjs yhjs
+		left outer join matridx_xtyh yh on yhjs.yhid = yh.yhid
+		left outer join matridx_xtjs js on yhjs.jsid = js.jsid
+		<where>
+			yh.scbj='0' and yh.sfsd!='1' and js.scbj = '0' and not exists (select 1 from matridx_spgwcy gwcy where yh.yhid=gwcy.yhid and js.jsid=gwcy.jsid and gwcy.gwid=#{gwid})
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 查询岗位里已选成员-->
+	<select id="getPagedSelectedList" parameterType="SpgwcyDto" resultType="SpgwcyDto">
+		select yh.yhid,yh.yhm,yh.zsxm,js.jsid,js.jsmc
+		from matridx_spgwcy gwcy
+		left outer join matridx_xtyh yh on gwcy.yhid = yh.yhid
+		left outer join matridx_xtjs js on gwcy.jsid = js.jsid
+		<where>
+			yh.scbj='0' and yh.sfsd!='1' and js.scbj = '0' and gwcy.jsid = js.jsid and gwcy.yhid = yh.yhid and gwcy.gwid = #{gwid}
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 增加岗位成员信息 -->
+	<insert  id="toSelected" parameterType="list">
+		insert into matridx_spgwcy (gwid, yhid,  jsid) 
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.gwid},#{item.yhid},#{item.jsid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 删除岗位成员信息 -->
+	<delete  id="toOptional" parameterType="list">
+		delete from matridx_spgwcy
+		<where>
+			<if test="list !=null and list.size > 0">
+	        	or (yhid,gwid,jsid) in
+				<foreach collection="list" separator="," open="(" close=")" item="item" index="index">
+					(#{item.yhid},#{item.gwid},#{item.jsid})
+				</foreach>
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 查询审核人员列表 -->
+	<select id="getDtoList" parameterType="SpgwcyDto" resultType="SpgwcyDto">
+		select gwcy.gwid,gwcy.yhid,gwcy.jsid,yh.ddid,yh.wechatid,yh.zsxm,yh.yhm,spgw.gwmc,spgw.dwxz,js.dwxdbj dwxdbj
+		from matridx_spgwcy gwcy
+		left outer join matridx_xtyh yh on gwcy.yhid = yh.yhid
+		left outer join matridx_yhjs yhjs on yhjs.yhid = gwcy.yhid and gwcy.jsid = yhjs.jsid
+		left outer join matridx_xtjs js on js.jsid = gwcy.jsid 
+		left join matridx_spgw spgw on spgw.gwid=gwcy.gwid
+		<where>
+			yh.scbj='0' and yh.sfsd!='1'
+		<if test="gwid !=null and gwid != ''">
+			and gwcy.gwid =#{gwid}
+		</if>
+		<if test="yhid !=null and yhid != ''">
+			and gwcy.yhid =#{yhid}
+		</if>
+		<if test="jsid !=null and jsid !=''">
+			and gwcy.jsid =#{jsid}
+		</if>
+		</where>
+	</select>
+
+	<select id="getZgByDto" resultType="SpgwcyDto" parameterType="SpgwcyDto">
+		SELECT yh.yhid, yghmc.zszg,yh.wechatid,yh.ddid,yh.zsxm,yh.yhm
+		FROM
+		matridx_yghmc yghmc
+		left outer join matridx_xtyh yh on yghmc.zszg = yh.ddid
+		where yghmc.yhid=#{yhid} and yh.scbj='0'limit 1
+	</select>
+
+
+	<select id="getThByDto" parameterType="SpgwcyDto" resultType="SpgwcyDto">
+		select shxx.lrry yhid,xtyh.wechatid,xtyh.ddid,xtyh.zsxm,xtyh.yhm,shxx.gwid
+		from matridx_shxx shxx
+		left join matridx_xtyh xtyh on xtyh.yhid = shxx.lrry
+		where shxx.ywid=#{ywid} and shxx.gcid=#{gcid} and lcxh = cast(#{lcxh} as numeric)
+		order by shxx.shsj desc limit 1
+	</select>
+
+
+	<!-- 查询审核人员列表(单位限制) -->
+	<select id="getDtoListWithDW" parameterType="SpgwcyDto" resultType="SpgwcyDto">
+		select spgwcy.gwid,spgwcy.yhid,spgwcy.jsid,yh.ddid,yh.wechatid,yh.zsxm,yh.yhm,spgw.gwmc,spgw.dwxz,js.dwxdbj dwxdbj,js.jsmc
+		from matridx_spgwcy spgwcy
+		left outer join matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		left outer join matridx_yhjs yhjs on yhjs.yhid = spgwcy.yhid and spgwcy.jsid = yhjs.jsid
+		left outer join matridx_xtjs js on js.jsid = spgwcy.jsid
+		left join matridx_spgw spgw on spgw.gwid=spgwcy.gwid
+		<if test="shlb =='AUDIT_REQUISITIONS'.toString()">
+			left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+			left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+			left join igams_qggl qggl on  qggl.qgid = #{ywid}  and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then qggl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		</if>
+		<if test="shlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+			left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+			left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+			LEFT JOIN igams_qgqxgl qgqxgl ON qgqxgl.qgqxid = #{ywid} AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN qgqxgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END
+		</if>
+		<if test="shlb =='AUDIT_CONTRACT'.toString()">
+			left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+			left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+			LEFT JOIN igams_htgl htgl ON htgl.qgid = #{ywid} AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN htgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END
+		</if>
+		<if test="shlb =='QUALITY_FILE_ADD'.toString() or shlb =='QUALITY_FILE_MOD'.toString()">
+			LEFT JOIN matridx_xtjs xtjs ON xtjs.jsid = spgwcy.jsid AND CASE WHEN spgw.dwxz = '1' THEN 1 = 1 ELSE 1 = 2 END
+			LEFT JOIN matridx_jsdwqx jsdwqx ON CASE WHEN xtjs.dwxdbj = '1' THEN jsdwqx.jsid = spgwcy.jsid ELSE 1 = 2 END
+			left join igams_wjgl wjgl on wjgl.wjid = #{ywid}
+			left join igams_wjssdw wjssdw on wjssdw.wjid = wjgl.wjid
+			AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN wjssdw.jgid = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END
+		</if>
+		<if test="shlb =='AUDIT_GOODS_ARRIVAL'.toString()">
+			LEFT JOIN matridx_xtjs xtjs ON xtjs.jsid = spgwcy.jsid AND CASE WHEN spgw.dwxz = '1' THEN 1 = 1 ELSE 1 = 2 END
+			LEFT JOIN matridx_jsdwqx jsdwqx ON CASE WHEN xtjs.dwxdbj = '1' THEN jsdwqx.jsid = spgwcy.jsid ELSE 1 = 2 END
+			LEFT JOIN igams_dhxx dhxx on dhxx.scbj ='0' and dhxx.dhid = #{ywid} and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then dhxx.bm = jsdwqx.jgid else 1=1 end else 1=1 end
+		</if>
+		<where>
+			yh.scbj='0' and yh.sfsd!='1' and spgwcy.gwid =#{gwid}
+			<if test="shlb =='AUDIT_REQUISITIONS'.toString()">
+				and qggl.scbj='0'
+			</if>
+			<if test="shlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+				and qgqxgl.scbj = '0'
+			</if>
+			<if test="shlb =='AUDIT_CONTRACT'.toString()">
+				and htgl.scbj='0'
+			</if>
+			<if test="shlb =='QUALITY_FILE_ADD'.toString() or shlb =='QUALITY_FILE_MOD'.toString()">
+				and wjgl.scbj='0'
+			</if>
+			<if test="shlb =='AUDIT_GOODS_ARRIVAL'.toString()">
+				and dhxx.scbj='0'
+			</if>
+		</where>
+	</select>
+	<delete id="deleteByYhid" parameterType="String">
+		delete from matridx_spgwcy
+			<where>
+				yhid=#{yhid}
+			</where>
+	</delete>
+	
+	<delete id="delete" parameterType="SpgwcyDto">
+		delete from matridx_spgwcy
+			<where>
+				<if test="yhidlist !=null and yhidlist.size > 0">
+		        	 yhid in
+					<foreach collection="yhidlist" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+				<if test="jsidlist !=null and jsidlist.size > 0">
+		        	 jsid in
+					<foreach collection="jsidlist" open="(" close=")" separator="," item="item">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</delete>
+</mapper>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISjycfkDao" >
+	<!-- 根据异常ID获取送检异常反馈信息 -->
+	<select id="getDtoByYcid" parameterType="SjycfkDto" resultType="SjycfkDto">
+		select ycfk.fkid,ycfk.ycid,ycfk.ffkid,ycfk.fkxx,to_char(ycfk.lrsj,'YYYY-MM-DD') lrsj,ffk.fkxx ffkxx,qrr.zsxm qrrmc,
+		fkry.zsxm fkrymc,qrr.yhid qrr,ycfk.lrry fkry,to_char(ycfk.lrsj,'YYYY-MM-DD hh24:mi:ss') hfsj,
+		exists(select fjid from matridx_fjcfb where ywid=ycfk.fkid) sfscfj,
+		count(fj.fjid) fjs,ycfk.lrrymc,fkqf.csdm as fkqfdm
+		from igams_sjycfk ycfk
+		left join igams_sjycfk ffk on ffk.fkid=ycfk.ffkid
+		left join matridx_xtyh qrr on qrr.yhid=ycfk.qrr
+		left join matridx_xtyh fkry on fkry.yhid=ycfk.lrry
+		left join matridx_fjcfb fj on fj.ywid=ycfk.fkid
+		left join matridx_jcsj fkqf on fkqf.csid=ycfk.fkqf
+		<where>
+		ycfk.scbj!='1' 
+		<if test="ycid != null and ycid != ''">
+			and ycfk.ycid=#{ycid}
+		</if>
+		</where>
+		group by ycfk.fkid,ffk.fkxx,qrr.zsxm,fkry.zsxm,qrr.yhid,ycfk.lrry,ycfk.lrrymc,fkqf.csdm
+		order by ycfk.lrsj desc
+		<if test="pageSize != null and pageSize != ''">
+			limit #{pageSize}
+			<if test="pageNumber != null and pageNumber != ''">
+				offset #{pageStart}
+			</if>
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="SjycfkDto">
+		insert into igams_sjycfk(fkid
+		<if test="ycid != null and ycid != ''">
+			,ycid
+		</if>
+		<if test="ffkid != null and ffkid != ''">
+			,ffkid
+		</if>
+		<if test="qrr != null and qrr != ''">
+			,qrr
+		</if>
+		<if test="fkxx != null and fkxx != ''">
+			,fkxx
+		</if>
+		<if test="gid != null and gid != ''">
+			,gid
+		</if>
+		<if test="lrrymc != null and lrrymc != ''">
+			,lrrymc
+		</if>
+		<if test="fkqf != null and fkqf != ''">
+			,fkqf
+		</if>
+		,lrry,lrsj,scbj
+		)
+		values(#{fkid}
+		<if test="ycid != null and ycid != ''">
+			,#{ycid}
+		</if>
+		<if test="ffkid != null and ffkid != ''">
+			,#{ffkid}
+		</if>
+		<if test="qrr != null and qrr != ''">
+			,#{qrr}
+		</if>
+		<if test="fkxx != null and fkxx != ''">
+			,#{fkxx}
+		</if>
+		<if test="gid != null and gid != ''">
+			,#{gid}
+		</if>
+		<if test="lrrymc != null and lrrymc != ''">
+			,#{lrrymc}
+		</if>
+		<if test="fkqf != null and fkqf != ''">
+			,#{fkqf}
+		</if>
+		,#{lrry}
+		<if test="lrsj != null and lrsj != ''">
+			,cast(#{lrsj} as timestamp)
+		</if>
+		<if test="lrsj == null or lrsj == ''">
+			,LOCALTIMESTAMP
+		</if>
+		,'0'
+		)
+	</insert>
+	
+	<!-- 获取该标本的异常评论数 -->
+	<select id="getExceptionPls" parameterType="SjycfkDto" resultType="SjycfkDto">
+		select count(fkid) pls,ycid
+		from igams_sjycfk
+		where
+			scbj!='1' and ffkid is null
+			<if test="ids != null and ids.size> 0">
+				and ycid in
+				<foreach collection="ids" open="(" close=")" item="item" index="index" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			group by ycid
+	</select>
+	
+	<select id="getDto" parameterType="SjycfkDto" resultType="SjycfkDto">
+	select ycfk.fkid,ycfk.ycid,ycfk.ffkid,ycfk.fkxx,to_char(ycfk.lrsj,'YYYY-MM-DD') lrsj,ffk.fkxx ffkxx,qrr.zsxm qrrmc,
+		case when fkqf.csdm='WECHAT_FEEDBACK' then ycfk.lrrymc else fkry.zsxm end fkrymc,qrr.yhid qrr,ycfk.lrry fkry,to_char(ycfk.lrsj,'YYYY-MM-DD hh24:mi:ss') hfsj,ycfk.gid,fkry.ddtxlj fkrytx
+		from igams_sjycfk ycfk
+		left join igams_sjycfk ffk on ffk.fkid=ycfk.ffkid
+		left join matridx_xtyh qrr on qrr.yhid=ycfk.qrr
+		left join matridx_xtyh fkry on fkry.yhid=ycfk.lrry
+		left join matridx_jcsj fkqf on fkqf.csid=ycfk.fkqf
+		<where>
+			ycfk.scbj!='1'
+			and ycfk.fkid=#{fkid}
+		</where>
+	</select>
+	
+	<!-- 小程序获取异常反馈信息，父反馈ID为空 -->
+	<select id="getMiniDtoByYcid" parameterType="SjycfkDto" resultType="SjycfkDto">
+		select ycfk.fkid,ycfk.ycid,ycfk.ffkid,ycfk.fkxx,to_char(ycfk.lrsj,'YYYY-MM-DD') lrsj,ffk.fkxx ffkxx,qrr.zsxm qrrmc,
+			fkry.zsxm fkrymc,fkry.ddid fkryddid,qrr.yhid qrr,ycfk.lrry fkry,to_char(ycfk.lrsj,'YYYY-MM-DD hh24:mi:ss') hfsj,ycfk.gid,fkry.yhm fkryyhm,
+			(with recursive subfk as (
+			    select fkid from igams_sjycfk st_fk where st_fk.ffkid = ycfk.fkid and scbj ='0'  and st_fk.gid != st_fk.fkid union all
+				select sfk.fkid from subfk join igams_sjycfk sfk on subfk.fkid = sfk.ffkid where scbj ='0'
+			)
+			select count(fkid) from subfk) ghfcs,fkry.ddtxlj fkrytx,exists(select fjid from matridx_fjcfb where ywid=ycfk.fkid) sfscfj,
+		count(fj.fjid) fjs,yc.ywid,yc.ywid as sjid,sjxx.ybbh,yc.sfjs,ycfk.lrrymc,fkqf.csdm as fkqfdm
+		from igams_sjycfk ycfk
+		left join igams_sjycfk ffk on ffk.fkid=ycfk.ffkid
+		left join matridx_xtyh qrr on qrr.yhid=ycfk.qrr
+		left join matridx_xtyh fkry on fkry.yhid=ycfk.lrry
+		left join matridx_fjcfb fj on fj.ywid=ycfk.fkid
+		left join igams_sjyc yc on yc.ycid=ycfk.ycid
+		left join igams_sjxx sjxx on sjxx.sjid=yc.ywid
+		left join matridx_jcsj fkqf on fkqf.csid=ycfk.fkqf
+		<where>
+		ycfk.scbj!='1' and ycfk.ffkid is null
+		<if test="ycid != null and ycid != ''">
+			and ycfk.ycid=#{ycid}
+		</if>
+			<if test="ids != null and ids.size()>0">
+				and ycfk.ycid in
+				<foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			GROUP BY ycfk.fkid,ffk.fkxx,qrr.zsxm,fkry.zsxm,fkry.yhm,fkry.ddid,qrr.yhid,ycfk.lrry,fkry.ddtxlj,ycfk.ycid,ycfk.ffkid,ycfk.fkxx,ycfk.lrsj,ycfk.gid,yc.ywid,sjxx.ybbh,yc.sfjs,ycfk.lrrymc,fkqf.csdm
+			order by ycfk.lrsj asc
+		<if test="pageSize != null and pageSize != ''">
+			limit #{pageSize}
+			<if test="pageNumber != null and pageNumber != ''">
+				offset #{pageStart}
+			</if>
+		</if>
+		</where>
+	</select>
+	
+	<!--小程序根据根ID获取异常反馈信息  -->
+	<select id="getDtosByGid" parameterType="SjycfkDto" resultType="SjycfkDto">
+		select ycfk.fkid,ycfk.ycid,ycfk.ffkid,ycfk.fkxx,to_char(ycfk.lrsj,'YYYY-MM-DD') lrsj,ffk.fkxx ffkxx,qrr.zsxm qrrmc, case when fkqf.csdm='WECHAT_FEEDBACK' then ycfk.lrrymc else fkry.zsxm end fkrymc
+,qrr.yhid qrr,ycfk.lrry fkry,to_char(ycfk.lrsj,'YYYY-MM-DD hh24:mi:ss') hfsj,ycfk.gid,fkry.yhm fkryyhm,
+(select count(gid) from igams_sjycfk where gid=ycfk.gid and fkid!=ycfk.fkid) ghfcs,fkry.ddtxlj fkrytx,
+exists(select fjid from matridx_fjcfb where ywid=ycfk.fkid) sfscfj
+		from igams_sjycfk ycfk
+		left join igams_sjyc yc on yc.ycid=ycfk.ycid
+		left join igams_sjycfk ffk on ffk.fkid=ycfk.ffkid
+		left join matridx_xtyh qrr on qrr.yhid=ycfk.qrr
+		left join matridx_xtyh fkry on fkry.yhid=ycfk.lrry
+		left join matridx_jcsj fkqf on fkqf.csid=ycfk.fkqf
+		<where>
+			ycfk.scbj!='1' and ycfk.gid=#{gid}
+		</where>
+		order by ycfk.lrsj asc
+	</select>
+	
+	<!-- 根据fkid查找该评论下的所有子评论 -->
+	<select id="getZplByFkid" parameterType="SjycfkDto" resultType="SjycfkDto">
+		select fkid,ycid,ffkid,qrr,fkxx,lrry,lrsj,gid
+		from igams_sjycfk
+		<where>
+			scbj!='1' and
+			ffkid=#{fkid} or (gid=#{fkid} and fkid!=gid)
+		</where>
+	</select>
+	
+	<update id="delete" parameterType="SjycfkDto">
+		update igams_sjycfk set scry=#{scry},scbj='1',scsj=LOCALTIMESTAMP
+		<where>
+			scbj!='1' and
+			fkid=#{fkid}
+		</where>
+	</update>
+</mapper>

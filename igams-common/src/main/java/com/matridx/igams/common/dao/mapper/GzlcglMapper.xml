@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IGzlcglDao" >
+	<!-- 增加审核信息 -->
+	<insert id="insert" parameterType="GzlcglModel">
+		insert into igams_gzlcgl(lcid
+		<if test="gzid !=null and gzid != ''">
+			,gzid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,sqr
+		</if>
+		<if test="sftg !=null and sftg != ''">
+			,sftg
+		</if>
+		<if test="shsj !=null and shsj != ''">
+			,shsj
+		</if>
+		<if test="shyj !=null and shyj != ''">
+			,shyj
+		</if>
+		<if test="ssyj !=null and ssyj != ''">
+			,ssyj
+		</if>
+		,sqsj,lrry,lrsj,scbj) values(#{lcid}
+		<if test="gzid !=null and gzid != ''">
+			,#{gzid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,#{sqr}
+		</if>
+		<if test="sftg !=null and sftg != ''">
+			,#{sftg}
+		</if>
+		<if test="shsj !=null and shsj != ''">
+			,#{shsj}
+		</if>
+		<if test="shyj !=null and shyj != ''">
+			,#{shyj}
+		</if>
+		<if test="ssyj !=null and ssyj != ''">
+			,#{ssyj}
+		</if>
+		,LOCALTIMESTAMP,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 根据工作ID查询流程信息 -->
+	<select id="getDtoListByGzid" parameterType="String" resultType="GzlcglDto">
+		select gzlc.lcid,gzlc.gzid,gzlc.xh,gzlc.sqr,gzlc.sqsj,gzlc.sftg,gzlc.shsj,gzlc.shyj,gzlc.ssyj,gzlc.lrry,gzlc.lrsj
+			,gzlc.xgry,gzlc.xgsj,gzlc.scry,gzlc.scsj,gzlc.scbj,yh.zsxm,to_char(gzlc.sqsj,'YYYY-MM-DD HH24:mi:ss') AS fsqsj,to_char(gzlc.shsj,'YYYY-MM-DD HH24:mi:ss') AS fshsj
+			from igams_gzlcgl gzlc
+			left outer join matridx_xtyh yh on gzlc.lrry = yh.yhid
+			<where>
+				gzlc.scbj !='1' and gzlc.gzid = #{gzid}
+			</where>
+			order by gzlc.lrsj desc
+	</select>
+	<!--根据确认任务结果新增工作流程-->
+	<insert id="insertGzlcxxByQrrw" parameterType="GzglDto">
+		insert into igams_gzlcgl(lcid
+		<if test="gzid !=null and gzid != ''">
+			,gzid
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,sqr,sqsj
+		</if>
+		<if test="sftg !=null and sftg != ''">
+			,sftg
+		</if>
+		<if test="shyj !=null and shyj != ''">
+			,shyj
+		</if>
+		,shsj,lrry,lrsj,scbj) values(#{lcid}
+		<if test="gzid !=null and gzid != ''">
+			,#{gzid}
+		</if>
+		<if test="sqr !=null and sqr != ''">
+			,#{sqr},LOCALTIMESTAMP
+		</if>
+		<if test="sftg !=null and sftg != ''">
+			,#{sftg}
+		</if>
+		<if test="shyj !=null and shyj != ''">
+			,#{shyj}
+		</if>
+		,LOCALTIMESTAMP,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!--根据确认任务结果新增工作流程-->
+	<insert  id="insertGzlcxxByQrrws" parameterType="list">
+		insert into igams_gzlcgl (lcid, gzid, sftg, shyj, shsj, lrry, lrsj, scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.lcid},#{item.gzid},#{item.sftg},#{item.shyj},LOCALTIMESTAMP,#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	<!-- 根据工作ID查询流程信息 -->
+	<select id="getPagedTaskConfirmedList" parameterType="GzlcglDto" resultType="GzlcglDto">
+		SELECT
+		gzlc.lcid,
+		gzgl.gzid,
+		gzgl.ywmc,
+		gzgl.rwmc,
+		gzgl.rwid,
+		yh.zsxm lrry,
+		to_char( gzlc.shsj, 'yyyy-mm-dd hh24:mi' ) shsj,
+		CASE
+
+		WHEN gzlc.sftg = '1' THEN
+		'通过' ELSE'不通过'
+		END sftg,
+		gzlc.shyj,
+		sqr.zsxm sqr
+		FROM
+		igams_gzlcgl gzlc
+		LEFT OUTER JOIN matridx_xtyh yh ON gzlc.lrry = yh.yhid
+		LEFT JOIN igams_gzgl gzgl ON gzgl.gzid = gzlc.gzid
+		left join matridx_xtyh sqr on sqr.yhid=gzgl.fzr
+		<where>
+			gzlc.scbj != '1' and
+			gzlc.lrry=#{lrry} and gzlc.sftg is not null
+			<if test="rwmc !=null and rwmc != ''">
+				and gzgl.rwmc like '%'|| #{rwmc}||'%'
+			</if>
+			<if test="ywmc !=null and ywmc != ''">
+				and gzgl.ywmc like '%'|| #{ywmc}||'%'
+			</if>
+			<if test="sqr !=null and sqr != ''">
+				and sqr.zsxm like '%'|| #{sqr}||'%'
+			</if>
+			<if test="shry !=null and shry != ''">
+				and yh.zsxm like '%'|| #{shry}||'%'
+			</if>
+		</where>
+	</select>
+</mapper>

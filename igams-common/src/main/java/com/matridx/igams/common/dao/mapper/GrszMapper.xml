@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IGrszDao" >
+	<!-- 查询是否已存在确认人员 -->
+	<select id="selectGrszDtoByYhidAndSzlb" parameterType="GrszDto" resultType="GrszDto">
+		select yhid,szlb,szz,glxx,szid,dysl
+		from matridx_grsz
+		where scbj != '1' and yhid = #{yhid} and szlb = #{szlb}
+	</select>
+	<select id="selectGrszListByYhidAndSzlb" parameterType="GrszDto" resultType="GrszDto">
+		select yhid,szlb,szz,glxx,szid,dysl
+		from matridx_grsz
+		where scbj != '1' and yhid = #{yhid}
+		<if test="szlbs != null and szlbs.length>0 ">
+			and szlb in
+			<foreach collection="szlbs" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+
+	</select>
+	<!-- 插入个人设置信息 -->
+	<insert id="insert" parameterType="GrszModel">
+		insert into matridx_grsz(szid
+		<if test="yhid !=null and yhid != ''">
+			,yhid
+		</if>
+		<if test="szlb !=null and szlb != ''">
+			,szlb
+		</if>
+		<if test="szz !=null and szz != ''">
+			,szz
+		</if>
+		<if test="glxx !=null and glxx != ''">
+			,glxx
+		</if>
+		<if test="dysl !=null and dysl != ''">
+			,dysl
+		</if>
+		,lrry,lrsj,scbj) values(#{szid}
+		<if test="yhid !=null and yhid != ''">
+			,#{yhid}
+		</if>
+		<if test="szlb !=null and szlb != ''">
+			,#{szlb}
+		</if>
+		<if test="szz !=null and szz != ''">
+			,#{szz}
+		</if>
+		<if test="glxx !=null and glxx != ''">
+			,#{glxx}
+		</if>
+		<if test="dysl !=null and dysl != ''">
+			,#{dysl}
+		</if>
+		,#{yhid},LOCALTIMESTAMP,'0')
+	</insert>
+	<!--根据条件修改个人设置信息-->
+	<update  id="updateByYhidAndSzlb" parameterType="GrszDto">
+		update matridx_grsz
+		<set>
+		<if test="szz !=null and szz != ''">
+			szz = #{szz},
+		</if>
+		<if test="szzisnull !=null and szzisnull != ''">
+			szz = #{szz},
+		</if>
+		<if test="glxx !=null and glxx != ''">
+			glxx = #{glxx},
+		</if>
+		<if test="dysl !=null and dysl != ''">
+			dysl = #{dysl},
+		</if>
+			xgsj = LOCALTIMESTAMP,
+			xgry = #{yhid}
+		</set>
+		<where>
+			yhid = #{yhid} and szlb = #{szlb} and scbj != '1'
+		</where>
+	</update>
+	
+	<delete id="delete" parameterType="GrszDto"> 
+		delete from matridx_grsz
+		<where>
+			yhid=#{yhid} and szlb=#{szlb}
+		</where>
+	</delete>
+	
+	<select id="getXtyhBYYhid" parameterType="java.lang.String" resultType="map">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,
+		js.jsmc dqjsmc,js.jsdm dqjsdm,ssjg.jgid,jg.jgmc
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		left outer join matridx_yhssjg ssjg on yh.yhid = ssjg.yhid
+		left outer join matridx_jgxx jg on jg.jgid=ssjg.jgid
+		 where yh.yhid =#{yhid}
+	</select>
+
+	<insert id="saveGrsz" parameterType="List">
+		insert into matridx_grsz(szid,yhid,szlb,szz,lrry,lrsj,scbj)values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.szid},#{item.yhid},'MATERIAL_SELECT',#{item.szz},#{item.lrry},LOCALTIMESTAMP,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+
+	<update id="delGrsz" parameterType="GrszDto">
+		update matridx_grsz set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		where szid in (
+		<foreach collection="ids"  separator="," item="item">
+			#{item}
+		</foreach>
+		)
+	</update>
+	<insert id="insertList" parameterType="List">
+		insert into matridx_grsz(szid,yhid,szz,szlb,glxx,lrry,lrsj,scbj)values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.szid},#{item.yhid},#{item.szz},#{item.szlb},#{item.glxx},#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update matridx_grsz
+				<set>
+					xgsj=LOCALTIMESTAMP
+					<if test="item.xgry !=null and item.xgry !=''">
+						,xgry=#{item.xgry}
+					</if>
+					<if test="item.yhid !=null and item.yhid !=''">
+						,yhid=#{item.yhid}
+					</if>
+					<if test="item.szlb !=null and item.szlb !=''">
+						,szlb=#{item.szlb}
+					</if>
+					<if test="item.szz !=null and item.szz !=''">
+						,szz=#{item.szz}
+					</if>
+					<if test="item.glxx !=null and item.glxx !=''">
+						,glxx=#{item.glxx}
+					</if>
+				</set>
+				<where>
+					szid=#{item.szid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+	<select id="queryDyxx" parameterType="GrszDto" resultType="GrszDto">
+		select tmp.csmc,tmp.szlb,tmp.glxx,tmp.szz,tmp.szid,tmp.xxnr,tmp.yhid
+		from (
+		select jcsj.csmc,jcsj.cskz2 as szlb,xxgl.xxid as glxx,coalesce (grsz.szz,'1') as szz,grsz.szid,xxgl.xxnr,
+		<if test="yhid!=null and yhid!=''">
+			#{yhid} as yhid
+		</if>
+		<if test="yhid==null or yhid==''">
+			grsz.yhid
+		</if>
+		from matridx_xxgl xxgl
+		left join matridx_grsz grsz on grsz.glxx = xxgl.xxid
+		<if test="yhid!=null and yhid!=''">
+			and grsz.yhid =#{yhid}
+		</if>
+		<if test="ids!=null and ids.size>0">
+			and grsz.yhid in (
+			<foreach collection="ids"  separator="," item="item">
+				#{item}
+			</foreach>
+			)
+		</if>
+		left join matridx_jcsj jcsj on jcsj.csid=xxgl.xxlx
+		where jcsj.cskz1 =#{cskz1} and jcsj.cskz2 is not null
+		<if test="flag!=null and flag!=''">
+			and jcsj.cskz2='HB'
+		</if>
+		<if test="flag==null or flag==''">
+			union all
+			select '审核订阅消息' as csmc,'SH' as szlb,shlb.shlb as glxx,coalesce (grsz.szz,'1') as szz,grsz.szid,shlb.shlbmc as xxnr,
+			<if test="yhid!=null and yhid!=''">
+				#{yhid} as yhid
+			</if>
+			<if test="yhid==null or yhid==''">
+				grsz.yhid
+			</if>
+			from matridx_shlb shlb
+			left join matridx_grsz grsz on grsz.glxx=shlb.shlb
+			<if test="yhid!=null and yhid!=''">
+				and grsz.yhid =#{yhid}
+			</if>
+			<if test="ids!=null and ids.size>0">
+				and grsz.yhid in (
+				<foreach collection="ids"  separator="," item="item">
+					#{item}
+				</foreach>
+				)
+			</if>
+		</if>
+		)tmp
+		order by tmp.glxx
+	</select>
+	<select id="queryHbxxByYhid" resultType="GrszDto" parameterType="GrszDto">
+		select hb.hbid,hb.hbmc
+		from igams_sjhbxx hb
+		left join matridx_xtyh xtyh on hb.yhid=xtyh.yhid
+		<where>
+			hb.scbj !='1'
+			<if test="hbid == null or hbid == ''">
+				<if test="yhid != null and yhid != ''">
+					and hb.yhid =#{yhid}
+				</if>
+			</if>
+			<if test="hbid != null and hbid != ''">
+				and hb.hbid =#{hbid}
+			</if>
+		</where>
+		order by hb.hbmc
+	</select>
+
+	<select id="queryByYhid" parameterType="java.lang.String" resultType="GrszDto">
+	select jcsj.csmc,jcsj.cskz2 as szlb,xxgl.xxid as glxx,coalesce (grsz.szz,'1') as szz,grsz.szid,xxgl.xxnr,#{yhid} as yhid
+	from matridx_xxgl xxgl
+	left join matridx_grsz grsz on grsz.glxx = xxgl.xxid and grsz.yhid =#{yhid}
+	left join matridx_jcsj jcsj on jcsj.csid=xxgl.xxlx
+	where jcsj.cskz1 ='DYXX' and jcsj.cskz2 ='HB'
+	</select>
+
+	<select id="getPagedDtoList" parameterType="GrszDto" resultType="GrszDto">
+		select tmp.szz,tmp.szid,tmp.glxx,tmp.szlb,tmp.xxnr,tmp.szlbmc,tmp.yhmc
+		from (
+		select coalesce (grsz.szz,'0') as szz,grsz.szid,grsz.glxx,grsz.szlb,grsz.scbj,
+		case when grsz.szlb='SH' then shlb.shlbmc else xxgl.xxnr end as xxnr,case when grsz.szlb='SH' then '审核订阅消息' else jcsj.csmc end as szlbmc,
+		case when xtyh.zsxm is not null then xtyh.zsxm
+		<if test="flag!=null and flag!=''">
+		when sjhb.hbmc is not null then sjhb.hbmc
+		</if>
+		when grsz.yhid='MR' then '默认' end as yhmc
+		from matridx_grsz grsz
+		left join matridx_xxgl xxgl on xxgl.xxid=grsz.glxx
+		left join matridx_shlb shlb on shlb.shlb=grsz.glxx
+		left join matridx_jcsj jcsj on jcsj.csid=xxgl.xxlx
+		left join matridx_xtyh xtyh on xtyh.yhid=grsz.yhid
+		<if test="flag!=null and flag!=''">
+			left join igams_sjhbxx sjhb on sjhb.hbid=grsz.yhid
+		</if>
+		)tmp
+		where tmp.szlb in ('HB','YH','SH') and tmp.scbj='0'
+		<if test="entire != null and entire != ''">
+			and (
+			tmp.glxx ILIKE '%'||#{entire}||'%'
+			or tmp.xxnr ILIKE '%'||#{entire}||'%'
+			or tmp.yhmc ILIKE '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="yhmc !=null and yhmc!=''">
+			and tmp.yhmc ILIKE '%'||#{yhmc}||'%'
+		</if>
+		<if test="xxnr !=null and xxnr!=''">
+			and tmp.xxnr ILIKE '%'||#{xxnr}||'%'
+		</if>
+		<if test="glxx !=null and glxx!=''">
+			and tmp.glxx ILIKE '%'||#{glxx}||'%'
+		</if>
+		<if test="szz != null and szz != ''">
+			and tmp.szz = #{szz}
+		</if>
+		<if test = "xxlxs != null and xxlxs.size > 0 "  >
+			and tmp.szlb in
+			<foreach collection="xxlxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="getDto" resultType="GrszDto" parameterType="GrszDto">
+		select case when grsz.szz='1' then '是' else '否' end as szz,grsz.szid,grsz.glxx,grsz.szlb,grsz.scbj,
+		case when grsz.szlb='SH' then shlb.shlbmc else xxgl.xxnr end as xxnr,case when grsz.szlb='SH' then '审核订阅消息' else jcsj.csmc end as szlbmc,
+		case when xtyh.zsxm is not null then xtyh.zsxm
+		<if test="flag!=null and flag!=''">
+			when sjhb.hbmc is not null then sjhb.hbmc
+		</if>
+		when grsz.yhid='MR' then '默认' end as yhmc
+		from matridx_grsz grsz
+		left join matridx_xxgl xxgl on xxgl.xxid=grsz.glxx
+		left join matridx_shlb shlb on shlb.shlb=grsz.glxx
+		left join matridx_jcsj jcsj on jcsj.csid=xxgl.xxlx
+		left join matridx_xtyh xtyh on xtyh.yhid=grsz.yhid
+		<if test="flag!=null and flag!=''">
+			left join igams_sjhbxx sjhb on sjhb.hbid=grsz.yhid
+		</if>
+		where grsz.szid=#{szid}
+	</select>
+
+	<select id="getDtoByYhidAndGlxx" resultType="GrszDto" parameterType="GrszDto">
+		select grsz.szz,grsz.szid,grsz.glxx,grsz.szlb
+		from matridx_grsz grsz
+		where grsz.yhid=#{yhid} and grsz.glxx=#{glxx}
+	</select>
+</mapper>

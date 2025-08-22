@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ITyszmxDao" >
+
+    <select id="getDtoList" parameterType="TyszmxDto" resultType="TyszmxDto">
+        select
+        tyszmx.tyszmxid,
+        tyszmx.tyszid,
+        tyszmx.lx,
+        tyszmx.btid,
+        tyszmx.bt,
+        tyszmx.nr,
+        tyszmx.nr as jclbid,
+        tyszmx.sxlb,
+        tyszmx.csm,
+        tyszmx.csz,
+        tyszmx.zdlx,
+        tyszmx_t.btid as fbtid,
+        tyszmx_t.bt as fbt,
+        tyszmx_t.nr as fnr,
+        tyszmx.nrid,
+        tyszmx.fnrid,
+        tyszmx.jz,
+        tyszmx.sx,
+        tyszmx.mrxs,
+        tyszmx.pxzd,
+        tyszmx.sqlzd,
+        tyszmx.qqlj
+        from igams_tyszmx tyszmx
+        left join igams_tyszmx tyszmx_t on tyszmx_t.nrid=tyszmx.fnrid and tyszmx_t.scbj='0'
+        <where>
+            tyszmx.scbj='0' and tyszmx.tyszid=#{tyszid}
+        </where>
+        order by cast(tyszmx.xh as numeric) asc
+    </select>
+
+    <select id="getAllList"  resultType="TyszmxDto">
+        select
+        tyszmx.tyszmxid,
+        tyszmx.tyszid,
+        tyszmx.lx,
+        tyszmx.btid,
+        tyszmx.bt,
+        tyszmx.nr,
+        tyszmx.nr as jclbid,
+        tyszmx.sxlb,
+        tyszmx.csm,
+        tyszmx.csz,
+        tyszmx.zdlx,
+        tysz.ejzyid,
+        tyszmx.nrid,
+        tyszmx.fnrid,
+        tyszmx.jz,
+        tyszmx.sx,
+        tyszmx.mrxs,
+        tyszmx.pxzd,
+        tyszmx.sqlzd,
+        tyszmx.qqlj
+        from igams_tyszmx tyszmx
+        left join igams_tysz tysz on tyszmx.tyszid=tysz.tyszid and tysz.scbj='0'
+        <where>
+            tyszmx.scbj='0'
+        </where>
+        order by tysz.ejzyid
+    </select>
+
+    <select id="getListByFnrid" resultType="TyszmxDto" parameterType="TyszmxDto">
+        select tyszmx.tyszmxid,
+        tyszmx.tyszid,
+        tyszmx.lx,
+        tyszmx.btid,
+        tyszmx.bt,
+        tyszmx.nr,
+        tyszmx.nr as jclbid,
+        tyszmx.sxlb,
+        tyszmx.csm,
+        tyszmx.csz,
+        tyszmx.zdlx,
+        tyszmx.nrid,
+        tyszmx.fnrid,
+        tyszmx.jz,
+        tyszmx.sx,
+        tyszmx.mrxs,
+        tyszmx.pxzd,
+        tyszmx.sqlzd,
+        tyszmx.qqlj
+        from igams_tyszmx tyszmx where fnrid=#{fnrid} and scbj ='0'
+    </select>
+    <insert id="insertList" parameterType="List">
+        insert into igams_tyszmx(tyszmxid,tyszid,lx,btid,bt,nr,sxlb,csm,csz,zdlx,xh,nrid,fnrid,lrry,lrsj,scbj,sx,jz,mrxs,pxzd,sqlzd,qqlj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.tyszmxid},#{item.tyszid},#{item.lx},#{item.btid},#{item.bt},#{item.nr},#{item.sxlb},#{item.csm},#{item.csz},#{item.zdlx},cast(#{item.xh} as numeric)
+                ,#{item.nrid},#{item.fnrid},#{item.lrry},LOCALTIMESTAMP,'0',#{item.sx},#{item.jz},#{item.mrxs},#{item.pxzd},#{item.sqlzd},#{item.qqlj})
+            </foreach>
+        </if>
+    </insert>
+    
+    <delete id="delAbandonedData" parameterType="TyszmxDto">
+        delete from igams_tyszmx
+        where tyszid=#{tyszid} and scbj='1'
+    </delete>
+
+    <update id="delete" parameterType="TyszmxDto">
+        update igams_tyszmx
+        <set>
+            scbj='1',
+            scsj=LOCALTIMESTAMP,
+            scry=#{scry}
+        </set>
+        <where>
+            scbj='0'
+            <if test="tyszid !=null and tyszid !=''">
+                and tyszid =#{tyszid}
+            </if>
+            <if test="ids !=null and ids.size > 0 ">
+                and tyszid in
+                <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+    <select id="getAllJgList" resultType="Map">
+        select jgid as indexid,jgid  as csz,jgmc as nr from matridx_jgxx
+    </select>
+
+    <select id="getAllWbcxList" resultType="Map">
+        select wbcxid as indexid,wbcxid  as csz,wbcxdm,wbcxmc as nr from matridx_wbcx
+    </select>
+    <select id="getAllYblc" resultType="Map">
+        select lcmc||'_'||lcxh as indexid,lcmc||'_'||lcxh as csz,lcmc||'('||lcxh||')' as nr from igams_zdh_ybxx
+        where lcmc is not null and lcxh is not null
+        group by lcmc,lcxh
+    </select>
+    <select id="getAllYbzlc" resultType="Map">
+        select zlcmc||'_'||zlcxh as indexid,zlcmc||'_'||zlcxh as csz,zlcmc||'('||zlcxh||')' as nr from igams_zdh_ybxx
+        where zlcmc is not null and zlcxh is not null
+        group by zlcmc,zlcxh
+    </select>
+
+    <select id="getCrmFilterData" parameterType="Map" resultType="Map">
+        select
+        <if test="sxbj != null and sxbj != '' and sxbj=='BM'.toString()">
+            yhssjg.jgid as indexid,yhssjg.jgid as csz,jgxx.jgmc as nr
+        </if>
+        <if test="sxbj != null and sxbj != '' and sxbj=='YWY'.toString()">
+            bfdx.ywy as indexid,bfdx.ywy as csz,yh_ywy.zsxm as nr
+        </if>
+        from igams_bfdxgl bfdx
+        left join matridx_xtyh yh_ywy on yh_ywy.yhid=bfdx.ywy and yh_ywy.scbj='0'
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = bfdx.ywy
+        LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = yhssjg.jgid and jgxx.scbj='0'
+        <where>
+            bfdx.scbj !='1' and bfdx.ywy is not null
+            <if test = "ids != null and ids.size > 0 "  >
+                and yhssjg.jgid in
+                <foreach collection="ids" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        <if test="sxbj != null and sxbj != '' and sxbj=='BM'.toString()">
+            group by  yhssjg.jgid,jgxx.jgmc
+        </if>
+        <if test="sxbj != null and sxbj != '' and sxbj=='YWY'.toString()">
+            group by  bfdx.ywy,yh_ywy.zsxm
+        </if>
+    </select>
+</mapper>

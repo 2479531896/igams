@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IDdfbsglDao" >
+
+	<select id="getPagedDtoList" parameterType="DdfbsglDto" resultType="DdfbsglDto">
+		select fbsgl.processinstanceid,fbsgl.fwqm,fbsgl.cljg,fbsgl.ywmc,fbsgl.ywlx,fbsgl.lrsj,
+		case when ht.htnbbh is not null then ht.htnbbh else qg.djh end gldh,fbsgl.jszt,fbsgl.fwqmc,
+		fbsgl.spywlx,fbsgl.hddz,jcsj.csmc as ywlxmc
+		from matridx_ddfbsgl fbsgl
+		left join igams_htgl ht on ht.ddslid=fbsgl.processinstanceid
+		left join igams_qggl qg on qg.ddslid=fbsgl.processinstanceid
+		left join matridx_jcsj jcsj on jcsj.csdm = fbsgl.spywlx and jcsj.jclb = 'DINGTALK_AUDTI_CALLBACK_TYPE'
+		<where>
+			<if test="ywmc != null and ywmc != ''">
+				and fbsgl.ywmc ILIKE '%'||#{ywmc}||'%'
+			</if>
+			<if test="ywlxmc != null and ywlxmc != ''">
+				and jcsj.csmc ILIKE '%'||#{ywlxmc}||'%'
+			</if>
+			<if test="gldh != null and gldh != ''">
+				and ht.htnbbh ILIKE '%'||#{gldh}||'%' or qg.djh ILIKE '%'||#{gldh}||'%'
+			</if>
+			<if test="ywlxs != null and ywlxs.length > 0">
+				and jcsj.csid in
+			<foreach collection="ywlxs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+			</if>
+		</where>
+	</select>
+	<insert id="insert" parameterType="DdfbsglDto">
+		insert into matridx_ddfbsgl(processinstanceid
+		<if test="fwqm != null and fwqm != ''">
+			,fwqm
+		</if>
+		<if test="fwqmc != null and fwqmc != ''">
+			,fwqmc
+		</if>
+		<if test="cljg != null and cljg != ''">
+			,cljg
+		</if>
+		<if test="ywmc != null and ywmc != ''">
+			,ywmc
+		</if>
+		<if test="spywlx != null and spywlx != ''">
+			,spywlx
+		</if>
+		<if test="hddz != null and hddz != ''">
+			,hddz
+		</if>
+		<if test="ywlx != null and ywlx != ''">
+			,ywlx
+		</if>
+		<if test="wbcxid != null and wbcxid != ''">
+			,wbcxid
+		</if>
+		,jszt,lrsj)
+		values(#{processinstanceid}
+		<if test="fwqm != null and fwqm != ''">
+			,#{fwqm}
+		</if>
+		<if test="fwqmc != null and fwqmc != ''">
+			,#{fwqmc}
+		</if>
+		<if test="cljg != null and cljg != ''">
+			,#{cljg}
+		</if>
+		<if test="ywmc != null and ywmc != ''">
+			,#{ywmc}
+		</if>
+		<if test="spywlx != null and spywlx != ''">
+			,#{spywlx}
+		</if>
+		<if test="hddz != null and hddz != ''">
+			,#{hddz}
+		</if>
+		<if test="ywlx != null and ywlx != ''">
+			,#{ywlx}
+		</if>
+		<if test="wbcxid != null and wbcxid != ''">
+			,#{wbcxid}
+		</if>
+		,'0',LOCALTIMESTAMP)
+	</insert>
+	
+	<update id="update" parameterType="DdfbsglDto">
+		update matridx_ddfbsgl
+		<set>
+			xgsj=LOCALTIMESTAMP
+			<if test="fwqm != null and fwqm != ''">
+			,fwqm=#{fwqm}
+			</if>
+			<if test="cljg != null and cljg != ''">
+			,cljg=#{cljg}
+			</if>
+			<if test="ywmc != null and ywmc != ''">
+			,ywmc=#{ywmc}
+			</if>
+			<if test="ywlx != null and ywlx != ''">
+			,ywlx=#{ywlx}
+			</if>
+			<if test="jszt != null and jszt != ''">
+			,jszt=#{jszt}
+			</if>
+			<if test="wbcxid != null and wbcxid != ''">
+			,wbcxid=#{wbcxid}
+			</if>
+		</set>
+		<where>
+			processinstanceid=#{processinstanceid}
+		</where>
+	</update>
+	
+	<select id="getDtoById" parameterType="DdfbsglDto" resultType="DdfbsglDto">
+		select fbsgl.processinstanceid,fbsgl.fwqm,fbsgl.cljg,fbsgl.lrsj,fbsgl.xgsj,fbsgl.ywmc,
+		case when ht.htnbbh is not null then ht.htnbbh else qg.djh end gldh,fbsgl.jszt,fbsgl,fwqmc,
+		fbsgl.spywlx,fbsgl.hddz,fbsgl.wbcxid
+		from matridx_ddfbsgl fbsgl
+		left join igams_htgl ht on ht.ddslid=fbsgl.processinstanceid
+		left join igams_qggl qg on qg.ddslid=fbsgl.processinstanceid
+		<where>
+			processinstanceid=#{processinstanceid}
+		</where>
+	</select>
+	
+	<select id="getNoEndList"  parameterType="DdfbsglDto" resultType="DdfbsglDto">
+		select fbsgl.processinstanceid,fbsgl.fwqm,fbsgl.cljg,fbsgl.lrsj,fbsgl.xgsj,fbsgl.ywmc,
+			   fbsgl.jszt,fbsgl,fwqmc,fbsgl.spywlx,fbsgl.hddz,fbsgl.hddz,fbsgl.ywlx,fbsgl.wbcxid,wbcx.miniappid
+		from matridx_ddfbsgl fbsgl
+		left join matridx_wbcx wbcx on wbcx.wbcxid=fbsgl.wbcxid
+		where fbsgl.jszt='0' and to_char(fbsgl.lrsj,'yyyy-mm-dd') >= #{rqstart}
+		  and to_char(fbsgl.lrsj,'yyyy-mm-dd') &lt;= #{rqend}
+	</select>
+	
+	<select id="getWbcxBycropid"  parameterType="String" resultType="String">
+		select wbcxid
+		from matridx_wbcx
+		where cropid=#{cropid}
+	</select>
+</mapper>

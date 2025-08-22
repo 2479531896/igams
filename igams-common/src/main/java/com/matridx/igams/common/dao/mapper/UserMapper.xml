@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matridx.igams.common.dao.post.IUserDao">
+	<select id="getWbcxDtoList" parameterType="UserDto" resultType="UserDto">
+		select wbcx.wbcxid,wbcx.wbcxmc,wbcx.appid,wbcx.secret
+		from matridx_wbcx wbcx
+		<where>
+			wbcx.scbj!='1'
+			<if test="lx != null and lx != ''">
+				and lx=#{lx}
+			</if>
+			<if test="sftb != null and sftb != ''">
+				and sftb=#{sftb}
+			</if>
+		</where>
+		order by cast(wbcx.px as numeric) asc
+	</select>
+	<!-- 根据ddid查找yhid -->
+	<select id="getYhByDdid" resultType="UserDto" parameterType="UserDto">
+		select yhid,yhm,zsxm,ddid
+		from matridx_xtyh
+		where scbj!='1' and ddid=#{ddid}
+		order by sfsd
+			limit 1
+	</select>
+	<!-- 查询数据库中所有的系统用户 不包括删除标记为1的 -->
+	<select id="getAllUserList" resultType="UserDto" parameterType="UserDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.sdtime,yh.jstime,yh.ddid,yh.gwmc,yh.scbj,yh.mmxgsj,yh.dqjs,yh.ddtxlj,yhqtxx.wbcxid
+		from matridx_xtyh yh
+				 left outer join matridx_yhqtxx yhqtxx on yh.yhid = yhqtxx.yhid
+		where yh.scbj !='1' and yhqtxx.wbcxid = #{wbcxid} and yh.ddid is not null and yh.ddid != ''
+	</select>
+	<!-- 根据用户Ids查询用户信息 -->
+	<select id="getListByIds"  parameterType="UserDto" resultType="UserDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'
+			<if test = "ids != null and ids.size > 0 ">
+				and yh.yhid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!--获取直属主管-->
+	<select id="getZszgByYh" resultType="UserDto" parameterType="UserDto">
+		SELECT
+			zszg.yhid,zszg.ddid,xtyh.zsxm
+		FROM
+			matridx_yghmc yghmc
+				LEFT JOIN matridx_yghmc zszg ON zszg.ddid = yghmc.zszg and zszg.wbcxid = yghmc.wbcxid
+				LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = zszg.yhid
+		WHERE
+			yghmc.yhid = #{yhid}
+	</select>
+	<select id="getWbcxDto" resultType="UserDto" parameterType="UserDto">
+		select wbcxid,jumpdingtalkurl,wbcxdm ,wbcxmc  from matridx_wbcx
+		where scbj ='0' and  wbcxid = #{wbcxid}
+	</select>
+	<select id="getBmzgsInfo" resultType="UserDto" parameterType="UserDto">
+		select tmp.bmzgs,xtyh.ddid,xtyh.yhid,xtyh.email  from
+		<foreach collection="ids" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select
+			#{item} bmzgs
+		</foreach>
+		left join matridx_xtyh xtyh on xtyh.ddid in (SELECT regexp_split_to_table(tmp.bmzgs,E'[\\s,]+')) and xtyh.scbj ='0'
+		left join matridx_yhqtxx yhqtxx on yhqtxx.yhid = xtyh.yhid and yhqtxx.wbcxid = #{wbcxid}
+		where yhqtxx.yhid is not null
+	</select>
+	<select id="getDtoById" parameterType="java.lang.String" resultType="UserDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.dlip,yh.dlsj,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc,
+		js.jsmc dqjsmc,js.jsdm dqjsdm,ssjg.jgid
+		from matridx_xtyh yh
+		left outer join matridx_xtjs js on yh.dqjs = js.jsid
+		left outer join matridx_yhssjg ssjg on yh.yhid = ssjg.yhid
+		where yh.yhid =#{yhid}
+	</select>
+	<select id="getListByDdids"  parameterType="UserDto" resultType="UserDto">
+		select yh.yhid,yh.yhm,yh.zsxm,yh.mm,yh.sfsd,yh.dqjs,yh.lrry,yh.lrsj,yh.xgry,yh.xgsj,yh.scry,yh.scsj,yh.scbj,yh.ddid,yh.wechatid,yh.gwmc
+		from matridx_xtyh yh
+		<where>
+			yh.ddid in
+				<foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+					#{item}
+				</foreach>
+		</where>
+		order by yh.yhm ASC
+	</select>
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IShlcDao" >
+	<!--start sql 片段 -->
+	<sql id="columnSql">
+		shlc.shid, shlc.lcxh, shlc.gwid, shlc.kzcs
+	</sql>
+	<sql id="shgc_filter"><!-- 根据审核过程过滤出当时的流程 -->
+		<if test="gcid != null and gcid != ''"><!-- 旧流程处理 -->
+			and exists (
+				select 1 from matridx_shgc shgc where shgc.gcid = #{gcid} and shgc.shid=#{shid} and
+				 shgc.sqsj >= shlc.qysj and (shlc.tysj is null or shlc.tysj >= shgc.sqsj) 
+			)
+		</if>
+		<if test="gcid == null or gcid == ''">
+			<if test="sqsj != null and sqsj != ''"> <!-- 如果过程id没有，则通过申请时间进行匹配 -->
+				and (to_timestamp(#{sqsj},'yyyy-mm-dd hh24:mi:ss')>=shlc.qysj 
+					and (shlc.tysj is null or shlc.tysj >= to_timestamp(#{sqsj},'yyyy-mm-dd hh24:mi:ss')))
+			</if>
+			<if test="sqsj == null or sqsj == ''">
+				and shlc.tysj is null <!-- 只获取有效的 -->
+			</if>
+		</if>
+	</sql>
+	<sql id="columnJoinSql">
+		<include refid="columnSql"></include>
+		,spgw.gwmc gwmc,spgw.wbgw,lclb,lclb.cskz1 lclbcskz1,lclb.cskz2 lclbcskz2,lclb.cskz3 lclbcskz3,ddhdlx.cskz1 ddhdlxcskz1,spgw
+	</sql>
+	<sql id="commonTableJoin">
+		from matridx_shlc shlc
+		join matridx_spgw spgw on spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_jcsj lclb on shlc.lclb = lclb.csid and lclb.scbj ='0'
+		LEFT JOIN matridx_jcsj ddhdlx on ddhdlx.csdm = lclb.cskz3 and ddhdlx.scbj ='0' and ddhdlx.jclb ='DINGTALK_AUDTI_CALLBACK_TYPE'
+	</sql>
+	
+	<!-- 查询审核流程列表 -->
+	<select id="getDtoList" parameterType="ShlcDto" resultType="ShlcDto">
+		select <include refid="columnJoinSql"></include>
+    	<include refid="commonTableJoin"></include>
+    	<where>
+    		<if test="shid != null and shid != ''">
+				and shlc.shid = #{shid}
+			</if>
+    		<if test="lcxh != null and lcxh != ''">
+				and shlc.lcxh = cast(#{lcxh} as numeric)
+			</if>
+    		<if test="gwid != null and gwid != ''">
+				and shlc.gwid = #{gwid}
+			</if>
+			<include refid="shgc_filter"></include>
+    	</where>
+    	order by shlc.lcxh asc
+	</select>
+	<!-- 查询审核流程列表 -->
+	<select id="getDtoListById" parameterType="ShlcDto" resultType="ShlcDto">
+		select shlc.shid, shlc.lcxh, shlc.gwid, shlc.kzcs,spgw.gwmc gwmc
+		<if test="(jxmbid != null and jxmbid != '') and (mbszid != null and mbszid != '')  ">
+		,qzsz.qz
+		</if>
+		from matridx_shlc shlc
+		join matridx_spgw spgw on spgw.gwid = shlc.gwid
+		<if test="(jxmbid != null and jxmbid != '') and (mbszid != null and mbszid != '')  ">
+		left join igams_qzsz qzsz on qzsz.gwid = spgw.gwid and qzsz.jxmbid = #{jxmbid} and qzsz.mbszid = #{mbszid}
+		</if>
+    	where
+			shlc.shid = #{shid} and shlc.tysj is null
+    	order by shlc.lcxh asc
+	</select>
+	<!--根据审核id修改停用时间-->
+	<update  id="updateTysjByShid" parameterType="String">
+		update matridx_shlc
+		<set>
+			tysj = LOCALTIMESTAMP
+		</set>
+		<where>
+			shid = #{shid} and tysj is null
+		</where>
+	</update>
+	<!-- 新增审核流程 -->
+	<insert  id="insertBySpgwList" parameterType="list">
+		insert into matridx_shlc (shid, lcxh,  gwid, qysj, lrry,lclb)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.shid},cast(#{item.lcxh} as numeric),#{item.gwid},LOCALTIMESTAMP,#{item.lrry},#{item.lclb})
+			</foreach>
+		</if>
+	</insert>
+</mapper>

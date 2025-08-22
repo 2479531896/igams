@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ILscxqxDao" >
+
+	<!-- 插入系统用户信息 -->
+	<insert id="insert" parameterType="LscxqxModel">
+		insert into matridx_lscxqx(yhid,cxid,lrry,lrsj) values(#{yhid},#{cxid},#{lrry},LOCALTIMESTAMP)
+	</insert>
+	
+	<!-- 批量插入用户角色 -->
+	<insert id="batchInsert" parameterType="list">
+		insert into matridx_lscxqx(yhid,cxid,lrry,lrsj)
+			values
+			<if test="list!=null and list.size>0">
+				<foreach collection="list"  separator=","  index="index" item="item" >
+					(#{item.yhid},#{item.cxid},#{lrry},LOCALTIMESTAMP)
+				</foreach>
+			</if>
+	</insert>
+	
+	<!-- 查询角色里未选用户 -->
+	<select id="getPagedOptionalList" parameterType="UserDto" resultType="UserDto">
+		select yh.yhid,yh.yhm,yh.zsxm
+		from matridx_xtyh yh
+		<where>
+			yh.scbj='0'  and yh.sfsd='0' and not exists (select ls.yhid from matridx_lscxqx ls where ls.yhid=yh.yhid
+			<if test="cids !=null and cids.size > 0">
+	        	and ls.cxid in
+				<foreach collection="cids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+			)
+		</where>
+			<if test="yhm != null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+	</select>
+
+	<select id="getPagedOptionalRoleList" parameterType="UserDto" resultType="UserDto">
+		select js.jsid as yhid,'' as yhm,js.jsmc as zsxm
+		from matridx_xtjs js
+		<where>
+			js.scbj='0' and not exists (select ls.jsid from matridx_lscxqx ls where ls.jsid=js.jsid
+			<if test="cids !=null and cids.size > 0">
+				and ls.cxid in
+				<foreach collection="cids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+			)
+			<if test="yhm != null and yhm != ''">
+				and js.jsid in (select yhjs.jsid from matridx_yhjs yhjs left join matridx_xtyh yh on yh.yhid=yhjs.yhid and yh.scbj='0' and yh.sfsd='0' where yh.yhm like '%'||#{yhm}||'%')
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and ((js.jsid in (select yhjs.jsid from matridx_yhjs yhjs left join matridx_xtyh yh on yh.yhid=yhjs.yhid and yh.scbj='0' and yh.sfsd='0' where yh.zsxm like '%'||#{zsxm}||'%')) or (js.jsmc like '%'||#{zsxm}||'%'))
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询角色里已选用户 -->
+	<select id="getPagedSelectedList" parameterType="UserDto" resultType="UserDto">
+		select case when qx.jsid!='' then qx.jsid else yh.yhid end yhid,
+		case when qx.jsid!='' then '' else yh.yhm end yhm,
+		case when qx.jsid!='' then js.jsmc else yh.zsxm end zsxm
+		from matridx_lscxqx qx
+		left outer join matridx_xtyh yh on yh.yhid = qx.yhid  and  yh.scbj = '0' AND yh.sfsd = '0'
+		left outer join matridx_xtjs js on js.jsid = qx.jsid AND js.scbj = '0'
+		<where>
+			(yh.yhid is not null or js.jsid is not null)
+		<if test="cids !=null and cids.size > 0">
+	        	and qx.cxid in
+				<foreach collection="cids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+		<if test="yhm != null and yhm != ''">
+				and (yh.yhm like '%'||#{yhm}||'%'  or  js.jsid in (select yhjs.jsid from matridx_yhjs yhjs left join matridx_xtyh yh on yh.yhid=yhjs.yhid and yh.scbj='0' and yh.sfsd='0' where yh.yhm like '%'||#{yhm}||'%'))
+			</if>
+			<if test="zsxm != null and zsxm != ''">
+				and (yh.zsxm like '%'||#{zsxm}||'%' or  js.jsid in (select yhjs.jsid from matridx_yhjs yhjs left join matridx_xtyh yh on yh.yhid=yhjs.yhid and yh.scbj='0' and yh.sfsd='0' where yh.zsxm like '%'||#{zsxm}||'%'))
+			</if>
+			</where>
+	</select>
+	
+		<!-- 删除用户角色信息 -->
+	<delete  id="toOptional" parameterType="LscxqxDto">
+		delete from matridx_lscxqx 
+		<where>
+			<if test="cids !=null and cids.size > 0">
+	        	and cxid in
+				<foreach collection="cids" open="(" close=")" separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and ((yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>)
+				or (jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+				))
+			</if>
+		</where>
+	</delete>
+	
+		<!-- 增加用户信息 -->
+	<insert id="toSelected" parameterType="LscxqxDto">
+		insert into matridx_lscxqx (yhid, cxid,lrry,lrsj,jsid)
+		<if test="ids !=null and ids.size > 0 and lx=='USER'.toString()">
+			<foreach collection="ids" separator="union" open="("
+				close=") " item="item" index="index">
+				select #{item},ls.cxid,#{lrry},LOCALTIMESTAMP,''
+				from matridx_lscxsz ls
+				left join matridx_jcsj js_qx on js_qx.csid=ls.cxqf
+				<where>
+					<if test="cids !=null and cids.size > 0">
+						and ls.cxid in
+						<foreach collection="cids" open="(" close=")"
+							separator="," item="items">
+							#{items}
+						</foreach>
+					</if>
+				</where>
+			</foreach>
+		</if>
+		<if test="ids !=null and ids.size > 0 and lx=='ROLE'.toString()">
+			<foreach collection="ids" separator="union" open="("
+					 close=") " item="item" index="index">
+				select '',ls.cxid,#{lrry},LOCALTIMESTAMP,#{item}
+				from matridx_lscxsz ls
+				left join matridx_jcsj js_qx on js_qx.csid=ls.cxqf
+				<where>
+					<if test="cids !=null and cids.size > 0">
+						and ls.cxid in
+						<foreach collection="cids" open="(" close=")"
+								 separator="," item="items">
+							#{items}
+						</foreach>
+					</if>
+				</where>
+			</foreach>
+		</if>
+	</insert>
+	
+	
+	<select id="queryByYhid" parameterType="LscxqxDto" resultType="LscxqxDto">
+		select yhid,cxid
+		from matridx_lscxqx
+		<where>
+			yhid=#{yhid}
+		</where>
+	</select>
+	
+	
+</mapper>

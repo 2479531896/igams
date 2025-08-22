@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ILbcxszDao" >
+	<!-- 获取操作代码同时根据操作代码名称标识操作代码信息 -->
+	<select id="getAllCzdmAndChecked" parameterType="LbcxszDto" resultType="LbcxszDto">
+		select czdm.czmc,czdm.czdm czdm_cz
+		<if test="zyid != null and zyid != ''">
+		,zyczb.czdm
+		</if>
+		from matridx_czdm czdm
+		<if test="zyid != null and zyid != ''">
+		left outer join matridx_zyczb zyczb on zyczb.czdm = czdm.czdm and zyczb.zyid =#{zyid}
+		</if>
+	</select>
+	<!-- 分页查询列表查询设置 -->
+	<select id="getPagedDtoList" parameterType="LbcxszDto" resultType="LbcxszDto">
+		select lbcx.ywid,lbcx.xh,lbcx.fcd,lbcx.glfs,lbcx.glb,lbcx.glbsx,lbcx.glzd,lbcx.yctj,lbcx.pxxx,
+		cxtj.btm,cxtj.xslx,cxtj.srid,cxtj.srm,cxtj.xzfw,cxtj.xznr,cxtj.gljclb,cxtj.gjsxbj,cxtj.pplx,cxtj.glzd glzd_tj,cxtj.kzcs1,cxtj.kzcs2,cxtj.kzcs3,
+		lbzd.xszd,lbzd.ywmc,lbzd.xszdmc,lbzd.pxzd,lbzd.xsxx,lbzd.sqlzd,lbzd.xskd,lbzd.xsgs,lbzd.zdsm,lbzd.mrxs
+		from matridx_lbcxsz lbcx
+		left outer join matridx_lbcxtjsz cxtj on lbcx.ywid = cxtj.ywid
+		left outer join matridx_lbzdsz lbzd on lbzd.ywid = lbcx.ywid
+		<where> lbcx.scbj !='1'
+			<if test="glb !=null and glb != ''">
+				and glb like '%'||#{glb}||'%'
+			</if>
+			<if test="ywid !=null and ywid != ''">
+				and lbcx.ywid like '%'||#{ywid}||'%'
+			</if>
+			<if test="ywmc !=null and ywmc != ''">
+				and ywmc like '%'||#{ywmc}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 查询系统资源表信息 -->
+	<select id="getXtzyByZylj" parameterType="String" resultType="LbcxszDto">
+		select xtzy.zyid,xtzy.fjd,xtzy.zybt,xtzy.zylj,xtzy.xssx,xtzy.cdcc,xtzy.gnm,xtzy.btsx
+		from matridx_xtzy xtzy
+		where
+			xtzy.zylj =#{zylj}
+	</select>
+	<!-- 查询资源操作表信息 -->
+	<select id="getZyczbByZyid" parameterType="String" resultType="LbcxszDto">
+		select zycz.zyid,zycz.czdm,zycz.dyym,czdm.czmc
+		from matridx_zyczb zycz
+		left outer join matridx_czdm czdm on zycz.czdm = czdm.czdm
+		where
+			zycz.zyid =#{zyid}
+	</select>
+	<!-- 查询列表查询设置信息 -->
+	<select id="getDtoById" parameterType="LbcxszDto" resultType="LbcxszDto">
+		select lbcx.ywid,lbcx.xh,lbcx.fcd,lbcx.glfs,lbcx.glb,lbcx.glbsx,lbcx.glzd,lbcx.yctj,lbcx.pxxx,
+		cxtj.btm,cxtj.xslx,cxtj.srid,cxtj.srm,cxtj.xzfw,cxtj.xznr,cxtj.gljclb,cxtj.gjsxbj,cxtj.pplx,cxtj.glzd glzd_tj,cxtj.kzcs1,cxtj.kzcs2,cxtj.kzcs3,
+		lbzd.xszd,lbzd.ywmc,lbzd.xszdmc,lbzd.pxzd,lbzd.xsxx,lbzd.sqlzd,lbzd.xskd,lbzd.xsgs,lbzd.zdsm,lbzd.mrxs
+		from matridx_lbcxsz lbcx
+		left outer join matridx_lbcxtjsz cxtj on lbcx.ywid = cxtj.ywid
+		left outer join matridx_lbzdsz lbzd on lbzd.ywid = lbcx.ywid
+		where
+			lbcx.scbj !='1'
+			and lbcx.ywid =#{ywid}
+	</select>
+	<!-- 判断修改zyid是否重复 -->
+	<select id="selectToModZyid" parameterType="lbcxszDto" resultType="LbcxszDto">
+		select xtzy.zyid,xtzy.fjd,xtzy.zybt,xtzy.zylj,xtzy.xssx,xtzy.cdcc,xtzy.gnm,xtzy.btsx
+		from matridx_xtzy xtzy
+		<where>
+			<if test="prezyid != null and prezyid != ''">
+				xtzy.zyid not in (select zyid from matridx_xtzy where zyid = #{prezyid})
+			</if>
+			<if test="zyid != null and zyid != ''">
+				and xtzy.zyid = #{zyid}
+			</if>
+		</where>	
+	</select>
+	<!-- 判断zyid是否重复 -->
+	<select id="selectToZyid" parameterType="lbcxszDto" resultType="LbcxszDto">
+		select xtzy.zyid,xtzy.fjd,xtzy.zybt,xtzy.zylj,xtzy.xssx,xtzy.cdcc,xtzy.gnm,xtzy.btsx
+		from matridx_xtzy xtzy
+		<where>
+			<if test="zyid != null and zyid != ''">
+				and xtzy.zyid = #{zyid}
+			</if>
+		</where>	
+	</select>
+	<!-- 判断ywid是否重复 -->
+	<select id="selectToYwid" parameterType="LbcxszDto" resultType="LbcxszDto">
+		select lbcx.ywid,lbcx.xh,lbcx.fcd,lbcx.glfs,lbcx.glb,lbcx.glbsx,lbcx.glzd,lbcx.yctj,lbcx.pxxx
+		from matridx_lbcxsz lbcx
+		<where>
+			<if test="ywid != null and ywid != ''">
+				and lbcx.ywid = #{ywid}
+			</if>
+		</where>
+	</select>
+	<!-- 判断修改ywid是否重复 -->
+	<select id="selectToModYwid" parameterType="LbcxszDto" resultType="LbcxszDto">
+		select lbcx.ywid,lbcx.xh,lbcx.fcd,lbcx.glfs,lbcx.glb,lbcx.glbsx,lbcx.glzd,lbcx.yctj,lbcx.pxxx
+		from matridx_lbcxsz lbcx
+		<where>
+			<if test="preywid != null and preywid != ''">
+				lbcx.ywid not in (select ywid from matridx_lbcxsz where ywid = #{preywid})
+			</if>
+			<if test="ywid != null and ywid != ''">
+				and lbcx.ywid = #{ywid}
+			</if>
+		</where>
+	</select>
+	<!-- 将新增数据增加到系统资源表 -->
+	<insert id="insertXtzy" parameterType="lbcxszDto">
+		insert into matridx_xtzy(zyid
+		<if test="fjd !=null and fjd != ''">
+			,fjd
+		</if>
+		<if test="zybt !=null and zybt != ''">
+			,zybt
+		</if>
+		<if test="zylj !=null and zylj != ''">
+			,zylj
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			,xssx
+		</if>
+		<if test="cdcc !=null and cdcc != ''">
+			,cdcc
+		</if>
+		<if test="gnm !=null and gnm != ''">
+			,gnm
+		</if>
+		<if test="btsx !=null and btsx != ''">
+			,btsx
+		</if>
+		) values(#{zyid}
+		<if test="fjd !=null and fjd != ''">
+			,#{fjd}
+		</if>
+		<if test="zybt !=null and zybt != ''">
+			,#{zybt}
+		</if>
+		<if test="zylj !=null and zylj != ''">
+			,#{zylj}
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			,cast(#{xssx} as numeric)
+		</if>
+		<if test="cdcc !=null and cdcc !=''">
+			,cast(#{cdcc} as numeric)
+		</if>
+		<if test="gnm !=null and gnm !=''">
+			,#{gnm}
+		</if>
+		<if test="btsx !=null and btsx != ''">
+			,#{btsx}
+		</if>
+		)
+	</insert>
+	<!-- 将新增数据增加到资源操作表 -->
+	<insert id="insertZyczb" parameterType="lbcxszDto">
+		insert into matridx_zyczb(zyid
+		<if test="czdm !=null and czdm != ''">
+			,czdm
+		</if>
+		<if test="dyym !=null and dyym != ''">
+			,dyym
+		</if>
+		) values(#{zyid}
+		<if test="czdm !=null and czdm != ''">
+			,#{czdm}
+		</if>
+		<if test="dyym !=null and dyym != ''">
+			,#{dyym}
+		</if>
+		)
+	</insert>
+	<!-- 新增列表查询设置 -->
+	<insert id="insert" parameterType="lbcxszDto">
+		insert into matridx_lbcxsz(ywid
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		<if test="fcd !=null and fcd != ''">
+			,fcd
+		</if>
+		<if test="glfs !=null and glfs != ''">
+			,glfs
+		</if>
+		<if test="glb !=null and glb != ''">
+			,glb
+		</if>
+		<if test="glbsx !=null and glbsx != ''">
+			,glbsx
+		</if>
+		<if test="glzd !=null and glzd != ''">
+			,glzd
+		</if>
+		<if test="yctj !=null and yctj != ''">
+			,yctj
+		</if>
+		<if test="pxxx !=null and pxxx != ''">
+			,pxxx
+		</if>
+		,lrry,lrsj,scbj) values(#{ywid}
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		<if test="fcd !=null and fcd != ''">
+			,#{fcd}
+		</if>
+		<if test="glfs !=null and glfs != ''">
+			,#{glfs}
+		</if>
+		<if test="glb !=null and glb != ''">
+			,#{glb}
+		</if>
+		<if test="glbsx !=null and glbsx != ''">
+			,#{glbsx}
+		</if>
+		<if test="glzd !=null and glzd != ''">
+			,#{glzd}
+		</if>
+		<if test="yctj !=null and yctj != ''">
+			,#{yctj}
+		</if>
+		<if test="pxxx !=null and pxxx != ''">
+			,#{pxxx}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!--更新系统资源信息-->
+	<update  id="updateXtzy" parameterType="lbcxszDto">
+		update matridx_xtzy
+		<set>
+		<if test="fjd !=null and fjd != ''">
+			fjd = #{fjd},
+		</if>
+		<if test="zybt !=null and zybt != ''">
+			zybt = #{zybt},
+		</if>
+		<if test="zyid !=null and zyid != ''">
+			zyid = #{zyid},
+		</if>
+		<if test="zylj !=null and zylj != ''">
+			zylj = #{zylj},
+		</if>
+		<if test="xssx !=null and xssx != ''">
+			xssx = cast(#{xssx} as numeric),
+		</if>
+		<if test="cdcc !=null and cdcc !=''">
+			cdcc = cast(#{cdcc} as numeric),
+		</if>
+		<if test="gnm !=null and gnm !=''">
+			gnm = #{gnm},
+		</if>
+		<if test="btsx !=null and btsx != ''">
+			btsx = #{btsx}
+		</if>
+		</set>
+		<where>
+			zyid = #{prezyid}
+		</where>
+	</update>
+	<!--更新资源操作表信息-->
+	<update  id="updateZyczb" parameterType="lbcxszDto">
+		update matridx_zyczb
+		<set>
+		<if test="zyid !=null and zyid != ''">
+			zyid = #{zyid},
+		</if>
+		<if test="czdm !=null and czdm != ''">
+			czdm = #{czdm},
+		</if>
+		<if test="dyym !=null and dyym != ''">
+			dyym = #{dyym},
+		</if>
+		</set>
+		<where>
+			zyid = #{prezyid}
+			and czdm = #{czdm}
+		</where>
+	</update>
+	<!--更新列表查询设置-->
+	<update  id="update" parameterType="lbcxszDto">
+		update matridx_lbcxsz
+		<set>
+		<if test="ywid !=null and ywid != ''">
+			ywid = #{ywid},
+		</if>
+		<if test="fcd !=null and fcd != ''">
+			fcd = #{fcd},
+		</if>
+		<if test="glfs !=null and glfs != ''">
+			glfs = #{glfs},
+		</if>
+		<if test="glb !=null and glb != ''">
+			glb = #{glb},
+		</if>
+		<if test="glbsx !=null and glbsx != ''">
+			glbsx = #{glbsx},
+		</if>
+		<if test="glzd !=null and glzd != ''">
+			glzd = #{glzd},
+		</if>
+		<if test="yctj !=null and yctj != ''">
+			yctj = #{yctj},
+		</if>
+		<if test="pxxx !=null and pxxx != ''">
+			pxxx = #{pxxx},
+		</if>
+			xgsj = LOCALTIMESTAMP,
+			xgry = #{xgry}
+		</set>
+		<where>
+			ywid = #{preywid}
+		</where>
+	</update>
+	<!--更新列表查询设置的删除状态-->
+	<update  id="updateLbcxszScbj" parameterType="lbcxszDto">
+		update matridx_lbcxsz set scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			<if test="ywid !=null and ywid != ''">
+				or ywid = #{ywid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or ywid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!--删除系统资源信息-->
+	<delete id="deleteXtzy" parameterType="lbcxszDto">
+		delete from matridx_xtzy
+		<where>
+			<if test="zyid !=null and zyid != ''">
+				or zyid = #{zyid}
+			</if>
+			<if test="zyids !=null and zyids.size > 0">
+			or zyid in
+				<foreach collection="zyids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zyids.size == 0 or zyids ==null">
+				and zyid = #{zyid}
+			</if>
+		</where>
+	</delete>
+	<!--删除资源操作表信息-->
+	<delete id="deleteZyczb" parameterType="lbcxszDto">
+		delete from matridx_zyczb
+		<where>
+			<if test="zyid !=null and zyid != ''">
+				or zyid = #{zyid}
+			</if>
+			<if test="zyids !=null and zyids.size > 0">
+			or zyid in
+				<foreach collection="zyids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

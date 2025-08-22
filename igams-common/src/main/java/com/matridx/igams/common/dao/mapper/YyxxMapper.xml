@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IYyxxDao">
+	<sql id="SEARCH_TERMS">
+				yyxx.scbj !='1'
+		<if test="entire != null and entire != ''">
+			and (
+			yyxx.dwmc ilike '%'||#{entire}||'%'
+			or yyxx.dwjc ilike '%'||#{entire}||'%'
+			or yyxx.dwqtmc ilike '%'||#{entire}||'%'
+			or yyxx.tjmc ilike '%'||#{entire}||'%'
+			or jc_dj.csmc ilike '%'||#{entire}||'%'
+			or jc_lb.csmc ilike '%'||#{entire}||'%'
+			or jc_sf.csmc ilike '%'||#{entire}||'%'
+			or jc_cs.csmc ilike '%'||#{entire}||'%'
+			)
+		</if>
+			<if test="dwmc !=null and dwmc != ''">
+				and yyxx.dwmc like '%'||#{dwmc}||'%'
+			</if>
+			<if test="dwjc !=null and dwjc != ''">
+				and yyxx.dwjc like '%'||#{dwjc}||'%'
+			</if>
+			<if test="dwqtmc !=null and dwqtmc != ''">
+				and yyxx.dwqtmc like '%'||#{dwqtmc}||'%'
+			</if>
+			<if test="tjmc !=null and tjmc != ''">
+				and coalesce(yyxx.tjmc,yyxx.dwmc) like '%'||#{tjmc}||'%'
+			</if>
+			<if test="dwdjmc !=null and dwdjmc != ''">
+				and jc_dj.csmc like '%'||#{dwdjmc}||'%'
+			</if>
+			<if test="dwlbmc !=null and dwlbmc != ''">
+				and jc_lb.csmc like '%'||#{dwlbmc}||'%'
+			</if>
+			<if test="sfmc !=null and sfmc != ''">
+				and jc_sf.csmc like '%'||#{sfmc}||'%'
+			</if>
+			<if test="csmc !=null and csmc != ''">
+				and jc_cs.csmc like '%'||#{csmc}||'%'
+			</if>
+			
+			<if test = "dwlbs != null and dwlbs.length > 0 "  >
+				and yyxx.dwlb in 
+				<foreach collection="dwlbs" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "dwdjs != null and dwdjs.length > 0 "  >
+				and yyxx.dwdj in 
+				<foreach collection="dwdjs" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "cskz2s != null and cskz2s.length > 0 "  >
+				and yyxx.cskz2 in
+				<foreach collection="cskz2s" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+	</sql>
+
+	<select id="getPageYyxxDtoList" parameterType="YyxxDto"
+		resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,coalesce(yyxx.tjmc,yyxx.dwmc) tjmc,jc_dj.csmc
+		as dwdjmc,jc_lb.csmc as dwlbmc,yyxx.sf,yyxx.cs,jc_sf.csmc as sfmc,jc_cs.csmc as csmc,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.shxydm,yyxx.lxr,yyxx.lxdh,yyxx.jcxmpp,yyxx.virtualhost
+		from igams_yyxx yyxx
+		left join matridx_jcsj jc_dj on jc_dj.csid=yyxx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=yyxx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	
+	<select id="getDtoById" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,coalesce(yyxx.tjmc,yyxx.dwmc) tjmc,jc_dj.csmc
+		as dwdjmc,jc_lb.csmc as dwlbmc,yyxx.sf,yyxx.cs,jc_sf.csmc as sfmc,jc_cs.csmc as csmc,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.lrry,yyxx.lrsj,yyxx.xgry,yyxx.scry,yyxx.scsj,yyxx.scbj,yyxx.shxydm,yyxx.lxr,yyxx.lxdh,yyxx.jcxmpp,yyxx.virtualhost
+		from igams_yyxx yyxx
+		left join matridx_jcsj jc_dj on jc_dj.csid=yyxx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=yyxx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs
+		<where>		
+			yyxx.scbj !='1' And yyxx.dwid=#{dwid}
+		</where>		
+	</select>
+	
+	<!-- 导出 -->
+	<select id="getCountForSearchExp" parameterType="YyxxDto"
+		resultType="java.lang.Integer">
+		select count(yyxx.dwid) from igams_yyxx yyxx
+		
+		left join matridx_jcsj jc_dj on jc_dj.csid=yyxx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=yyxx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid ${sqlParam}
+		from igams_yyxx yyxx
+		left join matridx_jcsj jc_dj on jc_dj.csid=yyxx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=yyxx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder},
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			${sortLastName} ${sortLastOrder},
+		</if>
+		      dwid
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+	<select id="getListForSelectExp" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids"
+			separator=" union all ">
+			select #{item,jdbcType=VARCHAR} dwid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_yyxx yyxx on tmp.dwid = yyxx.dwid
+		left join matridx_jcsj jc_dj on jc_dj.csid=yyxx.dwdj
+		left join matridx_jcsj jc_lb on jc_lb.csid=yyxx.dwlb
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs
+		order by tmp.ordernum
+	</select>
+
+	<select id="getPagedDtoList" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,yyxx.dwdj,yyxx.dwlb,yyxx.sf,yyxx.cs,yyxx.jcxmpp
+		,yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,jc_dwdj.csmc as dwdjmc,jc_dwlb.csmc as dwlbmc,
+		jc_sf.csmc as sfmc,jc_cs.csmc as csmc
+		from igams_yyxx yyxx
+		left join matridx_jcsj jc_dwdj on jc_dwdj.csid=yyxx.dwdj  and jc_dwdj.jclb='VISITUNIT_GRADE'
+		left join matridx_jcsj jc_dwlb on jc_dwlb.csid=yyxx.dwlb  and jc_dwlb.jclb='VISITUNIT_TYPE'
+		left join matridx_jcsj jc_sf on jc_sf.csid=yyxx.sf and jc_sf.jclb='PROVINCE'
+		left join matridx_jcsj jc_cs on jc_cs.csid=yyxx.cs and jc_cs.jclb='CITY'
+		<where>
+			yyxx.scbj!='1'
+			<if test="searchParam !=null and searchParam !='' ">
+				and (
+					yyxx.dwmc like '%'||#{searchParam}||'%'
+					or yyxx.dwjc like '%'||#{searchParam}||'%'
+					or yyxx.dwqtmc like '%'||#{searchParam}||'%'
+					or yyxx.tjmc like '%'||#{searchParam}||'%'
+					)
+			</if>
+			<if test="dwFlag !=null and dwFlag !='' ">
+				and  (jc_dwlb.cskz1 != '1' or jc_dwlb.cskz1 is null)
+			</if>
+		</where>
+	</select>
+	
+	<!-- 预输入查询送检单位信息 -->
+	<select id="selectHospitalName" parameterType="YyxxDto" resultType="YyxxDto">  
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,cskz1,cskz2,cskz3,cskz4,yyxx.jcxmpp
+		from igams_yyxx yyxx 
+		<where>
+			yyxx.scbj !='1'
+			<if test="searchParam !=null and searchParam != ''">
+				and	(
+				yyxx.dwmc like '%'||#{searchParam}||'%'
+				or yyxx.dwjc like '%'||#{searchParam}||'%'
+				or yyxx.dwqtmc like '%'||#{searchParam}||'%'
+				or yyxx.tjmc like '%'||#{searchParam}||'%'
+				)
+			</if>
+			<if test="cskz1 !=null and cskz1 !='' ">
+				and yyxx.cskz1=#{cskz1}
+			</if>
+		</where>
+			order by dwmc desc
+		<if test="count !=null and count != ''">
+			limit cast(#{count} as numeric)
+		</if>
+    </select>
+
+	<insert id="insert" parameterType="YyxxDto">
+		insert into igams_yyxx(dwid
+		<if test="dwmc !=null and dwmc != ''">
+			,dwmc
+		</if>
+		<if test="dwjc !=null and dwjc != ''">
+			,dwjc
+		</if>
+		<if test="dwqtmc !=null and dwqtmc != ''">
+			,dwqtmc
+		</if>
+		<if test="tjmc !=null and tjmc != ''">
+			,tjmc
+		</if>
+		<if test="jcxmpp !=null and jcxmpp != ''">
+			,jcxmpp
+		</if>
+		<if test="dwdj !=null and dwdj != ''">
+			,dwdj
+		</if>
+		<if test="dwlb !=null and dwlb != ''">
+			,dwlb
+		</if>
+		<if test="sf !=null and sf != ''">
+			,sf
+		</if>
+		<if test="cs !=null and cs != ''">
+			,cs
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,cskz1
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,cskz2
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,cskz3
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,cskz4
+		</if>
+		<if test="shxydm !=null and shxydm != ''">
+			,shxydm
+		</if>
+		<if test="lxr !=null and lxr != ''">
+			,lxr
+		</if>
+		<if test="lxdh !=null and lxdh != ''">
+			,lxdh
+		</if>
+		<if test="virtualhost !=null and virtualhost != ''">
+			,virtualhost
+		</if>
+		,lrry,lrsj,scbj) values(#{dwid}
+		<if test="dwmc !=null and dwmc != ''">
+			,#{dwmc}
+		</if>
+		<if test="dwjc !=null and dwjc != ''">
+			,#{dwjc}
+		</if>
+		<if test="dwqtmc !=null and dwqtmc != ''">
+			,#{dwqtmc}
+		</if>
+		<if test="tjmc !=null and tjmc != ''">
+			,#{tjmc}
+		</if>
+		<if test="jcxmpp !=null and jcxmpp != ''">
+			,#{jcxmpp}
+		</if>
+		<if test="dwdj !=null and dwdj != ''">
+			,#{dwdj}
+		</if>
+		<if test="dwlb !=null and dwlb != ''">
+			,#{dwlb}
+		</if>
+		<if test="sf !=null and sf != ''">
+			,#{sf}
+		</if>
+		<if test="cs !=null and cs != ''">
+			,#{cs}
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,#{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,#{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,#{cskz3}
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,#{cskz4}
+		</if>
+		<if test="shxydm !=null and shxydm != ''">
+			,#{shxydm}
+		</if>
+		<if test="lxr !=null and lxr != ''">
+			,#{lxr}
+		</if>
+		<if test="lxdh !=null and lxdh != ''">
+			,#{lxdh}
+		</if>
+		<if test="virtualhost !=null and virtualhost != ''">
+			,#{virtualhost}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<update id="update" parameterType="YyxxDto">
+		update igams_yyxx set
+		<if test="dwmc!=null and dwmc!=''">
+			dwmc=#{dwmc},
+		</if>
+		<if test="dwjc!=null and dwjc!=''">
+			dwjc=#{dwjc},
+		</if>
+		<if test="dwqtmc!=null and dwqtmc!=''">
+			dwqtmc=#{dwqtmc},
+		</if>
+		<if test="tjmc!=null and tjmc!=''">
+			tjmc=#{tjmc},
+		</if>
+		<if test="jcxmpp!=null and jcxmpp!=''">
+			jcxmpp=#{jcxmpp},
+		</if>
+		<if test="tjmc==null or tjmc==''">
+			tjmc=null,
+		</if>
+		<if test="dwdj !=null and dwdj!=''">
+			dwdj=#{dwdj},
+		</if>
+		<if test="dwlb !=null and dwlb!=''">
+			dwlb=#{dwlb},
+		</if>
+		<if test="sf !=null and sf!=''">
+			sf=#{sf},
+		</if>
+		<if test="cs !=null and cs!=''">
+			cs=#{cs},
+		</if>
+		<if test="cskz1 !=null and cskz1!=''">
+			cskz1=#{cskz1},
+		</if>
+		<if test="cskz2 !=null and cskz2!=''">
+			cskz2=#{cskz2},
+		</if>
+		<if test="cskz3 !=null and cskz3!=''">
+			cskz3=#{cskz3},
+		</if>
+		<if test="cskz4 !=null and cskz4!=''">
+			cskz4=#{cskz4},
+		</if>
+		<if test="shxydm !=null and shxydm != ''">
+			shxydm=#{shxydm},
+		</if>
+		<if test="lxr !=null and lxr != ''">
+			lxr=#{lxr},
+		</if>
+		<if test="lxdh !=null and lxdh != ''">
+			lxdh=#{lxdh},
+		</if>
+		<if test="virtualhost !=null and virtualhost != ''">
+			virtualhost=#{virtualhost},
+		</if>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<where>
+			dwid=#{dwid}
+		</where>
+	</update>
+	<!-- 根据医院名称去重 -->
+	<select id="queryByDwmc" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,yyxx.dwdj,yyxx.dwlb,yyxx.sf,yyxx.cs,yyxx.jcxmpp,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.lrry,yyxx.lrsj,yyxx.xgry,yyxx.scry,yyxx.scsj,yyxx.scbj
+		from igams_yyxx yyxx
+		<where>		
+			yyxx.scbj !='1'
+			<if test="dwmc != null and dwmc != ''">
+				and yyxx.dwmc=#{dwmc}
+			</if>
+			<if test="dwid != null and dwid != ''">
+				and yyxx.dwid!=#{dwid}
+			</if>
+		</where>		
+	</select>
+	
+	<!-- 查询其它医院 -->
+	<select id="selectOther" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,yyxx.dwdj,yyxx.dwlb,yyxx.sf,yyxx.cs,yyxx.jcxmpp,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.lrry,yyxx.lrsj,yyxx.xgry,yyxx.scry,yyxx.scsj,yyxx.scbj
+		from igams_yyxx yyxx
+		<where>		
+			yyxx.scbj !='1' and yyxx.dwmc='第三方'
+		</where>		
+	</select>
+	<!-- 根据医院LISid查询医院信息-->
+	<select id="selectYyxxByLisId" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,yyxx.dwdj,yyxx.dwlb,yyxx.sf,yyxx.cs,yyxx.jcxmpp,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.lrry,yyxx.lrsj,yyxx.xgry,yyxx.scry,yyxx.scsj,yyxx.scbj
+		from igams_yyxx yyxx
+		<where>
+			yyxx.scbj !='1' and cskz3 ilike '%'||#{cskz3}||'%'
+		</where>
+	</select>
+	
+	<!-- 删除医院信息 -->
+	<update id="delete" parameterType="YyxxDto">
+		update igams_yyxx
+		<set>
+			scbj='1',
+			scry=#{scry},
+			scsj=LOCALTIMESTAMP			
+		</set>
+		<where>
+			dwid in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<select id="getYyxxBySjid" parameterType="String" resultType="YyxxDto">
+		SELECT sjxx.sjid,yyxx.virtualhost
+		FROM igams_sjxx sjxx
+		left join igams_yyxx yyxx on sjxx.sjdw = yyxx.dwid and yyxx.scbj ='0'
+		where sjxx.scbj='0' and sjxx.sjid = #{sjid}
+	</select>
+	<select id="queryAllByMc" parameterType="YyxxDto" resultType="YyxxDto">
+		select yyxx.dwid,yyxx.dwmc,yyxx.dwjc,yyxx.dwqtmc,case when yyxx.tjmc is not null then yyxx.tjmc else yyxx.dwmc end tjmc,yyxx.dwdj,yyxx.dwlb,yyxx.sf,yyxx.cs,yyxx.jcxmpp,
+		yyxx.cskz1,yyxx.cskz2,yyxx.cskz3,yyxx.cskz4,yyxx.lrry,yyxx.lrsj,yyxx.xgry,yyxx.scry,yyxx.scsj,yyxx.scbj
+		from igams_yyxx yyxx
+		<where>
+			(EXISTS (
+			SELECT 1
+			FROM unnest(string_to_array(replace(yyxx.dwqtmc, '，', ','), ',')) AS split_value
+			WHERE trim(split_value) = #{dwmc}
+			)
+			or yyxx.dwmc=#{dwmc} or yyxx.dwjc=#{dwmc})
+			and yyxx.scbj !='1'
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISjycDao" >
+
+	<sql id="SEARCH_TERMS">
+		yc.scbj!='1'
+		<if test="ryid != null and ryid != ''">
+			and (yc.twr = #{ryid}
+			or yc.qrr = #{ryid}
+			or yc.qrr in (select jsid from matridx_yhjs where yhid=#{ryid})
+			or yc.ycid in (select ycid from igams_sjyctz where (ryid=#{ryid} or ryid in (select jsid from matridx_yhjs where yhid=#{ryid})))
+			or yc.lrry = #{ryid}
+			<if test="userids != null and userids.size()>0">
+				or yc.lrry in
+				<foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="sjhbs != null and sjhbs.size()>0">
+				or sj.db in
+				<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+		</if>
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and yc.jcdw in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcdwxz !=null and jcdwxz.size()>0">
+			and yc.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="ycbt != null and ycbt != ''">
+			and yc.ycbt ilike '%'||#{ycbt}||'%'
+		</if>
+		<if test="twrmc != null and twrmc != ''">
+			and yc.twrmc ilike '%'||#{twrmc}||'%'
+		</if>
+		<if test="qrrmc != null and qrrmc != ''">
+			and qryh.zsxm ilike '%'||#{qrrmc}||'%'
+		</if>
+		<if test="ycxx != null and ycxx != ''">
+			and yc.ycxx ilike '%'||#{ycxx}||'%'
+		</if>
+		<if test="ybbh != null and ybbh != ''">
+			and sj.ybbh ilike '%'||#{ybbh}||'%'
+		</if>
+		<if test="yblxmc != null and yblxmc != ''">
+			and jc.csmc ilike '%'||#{yblxmc}||'%'
+		</if>
+		<if test="hzxm != null and hzxm != ''">
+			and sj.hzxm ilike '%'||#{hzxm}||'%'
+		</if>
+		<if test = "sfjss != null and sfjss.length > 0 "  >
+			and yc.sfjs in
+			<foreach collection="sfjss" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="cjsjstart != null and cjsjstart != ''">
+			and to_char(yc.lrsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+		</if>
+		<if test="cjsjend != null and cjsjend != ''">
+			and to_char(yc.lrsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+		</if>
+		<if test="zhhfsjstart != null and zhhfsjstart != ''">
+			and to_char(yc.zhhfsj,'yyyy-mm-dd') &gt;= #{zhhfsjstart}
+		</if>
+		<if test="zhhfsjend != null and zhhfsjend != ''">
+			and to_char(yc.zhhfsj,'yyyy-mm-dd') &lt;= #{zhhfsjend}
+		</if>
+		<if test = "ycqfs != null and ycqfs.length > 0 "  >
+			and yc.ycqf in
+			<foreach collection="ycqfs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "yclxs != null and yclxs.length > 0 "  >
+			and jc_lx.csid in
+			<foreach collection="yclxs" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+
+	<insert id="insert" parameterType="SjycDto">
+		insert into igams_sjyc(ycid
+		<if test="ycbt !=null and ycbt != ''">
+			,ycbt
+		</if>
+		<if test="ywid !=null and ywid != ''">
+			,ywid
+		</if>
+		<if test="lx !=null and lx != ''">
+			,lx
+		</if>
+		<if test="zlx !=null and zlx != ''">
+			,zlx
+		</if>
+		<if test="twr !=null and twr != ''">
+			,twr
+		</if>
+		<if test="twrmc !=null and twrmc != ''">
+			,twrmc
+		</if>
+		<if test="qrlx !=null and qrlx != ''">
+			,qrlx
+		</if>
+		<if test="qrr !=null and qrr != ''">
+			,qrr
+		</if>
+		<if test="ycxx !=null and ycxx != ''">
+			,ycxx
+		</if>
+		<if test="ycqf !=null and ycqf != ''">
+			,ycqf
+		</if>
+		<if test="yczqf !=null and yczqf != ''">
+			,yczqf
+		</if>
+		<if test="jcdw !=null and jcdw != ''">
+			,jcdw
+		</if>
+		<if test="twrlx !=null and twrlx != ''">
+			,twrlx
+		</if>
+		<if test="rq !=null and rq != ''">
+			,rq
+		</if>
+		,khmc,sfjs,lrry,lrsj,scbj
+		)values(#{ycid}
+		<if test="ycbt !=null and ycbt != ''">
+			,#{ycbt}
+		</if>
+		<if test="ywid !=null and ywid != ''">
+			,#{ywid}
+		</if>
+		<if test="lx !=null and lx != ''">
+			,#{lx}
+		</if>
+		<if test="zlx !=null and zlx != ''">
+			,#{zlx}
+		</if>
+		<if test="twr !=null and twr != ''">
+			,#{twr}
+		</if>
+		<if test="twrmc !=null and twrmc != ''">
+			,#{twrmc}
+		</if>
+		<if test="qrlx !=null and qrlx != ''">
+			,#{qrlx}
+		</if>
+		<if test="qrr !=null and qrr != ''">
+			,#{qrr}
+		</if>
+		<if test="ycxx !=null and ycxx != ''">
+			,#{ycxx}
+		</if>
+		<if test="ycqf !=null and ycqf != ''">
+			,#{ycqf}
+		</if>
+		<if test="yczqf !=null and yczqf != ''">
+			,#{yczqf}
+		</if>
+		<if test="jcdw !=null and jcdw != ''">
+			,#{jcdw}
+		</if>
+		<if test="twrlx !=null and twrlx != ''">
+			,#{twrlx}
+		</if>
+		<if test="rq !=null and rq != ''">
+			,cast(#{rq} as date)
+		</if>
+		,#{khmc},'0',#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+
+	<update id="update" parameterType="SjycDto">
+		update igams_sjyc
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="ywid != null and ywid != ''">
+				,ywid=#{ywid}
+			</if>
+			<if test="ywid == null or ywid == ''">
+				,ywid=null
+			</if>
+			<if test="lx != null and lx != ''">
+				,lx=#{lx}
+			</if>
+			<if test="zlx != null and zlx != ''">
+				,zlx=#{zlx}
+			</if>
+			<if test="ycbt != null and ycbt != ''">
+				,ycbt=#{ycbt}
+			</if>
+			<if test="ycxx != null and ycxx != ''">
+				,ycxx=#{ycxx}
+			</if>
+			<if test="twr != null and twr != ''">
+				,twr=#{twr}
+			</if>
+			<if test="twr == null or twr == ''">
+				,twr=null
+			</if>
+			<if test="twrmc != null and twrmc != ''">
+				,twrmc=#{twrmc}
+			</if>
+			<if test="twrmc == null or twrmc == ''">
+				,twrmc=null
+			</if>
+			<if test="qrlx != null and qrlx != ''">
+				,qrlx=#{qrlx}
+			</if>
+			<if test="qrr != null and qrr != ''">
+				,qrr=#{qrr}
+			</if>
+			<if test="sfjs != null and sfjs != ''">
+				,sfjs=#{sfjs}
+			</if>
+			<if test="zhhfnr != null and zhhfnr != ''">
+				,zhhfnr=#{zhhfnr}
+			</if>
+			<if test="ycqf != null and ycqf != ''">
+				,ycqf=#{ycqf}
+			</if>
+			<if test="yczqf != null and yczqf != ''">
+				,yczqf=#{yczqf}
+			</if>
+			<if test="zhhfsj != null and zhhfsj != ''">
+				,zhhfsj= cast(#{zhhfsj} as timestamp)
+			</if>
+			<if test="zfjl != null and zfjl != ''">
+				,zfjl=concat(zfjl,#{zfjl})
+			</if>
+			<if test="jcdw != null and jcdw != ''">
+				,jcdw=#{jcdw}
+			</if>
+			<if test="twrlx != null and twrlx != ''">
+				,twrlx=#{twrlx}
+			</if>
+			,khmc=#{khmc}
+		</set>
+		<where>
+			scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and ycid=#{ycid}
+			</if>
+		</where>
+	</update>
+
+	<update id="delete" parameterType="SjycDto">
+		update igams_sjyc set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			ycid in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!-- 异常清单 -->
+	<select id="getPagedDtoList" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid as sjid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD hh24:mi:ss') lrsj,yc.xgry,yc.ycbt,
+		       case when sj.sjid is not null then sj.db else fxsj_sj.db end db
+		       ,to_char(yc.jssj,'YYYY-MM-DD hh24:mi:ss') jssj,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,
+		case when sj.sjid is not null then jc.csmc else yblx.csmc end yblxmc
+		,yc.twrmc,yc.ycqf,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		case yc.twrlx when 'WECHAT' then jswxyh.wxm  else jsxtyh.zsxm end jsrmc,
+		case when sj.sjid is not null then sj.hzxm else fxsj_sj.hzxm end hzxm,
+		case when sj.sjid is not null then sj.ybbh else fxsj_sj.ybbh end ybbh,
+		jc_lx.csmc lxmc,zlx.csmc zlxmc,case when yc.sfjs='0' then '否' when yc.sfjs='1' then
+		 '是' end sfjsmc,yc.zhhfsj,yc.zhhfnr,case when yc.zhhfsj is not null then yc.zhhfsj else yc.lrsj end pxsj,jc_jcdw.csmc jcdwmc,ycqf.csmc as ycqfmc,ycqf.csdm as ycqfdm,
+		case when yczqf.csdm='XS' then wl_xs.wlmc when yczqf.csdm='JY' then wl_jy.wlmc when yczqf.csdm='LL' then wl_ll.wlmc else '' end wlmc,yczqf.csmc as yczqfmc,yczqf.csdm as yczqfdm
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid and sj.scbj='0'
+		left join igams_fxsjgl fxsjgl on fxsjgl.fxsjid=yc.ywid
+		left join igams_sjxx fxsj_sj on fxsj_sj.sjid=fxsjgl.ywid and fxsj_sj.scbj='0'
+		left join matridx_jcsj jc_jcdw on jc_jcdw.csid=yc.jcdw
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_jcsj yblx on yblx.csid=fxsj_sj.yblx
+		left join matridx_wxyh wxyh on wxyh.wxid=yc.twr and wxyh.scbj != '1'
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_wxyh jswxyh on jswxyh.wxid=yc.jsry and jswxyh.scbj != '1'
+		left join matridx_xtyh jsxtyh on jsxtyh.yhid=yc.jsry
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj jc_lx on jc_lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_jcsj ycqf on ycqf.csid=yc.ycqf
+		left join matridx_jcsj yczqf on yczqf.csid=yc.yczqf
+		left join igams_fhmx fhmx on fhmx.fhmxid=yc.ywid and fhmx.scbj='0'
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid and fhgl.scbj!='1'
+		left join igams_hwxx hw_xs on hw_xs.hwid=fhmx.hwid and hw_xs.scbj!='1'
+		left join igams_wlgl wl_xs on wl_xs.wlid=hw_xs.wlid and wl_xs.scbj!='1'
+		left join igams_jcjymx jcjymx on jcjymx.jymxid=yc.ywid and jcjymx.scbj='0'
+		left join igams_hwxx hwxx on hwxx.hwid = jcjymx.hwid and hwxx.scbj='0'
+		left join igams_wlgl wl_jy on hwxx.wlid = wl_jy.wlid and wl_jy.scbj='0'
+		left join igams_ckmx ckmx on ckmx.ckmxid=yc.ywid and ckmx.scbj='0'
+		left join igams_ckgl ckgl on ckgl.ckid = ckmx.ckid and ckgl.scbj='0'
+		left join igams_hwxx hw_ll on hw_ll.hwid=ckmx.hwid and hw_ll.scbj='0'
+		left join igams_wlgl wl_ll on wl_ll.wlid =hw_ll.wlid and wl_ll.scbj!='1'
+		<where>
+			yc.scbj!='1'
+			<if test="ryid != null and ryid != ''">
+				and (yc.twr = #{ryid}
+				or yc.qrr = #{ryid}
+				or yc.qrr in (select jsid from matridx_yhjs where yhid=#{ryid})
+				or yc.ycid in (select ycid from igams_sjyctz where (ryid=#{ryid} or ryid in (select jsid from matridx_yhjs where yhid=#{ryid})))
+				or yc.lrry = #{ryid}
+				<if test="userids != null and userids.size()>0">
+					or yc.lrry in
+					<foreach collection="userids" open="(" close=")" index="index" item="item" separator=",">
+						#{item}
+					</foreach>
+				</if>
+				<if test="sjhbs != null and sjhbs.size()>0">
+					or sj.db in
+					<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+						#{item}
+					</foreach>
+				</if>
+				)
+			</if>
+			<if test = "jcdws != null and jcdws.length > 0 "  >
+				and yc.jcdw in
+				<foreach collection="jcdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jcdwxz !=null and jcdwxz.size()>0">
+				and yc.jcdw in
+				<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ycbt != null and ycbt != ''">
+				and yc.ycbt ilike '%'||#{ycbt}||'%'
+			</if>
+			<if test="twrmc != null and twrmc != ''">
+				and yc.twrmc ilike '%'||#{twrmc}||'%'
+			</if>
+			<if test="qrrmc != null and qrrmc != ''">
+				and qryh.zsxm ilike '%'||#{qrrmc}||'%'
+			</if>
+			<if test="ycxx != null and ycxx != ''">
+				and yc.ycxx ilike '%'||#{ycxx}||'%'
+			</if>
+			<if test="ybbh != null and ybbh != ''">
+				and (sj.ybbh ilike '%'||#{ybbh}||'%' or fxsj_sj.ybbh ilike '%'||#{ybbh}||'%')
+			</if>
+			<if test="yblxmc != null and yblxmc != ''">
+				and (jc.csmc ilike '%'||#{yblxmc}||'%' or yblx.csmc ilike '%'||#{yblxmc}||'%')
+			</if>
+			<if test="hzxm != null and hzxm != ''">
+				and (sj.hzxm ilike '%'||#{hzxm}||'%' or fxsj_sj.hzxm ilike '%'||#{hzxm}||'%')
+			</if>
+			<if test="sjsfjs != null and sjsfjs != '' and sjsfjs=='1'.toString()">
+				and (sj.sfjs ='1' or fxsj_sj.sfjs ='1')
+			</if>
+			<if test = "sfjss != null and sfjss.length > 0 "  >
+				and yc.sfjs in
+				<foreach collection="sfjss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cjsjstart != null and cjsjstart != ''">
+				and to_char(yc.lrsj,'yyyy-mm-dd') &gt;= #{cjsjstart}
+			</if>
+			<if test="cjsjend != null and cjsjend != ''">
+				and to_char(yc.lrsj,'yyyy-mm-dd') &lt;= #{cjsjend}
+			</if>
+			<if test="zhhfsjstart != null and zhhfsjstart != ''">
+				and to_char(yc.zhhfsj,'yyyy-mm-dd') &gt;= #{zhhfsjstart}
+			</if>
+			<if test="zhhfsjend != null and zhhfsjend != ''">
+				and to_char(yc.zhhfsj,'yyyy-mm-dd') &lt;= #{zhhfsjend}
+			</if>
+			<if test = "ycqfs != null and ycqfs.length > 0 "  >
+				and yc.ycqf in
+				<foreach collection="ycqfs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "yclxs != null and yclxs.length > 0 "  >
+				and jc_lx.csid in
+				<foreach collection="yclxs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid,yc.ywid as sjid,yc.lx,yc.zlx,yc.twr,yc.ycxx,lx.csmc as lxmc,yc.ycbt
+		from igams_sjyc yc
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		<where>
+			yc.scbj!='1'
+			<if test="ids !=null and ids.size >0" >
+				and yc.ycid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ywid != null and ywid != ''">
+				and ywid=#{ywid}
+			</if>
+		</where>
+	</select>
+	<select id="getDto" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,
+		case when sj.sjid is not null then sj.db else fxsj_sj.db end db
+		       ,to_char(yc.jssj,'YYYY-MM-DD hh24:mi:ss') jssj,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,case when sj.sjid is not null then jc.csmc else yblx.csmc end yblxmc,yc.twrlx,
+		yc.twrmc,
+		xtyh.ddtxlj twrtxlj,
+		case when sj.sjid is not null then sj.sjid else fxsj_sj.sjid end sjid,
+		case when sj.sjid is not null then sj.hzxm else fxsj_sj.hzxm end hzxm,
+		case when sj.sjid is not null then sj.ybbh else fxsj_sj.ybbh end ybbh,
+		case when sj.sjid is not null then sj.nbbm else fxsj_sj.nbbm end nbbm,
+		case when sj.sjid is not null then sj.nl else fxsj_sj.nl end nl,
+		jcdw.csmc jcdwmc,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		case yc.twrlx when 'WECHART' then '微信' when 'WEB' then 'OA' else yc.twrlx end twrlxmc,
+		case yc.twrlx when 'WECHAT' then jswxyh.wxm  else jsxtyh.zsxm end jsrmc,
+		lx.csmc lxmc,zlx.csmc zlxmc,to_char(yc.zfsj,'YYYY-MM-DD hh24:mi:ss') zfsj,yc.zfjl,to_char(yc.zhhfsj,'YYYY-MM-DD hh24:mi:ss') zhhfsj,yc.zhhfnr,yc.ycqf,ycqf.csdm as ycqfdm,ycqf.csmc as ycqfmc,yc.yczqf,
+		case when yczqf.csdm='XS' then wl_xs.wlmc when yczqf.csdm='JY' then wl_jy.wlmc when yczqf.csdm='LL' then wl_ll.wlmc else '' end wlmc,yczqf.csmc as yczqfmc,yczqf.csdm as yczqfdm,
+		case when yczqf.csdm='XS' then wl_xs.wlbm when yczqf.csdm='JY' then wl_jy.wlbm when yczqf.csdm='LL' then wl_ll.wlbm else '' end wlbm,
+		case when yczqf.csdm='XS' then wl_xs.gg when yczqf.csdm='JY' then wl_jy.gg when yczqf.csdm='LL' then wl_ll.gg else '' end gg,
+		case when yczqf.csdm='XS' then fhmx.fhsl when yczqf.csdm='JY' then jcjymx.jysl when yczqf.csdm='LL' then ckmx.cksl else null end sl,
+		case when yczqf.csdm='XS' then hw_xs.scph when yczqf.csdm='JY' then hw_jy.scph when yczqf.csdm='LL' then hw_ll.scph else '' end scph,
+		case when yczqf.csdm='XS' then fhgl.djrq when yczqf.csdm='JY' then jcjygl.jyrq when yczqf.csdm='LL' then ckgl.ckrq else null end shrq,
+		case when (yc.khmc is not null and yc.khmc !='') then yc.khmc  when yczqf.csdm='XS' then kh_xs.khmc when yczqf.csdm='JY' then kh_jy.khmc when yczqf.csdm='LL' then kh_ll.khmc else ''  end khmc,
+		yc.jcdw,yc.pjxj,yc.pjnr,yc.sfpj
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join igams_fxsjgl fxsjgl on fxsjgl.fxsjid=yc.ywid
+		left join igams_sjxx fxsj_sj on fxsj_sj.sjid=fxsjgl.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_jcsj yblx on yblx.csid=fxsj_sj.yblx
+		left join matridx_jcsj jcdw on jcdw.csid = yc.jcdw
+		left join matridx_wxyh wxyh on wxyh.wxid=yc.twr and wxyh.scbj = '0'
+		left join matridx_xtyh xtyh on xtyh.yhid=yc.twr
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_wxyh jswxyh on jswxyh.wxid=yc.jsry and jswxyh.scbj != '1'
+		left join matridx_xtyh jsxtyh on jsxtyh.yhid=yc.jsry
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_jcsj ycqf on ycqf.csid=yc.ycqf
+		left join matridx_wbcx wbcx on wbcx.wbcxid=wxyh.gzpt
+		left join matridx_jcsj yczqf on yczqf.csid=yc.yczqf
+		left join igams_fhmx fhmx on fhmx.fhmxid=yc.ywid and fhmx.scbj='0'
+		left join igams_fhgl fhgl on fhgl.fhid=fhmx.fhid and fhgl.scbj!='1'
+		left join igams_hwxx hw_xs on hw_xs.hwid=fhmx.hwid and hw_xs.scbj!='1'
+		left join igams_wlgl wl_xs on wl_xs.wlid=hw_xs.wlid and wl_xs.scbj!='1'
+		left join igams_xsmx xsmx on fhmx.xsmxid = xsmx.xsmxid and xsmx.scbj != '1'
+		left join igams_xsgl xsgl on xsgl.xsid = xsmx.xsid and xsgl.scbj != '1'
+		left join igams_khgl kh_xs on kh_xs.khid=xsgl.khjc and kh_xs.scbj='0'
+		left join igams_jcjymx jcjymx on jcjymx.jymxid=yc.ywid and jcjymx.scbj='0'
+		left join igams_jcjygl jcjygl on jcjygl.jcjyid=jcjymx.jcjyid and jcjygl.scbj='0'
+		left join igams_khgl kh_jy on kh_jy.khid=jcjygl.dwid and kh_jy.scbj='0'
+		left join igams_hwxx hw_jy on hw_jy.hwid = jcjymx.hwid and hw_jy.scbj='0'
+		left join igams_wlgl wl_jy on hw_jy.wlid = wl_jy.wlid and wl_jy.scbj='0'
+		left join igams_ckmx ckmx on ckmx.ckmxid=yc.ywid and ckmx.scbj='0'
+		left join igams_ckgl ckgl on ckgl.ckid = ckmx.ckid and ckgl.scbj='0'
+		left join igams_hwxx hw_ll on hw_ll.hwid=ckmx.hwid and hw_ll.scbj='0'
+		left join igams_wlgl wl_ll on wl_ll.wlid =hw_ll.wlid and wl_ll.scbj!='1'
+		left join igams_llgl llgl on llgl.llid = ckgl.llid and llgl.scbj='0'
+		left join igams_khgl kh_ll on kh_ll.khid = llgl.khid and kh_ll.scbj='0'
+		<where>
+			yc.scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+			<if test="gzpt != null and gzpt != ''">
+				and wbcx.wbcxdm=#{gzpt}
+			</if>
+		</where>
+	</select>
+	<select id="getDtoById" parameterType="String" resultType="SjycDto">
+		select yc.ycid,yc.ywid as sjid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,yc.twrmc,sj.hzxm hzxm,sj.ybbh ybbh,yc.ycqf,ycqf.csdm as ycqfdm,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		lx.csmc lxmc,zlx.csmc zlxmc,xtyh.ddtxlj twrtxlj,to_char(yc.zfsj,'YYYY-MM-DD hh24:mi:ss') zfsj,yc.zfjl,yc.twrlx
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh xtyh on xtyh.yhid=yc.twr
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_jcsj ycqf on ycqf.csid=yc.ycqf
+		<where>
+			yc.scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoWithFijd" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid as sjid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,yc.twrmc,sj.hzxm hzxm,sj.ybbh ybbh,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		lx.csmc lxmc,zlx.csmc zlxmc,xtyh.ddtxlj twrtxlj
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh xtyh on xtyh.yhid=yc.twr
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		<where>
+			yc.scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据确认人获取钉钉id -->
+	<select id="getDdidByYhids" parameterType="List" resultType="SjycDto">
+		select xtyh.ddid,xtyh.zsxm,xtyh.yhid,xtyh.yhm,xtyh.yhid as ryid
+		from matridx_xtyh xtyh
+		<where>
+			xtyh.scbj!='1' and
+			xtyh.yhid in
+			<foreach collection="list" separator="," item="item" index="index" open="(" close=")">
+				#{item.ryid}
+			</foreach>
+		</where>
+	</select>
+
+	<!-- 根据确认人获取钉钉id -->
+	<select id="getDdidByQrr" parameterType="SjycDto" resultType="SjycDto">
+		select xtyh.ddid,xtyh.zsxm,xtyh.yhid,xtyh.yhm,xtyh.yhid as ryid
+		from matridx_xtyh xtyh
+		<where>
+			xtyh.scbj!='1' and
+			xtyh.yhid=#{qrr}
+		</where>
+	</select>
+	<!-- 根据确认角色获取钉钉id -->
+	<select id="getDdidByQrjs" parameterType="SjycDto" resultType="SjycDto">
+	select xtyh.ddid,xtyh.zsxm,xtyh.yhid,xtyh.yhm,xtyh.yhid as ryid
+	from matridx_xtyh xtyh
+	left join matridx_yhjs yhjs on yhjs.yhid = xtyh.yhid
+	<where>
+		xtyh.scbj!='1'
+		and yhjs.jsid = #{qrr}
+	</where>
+</select>
+
+	<!-- 根据送检ID获取异常信息 -->
+	<select id="getDtoBySjid" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid as sjid,yc.ywid,yc.lx,yc.zlx,yclx.csmc lxmc,yczlx.csmc zlxmc,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,yc.twrmc,sj.hzxm hzxm,sj.ybbh ybbh,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		jcdw.csmc jcdwmc,sj.jcxmmc,
+		case when yczd.zdry !=null or yczd.zdry !='' then '1' else '0' end sfzd,yczd.zdsj,count(DISTINCT fj.fjid) fjs,yc.zhhfsj,yc.zhhfnr,yc.zfjl
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj yclx on yclx.csid=yc.lx
+		left join matridx_jcsj yczlx on yczlx.csid=yc.zlx
+		left join matridx_jcsj jcdw on jcdw.csid = yc.jcdw
+		left join igams_sjyczd yczd on yczd.ycid = yc.ycid and zdry = #{yhid}
+		left join igams_sjyctz sjyctz on sjyctz.ycid = yc.ycid
+		left join matridx_fjcfb fj on fj.ywid = yc.ycid
+		<where>
+			yc.scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+			<if test="sjid != null and sjid != ''">
+				and yc.ywid=#{sjid}
+			</if>
+			<if test="sjids != null and sjids.size()">
+				and yc.ywid in
+				<foreach collection="sjids" index="index" item="item" close=")" open="(" separator=",">
+					#{item}
+				</foreach>
+			</if>
+<!--			<if test="sjid == null || sjid == ''">-->
+<!--				and (yc.lrry = #{yhid}-->
+<!--				or yc.qrr = #{yhid}-->
+<!--				or sjyctz.ryid = #{yhid}-->
+<!--				<if test="yhjss != null and yhjss .size()">-->
+<!--					or yc.qrr in-->
+<!--					<foreach collection="yhjss" index="index" item="item" close=")" open="(" separator=",">-->
+<!--						#{item}-->
+<!--					</foreach>-->
+<!--					or sjyctz.ryid in-->
+<!--					<foreach collection="yhjss" index="index" item="item" close=")" open="(" separator=",">-->
+<!--						#{item}-->
+<!--					</foreach>-->
+<!--				</if>-->
+<!--				)-->
+<!--			</if>-->
+			<if test="entire != null and entire != ''">
+				and (yc.ycbt like '%'||#{entire}||'%'
+				or jcdw.csmc like '%'||#{entire}||'%')
+			</if>
+		</where>
+		GROUP BY yc.ycid,lxmc,zlxmc,db,jc.csmc,yc.twrmc,hzxm,ybbh,qryh.zsxm,xtjs.jsmc,jcdwmc,yczd.zdry,yczd.zdsj,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,
+		yc.lrsj,yc.xgry,yc.ycbt,yc.xgsj,yc.scry,yc.scsj,yc.scbj,sj.jcxmmc,yc.zhhfsj,yc.zhhfnr,yc.zfjl
+		order by sfzd desc,yc.lrsj desc
+		<if test="count != null and count != ''">
+			limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+		</if>
+	</select>
+
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.scbj ${sqlParam} from (
+		<foreach item="item" index="index" collection="ids" separator=" union all ">
+			select #{item,jdbcType=VARCHAR} ycid,#{index} ordernum
+		</foreach>
+		) tmp
+		left outer join igams_sjyc yc on tmp.ycid = yc.ycid
+		<include refid="EXPORT_JOINS"></include>
+		order by tmp.ordernum
+	</select>
+
+	<select id="getCountForSearchExp"  parameterType="SjycDto" resultType="int">
+		select count(yc.ycid) from igams_sjyc yc
+		left join matridx_jcsj jc_lx on jc_lx.csid=yc.lx
+		<if test = "(jcdws != null and jcdws.length > 0 ) or (ybbh != null and ybbh != '') or (hzxm != null and hzxm != '') or (sjhbs != null and sjhbs.size()>0) "  >
+		left join igams_sjxx sj on sj.sjid = yc.ywid
+		</if>
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+	<select id="getListForSearchExp" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid ${sqlParam} from (
+		select yc.ycid
+		from igams_sjyc yc
+		left join matridx_jcsj jc_lx on jc_lx.csid=yc.lx
+		<if test = "(jcdws != null and jcdws.length > 0 ) or (ybbh != null and ybbh != '') or (hzxm != null and hzxm != '') or (sjhbs != null and sjhbs.size()>0) "  >
+		left join igams_sjxx sj on sj.sjid = yc.ywid
+		</if>
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+		) t_yc
+		left outer join igams_sjyc yc on t_yc.ycid = yc.ycid
+		<include refid="EXPORT_JOINS"></include>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select>
+
+	<sql id="EXPORT_JOINS">
+		left join matridx_jcsj jc_qf on jc_qf.csid=yc.ycqf
+		left join matridx_jcsj jc_lx on jc_lx.csid=yc.lx
+		left join matridx_jcsj jc_zlx on jc_zlx.csid=yc.zlx
+		left join matridx_xtyh xtyh_lrry on xtyh_lrry.yhid=yc.lrry
+		left join matridx_xtyh xtyh_twr on xtyh_twr.yhid=yc.twr
+		left join matridx_xtyh xtyh_qrr on xtyh_qrr.yhid=yc.qrr
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join igams_sjxx sjxx on sjxx.sjid=yc.ywid
+		left join matridx_jcsj jc_yb on jc_yb.csid=sjxx.yblx
+		left join matridx_jcsj jc_dw on jc_dw.csid=sjxx.jcdw
+		left join matridx_wxyh jswxyh on jswxyh.wxid=yc.jsry and jswxyh.scbj != '1'
+		left join matridx_xtyh jsxtyh on jsxtyh.yhid=yc.jsry
+	</sql>
+
+	<!-- 更新异常结束标记 -->
+	<update id="updateDto" parameterType="SjycDto">
+		update igams_sjyc set xgsj=LOCALTIMESTAMP
+		<if test="xgry != null and  xgry != ''">
+			,xgry=#{xgry}
+		</if>
+		<if test="sfjs != null and  sfjs != ''">
+			,sfjs=#{sfjs}
+		</if>
+		<if test="ywid != null and ywid != ''">
+			,ywid=#{ywid}
+		</if>
+		<if test="lx != null and lx != ''">
+			,lx=#{lx}
+		</if>
+		<if test="zlx != null and zlx != ''">
+			,zlx=#{zlx}
+		</if>
+		<if test="ycbt != null and ycbt != ''">
+			,ycbt=#{ycbt}
+		</if>
+		<if test="ycxx != null and ycxx != ''">
+			,ycxx=#{ycxx}
+		</if>
+		<if test="twr != null and twr != ''">
+			,twr=#{twr}
+		</if>
+		<if test="twrmc != null and twrmc != ''">
+			,twrmc=#{twrmc}
+		</if>
+		<if test="qrlx != null and qrlx != ''">
+			,qrlx=#{qrlx}
+		</if>
+		<if test="qrr != null and qrr != ''">
+			,qrr=#{qrr}
+		</if>
+		<if test="sfjs != null and sfjs != ''">
+			,sfjs=#{sfjs}
+		</if>
+		<if test="zhhfnr != null and zhhfnr != ''">
+			,zhhfnr=#{zhhfnr}
+		</if>
+		<if test="ycqf != null and ycqf != ''">
+			,ycqf=#{ycqf}
+		</if>
+		<if test="yczqf != null and yczqf != ''">
+			,yczqf=#{yczqf}
+		</if>
+		<if test="zhhfsj != null and zhhfsj != ''">
+			,zhhfsj= cast(#{zhhfsj} as timestamp)
+		</if>
+		<if test="zfjl != null and zfjl != ''">
+			,zfjl=concat(zfjl,#{zfjl})
+		</if>
+		<where>
+			ycid=#{ycid}
+		</where>
+	</update>
+
+	<!-- 根据通知人员获取钉钉id(排除确认人(确认类型为人员：yhid或者确认类型为角色：jsid)) -->
+	<select id="getDdidByTzrys" parameterType="SjycDto" resultType="SjycDto">
+		select xtyh.ddid,xtyh.yhid,xtyh.zsxm,xtyh.yhm,xtyh.yhid ryid
+		from matridx_xtyh xtyh
+		<if test="qrlx == 'ROLE_TYPE'">
+			left join matridx_yhjs yhjs on yhjs.yhid = xtyh.yhid
+		</if>
+		<where>
+			xtyh.scbj!='1'
+			and xtyh.yhid in
+			<foreach collection="tzrys" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+			<if test="qrr != null and qrr != ''">
+				<if test="qrlx == 'USER_TYPE' || qrlx == null">
+					and xtyh.yhid!=#{qrr}
+				</if>
+				<if test="qrlx == 'ROLE_TYPE'">
+					and yhjs.jsid!=#{qrr}
+				</if>
+			</if>
+		</where>
+	</select>
+
+	<!-- 结束异常任务 -->
+	<update id="finishYc" parameterType="SjycDto">
+		update igams_sjyc set jsry=#{jsry},jssj=LOCALTIMESTAMP,sfjs='1'
+		<where>
+			ycid in
+			<foreach collection="ids" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<!-- 通知类型为角色时，查询该角色下的所有用户 -->
+	<select id="getDdidByTzjgs" parameterType="SjycDto" resultType="SjycDto">
+		select yh.yhid,yh.zsxm,yh.ddid,yh.yhm,yh.yhid ryid
+		from matridx_xtyh yh
+		left join matridx_yhjs yhjs on yhjs.yhid=yh.yhid
+		<where>
+			yh.scbj!='1' and
+			yhjs.jsid in
+			<foreach collection="tzrys" separator="," open="(" close=")" item="item">
+				#{item}
+			</foreach>
+			<if test="qrlx == 'USER_TYPE' || qrlx == null">
+				and yh.yhid!=#{qrr}
+			</if>
+			<if test="qrlx == 'ROLE_TYPE'">
+				and yhjs.jsid!=#{qrr}
+			</if>
+		</where>
+	</select>
+
+	<!-- 异常清单 （小程序）-->
+	<select id="getMiniDtoList" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid as sjid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,yc.twrmc,qryh.zsxm qrrmc,sj.hzxm hzxm,sj.ybbh ybbh,
+		lx.csmc lxmc,zlx.csmc zlxmc,case when yc.sfjs='0' then '否' when yc.sfjs='1' then
+		'是' end sfjsmc,case when yczd.zdry!=null or yczd.zdry!='' then '1' else '0' end sfzd,yczd.zdsj,to_char(yc.zhhfsj,'YYYY-MM-DD hh24:mi:ss') zhhfsj,yc.zhhfnr,ycqf.csmc as ycqfmc
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_jcsj ycqf on ycqf.csid=yc.ycqf
+		left join igams_sjyczd yczd on yczd.ycid=yc.ycid and zdry=#{zdry}
+		<where>
+			yc.scbj!='1'
+			<if test="entire != null and entire != ''.toString()">
+				and yc.ycbt like '%'||#{entire}||'%'
+			</if>
+			<if test="qrr != null and qrr != ''.toString()">
+				and yc.qrr=#{qrr}
+			</if>
+			<if test="sfjs != null and sfjs !=''.toString()">
+				and yc.sfjs=#{sfjs}
+			</if>
+			<if test="ycqf != null and ycqf !=''">
+				and yc.ycqf=#{ycqf}
+			</if>
+		</where>
+		order by sfzd desc,lrsj desc limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+
+	<!-- 小程序获取个人清单，被通知过的人都可以看到 -->
+	<select id="getMiniPersonalList" parameterType="SjycDto" resultType="SjycDto">
+		select yc.ycid,yc.ywid,yc.ywid as sjid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,yc.twrmc,qryh.zsxm qrrmc,sj.hzxm hzxm,sj.ybbh ybbh,
+		lx.csmc lxmc,zlx.csmc zlxmc,case when yc.sfjs='0' then '否' when yc.sfjs='1' then
+		'是' end sfjsmc,case when yczd.zdry!=null or yczd.zdry!='' then '1' else '0' end sfzd,yczd.zdsj,to_char(yc.zhhfsj,'YYYY-MM-DD hh24:mi:ss') zhhfsj,yc.zhhfnr,ycqf.csmc as ycqfmc
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_jcsj ycqf on ycqf.csid=yc.ycqf
+		left join igams_sjyczd yczd on yczd.ycid=yc.ycid and zdry=#{zdry}
+		left join igams_sjyctz sjyctz on sjyctz.ycid = yc.ycid
+		<where>
+			yc.scbj!='1' and (yc.lrry=#{yhid}
+			or yc.qrr = #{yhid}
+			or sjyctz.ryid = #{yhid}
+			<if test="yhjss != null and yhjss .size()">
+				or yc.qrr in
+				<foreach collection="yhjss" index="index" item="item" close=")" open="(" separator=",">
+					#{item}
+				</foreach>
+				or sjyctz.ryid in
+				<foreach collection="yhjss" index="index" item="item" close=")" open="(" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			)
+			<if test="entire != null and entire != ''">
+				and yc.ycbt like '%'||#{entire}||'%'
+			</if>
+			<if test="sfjs != null and sfjs !=''.toString()">
+				and yc.sfjs=#{sfjs}
+			</if>
+			<if test="ycqf != null and ycqf !=''">
+				and yc.ycqf=#{ycqf}
+			</if>
+		</where>
+		GROUP BY yc.ycid,lxmc,zlxmc,db,jc.csmc,yc.twrmc,hzxm,ybbh,qryh.zsxm,yczd.zdry,yczd.zdsj,ycqf.csmc
+		order by sfzd desc,lrsj desc limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+
+	<!-- 转发时更新确认人 -->
+	<update id="updateQrr" parameterType="SjycDto">
+		update igams_sjyc
+		<set>
+			qrlx=#{qrlx},
+			qrr=#{qrr},
+			zfsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			scbj!='1'
+			and ycid=#{ycid}
+		</where>
+	</update>
+
+	<select id="getYhjsList" parameterType="SjycDto" resultType="SjycDto">
+		select jsid from  matridx_yhjs where yhid = #{yhid}
+	</select>
+	<select id="getxtjsmcs" resultType="String" parameterType="List">
+		select jsmc from matridx_xtjs
+		where jsid in
+		<foreach collection="list" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</select>
+	<select id="getxtyhmcs" resultType="String" parameterType="List">
+		select zsxm from matridx_xtyh
+		where yhid in
+		<foreach collection="list" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+		select xtjs.dwxdbj,jsjcdw.jcdw,jcdw.csmc jcdwmc from matridx_xtjs  xtjs
+		left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid
+		left join matridx_jcsj jcdw on jcdw.csid = jsjcdw.jcdw and jcdw.scbj='0'
+		<where>
+			xtjs.jsid=#{jsid} order by jcdw.cspx asc
+		</where>
+	</select>
+
+	<select id="getSjxxByYwid" parameterType="String" resultType="SjycDto">
+		select sj.db,sj.hzxm hzxm,sj.ybbh ybbh,jc.csmc yblxmc,sj.jcdw
+		from  igams_sjxx sj
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		<where>
+			sj.scbj!='1'
+			and sj.sjid=#{ywid}
+		</where>
+	</select>
+	<select id="getSjxxByYwids" parameterType="list" resultType="SjycDto">
+		select sj.sjid,sj.db,sj.hzxm hzxm,sj.ybbh ybbh,jc.csmc yblxmc,sj.jcdw
+		from  igams_sjxx sj
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		<where>
+			sj.scbj!='1'
+			and sj.sjid in
+			<foreach collection="sjids" open="(" close=")" item="item" index="index" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+
+	<update id="evaluation" parameterType="SjycDto">
+		update igams_sjyc
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfpj='1'
+			<if test="pjxj != null and pjxj != ''">
+				,pjxj=#{pjxj}
+			</if>
+			<if test="pjnr != null and pjnr != ''">
+				,pjnr=#{pjnr}
+			</if>
+			<if test="sfjj != null and sfjj != ''">
+				,sfjj=#{sfjj}
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			<choose>
+				<when test="ids != null and ids.size> 0">
+					and ycid in
+					<foreach collection="ids" open="(" close=")" item="item" index="index" separator=",">
+						#{item}
+					</foreach>
+				</when>
+				<otherwise>
+					and ycid=#{ycid}
+				</otherwise>
+			</choose>
+
+		</where>
+	</update>
+
+	<update id="updateTsbj" parameterType="SjycDto">
+		update igams_sjyc set xgsj=LOCALTIMESTAMP
+		<if test="xgry != null and  xgry != ''">
+			,xgry=#{xgry}
+		</if>
+		<if test="tsbj != null and tsbj != ''">
+			,tsbj=#{tsbj}
+		</if>
+		<where>
+			ycid in
+			<foreach collection="ids" open="(" close=")" item="item" index="index" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+</mapper>

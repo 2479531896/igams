@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ITsclqkDao">
+
+    <select id="getDtoList" parameterType="TsclqkDto" resultType="TsclqkDto">
+        select tsclqk.tsclqkid, tsclqk.zltsid, tsclqk.lx, tsclqk.bmid, tsclqk.clnr, tsclqk.sfcl, to_char(tsclqk.clsj,'yyyy-mm-dd hh24:mi:ss') as clsj,jg.jgmc as bmmc
+        ,to_char(tsclqk.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj,tsclqk.yq,wbcx.wbcxmc
+        from igams_tsclqk tsclqk
+        left join matridx_jgxx jg on tsclqk.bmid=jg.jgid and jg.scbj='0'
+        left join matridx_wbcx wbcx on wbcx.wbcxid = jg.wbcxid
+        <where>
+            tsclqk.scbj='0' and tsclqk.zltsid = #{zltsid}
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="TsclqkDto" resultType="TsclqkDto">
+        select tsclqk.tsclqkid, tsclqk.zltsid, tsclqk.lx, tsclqk.bmid, tsclqk.clnr, tsclqk.sfcl, to_char(tsclqk.clsj,'yyyy-mm-dd hh24:mi:ss') as clsj,jg.jgmc as bmmc
+        ,to_char(tsclqk.lrsj,'yyyy-mm-dd hh24:mi:ss') as lrsj,tsclqk.clry,yh.zsxm as clrymc
+        from igams_tsclqk tsclqk
+        left join matridx_jgxx jg on tsclqk.bmid=jg.jgid and jg.scbj='0'
+        left join matridx_xtyh yh on yh.yhid=tsclqk.clry and yh.scbj='0'
+        <where>
+            tsclqk.scbj='0' and tsclqk.tsclqkid = #{tsclqkid}
+        </where>
+    </select>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_tsclqk (tsclqkid,zltsid,lx,bmid,clnr,clsj,sfcl,yq,lrry,lrsj,scbj) VALUES
+        <foreach collection="list" separator="," item="item" index="index">
+            (#{item.tsclqkid}, #{item.zltsid}, #{item.lx}, #{item.bmid}, #{item.clnr}, cast(#{item.clsj} as timestamp),'0', #{item.yq}, #{item.lrry},LOCALTIMESTAMP,'0')
+        </foreach>
+    </insert>
+
+    <update id="delete" parameterType="TsclqkDto">
+        update igams_tsclqk
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zltsid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+            <if test = "lxs != null and lxs.length > 0 "  >
+                and lx in
+                <foreach collection="lxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <update id="revertData" parameterType="TsclqkDto">
+        update igams_tsclqk
+        <set>
+            scbj='0',
+            scry=null,
+            scsj=null,
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            tsclqkid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <select id="getPagedListByBm" parameterType="TsclqkDto" resultType="TsclqkDto">
+        select tsclqk.tsclqkid,tsclqk.zltsid, case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.hzxm else sj.hzxm end hzxm,tsclqk.lx,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.nbbm else sj.nbbm end nbbm,zltsgl.tsnr ,jg.jgmc as bmmc,to_char(zltsgl.lrsj,'YYYY-MM-dd') as tssj,to_char(tsclqk.lrsj,'YYYY-MM-dd') as lrsj,tsclqk.clnr,tsclqk.sfcl,to_char(tsclqk.clsj,'YYYY-MM-dd') as clsj
+        from igams_tsclqk  tsclqk
+        left join igams_zltsgl zltsgl on zltsgl.zltsid = tsclqk.zltsid
+        left join igams_sjyc yc on yc.ycid=zltsgl.ywid and yc.scbj='0'
+        left join igams_sjxx yc_sj on yc_sj.sjid=yc.ywid and yc_sj.scbj='0'
+        left join igams_sjxx sj on sj.sjid=zltsgl.ywid and sj.scbj='0'
+        left join matridx_jgxx jg on tsclqk.bmid=jg.jgid and jg.scbj='0'
+        <where>
+            tsclqk.scbj='0' and tsclqk.bmid =(select jgid from matridx_yhssjg where yhid =#{yhid})
+            <if test="ybbh != null and ybbh != ''">
+                and (sjxx.ybbh ilike '%'||#{ybbh}||'%' )
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and (sjxx.nbbm ilike '%'||#{nbbm}||'%' )
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and (sjxx.hzxm ilike '%'||#{hzxm}||'%')
+            </if>
+            <if test="tsnr != null and tsnr != ''">
+                and (zltsgl.tsnr ilike '%'||#{tsnr}||'%' )
+            </if>
+            <if test="tssjstart != null and tssjstart != ''">
+                and to_char(zltsgl.lrsj,'YYYY-MM-dd')&gt;=#{tssjstart}
+            </if>
+            <if test="tssjend != null and tssjend != ''">
+                and to_char(zltsgl.lrsj,'YYYY-MM-dd')&lt;=#{tssjend}
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(tsclqk.lrsj,'YYYY-MM-dd')&gt;=#{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(tsclqk.lrsj,'YYYY-MM-dd')&lt;=#{lrsjend}
+            </if>
+            <if test="clsjstart != null and clsjstart != ''">
+                and to_char(tsclqk.clsj,'YYYY-MM-dd')&gt;=#{clsjstart}
+            </if>
+            <if test="clsjend != null and clsjend != ''">
+                and to_char(tsclqk.clsj,'YYYY-MM-dd')&lt;=#{clsjend}
+            </if>
+            <if test="lxs !=null and lxs.length> 0">
+                and tsclqk.lx in
+                <foreach collection="lxs" open="(" close=")" separator="," index="index"  item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <update id="dealData" parameterType="TsclqkDto">
+        update igams_tsclqk
+        <set>
+            sfcl='1',
+            clry=#{clry},
+            clnr=#{clnr},
+            clsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            tsclqkid=#{tsclqkid}
+        </where>
+    </update>
+
+    <select id="getDepartmentList" parameterType="TsclqkDto" resultType="TsclqkDto">
+        select tab.bmid,jg.jgmc as bmmc  from
+        (
+        select bmid
+        from igams_tsclqk
+        <where>
+            scbj='0' and zltsid = #{zltsid}
+        </where>
+        group by bmid
+        ) tab
+        left join matridx_jgxx jg on tab.bmid=jg.jgid and jg.scbj='0'
+    </select>
+
+    <update id="updateForConclusion" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_tsclqk
+                <set>
+                    xgry=#{item.xgry},xgsj=LOCALTIMESTAMP,scbj='0',scry=null,scsj=null
+                    ,lx=#{item.lx},bmid=#{item.bmid},yq=#{item.yq}
+                </set>
+                <where>
+                    tsclqkid=#{item.tsclqkid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+</mapper>

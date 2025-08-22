@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IDdspglDao" >
+
+	<!-- 根据获取结果更新或新增钉钉审批信息 -->
+	<insert id="insert" parameterType="DdspglDto">
+		insert into matridx_ddspgl
+			(ddspglid,processinstanceid,lrsj
+			<if test="corpid !=null and corpid !=''">
+				,corpid
+			</if>
+			<if test="eventtype !=null and eventtype !=''">
+				,eventtype
+			</if>
+			<if test="type !=null and type !=''">
+				,type
+			</if>
+			<if test="processcode !=null and processcode !=''">
+				,processcode
+			</if>
+			<if test="title !=null and title !=''">
+				,title
+			</if>
+			<if test="staffid !=null and staffid !=''">
+				,staffid
+			</if>
+			<if test="result !=null and result !=''">
+				,result
+			</if>
+			<if test="remark !=null and remark !=''">
+				,remark
+			</if>
+			<if test="createtime !=null and createtime !=''">
+				,createtime
+			</if>
+			<if test="finishtime !=null and finishtime !=''">
+				,finishtime
+			</if>
+			<if test="cljg !=null and cljg !=''">
+				,cljg
+			</if>
+			<if test="wbcxid !=null and wbcxid !=''">
+				,wbcxid
+			</if>)
+		values
+			(#{ddspglid},#{processinstanceid},LOCALTIMESTAMP
+			<if test="corpid !=null and corpid !=''">
+				,#{corpid}
+			</if>
+			<if test="eventtype !=null and eventtype !=''">
+				,#{eventtype}
+			</if>
+			<if test="type !=null and type !=''">
+				,#{type}
+			</if>
+			<if test="processcode !=null and processcode !=''">
+				,#{processcode}
+			</if>
+			<if test="title !=null and title !=''">
+				,#{title}
+			</if>
+			<if test="staffid !=null and staffid !=''">
+				,#{staffid}
+			</if>
+			<if test="result !=null and result !=''">
+				,#{result}
+			</if>
+			<if test="remark !=null and remark !=''">
+				,#{remark}
+			</if>
+			<if test="createtime !=null and createtime !=''">
+				,cast(#{createtime} as timestamp)
+			</if>
+			<if test="finishtime !=null and finishtime !=''">
+				,cast(#{finishtime} as timestamp)
+			</if>
+			<if test="cljg !=null and cljg !=''">
+				,#{cljg}
+			</if>
+			<if test="wbcxid !=null and wbcxid !=''">
+				,#{wbcxid}
+			</if>)
+	</insert>
+	
+	<update id="updatecljg" parameterType="DdspglDto">
+		update matridx_ddspgl
+		<set>
+			cljg=#{cljg}
+		</set>
+		<where>
+			ddspglid=#{ddspglid}
+		</where>
+	</update>
+	
+	<!--显示信息列表 -->
+	<select id="getDtoList" parameterType="DdspglDto" resultType="DdspglDto">
+	     select 
+	     	ddspgl.ddspglid,
+	     	ddspgl.cljg,
+			ddspgl.processinstanceid,
+			ddspgl.corpid,
+			ddspgl.eventtype,
+			ddspgl.type,
+			ddspgl.processcode,
+			ddspgl.title, 
+			xtyh.zsxm as staffname,
+			ddspgl.result,
+			ddspgl.remark,
+			ddspgl.createtime,
+			ddspgl.finishtime,
+			ddspgl.staffid,
+			case when qg.djh is not null then qg.djh else ht.htnbbh end gldh,
+			ddsplx.csmc splxmc,
+			ddsplx.cskz2 hddz
+		from matridx_ddspgl ddspgl
+		left join matridx_xtyh xtyh on ddspgl.staffid = xtyh.ddid and xtyh.scbj!='1'
+		left join igams_qggl qg on qg.ddslid=ddspgl.processinstanceid
+		left join igams_htgl ht on ht.ddslid=ddspgl.processinstanceid
+		left join matridx_jcsj ddsplx on ddsplx.cskz1=ddspgl.processcode
+         <where>
+         	  <if test="processinstanceid != null and processinstanceid != ''">
+         		  and ddspgl.processinstanceid=#{processinstanceid} 
+         	  </if>
+              <if test="type != null and type != ''">
+                  and ddspgl.type = #{type}
+              </if>
+              <if test="eventtype != null and eventtype != ''">
+                  and ddspgl.eventtype =#{eventtype}
+              </if>
+              <if test="cljg != null and cljg != ''">
+                  and ddspgl.cljg = #{cljg}
+              </if>
+              order by ddspgl.lrsj asc
+         </where>
+	</select>
+	
+	<select id="getDto" resultType="DdspglDto">
+	     select 
+			ddspgl.processinstanceid,
+			ddspgl.corpid,
+			ddspgl.eventtype,
+			ddspgl.type,
+			ddspgl.processcode,
+			ddspgl.title, 
+			xtyh.zsxm as staffname,
+			ddspgl.result,
+			ddspgl.remark,
+			ddspgl.createtime,
+			ddspgl.finishtime,
+			ddspgl.ddspglid
+		from matridx_ddspgl ddspgl
+		left join matridx_xtyh xtyh
+		on ddspgl.staffid = xtyh.ddid
+        <where>
+             ddspglid=#{ddspglid} and xtyh.scbj='0' and xtyh.sfsd='0'
+        </where>
+	</select>
+	
+	<!-- 根据类型，钉钉实例ID批量更新钉钉审批管理信息 -->
+	<update id="updateAll" parameterType="DdspglDto">
+		update matridx_ddspgl
+		<set>
+			cljg=#{cljg}
+		</set>
+		<where>
+			processinstanceid=#{processinstanceid} and type=#{type}
+		</where>
+	</update>
+	
+	<!-- 获取完成状态的钉钉审批管理事件 -->
+	<select id="getFinishInstenceSpgl" parameterType="DdspglDto" resultType="DdspglDto">
+		select 
+			ddspgl.processinstanceid,
+			ddspgl.corpid,
+			ddspgl.eventtype,
+			ddspgl.type,
+			ddspgl.processcode,
+			ddspgl.title, 
+			xtyh.zsxm as staffname,
+			ddspgl.result,
+			ddspgl.remark,
+			ddspgl.createtime,
+			ddspgl.finishtime,
+			ddspgl.ddspglid
+		from matridx_ddspgl ddspgl
+		left join matridx_xtyh xtyh
+		on ddspgl.staffid = xtyh.ddid
+		<where>
+			type='finish' and type='finish' and eventtype='bpms_instance_change'
+			and processinstanceid=#{processinstanceid}
+			and xtyh.scbj='0' and xtyh.sfsd='0'
+		</where>
+	</select>
+</mapper>

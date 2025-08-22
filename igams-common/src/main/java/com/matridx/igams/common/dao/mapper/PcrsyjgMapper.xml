@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IPcrsyjgDao">
+	<insert id="insertListPcr" parameterType="List">
+		insert  into igams_pcrsyjg (
+		dlysymxid,
+		pcrsyglid,
+		ctvalue,
+		concentration,
+		concentrationunit,
+		stdconcentration,
+		referencedye,
+		sampleuid,
+		replicatedgroup,
+		qcresult,
+		wellhindex,
+		wellvindex,
+		well,
+		samplenumber,
+		samplename,
+		sampletype,
+		dyename,
+		genename,
+		isyz,
+		jssj,jcdw,fam,cy5,hex,rox
+		)values
+		<foreach collection="list" separator="," open=""
+				close="" item="item" index="index">
+		
+		(
+		#{item.dlysymxid},
+		#{item.pcrsyglid},
+		#{item.ctvalue},
+		#{item.concentration},
+		#{item.concentrationunit},
+		#{item.stdconcentration},
+		#{item.referencedye},
+		#{item.sampleuid},
+		#{item.replicatedgroup},
+		#{item.qcresult},
+		#{item.wellhindex},
+		#{item.wellvindex},
+		#{item.well},
+		#{item.samplenumber},
+		#{item.samplename},
+		#{item.sampletype},
+		#{item.dyename},
+		#{item.genename},
+		#{item.isyz},
+		cast(#{item.jssj} as timestamp),#{item.jcdw},#{item.fam},#{item.cy5},#{item.hex},#{item.rox}
+		)
+	</foreach>
+	</insert>
+
+	<select id="getDtoList" parameterType="PcrsyjgDto" resultType="PcrsyjgDto">
+		select pcrsyjg.dlysymxid, pcrsyjg.ctvalue, pcrsyjg.concentration, pcrsyjg.concentrationunit, pcrsyjg.stdconcentration, pcrsyjg.referencedye
+			 , pcrsyjg.sampleuid, pcrsyjg.replicatedgroup, pcrsyjg.qcresult, pcrsyjg.wellhindex, pcrsyjg.wellvindex, pcrsyjg.well, pcrsyjg.samplenumber
+			 , pcrsyjg.samplename, pcrsyjg.sampletype, pcrsyjg.dyename, pcrsyjg.genename, pcrsyjg.isyz, to_char(pcrsyjg.jssj,'yyyy-mm-dd  HH24:MI:SS') jssj, jcsj_jcdw.csmc jcdwmc
+			 , pcrsyjg.fam,pcrsyjg.cy5,pcrsyjg.hex,pcrsyjg.rox
+		from igams_pcrsyjg pcrsyjg
+		left join matridx_jcsj jcsj_jcdw on jcsj_jcdw.csid = pcrsyjg.jcdw and jcsj_jcdw.scbj='0'
+		<where>
+			pcrsyjg.pcrsyglid = #{pcrsyglid}
+		</where>
+	</select>
+
+	<select id="getDto" resultType="PcrsyjgDto" parameterType="PcrsyjgDto">
+		select pcrsyjg.dlysymxid, pcrsyjg.ctvalue, pcrsyjg.concentration, pcrsyjg.concentrationunit, pcrsyjg.stdconcentration, pcrsyjg.referencedye
+			 , pcrsyjg.sampleuid, pcrsyjg.replicatedgroup, pcrsyjg.qcresult, pcrsyjg.wellhindex, pcrsyjg.wellvindex, pcrsyjg.well, pcrsyjg.samplenumber
+			 , pcrsyjg.samplename, pcrsyjg.sampletype, pcrsyjg.dyename, pcrsyjg.genename, pcrsyjg.isyz, to_char(pcrsyjg.jssj,'yyyy-mm-dd') jssj,pcrsyjg.fam,pcrsyjg.cy5,pcrsyjg.hex,pcrsyjg.rox
+		from igams_pcrsyjg pcrsyjg
+        <where>
+			pcrsyjg.dlysymxid = #{dlysymxid}
+		</where>
+	</select>
+
+	<select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+		select xtjs.dwxdbj,jsjcdw.jcdw from matridx_xtjs  xtjs
+		left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid
+		<where>
+			xtjs.jsid=#{jsid}
+		</where>
+	</select>
+</mapper>

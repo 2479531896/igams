@@ -1,0 +1,883 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.matridx.igams.common.dao.post.ICommonRabbitDao">
+	<!-- 新增或修改用户信息 -->
+	<update id="insertOrUpdateUser" parameterType="User">
+		insert into matridx_xtyh
+			(yhid,yhm,zsxm,mm,sfsd,lrry,lrsj,scbj,ddtxlj,email,unionid)
+		values
+			(#{yhid},#{yhm},#{zsxm},#{mm},#{sfsd},#{lrry},LOCALTIMESTAMP,'0',#{ddtxlj},#{email},#{unionid})
+		on conflict (yhid) 
+		do update set
+			xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="yhm !=null and yhm != ''">
+			,yhm = #{yhm}
+		</if>
+		<if test="zsxm !=null and zsxm != ''">
+			,zsxm = #{zsxm}
+		</if>
+		<if test="mm !=null and mm != ''">
+			,mm = #{mm}
+		</if>
+		<if test="sfsd !=null and sfsd != ''">
+			,sfsd = #{sfsd}
+		</if>
+		<if test="dqjs !=null and dqjs != ''">
+			,dqjs = #{dqjs}
+		</if>
+		<if test="dlip !=null and dlip != ''">
+			,dlip = #{dlip}
+		</if>
+		<if test="dlsj !=null and dlsj != ''">
+			,dlsj = cast(#{dlsj} as TIMESTAMP)
+		</if>
+		<if test="cwcs !=null and cwcs != ''">
+			,cwcs = cast(#{cwcs} as numeric)
+		</if>
+		<if test="ddid !=null and ddid != ''">
+			,ddid = #{ddid}
+		</if>
+		<if test="gwmc !=null and gwmc != ''">
+			,gwmc = #{gwmc}
+		</if>
+		<if test="ddtxlj !=null and ddtxlj != ''">
+			,ddtxlj = #{ddtxlj}
+		</if>
+		<if test="email !=null and email != ''">
+			,email = #{email}
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			,unionid = #{unionid}
+		</if>
+	</update>
+	<!-- 新增或修改角色信息 -->
+	<update id="insertOrUpdateRole" parameterType="Role">
+		insert into matridx_xtjs
+			(jsid,jsdm,jsmc,jsms,fjsid,sylx,dwxdbj,lrry,lrsj,scbj) 
+		values
+			(#{jsid},#{jsdm},#{jsmc},#{jsms},#{fjsid},#{sylx},#{dwxdbj},#{lrry},LOCALTIMESTAMP,'0')
+		on conflict (jsid) 
+		do update set
+			xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="jsdm !=null and jsdm != ''">
+			,jsdm = #{jsdm}
+		</if>
+		<if test="jsmc !=null and jsmc != ''">
+			,jsmc = #{jsmc}
+		</if>
+		<if test="jsms !=null and jsms != ''">
+			,jsms = #{jsms}
+		</if>
+			,fjsid = #{fjsid}
+		<if test="sylx !=null and sylx != ''">
+			,sylx = #{sylx}
+		</if>
+		<if test="dwxdbj !=null and dwxdbj != ''">
+			,dwxdbj = #{dwxdbj}
+		</if>
+	</update>
+	<!-- 新增或修改系统审核信息 -->
+	<update id="insertOrUpdateXtsh" parameterType="XtshDto">
+		insert into matridx_xtsh
+			(shid,shmc,shlb,mrsz,ms,kzcs,sfgb,lrry,lrsj,scbj) 
+		values
+			(#{shid},#{shmc},#{shlb},#{mrsz},#{ms},#{kzcs},#{sfgb},#{lrry},LOCALTIMESTAMP,'0')
+		on conflict (shid) 
+		do update set
+			xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="shmc !=null and shmc != ''">
+			,shmc = #{shmc}
+		</if>
+		<if test="shlb !=null and shlb != ''">
+			,shlb = #{shlb}
+		</if>
+		<if test="mrsz !=null and mrsz != ''">
+			,mrsz = #{mrsz}
+		</if>
+		<if test="ms !=null and ms != ''">
+			,ms = #{ms}
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,kzcs = #{kzcs}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb = #{sfgb}
+		</if>
+	</update>
+	<!-- 新增或修改审批岗位 -->
+	<update id="insertOrUpdateSpgw" parameterType="Role">
+		insert into matridx_spgw
+			(gwid,gwmc,sfywjs,ywjs,wbgw,sfgb) 
+		values
+			(#{gwid},#{gwmc},#{sfywjs},#{ywjs},#{wbgw},#{sfgb})
+		on conflict (gwid) 
+		do update set
+			gwmc = #{gwmc}
+			,sfywjs = #{sfywjs}
+		<if test="ywjs !=null and ywjs != ''">
+			,ywjs = #{ywjs}
+		</if>
+		<if test="wbgw !=null and wbgw != ''">
+			,wbgw = #{wbgw}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb = #{sfgb}
+		</if>
+	</update>
+	<!-- 删除审批岗位信息 -->
+	<delete  id="deleteSpgw" parameterType="User">
+		delete from matridx_spgw 
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or gwid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="gwid !=null and gwid != ''">
+	        	or gwid = #{gwid}
+			</if>
+		</where>
+	</delete>
+	<!-- 删除系统审核信息 -->
+	<update  id="deleteXtsh" parameterType="User">
+		update matridx_xtsh set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or shid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="shid !=null and shid != ''">
+	        	or shid = #{shid}
+			</if>
+		</where>
+	</update>
+	<!-- 删除系统用户信息 -->
+	<update  id="deleteUser" parameterType="User">
+		update matridx_xtyh set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="yhid !=null and yhid != ''">
+	        	or yhid = #{yhid}
+			</if>
+		</where>
+	</update>
+	<!-- 删除系统角色信息 -->
+	<update  id="deleteRole" parameterType="Role">
+		update matridx_xtjs set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	or jsid = #{jsid}
+			</if>
+		</where>
+	</update>
+	<!-- 根据用户ID删除用户所属机构信息 -->
+	<delete id="deleteYhssjgByYhid" parameterType="User">
+		delete from matridx_yhssjg
+		<where>
+			( 1=2
+			<if test="ids !=null and ids.size > 0">
+	        	or yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if> )
+		</where>
+	</delete>
+	<!-- 增加用户所属机构信息-->
+	<insert id="insertYhssjg" parameterType="User">
+		insert into matridx_yhssjg(yhid
+		<if test="jgid !=null and jgid != ''">
+			,jgid
+		</if>
+		<if test="xh !=null and xh != ''">
+			,xh
+		</if>
+		) values(#{yhid}
+		<if test="jgid !=null and jgid != ''">
+			,#{jgid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			,cast(#{xh} as numeric)
+		</if>
+		)
+	</insert>
+	<!-- 多条添加用机构权限 -->
+	<insert id="insertYhjgqxList" parameterType="list">
+		insert into matridx_yhjgqx (yhid, jgid, xh,jsid) 
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.yhid},#{item.jgid},cast(#{item.xh} as numeric),#{item.jsid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 根据Yhid删除 用户机构权限信息-->
+	<delete id="deleteJgqxxxByYhid" parameterType="User">
+		delete from matridx_yhjgqx 
+		<where>
+	        	yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+		</where>
+	</delete>
+	<!-- 根据用户ID查询权限信息 -->
+	<delete id="deleteYhjs" parameterType="User">
+		delete from matridx_yhjs 
+		<where>
+			<if test="yhid !=null and yhid != ''">
+	        	and yhid = #{yhid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and yhid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	and jsid = #{jsid}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 插入系统用户信息 -->
+	<insert id="insertYhjs" parameterType="User">
+		insert into matridx_yhjs(yhid,jsid) values(#{yhid},#{jsid})
+	</insert>
+	
+	<!-- 新增或修改机构信息 -->
+	<update id="insertOrUpdateJgxx" parameterType="DepartmentDto">
+		insert into matridx_jgxx(jgid
+		<if test="jgmc !=null and jgmc != ''">
+			,jgmc
+		</if>
+		<if test="fjgid !=null and fjgid != ''">
+			,fjgid
+		</if>
+		<if test="jgdm !=null and jgdm != ''">
+			,jgdm
+		</if>
+		<if test="fbsbj !=null and fbsbj != ''">
+			,fbsbj
+		</if>
+		,lrry,lrsj,scbj) values(#{jgid}
+		<if test="jgmc !=null and jgmc != ''">
+			,#{jgmc}
+		</if>
+		<if test="fjgid !=null and fjgid != ''">
+			,#{fjgid}
+		</if>
+		<if test="jgdm !=null and jgdm != ''">
+			,#{jgdm}
+		</if>
+		<if test="fbsbj !=null and fbsbj != ''">
+			,#{fbsbj}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+		on conflict (jgid) 
+		do update set
+		jgmc=#{jgmc},fjgid=#{fjgid},xgry=#{xgry},xgsj=LOCALTIMESTAMP,jgdm=#{jgdm},fbsbj=#{fbsbj}
+	</update>
+	<!-- 删除机构信息 -->
+	<update id="deleteJgxx" parameterType="DepartmentDto">
+		update matridx_jgxx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			<if test="jgid !=null and jgid !=''">
+	 			or jgid = #{sjid}
+	 		</if>
+	 	  	<if test="ids !=null and ids.size>0">
+	 	  	  	or jgid in
+ 	  	  		<foreach collection="ids" open="(" close=")" separator="," item="item">
+ 	  	  			 #{item}
+ 	  	  		</foreach>
+	 	  	</if>
+		</where>
+	</update>
+	<!-- 添加角色单位权限信息 -->
+	<insert id="insertJsdwqx" parameterType="Role">
+		insert into matridx_jsdwqx ( jsid,jgid) 
+		<if test="jgid !=null and jgid != ''">
+        	values (#{jsid},#{jgid})
+		</if>
+		<if test="ids !=null and ids.size > 0">
+        	<foreach collection="ids" separator="union" open="(" close=") "
+						item="item" index="index">
+				select #{jsid},#{item}
+			</foreach>
+		</if>
+	</insert>
+	<!-- 删除角色单位权限信息 -->
+	<delete  id="deleteJsdwqx" parameterType="Role">
+		delete from matridx_jsdwqx 
+		<where>
+			<if test="jgid !=null and jgid != ''">
+	        	and jgid = #{jgid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+	        	and jgid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	and jsid = #{jsid}
+			</if>
+		</where>
+	</delete>
+
+	<!-- 修改角色仓库分类 -->
+	<update id="updateCkqxByjsid" parameterType="Role">
+		update matridx_xtjs set ckqx=#{ckqx}
+		<where>
+			scbj='0'
+			and jsid=#{jsid}
+		</where>
+	</update>
+	
+	<!--根据审核id修改停用时间-->
+	<update  id="updateTysjByShid" parameterType="SpgwDto">
+		update matridx_shlc
+		<set>
+			tysj = LOCALTIMESTAMP
+		</set>
+		<where>
+			shid = #{shid} and tysj is null
+		</where>
+	</update>
+	
+	<!-- 新增审核流程 -->
+	<insert  id="insertBySpgwList" parameterType="list">
+		insert into matridx_shlc (shid, lcxh,  gwid, qysj, lrry,lclb)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.shid},cast(#{item.lcxh} as numeric),#{item.gwid},LOCALTIMESTAMP,#{item.lrry},#{item.lclb})
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 插入审核类别信息 -->
+	<insert id="insertShlb" parameterType="ShlbDto" >
+		insert into matridx_shlb(shlb
+		<if test="shlbmc !=null and shlbmc !=''">
+		,shlbmc
+		</if>
+		<if test="hdl !=null and hdl !=''">
+		,hdl
+		</if>
+		<if test="fqlb !=null and fqlb !=''">
+		,fqlb
+		</if>
+		<if test="hdmx !=null and hdmx !=''">
+		,hdmx
+		</if>
+		<if test="qxxk !=null and qxxk !=''">
+		,qxxk
+		</if>
+		<if test="sfgb !=null and sfgb !=''">
+		,sfgb
+		</if>
+		<if test="shlbbm !=null and shlbbm !=''">
+		,shlbbm
+		</if>)
+		values(#{shlb}
+		<if test="shlbmc !=null and shlbmc !=''">
+		,#{shlbmc}
+		</if>
+		<if test="hdl !=null and hdl !=''">
+		,#{hdl}
+		</if>
+		<if test="fqlb !=null and fqlb !=''">
+		,#{fqlb}
+		</if>
+		<if test="hdmx !=null and hdmx !=''">
+		,#{hdmx}
+		</if>
+		<if test="qxxk !=null and qxxk !=''">
+		,#{qxxk}
+		</if>
+		<if test="sfgb !=null and sfgb !=''">
+		,#{sfgb}
+		</if>
+		<if test="shlbbm !=null and shlbbm !=''">
+		,#{shlbbm}
+		</if>
+		)
+	</insert>
+	<!--更新审核类别信息-->
+	<update  id="updateShlb" parameterType="ShlbModel">
+		update matridx_shlb 
+		<set>
+		<if test="shlb !=null and shlb != ''">
+			shlb = #{shlb},
+		</if>
+		<if test="shlbmc !=null and shlbmc != ''">
+			shlbmc = #{shlbmc},
+		</if>
+		<if test="hdl !=null and hdl != ''">
+			hdl = #{hdl},
+		</if>
+		<if test="fqlb !=null and fqlb != ''">
+			fqlb = #{fqlb},
+		</if>
+		<if test="hdmx !=null and hdmx != ''">
+			hdmx = #{hdmx},
+		</if>
+		<if test="qxxk !=null and qxxk != ''">
+			qxxk = #{qxxk},
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			sfgb = #{sfgb},
+		</if>
+		<if test="shlbbm !=null and shlbbm != ''">
+			shlbbm = #{shlbbm},
+		</if>
+		</set>
+		<where>
+			shlb = #{shlb}
+		</where>
+	</update>
+	<!-- 删除审核类别信息 -->
+	<delete  id="deleteShlb" parameterType="User">
+		delete from matridx_shlb 
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or shlb in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="shlb !=null and shlb != ''">
+	        	or shlb = #{shlb}
+			</if>
+		</where>
+	</delete>
+	<!-- 新增或修改基础数据 -->
+	<update id="insertOrUpdateJcsj" parameterType="JcsjDto">
+		insert into matridx_jcsj(csid
+		<if test="csdm !=null and csdm != ''">
+			,csdm
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,fcsid
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,jclb
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,csmc
+		</if>
+		<if test="cspx !=null and cspx != ''">
+			,cspx
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,cskz1
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,cskz2
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,cskz3
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,cskz4
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			,sfmr
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb
+		</if>
+		,lrry,lrsj,scbj) values(#{csid}
+		<if test="csdm !=null and csdm != ''">
+			,#{csdm}
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,#{fcsid}
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,#{jclb}
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,#{csmc}
+		</if>
+		<if test="cspx !=null and cspx !=''">
+			,cast(#{cspx} as numeric)
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,#{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,#{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,#{cskz3}
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,#{cskz4}
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			,#{sfmr}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,#{sfgb}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+		on conflict (csid) 
+		do update set 
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="csdm !=null and csdm != ''">
+			,csdm = #{csdm}
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,fcsid = #{fcsid}
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,jclb = #{jclb}
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,csmc = #{csmc}
+		</if>
+		<if test="cspx !=null and cspx != ''">
+			,cspx = cast(#{cspx} as numeric)
+		</if>
+			,cskz1 = #{cskz1}
+			,cskz2 = #{cskz2}
+			,cskz3 = #{cskz3}
+			,cskz4 = #{cskz4}
+		<if test="sfmr !=null and sfmr != ''">
+			,sfmr = #{sfmr}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz = #{bz}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb = #{sfgb}
+		</if>
+	</update>
+	<!-- 删除基础数据 -->
+	<update  id="deleteJcsj" parameterType="JcsjModel">
+		update matridx_jcsj set scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			<if test="csid !=null and csid != ''">
+				or csid = #{csid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or csid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<!--批量更新系统用户-->
+	<update id="updateUsers" parameterType="List">
+		<foreach collection="list" separator=";" item="item" index="index">
+			UPDATE matridx_xtyh SET sfsd = #{item.sfsd},xgsj=LOCALTIMESTAMP
+			WHERE
+			yhid in (
+			SELECT
+			xtyh.yhid
+			FROM
+			matridx_xtyh xtyh
+			LEFT JOIN matridx_yhqtxx yhqtxx ON yhqtxx.yhid = xtyh.yhid and yhqtxx.scbj='0'
+			WHERE
+			xtyh.scbj= '0' and xtyh.ddid = #{item.ddid} and yhqtxx.wbcxid = #{item.wbcxid})
+		</foreach>
+	</update>
+	<insert id="insertUsers" parameterType="List">
+		insert into matridx_xtyh(
+		yhid,
+		yhm,
+		zsxm,
+		ddid,
+		sfsd,
+		lrry,
+		lrsj,
+		scbj
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yhid},#{item.yhm},#{item.zsxm},#{item.ddid},#{item.sfsd},#{item.lrry},LOCALTIMESTAMP,#{item.scbj}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<!-- 批量新增员工花名册信息 -->
+	<insert id="insertYghmcDtos" parameterType="List">
+		insert into matridx_yghmc(yghmcid,yhid,sex,mz,sfz,nl,zjyxq,csrq,csyf,xl,byyx,zy,sjhm,rzrq,zzrq,cjgzsj,sl,hyzk,zzmm,zc,jg,sfzdz,hjxz,xjdz,jjlxr,lxrdh,schtqsr,schtdqr,yhkh,khh,bgdd,sflz,xhtqsr,xhtdqr,dqtx,ssgs,zszg,sjbm,ddid,dyjbm,dejbm,dsjbm,wbcxid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yghmcid},#{item.yhid},#{item.sex},#{item.mz},#{item.sfz},#{item.nl}
+				,cast(#{item.zjyxq} as date) ,cast(#{item.csrq} as date)
+				,#{item.csyf},#{item.xl},#{item.byyx},#{item.zy},#{item.sjhm},cast(#{item.rzrq} as date),cast(#{item.zzrq} as date),cast(#{item.cjgzsj} as date),#{item.sl},#{item.hyzk},#{item.zzmm}
+				,#{item.zc},#{item.jg},#{item.sfzdz},#{item.hjxz},#{item.xjdz},#{item.jjlxr},#{item.lxrdh},cast(#{item.schtqsr} as date),cast(#{item.schtdqr} as date),#{item.yhkh},#{item.khh},#{item.bgdd},#{item.sflz},cast(#{item.xhtqsr} as date),cast(#{item.xhtdqr} as date),#{item.dqtx}
+				,#{item.ssgs},#{item.zszg},#{item.sjbm},#{item.ddid},#{item.dyjbm},#{item.dejbm},#{item.dsjbm},#{item.wbcxid}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<!--批量更新员工花名册信息-->
+	<update id="updateYghmcDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update matridx_yghmc set
+				<if test="item.sex != null and item.sex != ''">
+					sex=#{item.sex},
+				</if>
+				<if test="item.mz != null and item.mz != ''">
+					mz=#{item.mz},
+				</if>
+				<if test="item.sfz != null and item.sfz != ''">
+					sfz=#{item.sfz},
+				</if>
+				<if test="item.nl != null and item.nl != ''">
+					nl=#{item.nl},
+				</if>
+				<if test="item.zjyxq != null and item.zjyxq != ''">
+					zjyxq=cast(#{item.zjyxq} as date),
+				</if>
+				<if test="item.csrq != null and item.csrq != ''">
+					csrq=cast(#{item.csrq} as date),
+				</if>
+				<if test="item.csyf != null and item.csyf != ''">
+					csyf=#{item.csyf},
+				</if>
+				<if test="item.xl != null and item.xl != ''">
+					xl=#{item.xl},
+				</if>
+				<if test="item.byyx != null and item.byyx != ''">
+					byyx=#{item.byyx},
+				</if>
+				<if test="item.zy != null and item.zy != ''">
+					zy=#{item.zy},
+				</if>
+				<if test="item.sjhm != null and item.sjhm != ''">
+					sjhm=#{item.sjhm},
+				</if>
+				<if test="item.rzrq != null and item.rzrq != ''">
+					rzrq=cast(#{item.rzrq} as date),
+				</if>
+				<if test="item.zzrq != null and item.zzrq != ''">
+					zzrq=cast(#{item.zzrq} as date),
+				</if>
+				<if test="item.cjgzsj != null and item.cjgzsj != ''">
+					cjgzsj=cast(#{item.cjgzsj} as date),
+				</if>
+				<if test="item.sl != null and item.sl != ''">
+					sl=#{item.sl},
+				</if>
+				<if test="item.hyzk != null and item.hyzk != ''">
+					hyzk=#{item.hyzk},
+				</if>
+				<if test="item.zzmm != null and item.zzmm != ''">
+					zzmm=#{item.zzmm},
+				</if>
+				<if test="item.zc != null and item.zc != ''">
+					zc=#{item.zc},
+				</if>
+				<if test="item.jg != null and item.jg != ''">
+					jg=#{item.jg},
+				</if>
+				<if test="item.sfzdz != null and item.sfzdz != ''">
+					sfzdz=#{item.sfzdz},
+				</if>
+				<if test="item.hjxz != null and item.hjxz != ''">
+					hjxz=#{item.hjxz},
+				</if>
+				<if test="item.xjdz != null and item.xjdz != ''">
+					xjdz=#{item.xjdz},
+				</if>
+				<if test="item.jjlxr != null and item.jjlxr != ''">
+					jjlxr=#{item.jjlxr},
+				</if>
+				<if test="item.lxrdh != null and item.lxrdh != ''">
+					lxrdh=#{item.lxrdh},
+				</if>
+				<if test="item.schtqsr != null and item.schtqsr != ''">
+					schtqsr=cast(#{item.schtqsr} as date),
+				</if>
+				<if test="item.schtdqr != null and item.schtdqr != ''">
+					schtdqr=cast(#{item.schtdqr} as date),
+				</if>
+				<if test="item.yhkh != null and item.yhkh != ''">
+					yhkh=#{item.yhkh},
+				</if>
+				<if test="item.khh != null and item.khh != ''">
+					khh=#{item.khh},
+				</if>
+				<if test="item.bgdd != null and item.bgdd != ''">
+					bgdd=#{item.bgdd},
+				</if>
+				<if test="item.sflz != null and item.sflz != ''">
+					sflz=#{item.sflz},
+				</if>
+				<if test="item.lzrq != null and item.lzrq != ''">
+					lzrq=cast(#{item.lzrq} as date),
+				</if>
+				<if test="item.xhtqsr != null and item.xhtqsr != ''">
+					xhtqsr=cast(#{item.xhtqsr} as date),
+				</if>
+				<if test="item.xhtdqr != null and item.xhtdqr != ''">
+					xhtdqr=cast(#{item.xhtdqr} as date),
+				</if>
+				<if test="item.dqtx != null and item.dqtx != ''">
+					dqtx=#{item.dqtx},
+				</if>
+				<if test="item.ssgs != null and item.ssgs != ''">
+					ssgs=#{item.ssgs},
+				</if>
+				<if test="item.zszg != null and item.zszg != ''">
+					zszg=#{item.zszg},
+				</if>
+				<if test="item.sjbm != null and item.sjbm != ''">
+					sjbm=#{item.sjbm},
+				</if>
+				<if test="item.ddid != null and item.ddid != ''">
+					ddid=#{item.ddid},
+				</if>
+				<if test="item.dyjbm != null and item.dyjbm != ''">
+					dyjbm=#{item.dyjbm},
+				</if>
+				<if test="item.dejbm != null and item.dejbm != ''">
+					dejbm=#{item.dejbm},
+				</if>
+				<if test="item.dsjbm != null and item.dsjbm != ''">
+					dsjbm=#{item.dsjbm},
+				</if>
+				<if test="item.wbcxid != null and item.wbcxid != ''">
+					wbcxid=#{item.wbcxid},
+				</if>
+				yhid = #{item.yhid}
+				where yhid = #{item.yhid}
+			</foreach>
+		</if>
+	</update>
+	<update id="updateDqtxByIds" parameterType="Map">
+		update matridx_yghmc set dqtx = '0'
+		where yghmcid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 批量新增员工合同信息 -->
+	<insert id="insertYghtxxDtos" parameterType="List">
+		insert into matridx_yghtxx(yghmcid,yghtid,htqsr,htdqr,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yghmcid},#{item.yghtid},cast(#{item.htqsr} as date),cast(#{item.htdqr} as date),#{item.lrry},LOCALTIMESTAMP
+				,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+	<!-- 批量新增员工离职信息 -->
+	<insert id="insertYglzxxDtos" parameterType="List">
+		insert into matridx_yglzxx (yghmcid,yglzid,rzrq,lzrq,lrry,lrsj,scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yghmcid},#{item.yglzid},cast(#{item.rzrq} as date),cast(#{item.lzrq} as date),#{item.lrry},LOCALTIMESTAMP
+				,'0'
+				)
+			</foreach>
+		</if>
+	</insert>
+	<delete id="deleteYghtxx" parameterType="Map">
+		update matridx_yghtxx set scbj ='1',scry =#{scry} where
+		yghtid in
+		<foreach item="item"  collection="ids" open="(" close=") " separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	<delete id="deleteYglzxx" parameterType="Map">
+		update matridx_yglzxx set scbj ='1',scry =#{scry} where
+		yglzid in
+		<foreach item="item"  collection="ids" open="(" close=") " separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 批量更新机构信息 -->
+	<update id="modJgxxList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update matridx_jgxx jgxx
+			set jgmc = tmp.jgmc,
+			wbcxid = tmp.wbcxid,
+			fjgid = tmp.fjgid,
+			bmzgs = tmp.bmzgs
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.jgid} jgid,#{item.jgmc} jgmc,#{item.wbcxid} wbcxid,#{item.fjgid} fjgid,#{item.bmzgs} bmzgs
+			</foreach>
+			) tmp
+			where
+			jgxx.jgid=tmp.jgid
+		</if>
+	</update>
+	<!-- 修改用户所属机构信息-->
+	<update  id="updateYhssjg" parameterType="User">
+		update  matridx_yhssjg set
+		jgid=#{jgid}
+		<if test="xh !=null and xh != ''">
+			,xh=cast(#{xh} as numeric)
+		</if>
+		<where>
+			yhid=#{yhid}
+		</where>
+	</update>
+	<insert id="insertYhqtxx" parameterType="User">
+		insert into matridx_yhqtxx(yhid
+		,wbcxid
+		,lrry
+		,lrsj
+		,scbj
+		)values(
+		#{yhid}
+		,#{wbcxid}
+		,#{lrry}
+		,LOCALTIMESTAMP
+		,'0'
+		)
+	</insert>
+	<!-- 删除机构信息 -->
+	<update id="deleteByWbcxid" parameterType="DepartmentDto">
+		update matridx_jgxx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		where  scbj ='0' and wbcxid = #{wbcxid} AND
+		jgid not in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IGgglDao" >
+    <insert id="insert" parameterType="GgglDto">
+        INSERT INTO igams_gggl
+        (ggid, bt, rq, fbr, rdxs, rdjz, nr,ggjzrq, lrry, lrsj, scbj)
+        VALUES(#{ggid}, #{bt}, cast(#{rq} as date), #{fbr},#{rdxs},  cast(#{rdjz} as date), #{nr},cast(#{ggjzrq} as date), #{lrry}, LOCALTIMESTAMP, '0');
+    </insert>
+    <select id="getDtoById" parameterType="String" resultType="GgglDto">
+        SELECT gggl.ggid, gggl.bt, gggl.rq, gggl.fbr, gggl.rdxs, gggl.rdjz, gggl.nr, gggl.lrry, to_char(gggl.lrsj,'yyyy-MM-dd hh24:MI:ss') lrsj,fbr.zsxm fbrmc,lrry.zsxm lrrymc,
+        case when gggl.rdxs='1' then '是' else '否' end rdxsmc,gggl.ggjzrq
+        FROM igams_gggl gggl
+        left join matridx_xtyh fbr on fbr.yhid = gggl.fbr
+        left join matridx_xtyh lrry on lrry.yhid = gggl.lrry
+        where gggl.ggid = #{ggid}
+    </select>
+    <select id="getPagedDtoList" parameterType="GgglDto" resultType="GgglDto">
+        SELECT gggl.ggid, gggl.bt, gggl.rq, gggl.fbr, case when (now()>=gggl.rdjz+1 or gggl.rdxs='0') then '0' else '1' end rdxs, gggl.rdjz, gggl.nr, gggl.lrry, to_char(gggl.lrsj,'yyyy-MM-dd hh24:MI:ss') lrsj,fbr.zsxm fbrmc,lrry.zsxm lrrymc,
+        case when gggl.rdxs='1' then '是' else '否' end rdxsmc,gggl.ggjzrq
+        FROM igams_gggl gggl
+        left join matridx_xtyh fbr on fbr.yhid = gggl.fbr
+        left join matridx_xtyh lrry on lrry.yhid = gggl.lrry
+        where gggl.scbj ='0'
+        <if test="bt != null and bt != ''">
+            and gggl.bt ILIKE '%'||#{bt}||'%'
+        </if>
+        <if test="sfjz !=null and sfjz != '' and sfjz == '0'.toString">
+            and to_char(gggl.ggjzrq,'yyyy-MM-dd') >= to_char(now(),'yyyy-MM-dd')
+        </if>
+    </select>
+    <update id="update" parameterType="GgglDto">
+        update igams_gggl set
+        <if test="bt != null and bt != ''">
+            bt = #{bt},
+        </if>
+        <if test="rq != null and rq != ''">
+            rq = cast(#{rq} as date),
+        </if>
+        <if test="fbr != null and fbr != ''">
+            fbr = #{fbr},
+        </if>
+        <if test="rdxs != null and rdxs != ''">
+            rdxs=#{rdxs},
+        </if>
+        <if test="rdjz != null and rdjz != ''">
+            rdjz=cast(#{rdjz} as date),
+        </if>
+        <if test="rdjz == null or rdjz == ''">
+            rdjz = null,
+        </if>
+        <if test="ggjzrq != null and ggjzrq != ''">
+            ggjzrq=cast(#{ggjzrq} as date),
+        </if>
+        <if test="nr != null and nr != ''">
+            nr=#{nr},
+        </if>
+        <if test="nr == null or nr == ''">
+            nr = null,
+        </if>
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where ggid = #{ggid}
+    </update>
+    <delete id="delete" parameterType="GgglDto">
+        update igams_gggl set scbj ='1' , scry = #{scry}
+        where ggid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

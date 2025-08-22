@@ -1,0 +1,1005 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IJcsjDao" >
+	<!-- 查询基础数据列表 -->
+	<select id="getModelList" parameterType="JcsjModel" resultType="JcsjModel">
+		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,cskz5,sfmr,bz,
+		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb
+		from matridx_jcsj
+		where scbj !='1' 
+		<if test="fcsid !=null and fcsid != ''">
+			and fcsid =#{fcsid}
+		</if>
+		<if test="jclb !=null and jclb!= ''">
+			and jclb =#{jclb}
+		</if>
+		order by jclb,cspx,csid
+	</select>
+
+	<!-- 查询RFS 数据查询范围 -->
+	<select id="getResFirstInfo" parameterType="JcsjDto" resultType="JcsjDto">
+		select MIN(cast(substring(cskz1,1,2) AS numeric)) min_cel,MAX(cast(substring(cskz1,1,2) AS numeric)) max_cel,MIN(cast(substring(cskz1,4,2) AS numeric)) min_row ,MAX(cast(substring(cskz1,4,2) AS numeric)) max_row
+		from matridx_jcsj
+		where jclb = 'RFS_RESULTS_TYPE'
+	</select>
+
+<!--	<select id="getByAndCsdm" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,csdm,csmc,cspx-->
+<!--		from matridx_jcsj-->
+<!--		where scbj !='1'-->
+<!--		<if test="jclb !=null and jclb!= ''">-->
+<!--			and jclb =#{jclb}-->
+<!--		</if>-->
+<!--		<if test="csdm !=null and csdm!= ''">-->
+<!--			and csdm =#{csdm}-->
+<!--		</if>-->
+<!--	</select>-->
+	<!-- 查询基础数据列表 -->
+	<select id="getDtoList" parameterType="JcsjDto" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,
+		jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,
+		  case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc
+		from matridx_jcsj jc
+		where scbj ='0'
+		<if test="fcsid !=null and fcsid != ''">
+			and fcsid =#{fcsid}
+		</if>
+		<if test="ffcsid !=null and ffcsid != ''">
+			and jc.ffcsid =#{ffcsid}
+		</if>
+		<if test="jclb !=null and jclb!= ''">
+			and jclb =#{jclb}
+		</if>
+		<if test="cskz1 !=null and cskz1!= ''">
+			and cskz1 =#{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2!=''">
+			and cskz2=#{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3!=''">
+			and cskz3=#{cskz3}
+		</if>
+		<if test="cskz4 !=null and cskz4!=''">
+			and cskz4=#{cskz4}
+		</if>
+		<if test="cskz5 !=null and cskz5!=''">
+			and cskz5=cast(#{cskz5} as json)
+		</if>
+		<if test = "jclbs != null and jclbs.size > 0 "  >
+			and jc.jclb in
+			<foreach collection="jclbs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "fcsids != null and fcsids.length > 0 "  >
+			and jc.fcsid in
+			<foreach collection="fcsids" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "csdms != null and csdms.length > 0 "  >
+			and jc.csdm in
+			<foreach collection="csdms" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sfmr !=null and sfmr!= ''">
+			and sfmr =#{sfmr}
+		</if>
+		<if test="ids !=null and ids.size > 0">
+			and csid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		order by jclb,cspx,csid
+	</select>
+
+	<select id="getNormalList" parameterType="JcsjDto" resultType="JcsjDto">
+		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,cskz5,sfmr,bz,
+		lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb
+		from matridx_jcsj
+		where scbj !='1'
+		<if test="jclb !=null and jclb!= ''">
+			and jclb =#{jclb}
+		</if>
+		order by jclb,cspx,csid
+	</select>
+
+	<!-- 查询基础数据列表 -->
+	<select id="getAllDtoList" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,
+			   jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,
+			   case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc
+		from matridx_jcsj jc
+		where jc.scbj != '1'
+		order by jc.jclb,jc.cspx asc,jc.csid
+	</select>
+
+	<!-- 查询基础数据列表 -->
+	<select id="getDtoListByJclb" parameterType="JcsjDto" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,
+		jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,
+		case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc,fjc.csdm as fcsdm
+		from matridx_jcsj jc
+		left join matridx_jcsj fjc on fjc.csid=jc.fcsid
+		where jc.scbj ='0' and jc.jclb =#{jclb}
+		order by jc.jclb,jc.cspx asc,jc.csid
+	</select>
+	
+<!--	&lt;!&ndash; 查询基础数据列表 ，包含停用数据 (不保存到缓存)&ndash;&gt;-->
+<!--	<select id="getJcsjDtoList" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,sfgb,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj-->
+<!--		from matridx_jcsj jc-->
+<!--		where scbj ='0'-->
+<!--		<if test="fcsid !=null and fcsid != ''">-->
+<!--			and jc.fcsid =#{fcsid}-->
+<!--		</if>-->
+<!--		<if test="ffcsid !=null and ffcsid != ''">-->
+<!--			and jc.ffcsid =#{ffcsid}-->
+<!--		</if>-->
+<!--		<if test="jclb !=null and jclb!= ''">-->
+<!--			and jc.jclb =#{jclb}-->
+<!--		</if>-->
+<!--		<if test = "jclbs != null and jclbs.size > 0 "  >-->
+<!--			and jc.jclb in -->
+<!--			<foreach collection="jclbs" separator="," open="(" close=") "-->
+<!--			item="item" index="index">-->
+<!--				#{item}-->
+<!--			</foreach>-->
+<!--		</if>-->
+<!--		<if test = "fcsids != null and fcsids.length > 0 "  >-->
+<!--			and jc.fcsid in -->
+<!--			<foreach collection="fcsids" separator="," open="(" close=") "-->
+<!--			item="item" index="index">-->
+<!--				#{item}-->
+<!--			</foreach>-->
+<!--		</if>-->
+<!--		<if test = "csdms != null and csdms.length > 0 "  >-->
+<!--			and jc.csdm in -->
+<!--			<foreach collection="csdms" separator="," open="(" close=") "-->
+<!--			item="item" index="index">-->
+<!--				#{item}-->
+<!--			</foreach>-->
+<!--		</if>-->
+<!--		order by jclb,cspx-->
+<!--	</select>-->
+
+<!--	&lt;!&ndash; 查询基础数据列表 ，包含停用数据 (不保存到缓存)&ndash;&gt;-->
+<!--	<select id="getJcsjDtoListAndJl" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.scbj-->
+<!--		<if test="yzid !=null and yzid != ''">-->
+<!--			,sjyzjg.jl as yzjgjl-->
+<!--		</if>-->
+<!--		from matridx_jcsj jc-->
+<!--		<if test="yzid !=null and yzid != ''">-->
+<!--			left join igams_sjyzjg sjyzjg on sjyzjg.yzjg = jc.csid and sjyzjg.scbj = '0'-->
+<!--		</if>-->
+<!--		where jc.scbj !='1'-->
+<!--		<if test="fcsid !=null and fcsid != ''">-->
+<!--			and jc.fcsid =#{fcsid}-->
+<!--		</if>-->
+<!--		<if test="yzid !=null and yzid != ''">-->
+<!--			and sjyzjg.yzid =#{yzid}-->
+<!--		</if>-->
+<!--		<if test="ffcsid !=null and ffcsid != ''">-->
+<!--			and jc.ffcsid =#{ffcsid}-->
+<!--		</if>-->
+<!--		<if test="jclb !=null and jclb!= ''">-->
+<!--			and jc.jclb =#{jclb}-->
+<!--		</if>-->
+<!--		order by jclb,cspx-->
+<!--	</select>-->
+	
+	<!-- 根据参数ID获取csid -->
+	<select id="getDtoById" parameterType="String" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.ffcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.sfgb,
+		jc.bz,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,jc.sfgb,case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc,
+		  jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,fcs.csmc fcsmc,ffcs.csmc ffcsmc
+		from matridx_jcsj jc
+		left join matridx_jcsj fcs on fcs.csid=jc.fcsid
+		left join matridx_jcsj ffcs on ffcs.csid=jc.ffcsid
+		where jc.scbj !='1' and jc.csid =#{csid}
+	</select>
+	
+	<!-- 根据参数ID获取csid -->
+	<select id="getDto" parameterType="JcsjDto" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.ffcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.sfgb,
+		jc.bz,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,jc.sfgb,case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc,
+		jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,fcs.csmc fcsmc,ffcs.csmc ffcsmc
+		from matridx_jcsj jc
+		left join matridx_jcsj fcs on fcs.csid=jc.fcsid
+		left join matridx_jcsj ffcs on ffcs.csid=jc.ffcsid
+		where jc.scbj !='1'
+		<if test="jclb !=null and jclb!= ''">
+			and jc.jclb =#{jclb}
+		</if>
+		<if test="csdm !=null and csdm != ''">
+			and jc.csdm =#{csdm}
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			and jc.sfmr =#{sfmr}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			and jc.cskz3 =#{cskz3}
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			and jc.cskz1 =#{cskz1}
+		</if>
+		<if test="csid !=null and csid != ''">
+			and jc.csid =#{csid}
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			and jc.fcsid =#{fcsid}
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			and jc.csmc =#{csmc}
+		</if>
+		<if test="fcsdm !=null and fcsdm != ''">
+			and fcs.csdm =#{fcsdm}
+		</if>
+		<if test="defaultCsid !=null and defaultCsid !=''">
+			and	jc.csid != #{defaultCsid}
+		</if>
+		<if test="likecsdm !=null and likecsdm !=''">
+			and jc.csdm like '%'||#{likecsdm}||'%'
+		</if>
+		order by jc.jclb,jc.cspx
+	</select>
+	
+	<!-- 分页查询基础数据列表 -->
+	<select id="getPagedDtoList" parameterType="JcsjDto" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb
+		  ,jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,fjc.csid fcsid,fjc.jclb fjclb,fjc.csdm fcsdm,fjc.csmc fcsmc
+		from matridx_jcsj jc
+		left outer join matridx_jcsj fjc on fjc.csid = jc.fcsid
+		where jc.scbj !='1' 
+		<if test="fcsid !=null and fcsid != ''">
+			and jc.fcsid =#{fcsid}
+		</if>
+		<if test="jclb !=null and jclb!= ''">
+			and jc.jclb =#{jclb}
+		</if>
+		<if test="csdm !=null and csdm != ''">
+			and jc.csdm like '%'||#{csdm}||'%'
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			and jc.csmc like '%'||#{csmc}||'%'
+		</if>
+		<if test="fcsdm !=null and fcsdm != ''">
+			and fjc.csdm like '%'||#{fcsdm}||'%'
+		</if>
+		<if test="fcsmc !=null and fcsmc != ''">
+			and fjc.csmc like '%'||#{fcsmc}||'%'
+		</if>
+		<if test = "scbjs != null and scbjs.length > 0 "  >
+			and jc.scbj in
+			<foreach collection="scbjs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<!-- 插入标本申请信息 -->
+	<insert id="insert" parameterType="JcsjModel">
+		insert into matridx_jcsj(csid
+		<if test="csdm !=null and csdm != ''">
+			,csdm
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,fcsid
+		</if>
+		<if test="ffcsid !=null and ffcsid != ''">
+			,ffcsid
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,jclb
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,csmc
+		</if>
+		<if test="cspx !=null and cspx != ''">
+			,cspx
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,cskz1
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,cskz2
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,cskz3
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,cskz4
+		</if>
+		<if test="cskz5 !=null and cskz5 != ''">
+			,cskz5
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			,sfmr
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb
+		</if>
+		,lrry,lrsj,scbj) values(#{csid}
+		<if test="csdm !=null and csdm != ''">
+			,#{csdm}
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,#{fcsid}
+		</if>
+		<if test="ffcsid !=null and ffcsid != ''">
+			,#{ffcsid}
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,#{jclb}
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,#{csmc}
+		</if>
+		<if test="cspx !=null and cspx !=''">
+			,cast(#{cspx} as numeric)
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,#{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,#{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,#{cskz3}
+		</if>
+		<if test="cskz4 !=null and cskz4 != ''">
+			,#{cskz4}
+		</if>
+		<if test="cskz5 !=null and cskz5 != ''">
+			,cast(#{cskz5} as json)
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			,#{sfmr}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,#{sfgb}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+		
+	</insert>
+	
+	<!--更新标本申请信息-->
+	<update  id="update" parameterType="JcsjModel">
+		update matridx_jcsj set xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="csdm !=null and csdm != ''">
+			,csdm = #{csdm}
+		</if>
+		<if test="fcsid !=null and fcsid != ''">
+			,fcsid = #{fcsid}
+		</if>
+		<if test="ffcsid !=null and ffcsid != ''">
+			,ffcsid = #{ffcsid}
+		</if>
+		<if test="jclb !=null and jclb != ''">
+			,jclb = #{jclb}
+		</if>
+		<if test="csmc !=null and csmc != ''">
+			,csmc = #{csmc}
+		</if>
+		<if test="cspx !=null and cspx != ''">
+			,cspx = cast(#{cspx} as numeric)
+		</if>
+			,cskz1 = #{cskz1}
+			,cskz2 = #{cskz2}
+			,cskz3 = #{cskz3}
+			,cskz4 = #{cskz4}
+		<if test="cskz5 !=null and cskz5 != ''">
+			,cskz5 = cast(#{cskz5} as json)
+		</if>
+		<if test="cskz5 == null or cskz5 == ''">
+			,cskz5 = null
+		</if>
+		<if test="sfmr !=null and sfmr != ''">
+			,sfmr = #{sfmr}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz = #{bz}
+		</if>
+		<if test="scbj !=null and scbj != ''">
+			,scbj = #{scbj}
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb = #{sfgb}
+		</if>
+		<where>
+				csid = #{csid}
+		</where>
+	</update>
+
+	<update id="updateListScbj" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update matridx_jcsj set
+				xgry=#{item.xgry}, xgsj=LOCALTIMESTAMP
+				<if test="item.scbj !=null and item.scbj != ''">
+					,scbj = #{item.scbj}
+				</if>
+				where csdm = #{item.csdm} and jclb = #{item.jclb}
+			</foreach>
+		</if>
+	</update>
+	
+	<!--更新标本申请的删除状态-->
+	<update  id="delete" parameterType="JcsjModel">
+		update matridx_jcsj set scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			<if test="csid !=null and csid != ''">
+				or csid = #{csid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or csid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	 <!-- 从基础数据里边查询单位 -->
+<!--	<select id="selectJcsj" parameterType="String" resultType="JcsjModel">-->
+<!--	  	select  -->
+<!--	  		csdm -->
+<!--	  	from matridx_jcsj-->
+<!-- 		<where>-->
+<!-- 		csmc=#{csmc}-->
+<!-- 		</where>-->
+<!--	</select>-->
+<!--	&lt;!&ndash; 根据省份从基础数据中查询城市 &ndash;&gt;-->
+<!--	<select id="jcsjcity" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,csdm,csmc-->
+<!--		from matridx_jcsj -->
+<!--		where scbj !='1'-->
+<!--		and jclb='CITY'-->
+<!--		and fcsid=#{fcsid}-->
+<!--	</select>-->
+<!--	<select id="getdefault" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.sfmr,jc.bz-->
+<!--		  ,jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,jc.sfgb-->
+<!--		from matridx_jcsj jc-->
+<!--		where sfmr='1' and scbj!='1'-->
+<!--		<if test="jclb !=null and jclb!=''">-->
+<!--			and jclb=#{jclb}-->
+<!--		</if>-->
+<!--		<if test="csid !=null and csid!=''">-->
+<!--			and csid!=#{csid}-->
+<!--		</if>-->
+<!--	</select>-->
+	<!--通过list csdm 查询 到货验收情况  -->
+	<select id="getYsqkByCsdm" parameterType="list" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz
+			  ,jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,jc.sfgb
+		from matridx_jcsj jc
+		where  jc.scbj!='1' and jc.jclb='HWXX_CHECK'
+				and  jc.csdm in
+				<foreach collection="list" open="(" close=")" item="item" separator="," index="index">
+					#{item}
+				</foreach>
+	</select>
+	<!-- 通过csmc 查询分组信息 -->
+<!--	<select id="getFzByCsmc" parameterType="String" resultType="JcsjDto">-->
+<!--		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.sfmr,jc.bz-->
+<!--				  ,jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,jc.sfgb-->
+<!--			from matridx_jcsj jc-->
+<!--			where  jc.scbj!='1' and jc.jclb='GROUPING' and jc.csmc=#{csmc}-->
+<!--	</select>-->
+	<!-- 根据基础类别和扩展参数获取csid -->
+<!--	<select id="getDtoByJclbAndCskz1" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb-->
+<!--		from matridx_jcsj-->
+<!--		<where> scbj ='0' and jclb =#{jclb}-->
+<!--			and cskz1 =#{cskz1}-->
+<!--		</where>-->
+<!--	</select>-->
+	<!-- 根据基础类别和扩展参数获取csid -->
+<!--	<select id="getDtoByJclbAndCskz" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb-->
+<!--		from matridx_jcsj-->
+<!--		<where> scbj ='0' and jclb =#{jclb}-->
+<!--		<if test="cskz1 !=null and cskz1!=''">-->
+<!--			and cskz1=#{cskz1}-->
+<!--		</if>-->
+<!--		<if test="cskz2 !=null and cskz2!=''">-->
+<!--			and cskz2=#{cskz2}-->
+<!--		</if>-->
+<!--		<if test="cskz3 !=null and cskz3!=''">-->
+<!--			and cskz3=#{cskz3}-->
+<!--		</if>-->
+<!--		</where>-->
+<!--	</select>-->
+	<!-- 通过类别查询扩展参数为1基础数据 -->
+	<select id="getCskz1NotNull" parameterType="JcsjDto" resultType="JcsjDto"> 
+		select  jcsj.csid,jcsj.jclb,jcsj.fcsid,jcsj.csdm,jcsj.csmc,jcsj.cspx,jcsj.cskz1,jcsj.cskz2,jcsj.cskz3,jcsj.cskz4,jcsj.cskz5,jcsj.sfmr,jcsj.bz,jcsj.sfgb
+		from matridx_jcsj jcsj  
+		<where>
+			jcsj.scbj ='0' and jcsj.cskz1 is not null and jcsj.cskz1 !=''
+			<if test="jclb !=null and jclb !=''">
+			 	and jcsj.jclb=#{jclb}
+			</if>
+		</where>
+	</select>
+	
+<!--	&lt;!&ndash; 根据Ids查询基础数据 &ndash;&gt;-->
+<!--	<select id="getJcsjByids" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb-->
+<!--		from matridx_jcsj-->
+<!--		<where>-->
+<!--			scbj!='1'-->
+<!--			<if test="jclb !=null and jclb!= ''">-->
+<!--			and jclb =#{jclb}-->
+<!--			</if>-->
+<!--			<if test="ids !=null and ids.size > 0">-->
+<!--			and csid in-->
+<!--				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">-->
+<!--					#{item}-->
+<!--				</foreach>-->
+<!--			</if>-->
+<!--		</where>-->
+<!--	</select>-->
+	
+<!--	<select id="getDtoByCsmcAndJclb" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select jcsj.csid,jcsj.jclb,jcsj.fcsid,jcsj.csdm,jcsj.csmc,jcsj.cspx,jcsj.cskz1,jcsj.cskz2,jcsj.cskz3,jcsj.cskz4,jcsj.sfmr,jcsj.bz -->
+<!--		from matridx_jcsj jcsj -->
+<!--		<where>-->
+<!--			jcsj.scbj!='1' and jcsj.jclb=#{jclb} and jcsj.csmc=#{csmc}-->
+<!--		</where>-->
+<!--	</select>-->
+	<select id="getInstopDtoList" parameterType="JcsjDto" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,fjcsj.cskz1 fcskz1,fjcsj.cskz2 fcskz2,
+		jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc
+			<if test="yzid !=null and yzid != ''">
+				,sjyzjg.jl as yzjgjl
+			</if>
+			from matridx_jcsj jc
+			left join matridx_jcsj fjcsj on jc.fcsid = fjcsj.csid
+			<if test="yzid !=null and yzid != ''">
+				left join igams_sjyzjg sjyzjg on sjyzjg.yzjg = jc.csid and sjyzjg.scbj = '0'
+			</if>
+			where jc.scbj !='1'
+			<if test="fcsid !=null and fcsid != ''">
+				and jc.fcsid =#{fcsid}
+			</if>
+			<if test="sfmr !=null and sfmr!= ''">
+				and jc.sfmr =#{sfmr}
+			</if>
+			<if test="yzid !=null and yzid != ''">
+				and sjyzjg.yzid =#{yzid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and jc.csid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fcsids != null and fcsids.length > 0 "  >
+				and jc.fcsid in
+				<foreach collection="fcsids" open="(" close=")" separator="," item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "fcsidList != null and fcsidList.size > 0 "  >
+				and jc.fcsid in
+				<foreach collection="fcsidList" open="(" close=")" separator="," item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "jclbs != null and jclbs.size > 0 "  >
+				and jc.jclb in
+				<foreach collection="jclbs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jclb !=null and jclb!= ''">
+				and jc.jclb =#{jclb}
+			</if>
+			<if test="csmc !=null and csmc!= ''">
+				and jc.csmc =#{csmc}
+			</if>
+			<if test="cskz1 !=null and cskz1 !=''">
+				and jc.cskz1 =#{cskz1}
+			</if>
+			<if test="cskz3 !=null and cskz3 !=''">
+				and jc.cskz3 =#{cskz3}
+			</if>
+			<if test="csdm !=null and csdm != ''">
+				and jc.csdm =#{csdm}
+			</if>
+			<if test="csid !=null and csid != ''">
+				and jc.csid =#{csid}
+			</if>
+			order by jc.jclb,jc.cspx,jc.csid
+	</select>
+	
+	<!-- 根据kzcs3和类别查询基础数据信息(检测项目用) -->
+<!--	<select id="getDtoByKzcs" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.sfmr,-->
+<!--		jc.bz,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,-->
+<!--		  jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,fcs.csmc fcsmc-->
+<!--		from matridx_jcsj jc-->
+<!--		left join matridx_jcsj fcs on fcs.csid=jc.fcsid-->
+<!--		<where>-->
+<!--			jc.scbj!='1' and jc.jclb=#{jclb} and jc.cskz3=#{cskz3} and jc.cskz1=#{cskz1}-->
+<!--		</where>-->
+<!--	</select>-->
+	<!-- 获取参数序号最大值 -->
+	<select id="getMax" parameterType="JcsjDto" resultType="java.lang.Integer">
+		select max(cspx) as num from matridx_jcsj
+		<where>
+			scbj!='1' and jclb=#{jclb}
+		</where>
+	</select>
+	
+<!--	&lt;!&ndash;更新消息类别信息&ndash;&gt;-->
+<!--	<update  id="updateXxlx" parameterType="JcsjModel">-->
+<!--		update matridx_jcsj set xgry = #{xgry},xgsj = LOCALTIMESTAMP-->
+<!--		<if test="csmc !=null and csmc != ''">-->
+<!--			,csmc = #{csmc}-->
+<!--		</if>-->
+<!--		<where>-->
+<!--			scbj!='1' and jclb=#{jclb} and csdm=#{csdm}-->
+<!--		</where>-->
+<!--	</update>	-->
+	
+<!--	&lt;!&ndash;更新消息类别的删除状态&ndash;&gt;-->
+<!--	<update id="deleteXxlx" parameterType="JcsjModel">-->
+<!--		update matridx_jcsj set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'-->
+<!--		<where>-->
+<!--			<if test="csdm !=null and csdm != ''">-->
+<!--				csdm = #{csdm}-->
+<!--			</if>-->
+<!--			<if test="jclb !=null and jclb != ''">-->
+<!--				and jclb = #{jclb}-->
+<!--			</if>-->
+<!--			<if test="ids !=null and ids.size > 0">-->
+<!--				and csdm in-->
+<!--				<foreach collection="ids" open="(" close=")" separator=","-->
+<!--					item="item">-->
+<!--					#{item}-->
+<!--				</foreach>-->
+<!--			</if>-->
+<!--		</where>-->
+<!--	</update>-->
+	
+	<!--  伙伴列表页面获取可选择的检测单位 -->
+	<select id="getPagesOptionJcdw" parameterType="JcsjDto" resultType="JcsjDto">
+	     select jc.csid, jc.csmc, jc.cspx
+	     from matridx_jcsj jc
+	     <where>
+	         jc.scbj='0' and
+             jc.jclb = #{jclb} and not exists(
+                 select 1
+                 from igams_hbdwqx dwqx
+                 <where>
+                     jc.csid = dwqx.jcdw and dwqx.hbid = #{cskz1}
+                 </where>
+             )	     
+	     </where>
+	</select>
+	
+<!--	&lt;!&ndash; 根据Ids查询基础数据 &ndash;&gt;-->
+<!--	<select id="selectDetectionUnit" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb-->
+<!--		from matridx_jcsj-->
+<!--		<where>-->
+<!--			scbj!='1'-->
+<!--			<if test="jclb !=null and jclb!= ''">-->
+<!--				and jclb =#{jclb}-->
+<!--			</if>-->
+<!--			<if test="ids !=null and ids.size > 0">-->
+<!--				and csid in-->
+<!--				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">-->
+<!--					#{item}-->
+<!--				</foreach>-->
+<!--			</if>-->
+<!--			<if test="ids == null or ids.size == 0">-->
+<!--				and sfmr = '1'-->
+<!--			</if>-->
+<!--		</where>-->
+<!--	</select>-->
+	
+<!--	&lt;!&ndash; 查询基础数据列表 &ndash;&gt;-->
+<!--	<select id="getListByFid" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--		select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,sfgb,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,case when sfmr='0' then '非默认'  when sfmr='1' then '默认'  end sfmrmc,-->
+<!--		  case when sfgb='0' then '否'  when sfgb='1' then '是'  end sfgbmc-->
+<!--		from matridx_jcsj jc-->
+<!--		where scbj !='1' and fcsid =#{fcsid} and jclb =#{jclb}-->
+<!--		order by cspx-->
+<!--	</select>-->
+	
+<!--	&lt;!&ndash; 根据参数代码和基础类别查找数据 &ndash;&gt;-->
+<!--	<select id="getDtoByCsdmAndJclb" parameterType="JcsjDto" resultType="JcsjDto">-->
+<!--	    select csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,sfmr,bz,-->
+<!--		  lrry,lrsj,xgry,xgsj,scry,scsj,scbj,sfgb-->
+<!--		from matridx_jcsj-->
+<!--		<where>-->
+<!--		    scbj !='1' and csdm = #{csdm} and jclb=#{jclb}-->
+<!--		</where>-->
+<!--        order by jclb,cspx-->
+<!--	</select>-->
+	
+	<!-- 基础数据的所有基础类别 -->
+	<select id="getJclbxx" resultType="String">
+	    select jclb
+		from matridx_jcsj
+	    where scbj ='0'
+		group by jclb
+		order by jclb
+	</select>
+	
+<!--	&lt;!&ndash; 根据类别查找该类别的所有基础数据 &ndash;&gt;-->
+<!--	<select id="getDtoListBylb" parameterType="String" resultType="JcsjDto">-->
+<!--	    select jc.csid, jc.jclb, jc.fcsid, jc.csdm, jc.csmc, jc.cspx, jc.cskz1, jc.cskz2, jc.cskz3, -->
+<!--        jc.cskz4,  jc.sfmr, jc.bz, jc.lrry, jc.lrsj, jc.xgry, jc.xgsj, jc.scry, jc.scsj, jc.scbj, jc.sfgb -->
+<!--        from matridx_jcsj jc-->
+<!--        <where>-->
+<!--           jc.scbj='0' and jclb=#{jclb}-->
+<!--        </where>-->
+<!--	</select>-->
+	<!-- 根据类别查找该类别的所有基础数据 -->
+<!--	<select id="getZjlx"  resultType="JcsjDto">-->
+<!--		select csmc-->
+<!--		from matridx_jcsj-->
+<!--		<where>-->
+<!--			scbj='0' and jclb='IDCARD_CATEGORY'-->
+<!--		</where>-->
+<!--	</select>-->
+	<!-- 查询基础数据（所有） -->
+	<select id="getJcsjListByIdsAndJclb" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,
+			   jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,jc.ffcsid,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,
+			   case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc
+		from matridx_jcsj jc
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				and jc.csid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jclb !=null and jclb!= ''">
+				and jc.jclb =#{jclb}
+			</if>
+		</where>
+		order by jc.jclb,jc.cspx,jc.csid
+	</select>
+	<!-- 根据csid查询基础数据（所有） -->
+	<select id="getJcsjByCsid" resultType="JcsjDto">
+		select jc.csid,jc.jclb,jc.fcsid,jc.csdm,jc.csmc,jc.cspx,jc.cskz1,jc.cskz2,jc.cskz3,jc.cskz4,jc.cskz5,jc.sfmr,jc.bz,jc.sfgb,
+		jc.lrry,jc.lrsj,jc.xgry,jc.xgsj,jc.scry,jc.scsj,jc.scbj,jc.ffcsid,case when jc.sfmr='0' then '非默认'  when jc.sfmr='1' then '默认'  end sfmrmc,
+		case when jc.sfgb='0' then '否'  when jc.sfgb='1' then '是'  end sfgbmc
+		from matridx_jcsj jc
+		where jc.csid =#{csid}
+	</select>
+
+	<!--删除某一基础类别-->
+	<delete  id="deleteByJclb">
+		delete from matridx_jcsj where jclb = #{jclb}
+	</delete>
+	<!--批量新增基础数据-->
+	<insert  id="batchInsertJcsjDtos">
+		insert into matridx_jcsj (csid,jclb,fcsid,csdm,csmc,cspx,cskz1,cskz2,cskz3,cskz4,cskz5,sfmr,bz,sfgb,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,ffcsid) values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.csid},
+			 #{item.jclb},
+			<if test="item.fcsid != null and item.fcsid != ''">
+				#{item.fcsid},
+			</if>
+			<if test="item.fcsid == null or item.fcsid == ''">
+				null,
+			</if>
+			<if test="item.csdm != null and item.csdm != ''">
+				#{item.csdm},
+			</if>
+			<if test="item.csdm == null or item.csdm == ''">
+				null,
+			</if>
+			<if test="item.csmc != null and item.csmc != ''">
+				#{item.csmc},
+			</if>
+			<if test="item.csmc == null or item.csmc == ''">
+				null,
+			</if>
+			<if test="item.cspx != null and item.cspx != ''">
+				cast(#{item.cspx} as numeric),
+			</if>
+			<if test="item.cspx == null or item.cspx == ''">
+				null,
+			</if>
+			<if test="item.cskz1 != null and item.cskz1 != ''">
+				#{item.cskz1},
+			</if>
+			<if test="item.cskz1 == null or item.cskz1 == ''">
+				null,
+			</if>
+			<if test="item.cskz2 != null and item.cskz2 != ''">
+				#{item.cskz2},
+			</if>
+			<if test="item.cskz2 == null or item.cskz2 == ''">
+				null,
+			</if>
+			<if test="item.cskz3 != null and item.cskz3 != ''">
+				#{item.cskz3},
+			</if>
+			<if test="item.cskz3 == null or item.cskz3 == ''">
+				null,
+			</if>
+			<if test="item.cskz4 != null and item.cskz4 != ''">
+				#{item.cskz4},
+			</if>
+			<if test="item.cskz4 == null or item.cskz4 == ''">
+				null,
+			</if>
+			<if test="item.cskz5 != null and item.cskz5 != ''">
+				cast(#{item.cskz5} as json),
+			</if>
+			<if test="item.cskz5 == null or item.cskz5 == ''">
+				null,
+			</if>
+			<if test="item.sfmr != null and item.sfmr != ''">
+				#{item.sfmr},
+			</if>
+			<if test="item.sfmr == null or item.sfmr == ''">
+				null,
+			</if>
+			<if test="item.bz != null and item.bz != ''">
+				#{item.bz},
+			</if>
+			<if test="item.bz == null or item.bz == ''">
+				null,
+			</if>
+			<if test="item.sfgb != null and item.sfgb != ''">
+				#{item.sfgb},
+			</if>
+			<if test="item.sfgb == null or item.sfgb == ''">
+				null,
+			</if>
+			<if test="item.lrry != null and item.lrry != ''">
+				#{item.lrry},
+			</if>
+			<if test="item.lrry == null or item.lrry == ''">
+				null,
+			</if>
+			<if test="item.lrsj != null and item.lrsj != ''">
+				cast(#{item.lrsj} as timestamp),
+			</if>
+			<if test="item.lrsj == null or item.lrsj == ''">
+				null,
+			</if>
+			<if test="item.xgry != null and item.xgry != ''">
+				#{item.xgry},
+			</if>
+			<if test="item.xgry == null or item.xgry == ''">
+				null,
+			</if>
+			<if test="item.xgsj != null and item.xgsj != ''">
+				cast(#{item.xgsj} as timestamp),
+			</if>
+			<if test="item.xgsj == null or item.xgsj == ''">
+				null,
+			</if>
+			<if test="item.scry != null and item.scry != ''">
+				#{item.scry},
+			</if>
+			<if test="item.scry == null or item.scry == ''">
+				null,
+			</if>
+			<if test="item.scsj != null and item.scsj != ''">
+				cast(#{item.scsj} as timestamp),
+			</if>
+			<if test="item.scsj == null or item.scsj == ''">
+				null,
+			</if>
+			<if test="item.scbj != null and item.scbj != ''">
+				#{item.scbj},
+			</if>
+			<if test="item.scbj == null or item.scbj == ''">
+				null,
+			</if>
+			<if test="item.ffcsid != null and item.ffcsid != ''">
+				#{item.ffcsid}
+			</if>
+			<if test="item.ffcsid == null or item.ffcsid == ''">
+				null
+			</if>
+			 )
+		</foreach>
+	</insert>
+	<insert id="insertList" parameterType="List">
+		insert into matridx_jcsj(
+		csid,
+		jclb,
+		fcsid,
+		csdm,
+		csmc,
+		cspx,
+		cskz1,
+		cskz2,
+		cskz3,
+		cskz4,
+		cskz5,
+		sfmr,
+		bz,
+		lrry,
+		lrsj,
+		scbj,
+		sfgb,
+		ffcsid
+		)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.csid},#{item.jclb},#{item.fcsid},#{item.csdm},#{item.csmc},cast(#{item.cspx} as numeric),#{item.cskz1},#{item.cskz2},#{item.cskz3},#{item.cskz4},cast(#{item.cskz5} as json) ,#{item.sfmr},#{item.bz},#{item.lrry},LOCALTIMESTAMP,'0',
+				#{item.sfgb},#{item.ffcsid}
+				)
+			</foreach>
+		</if>
+	</insert>
+	<select id="getListByFfid" parameterType="JcsjDto" resultType="JcsjDto">
+		SELECT
+			jcsj.csid,jcsj.csmc,jcsj.cskz1,jcsj.cskz2,fjcsj.csdm fcsdm,jcsj.csdm
+		FROM
+			matridx_jcsj jcsj
+				LEFT JOIN matridx_jcsj fjcsj ON fjcsj.csid = jcsj.fcsid and fjcsj.scbj = '0'
+				LEFT JOIN matridx_jcsj ffjcsj ON ffjcsj.csid = fjcsj.fcsid and ffjcsj.scbj = '0'
+		WHERE jcsj.scbj = '0' and jcsj.jclb = #{jclb} AND ffjcsj.csid = #{ffcsid}
+	</select>
+
+
+	<select id="getJcxmCsmcByCsid" parameterType="Map" resultType="JcsjDto">
+		select case when tmp.fcsid is not null then jcsj.csmc || '-' || tmp.csmc else jcsj.csmc end csmc
+		from matridx_jcsj jcsj
+
+		left join (
+		<if test="jczxmList !=null and jczxmList.size > 0">
+			select csid,csmc,fcsid from matridx_jcsj where csid in
+			<foreach collection="jczxmList" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jczxmList ==null ">
+			 select '' as csid,'' as csmc,'' as fcsid from matridx_jcsj
+		</if>
+		) tmp on tmp.fcsid=jcsj.csid
+		where jcsj.csid in
+		<foreach collection="jcxmList" separator="," open="(" close=") "
+				 item="item" index="index">
+			#{item}
+		</foreach>
+
+	</select>
+
+	<select id="getDtoAndSubListByJclb" parameterType="Map" resultType="JcsjDto">
+		select jc.csid fcsid,jc.jclb fjclb,jc.csdm fcsdm,jc.csmc fcsmc,jc.cspx fcspx,
+		subjc.cskz1,subjc.cskz2,subjc.cskz3,subjc.cskz4,subjc.cskz5,subjc.sfmr,subjc.bz,subjc.sfgb,
+		subjc.csid,subjc.csdm,subjc.csmc
+		from matridx_jcsj jc
+		left join matridx_jcsj subjc on jc.csid=subjc.fcsid and subjc.scbj ='0'
+		where jc.scbj ='0' and jc.jclb =#{jclb}
+		order by jc.jclb,jc.cspx asc,jc.csid,subjc.cspx,subjc.csid
+	</select>
+</mapper>

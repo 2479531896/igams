@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IZltsglDao">
+
+    <select id="getPagedDtoList" parameterType="ZltsglDto" resultType="ZltsglDto">
+        select zltsgl.zltsid,zltsgl.ly,zltsgl.ywid,zltsgl.ywlx,zltsgl.tsnr,zltsgl.cskz1,zltsgl.cskz2,zltsgl.zt,zltsgl.wtjs,zltsgl.tsxm,tsxm.csmc as tsxmmc,
+        zltsgl.xdcs,zltsgl.ydcs,zltsgl.xzgs,zltsgl.yzgs,zltsgl.jl,zltsgl.wtd,zltsgl.sfyx,to_char(zltsgl.wcsj,'yyyy-mm-dd hh24:mi:ss') as wcsj,zltsgl.sfwc,ly.csmc as lymc,
+        case when zltsgl.wcsj is not null then date_part('hour',to_char(zltsgl.wcsj  ,'yyyy-MM-dd hh24:MI:ss')::timestamp  -  to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss')::timestamp) else null end clhs,
+        to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss') as lrsj,zltsgl.lrry,lrry.zsxm as lrrymc,zltsgl.xdcs||'/'||zltsgl.ydcs as dcqk,zltsgl.xzgs||'/'||zltsgl.yzgs as zgqk,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.hzxm else sj.hzxm end hzxm,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.nbbm else sj.nbbm end nbbm,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_yblx.csmc else yblx.csmc end yblxmc
+        from igams_zltsgl zltsgl
+        left join matridx_jcsj ly on ly.csid=zltsgl.ly and ly.scbj='0'
+        left join matridx_jcsj tsxm on tsxm.csid=zltsgl.tsxm and tsxm.scbj='0'
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = zltsgl.lrry and lrry.scbj='0'
+        left join igams_sjyc yc on yc.ycid=zltsgl.ywid and yc.scbj='0'
+        left join igams_sjxx yc_sj on yc_sj.sjid=yc.ywid and yc_sj.scbj='0'
+        left join matridx_jcsj yc_yblx on yc_yblx.csid=yc_sj.yblx and yc_yblx.scbj='0'
+        left join igams_sjxx sj on sj.sjid=zltsgl.ywid and sj.scbj='0'
+        left join matridx_jcsj yblx on yblx.csid=sj.yblx and yblx.scbj='0'
+        <where>
+            zltsgl.scbj='0'
+            <if test="entire != null and entire != ''">
+                and (sj.ybbh ilike '%'||#{entire}||'%'
+                or yc_sj.ybbh ilike '%'||#{entire}||'%'
+                or sj.nbbm ilike '%'||#{entire}||'%'
+                or yc_sj.nbbm ilike '%'||#{entire}||'%'
+                or sj.hzxm ilike '%'||#{entire}||'%' or yc_sj.hzxm ilike '%'||#{entire}||'%'
+                or lrry.zsxm like '%'||#{entire}||'%'
+                or zltsgl.tsnr like '%'||#{entire}||'%'
+                or zltsgl.wtjs like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and (sj.ybbh ilike '%'||#{ybbh}||'%' or yc_sj.ybbh ilike '%'||#{ybbh}||'%')
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and (sj.nbbm ilike '%'||#{nbbm}||'%' or yc_sj.nbbm ilike '%'||#{nbbm}||'%')
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and (sj.hzxm ilike '%'||#{hzxm}||'%' or yc_sj.hzxm ilike '%'||#{hzxm}||'%')
+            </if>
+            <if test="lrrymc != null and lrrymc != ''">
+                and lrry.zsxm like '%'||#{lrrymc}||'%'
+            </if>
+            <if test="tsnr != null and tsnr != ''">
+                and zltsgl.tsnr like '%'||#{tsnr}||'%'
+            </if>
+            <if test="wtjs != null and wtjs != ''">
+                and zltsgl.wtjs like '%'||#{wtjs}||'%'
+            </if>
+            <if test="sfyx != null and sfyx != ''">
+                and zltsgl.sfyx = #{sfyx}
+            </if>
+            <if test="sfwc != null and sfwc != ''">
+                and zltsgl.sfwc = #{sfwc}
+            </if>
+            <if test = "lys != null and lys.length > 0 "  >
+                and zltsgl.ly in
+                <foreach collection="lys" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(zltsgl.lrsj,'yyyy-mm-dd hh24:mi:ss') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(zltsgl.lrsj,'yyyy-mm-dd hh24:mi:ss') &lt;= #{lrsjend}
+            </if>
+            <if test="wcsjstart != null and wcsjstart != ''">
+                and to_char(zltsgl.wcsj,'yyyy-mm-dd hh24:mi:ss') &gt;= #{wcsjstart}
+            </if>
+            <if test="wcsjend != null and wcsjend != ''">
+                and to_char(zltsgl.wcsj,'yyyy-mm-dd hh24:mi:ss') &lt;= #{wcsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="ZltsglDto" resultType="ZltsglDto">
+        select zltsgl.zltsid,zltsgl.ly,zltsgl.ywid,zltsgl.ywlx,zltsgl.tsnr,zltsgl.cskz1,zltsgl.cskz2,zltsgl.zt,zltsgl.wtjs,zltsgl.tsxm,tsxm.csmc as tsxmmc,
+        zltsgl.xdcs,zltsgl.ydcs,zltsgl.xzgs,zltsgl.yzgs,zltsgl.jl,zltsgl.wtd,zltsgl.sfyx,to_char(zltsgl.wcsj,'yyyy-mm-dd hh24:mi:ss') as wcsj,zltsgl.sfwc,ly.csmc as lymc,
+        case when zltsgl.wcsj is not null then date_part('hour',to_char(zltsgl.wcsj  ,'yyyy-MM-dd hh24:MI:ss')::timestamp  -  to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss')::timestamp) else null end clhs,
+        to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss') as lrsj,zltsgl.lrry,lrry.zsxm as lrrymc,zltsgl.xdcs||'/'||zltsgl.ydcs as dcqk,zltsgl.xzgs||'/'||zltsgl.yzgs as zgqk,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.sjid else sj.sjid end sjid,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.hzxm else sj.hzxm end hzxm,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.nbbm else sj.nbbm end nbbm,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_sj.nl else sj.nl end nl,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_yblx.csmc else yblx.csmc end yblxmc,
+        case when zltsgl.ywlx='COMPLAINTS_EXCEPTION' then yc_jcdw.csmc else jcdw.csmc end jcdwmc
+        from igams_zltsgl zltsgl
+        left join matridx_jcsj ly on ly.csid=zltsgl.ly and ly.scbj='0'
+        left join matridx_jcsj tsxm on tsxm.csid=zltsgl.tsxm and tsxm.scbj='0'
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = zltsgl.lrry and lrry.scbj='0'
+        left join igams_sjyc yc on yc.ycid=zltsgl.ywid and yc.scbj='0'
+        left join igams_sjxx yc_sj on yc_sj.sjid=yc.ywid and yc_sj.scbj='0'
+        left join matridx_jcsj yc_yblx on yc_yblx.csid=yc_sj.yblx and yc_yblx.scbj='0'
+        left join matridx_jcsj yc_jcdw on yc_jcdw.csid = yc.jcdw and yc_jcdw.scbj='0'
+        left join igams_sjxx sj on sj.sjid=zltsgl.ywid and sj.scbj='0'
+        left join matridx_jcsj yblx on yblx.csid=sj.yblx and yblx.scbj='0'
+        left join matridx_jcsj jcdw on jcdw.csid=sj.jcdw and jcdw.scbj='0'
+        <where>
+            zltsgl.scbj='0' and zltsgl.zltsid = #{zltsid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="ZltsglDto" resultType="ZltsglDto">
+        select zltsgl.zltsid,zltsgl.ly,zltsgl.ywid,zltsgl.ywlx,zltsgl.tsnr,zltsgl.cskz1,zltsgl.cskz2,zltsgl.zt,zltsgl.wtjs,zltsgl.tsxm,tsxm.csmc as tsxmmc,
+        zltsgl.xdcs,zltsgl.ydcs,zltsgl.xzgs,zltsgl.yzgs,zltsgl.jl,zltsgl.wtd,zltsgl.sfyx,to_char(zltsgl.wcsj,'yyyy-mm-dd hh24:mi:ss') as wcsj,zltsgl.sfwc,ly.csmc as lymc,
+        case when zltsgl.wcsj is not null then date_part('hour',to_char(zltsgl.wcsj  ,'yyyy-MM-dd hh24:MI:ss')::timestamp  -  to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss')::timestamp) else null end clhs,
+        to_char(zltsgl.lrsj,'yyyy-MM-dd hh24:MI:ss') as lrsj,zltsgl.lrry,lrry.zsxm as lrrymc,zltsgl.xdcs||'/'||zltsgl.ydcs as dcqk,zltsgl.xzgs||'/'||zltsgl.yzgs as zgqk
+        from igams_zltsgl zltsgl
+        left join matridx_jcsj ly on ly.csid=zltsgl.ly and ly.scbj='0'
+        left join matridx_jcsj tsxm on tsxm.csid=zltsgl.tsxm and tsxm.scbj='0'
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = zltsgl.lrry and lrry.scbj='0'
+        <where>
+            zltsgl.scbj='0'
+            <if test="ywids !=null and ywids.size >0" >
+                and zltsgl.ywid in
+                <foreach collection="ywids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="ywlx != null and ywlx != ''">
+                and zltsgl.ywlx = #{ywlx}
+            </if>
+        </where>
+    </select>
+
+    <select id="getInspectionInfo" parameterType="ZltsglDto" resultType="ZltsglDto">
+        select sj.nbbm,sj.nl,sj.hzxm, jcdw.csmc jcdwmc,jc.csmc yblxmc,sj.sjid
+        from igams_sjxx sj
+        left join matridx_jcsj jc on jc.csid=sj.yblx
+        left join matridx_jcsj jcdw on jcdw.csid = sj.jcdw
+        <where>
+            sj.scbj!='1'
+            <if test="ywid != null and ywid != ''">
+                and sj.sjid=#{ywid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getItemSelectionInfo" parameterType="ZltsglDto" resultType="ZltsglDto">
+        select xm.jcxmid,jcxm.csmc as jcxmmc from(
+        select jcxmid
+        from igams_sjjcxm
+        <where>
+            scbj!='1'
+            and sjid=#{sjid}
+        </where>
+        group by jcxmid
+        )xm
+        left outer join matridx_jcsj jcxm on xm.jcxmid = jcxm.csid and jcxm.scbj='0'
+    </select>
+
+    <insert id="insert" parameterType="ZltsglDto">
+        insert into igams_zltsgl(zltsid
+        <if test="ly != null and ly!= ''">
+            ,ly
+        </if>
+        <if test="ywid != null and ywid != ''">
+            ,ywid
+        </if>
+        <if test="ywlx != null and ywlx != ''">
+            ,ywlx
+        </if>
+        <if test="tsnr != null and tsnr!= ''">
+            ,tsnr
+        </if>
+        <if test="cskz1 != null and cskz1!= ''">
+            ,cskz1
+        </if>
+        <if test="cskz2 != null and cskz2!= ''">
+            ,cskz2
+        </if>
+        <if test="zt != null and zt!= ''">
+            ,zt
+        </if>
+        <if test="wtjs != null and wtjs!= ''">
+            ,wtjs
+        </if>
+        <if test="tsxm != null and tsxm!= ''">
+            ,tsxm
+        </if>
+        <if test="jl != null and jl!= ''">
+            ,jl
+        </if>
+        <if test="wtd != null and wtd!= ''">
+            ,wtd
+        </if>
+        <if test="wcsj != null and wcsj!= ''">
+            ,wcsj
+        </if>
+        ,xdcs,ydcs,xzgs,yzgs,sfwc,lrry,lrsj,scbj
+        )
+        values(#{zltsid}
+        <if test="ly != null and ly!= ''">
+            ,#{ly}
+        </if>
+        <if test="ywid != null and ywid != ''">
+            ,#{ywid}
+        </if>
+        <if test="ywlx != null and ywlx != ''">
+            ,#{ywlx}
+        </if>
+        <if test="tsnr != null and tsnr!= ''">
+            ,#{tsnr}
+        </if>
+        <if test="cskz1 != null and cskz1!= ''">
+            ,#{cskz1}
+        </if>
+        <if test="cskz2 != null and cskz2!= ''">
+            ,#{cskz2}
+        </if>
+        <if test="zt != null and zt!= ''">
+            ,#{zt}
+        </if>
+        <if test="wtjs != null and wtjs!= ''">
+            ,#{wtjs}
+        </if>
+        <if test="tsxm != null and tsxm!= ''">
+            ,#{tsxm}
+        </if>
+        <if test="jl != null and jl!= ''">
+            ,#{jl}
+        </if>
+        <if test="wtd != null and wtd!= ''">
+            ,#{wtd}
+        </if>
+        <if test="wcsj != null and wcsj!= ''">
+            ,cast(#{wcsj} as timestamp)
+        </if>
+        ,cast(#{xdcs} as numeric),0,0,0,'0',#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="ZltsglDto">
+        update igams_zltsgl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="ly != null and ly!= ''">
+                ,ly=#{ly}
+            </if>
+            <if test="ywid != null and ywid != ''">
+                ,ywid=#{ywid}
+            </if>
+            <if test="ywlx != null and ywlx != ''">
+                ,ywlx=#{ywlx}
+            </if>
+            <if test="tsnr != null and tsnr!= ''">
+                ,tsnr=#{tsnr}
+            </if>
+            <if test="cskz1 != null and cskz1!= ''">
+                ,cskz1=#{cskz1}
+            </if>
+            <if test="cskz2 != null and cskz2!= ''">
+                ,cskz2=#{cskz2}
+            </if>
+            <if test="zt != null and zt!= ''">
+                ,zt=#{zt}
+            </if>
+            <if test="wtjs != null and wtjs!= ''">
+                ,wtjs=#{wtjs}
+            </if>
+            <if test="tsxm != null and tsxm!= ''">
+                ,tsxm=#{tsxm}
+            </if>
+            <if test="jl != null and jl!= ''">
+                ,jl=#{jl}
+            </if>
+            <if test="wtd != null and wtd!= ''">
+                ,wtd=#{wtd}
+            </if>
+            <if test="wcsj != null and wcsj!= ''">
+                ,wcsj=cast(#{wcsj} as timestamp)
+            </if>
+            ,xdcs=(select count(tsclqkid) from igams_tsclqk where scbj='0' and lx='1' and zltsid=#{zltsid})
+            ,ydcs=(select count(tsclqkid) from igams_tsclqk where scbj='0' and lx='1' and sfcl='1' and zltsid=#{zltsid})
+            ,xzgs=(select count(tsclqkid) from igams_tsclqk where scbj='0' and lx='2' and zltsid=#{zltsid})
+            ,yzgs=(select count(tsclqkid) from igams_tsclqk where scbj='0' and lx='2' and sfcl='1' and zltsid=#{zltsid})
+            <if test="sfwc != null and sfwc!= ''">
+                ,sfwc=#{sfwc}
+            </if>
+            <if test="sfyx != null and sfyx!= ''">
+                ,sfyx=#{sfyx}
+            </if>
+        </set>
+        <where>
+            zltsid =#{zltsid}
+        </where>
+    </update>
+
+    <update id="conclude" parameterType="ZltsglDto">
+        update igams_zltsgl
+        <set>
+            xgry=#{xgry},xgsj=LOCALTIMESTAMP,jl=#{jl},wtd=#{wtd},sfwc=#{sfwc},sfyx=#{sfyx},xzgs=(select count(tsclqkid) from igams_tsclqk where scbj='0' and lx='2' and zltsid=#{zltsid})
+        </set>
+        <where>
+            zltsid =#{zltsid}
+        </where>
+    </update>
+
+    <update id="delete" parameterType="ZltsglDto">
+        update igams_zltsgl
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zltsid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

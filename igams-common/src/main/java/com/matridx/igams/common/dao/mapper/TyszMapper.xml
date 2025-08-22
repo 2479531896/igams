@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ITyszDao" >
+    <select id="getPagedDtoList" parameterType="TyszDto" resultType="TyszDto">
+        select tysz.tyszid,tysz.zyid,tysz.ztid,tysz.yjzyid,tysz.ejzyid,
+               ztlx.csmc as ztmc,xtzy.zybt,xtzy_yj.zybt as yjzybt,xtzy_ej.zybt as ejzybt
+        from igams_tysz tysz
+        left join matridx_jcsj ztlx on ztlx.csid=tysz.ztid and ztlx.scbj='0'
+        left join matridx_xtzy xtzy on xtzy.zyid=tysz.zyid
+        left join matridx_xtzy xtzy_yj on xtzy_yj.zyid=tysz.yjzyid
+        left join matridx_xtzy xtzy_ej on xtzy_ej.zyid=tysz.ejzyid
+        <where>
+            tysz.scbj='0'
+            <if test="ztmc != null and ztmc !=''">
+                and ztlx.csmc like '%'||#{ztmc}||'%'
+            </if>
+            <if test="zybt != null and zybt !=''">
+                and xtzy.zybt like '%'||#{zybt}||'%'
+            </if>
+            <if test="yjzybt != null and yjzybt !=''">
+                and xtzy_yj.zybt like '%'||#{yjzybt}||'%'
+            </if>
+            <if test="ejzybt != null and ejzybt !=''">
+                and xtzy_ej.zybt like '%'||#{ejzybt}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="TyszDto" resultType="TyszDto">
+        select tysz.tyszid,tysz.zyid,tysz.ztid,tysz.yjzyid,tysz.ejzyid,
+        ztlx.csmc as ztmc,xtzy.zybt,xtzy_yj.zybt as yjzybt,xtzy_ej.zybt as ejzybt,ztlx.cskz2 as ztcskz2
+        from igams_tysz tysz
+        left join matridx_jcsj ztlx on ztlx.csid=tysz.ztid and ztlx.scbj='0'
+        left join matridx_xtzy xtzy on xtzy.zyid=tysz.zyid
+        left join matridx_xtzy xtzy_yj on xtzy_yj.zyid=tysz.yjzyid
+        left join matridx_xtzy xtzy_ej on xtzy_ej.zyid=tysz.ejzyid
+        <where>
+            tysz.scbj='0'
+            <if test="tyszid != null and tyszid !='' and (verifyFlag==null or verifyFlag=='')">
+                and tysz.tyszid=#{tyszid}
+            </if>
+            <if test="ejzyid != null and ejzyid !=''">
+                and tysz.ejzyid=#{ejzyid}
+            </if>
+            <if test="tyszid != null and tyszid !='' and verifyFlag != null and verifyFlag !='' and verifyFlag=='1'.toString">
+                and tysz.tyszid!=#{tyszid}
+            </if>
+        </where>
+    </select>
+
+    <select id="getMenuList" parameterType="TyszDto" resultType="TyszDto">
+        select xtzy.zyid,xtzy.zybt
+        from matridx_xtzy xtzy
+        <where>
+            xtzy.cdcc= cast (#{cdcc} as decimal)
+            <if test="cdcc !=null and cdcc != '' and cdcc=='3'.toString">
+                and xtzy.fwlj is not null and xtzy.fwlj != ''
+            </if>
+            <if test="fjd !=null and fjd != ''">
+                and xtzy.fjd=#{fjd}
+            </if>
+            <if test="fbsqz !=null and fbsqz != ''">
+                and xtzy.fbsqz=#{fbsqz}
+            </if>
+            <if test="fbsqz ==null or fbsqz == ''">
+                and (xtzy.fbsqz is null or xtzy.fbsqz ='')
+            </if>
+        </where>
+        order by xtzy.xssx
+    </select>
+    
+    <select id="getButtonList" parameterType="TyszDto" resultType="TyszDto">
+        select czb.czdm,dm.czmc
+        from  matridx_zyczb czb
+        left outer join matridx_czdm dm on dm.czdm = czb.czdm
+        where czb.czdm is not null
+          and zyid = #{zyid}
+        order by xssx
+    </select>
+
+    <insert id="insert" parameterType="TyszDto">
+        insert into igams_tysz(tyszid
+        <if test="zyid != null and zyid!= ''">
+            ,zyid
+        </if>
+        <if test="ztid != null and ztid != ''">
+            ,ztid
+        </if>
+        <if test="yjzyid != null and yjzyid != ''">
+            ,yjzyid
+        </if>
+        <if test="ejzyid != null and ejzyid!= ''">
+            ,ejzyid
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(#{tyszid}
+        <if test="zyid != null and zyid!= ''">
+            ,#{zyid}
+        </if>
+        <if test="ztid != null and ztid != ''">
+            ,#{ztid}
+        </if>
+        <if test="yjzyid != null and yjzyid != ''">
+            ,#{yjzyid}
+        </if>
+        <if test="ejzyid != null and ejzyid!= ''">
+            ,#{ejzyid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="delete" parameterType="TyszDto">
+        update igams_tysz
+        <set>
+            scbj='1',
+            scsj=LOCALTIMESTAMP,
+            scry=#{scry}
+        </set>
+        <where>
+            scbj='0'
+            and tyszid in
+            <foreach collection="ids" separator="," open="(" close=")" item="item" index="index">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="update" parameterType="TyszDto">
+        UPDATE igams_tysz set
+        xgsj = LOCALTIMESTAMP ,xgry = #{xgry}
+        <if test="zyid != null and zyid!= ''">
+            ,zyid=#{zyid}
+        </if>
+        <if test="ztid != null and ztid != ''">
+            ,ztid=#{ztid}
+        </if>
+        <if test="yjzyid != null and yjzyid != ''">
+            ,yjzyid=#{yjzyid}
+        </if>
+        <if test="ejzyid != null and ejzyid!= ''">
+            ,ejzyid=#{ejzyid}
+        </if>
+        <where>
+            tyszid= #{tyszid}
+        </where>
+    </update>
+</mapper>

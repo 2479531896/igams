@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>送检快捷信息</title>
+		<!--Bootstrap-table插件-->
+		<link href="/js/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet" type="text/css" />
+		<script src="/js/plugins/bootstrap-table/bootstrap-table.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js" type="text/javascript" charset="utf-8"></script>
+		<link href="/js/plugins/bootstrap-table/bootstrap-table-pagejump.css" rel="stylesheet">
+		<script src="/js/plugins/bootstrap-table/bootstrap-table-pagejump.js"></script>
+		<!--Bootstrap-table 拖拽插件-->
+		<script src="/js/plugins/bootstrap-table/extensions/colresizable/colResizable-1.6.js?v=20250108v1" charset="utf-8"></script>
+		<!--Bootstrap-table 样式-->
+		<link href="/js/plugins/bootstrap-table/themes/bulma/bootstrap-table-bulma.min.css" rel="stylesheet" type="text/css" />
+	
+		<script type="text/javascript" src="/js/wechat/informed/wechat_sjysxxList.js?v20230330" charset="utf-8"></script>
+	<style>
+		a{
+			text-decoration: none;
+		}
+		.checked{
+			background-color:#72C5FD ;
+		}
+		 #tab{  
+        	width:100%;  
+         	table-layout:fixed;/* 只有定义了表格的布局算法为fixed，下面td的定义才能起作用。 */  
+ 	    } 
+ 	 	#tab  td{  
+          	word-break:keep-all;/* 不换行 */  
+          	white-space:nowrap;/* 不换行 */  
+         	overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */  
+         	padding-right:0px;
+        }  
+        #tab th{
+        	padding-right:0px;
+        }
+        
+        .bgcolor{
+       		 background-color:#E8FAFF; 
+       		 font-size:12px;
+        }
+        #serachBtn{
+        	background: url("/images/search.png") no-repeat;
+        	border-style: none;
+        	background-size: contain;
+        	margin-left: 6%;
+        	outline: none; 
+        }
+		#serachBtnInfo{
+			background: url("/images/search.png") no-repeat;
+			border-style: none;
+			background-size: contain;
+			margin-left: 6%;
+			outline: none;
+		}
+        #backBtn{
+        background: url("/images/back.png") no-repeat;
+        	border-style: none;
+        	background-size: contain;
+        	outline: none; 
+        	margin-top:0.5%;
+        }
+        #hospital_list th
+        {
+        	background: #FFFFFF;
+        }
+        #hospital_list th div
+        {
+        	color:#696969;
+        }
+	</style>
+</head>
+<body>
+<div id="mybody">
+	<div class="panel panel-default" >
+	    <div class="panel-body" style="padding:0px;">
+			<div class="col-md-12 col-sm-12 col-xs-12" style="margin-top: 10px;margin-bottom: 10px;" id="tabsearch">
+				<input id="searchParamInfo" name="searchParamInfo" class="col-md-7 col-sm-7 col-xs-7" placeholder="请输入医师名称" style="height:30px;border-radius: 5px;border: 1px solid #C9C9C9;margin-left:5%"></input>
+				<button id="serachBtnInfo" type ="button" class="col-md-2 col-sm-2 col-xs-2 btn btn-default" onclick="searchDoctorResult(true)"></button>
+			</div>
+	    	<table id="tab" class="table table-condensed" style="margin-bottom: 0px;">
+				<thead>
+					<tr class="success">
+						<th style="font-weight: bold;width:41%;">医院名称</th>
+						<th style="display:none;">电话</th>
+						<th style="font-weight: bold;width:22%;">科室</th>
+						<th style="font-weight: bold;width:22%;">医师</th>
+						<th style="display:none;">合作伙伴</th>
+						<th style="display:none;">检测单位</th>
+						<th style="font-weight: bold;width:15%;">操作</th>
+						<!-- <th style="display: none;">单位ID</th> -->
+					</tr>
+				</thead>
+				<tbody id="tbody">
+					<tr th:each="list:${sjysList}" class="tbody_tr" state="up" th:dwmc="${list.dwmc}">
+						<td th:if="${list.ysid ==''}"  style="font-weight: bold;" th:text="${list.sjdwjc}"></td>
+						<td th:if="${list.ysid !=''}" th:data-dwmc="${list.dwmc}"  th:text="${list.sjdwjc}" flg="1"></td>
+						
+						<td th:if="${list.ysdh ==''}" style="display:none;"></td>
+						<td th:if="${list.ysdh !=''}" style="display:none;" th:text="${list.ysdh}"></td>
+						
+						<td th:if="${list.qtks ==''}"><span class="glyphicon glyphicon-menu-down"></span></td>
+						<td th:if="${list.qtks !=''}" th:dwid="${list.ks}" th:text="${list.qtks}" th:kzcs=${list.kzcs} ></td>
+						
+						<td th:if="${list.sjys ==''}" ><span class="glyphicon glyphicon-menu-down"></span></td>
+						<td th:if="${list.sjys !=''}" th:text="${list.sjys}"></td>
+						
+						<td th:if="${list.dbm ==''}" style="display:none;"></td>
+						<td th:if="${list.dbm !=''}" style="display:none;" th:text="${list.dbm}"></td>
+						
+						<td th:if="${list.jcdw ==''}" style="display:none;"></td>
+						<td th:if="${list.jcdw !=''}" style="display:none;" th:text="${list.jcdw}"></td>
+						
+						<td th:if="${list.ysid ==''}" style="padding-right:6px;"><span class="glyphicon glyphicon-menu-down"></span></td>
+						<td th:if="${list.ysid !=''}" class="copyBtn"  style="padding-right:6px;"><a href="javascript:void(0)" th:onclick="copysjyxx($(this).parent().parent(),event)">复制</a></td>
+						<td th:if="${list.ysid !=''}" class="removeBtn"  style="display:none;padding-right:6px;"><a href="javascript:void(0)" th:onclick="delsjyxx([[${list.ysid}]],event)">删除</a></td>
+						<td th:text="${list.sjdw}" style="display:none;" ></td>
+						<td th:text="${list.sjdwbj}" style="display:none;"></td>
+					</tr>
+				</tbody>
+			</table>
+			<div id="fromdiv" class="col-md-12 col-sm-12 col-xs-12" style="padding:0px;display: none;">
+				<form data-bs-toggle="validation" id="saveFrom" class="form-horizontal sl_all_form blue-second-skin"  enctype="multipart/form-data">
+					<input id="wxid" name="wxid" type="hidden" th:value="${sjysxxDto.wxid}" class="form-control"/>
+					<input type="hidden" id="ddid" name="ddid" th:value="${sjysxxDto.ddid}">
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+						<input id="sjdw" name="sjdw" type="hidden"/>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			<span style="color: red;">*</span>医院名称
+			         		</label>
+			         		<div class="col-xs-8">
+								<input id="dwmc" name="dwmc" type="text" class="form-control" readonly="readonly" validate="{required:true,stringMaxLength:64}" />
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			<span style="color: red;">*</span>科&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;室
+			         		</label>
+			         		<div class="col-xs-8">
+								<select id="ks" name="ks"  class="form-control chosen-select" validate="{required:true}" >
+		                        	<option class="ksmc" th:if="${sjdwlist!=null && sjdwlist.size() > 0}"  th:each="list:${sjdwlist}" th:id="${list.dwid+list.dwmc}"  th:value="${list.dwid}"  th:text="${list.dwmc}" th:cskz="${list.kzcs}"></option>
+			 					</select>
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12" id="qtks_div" style="display:none;">
+						<div class="form-group">
+							<label for="" class="col-xs-4 col-md-4 control-label">
+								<span id="qtkscheck" style="color: red;" >*</span> 其他科室
+							</label>
+							<div class="col-xs-8">
+								<input type="text" id="qtks" name="qtks"  validate="{required:true}" class="form-control" disabled="disabled"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			<span style="color: red;">*</span>检测单位
+			         		</label>
+			         		<div class="col-xs-8">
+								<select name="jcdw"  class="form-control chosen-select" validate="{required:true}" >
+		                        	<option th:if="${unitlist!=null && unitlist.size() > 0}"  th:each="list:${unitlist}" th:id="${list.csid}"  th:value="${list.csid}"  th:text="${list.csmc}"></option>
+			 					</select>
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			<span style="color: red;">*</span>主治医师
+			         		</label>
+			         		<div class="col-xs-8">
+								<input id="sjys" name="sjys" type="text" class="form-control" validate="{required:true,stringMaxLength:64}" />
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			医师电话
+			         		</label>
+			         		<div class="col-xs-8">
+								<input id="ysdh" name="ysdh" type="text" class="form-control" validate="{stringMaxLength:64}" />
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			        	<div class="form-group">
+			         		<label for="" class="col-xs-4 col-md-4 control-label">
+			         			<span style="color: red;">*</span>合作伙伴
+			         		</label>
+			         		<div class="col-xs-8">
+								<input id="dbm" name="dbm" type="text" class="form-control" validate="{required:true,stringMaxLength:64}" />
+							</div>
+			   			</div>
+			   		</div>
+			   		<div class="col-md-12 col-sm-12 col-xs-12">
+			   			<div style="float: right;">
+				   			<button type="button" class="btn btn-info" id="savekjxx" onclick="saveKjxx()">保存</button>
+				   			<button type="button" class="btn btn_default" onclick="cancelSave()">取消</button>
+			   			</div>
+			   		</div>
+				</form>
+			</div>
+			<div id="hospital_formSearch" class="col-md-12 col-sm-12 col-xs-12" style="padding:0px;display: none;">
+				<div id="myAlert" class="col-md-12 col-sm-12 col-xs-12 alert alert-success" style="margin-bottom: 10px;padding:10px;">
+		    		若未查询到结果，请查询选择'其他'!
+				</div>
+				<div class="col-md-12 col-sm-12 col-xs-12" style="padding-left:5px; margin-bottom: 20px;">
+					<button id="backBtn" type ="button" class="col-md-1 col-sm-1 col-xs-1 btn btn-default" onclick="backToFirst()">
+					</button>
+					<input id="searchParam" name="searchParam" class="col-md-7 col-sm-7 col-xs-7" placeholder="请输入单位名称" style="height:30px;border-radius: 5px;border: 1px solid #C9C9C9;margin-left:5%"></input>
+					<button id="serachBtn" type ="button" class="col-md-2 col-sm-2 col-xs-2 btn btn-default" onclick="searchHospitaleResult(true)">
+					</button>
+				</div>
+				<table id="hospital_list" class="table table-borderedtable-hidden "></table>
+			</div>
+	    </div>
+	</div>
+	<div id="btn_addKjxx" style="min-height:30px;text-align:center;line-height: 30px;padding: 0px;margin-top:5px;" class="col-md-12 col-sm-12">
+		<button type ="button" class="btn btn-info col-md-6 col-sm-6 col-xs-6" style="border:1px solid #DDDDDD;height:100% !important;" onclick="createSjkjxx()">
+			<span class="glyphicon glyphicon-plus"></span>
+			<span style="font-size:18px;">新建</span>
+		</button>
+		<button type ="button" class="btn btn-warning col-md-6 col-sm-6 col-xs-6" style="border:1px solid #DDDDDD;height:100% !important;" onclick="changeBtnClick()">
+			<span class="glyphicon glyphicon-random"></span>
+			<span style="font-size:18px;">切换&nbsp;(删除&复制)</span>
+		</button>
+	</div>
+</div>
+</body>
+</html>

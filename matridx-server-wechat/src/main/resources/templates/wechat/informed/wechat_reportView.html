@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta content="webkit" name="renderer" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="Copyright" content="matridx" />
+	<link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+	<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+	<title>送检系统</title>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css?v=20250226v2" />
+	<script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+	<!--jQuery常用工具扩展库：基础工具,资源加载工具,元素尺寸相关工具 -->
+	<script type="text/javascript" src="/js/jquery.utils.contact-min.js" charset="utf-8"></script>
+	<!--bootstrap -->
+	<script type="text/javascript" src="/js/bootstrap.min.js" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="/css/basephone.css" />
+	<!--Bootbox弹窗插件-->
+	<link rel="stylesheet" type="text/css" href="/js/plugins/bootbox/css/bootbox-min.css?v=20250226v2" />
+	<script src="/js/plugins/bootbox/bootbox.concat-min.js?v=20250226v2" type="text/javascript" charset="utf-8"></script>
+	<script src="/js/plugins/bootbox/lang/zh_CN-min.js" type="text/javascript" charset="utf-8"></script>
+	<!--jQuery基础工具库：$.browser,$.cookie,$.actual等 -->
+	<script type="text/javascript" src="/js/jquery-ui-custom.contact-min.js"></script>
+	<!--bootstrap -->
+	<link rel="stylesheet" type="text/css" href="/css/v5_style.css?v=20250226v2" />
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/api/site.css?v=20250226v2" />
+	<style type="text/css">
+		  html, body {
+			  font-size: calc(85%) !important;
+		  }
+		  @font-face {
+			  font-family: 'Glyphicons Halflings';
+			  src: url('/fonts/glyphicons-halflings-regular.eot');
+			  src: url('/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+		  }
+		  .glyphicon {
+			  font-family: 'Glyphicons Halflings';
+			  font-style: normal;
+			  font-weight: normal;
+			  line-height: 1;
+			  -webkit-font-smoothing: antialiased;
+			  -moz-osx-font-smoothing: grayscale;
+		  }
+	</style>
+</head>
+<body class="pre-scrollable">
+<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+	<li  class=" nav-item" >
+		<a  class="nav-link active"  href="#materInfoTab" role="tab" data-bs-toggle="tab">患者信息</a>
+	</li>
+	<li class=" nav-item" >
+		<a  class="nav-link"  href="#modInfoTab" role="tab" data-bs-toggle="tab">标本信息</a>
+	</li>
+	<li class=" nav-item" >
+		<a  class="nav-link"  href="#detectInfoTab" role="tab" data-bs-toggle="tab">检测项目</a>
+	</li>
+</ul>
+<form id="ajaxForm" action="/wechat/file/pdfPreview" class="form-horizontal sl_all_form" method="get" theme="simple">
+	<input type="hidden" name="fjid" id="fjid"/>
+	<input type="hidden" name="sfqx" id="sfqx" th:value="${sfqx}"/>
+	<input type="hidden" id="sign" name="sign" th:value="${sign}">
+	<input type="hidden" name="flag" id="flag" value="1"/>
+			<input type="hidden" name="companyurl" id="companyurl" th:value="${companyurl}">
+			<input type="hidden" name="isRedirect" id="isRedirect" th:value="${isRedirect}">
+	<div class="body-content tab-content">
+		<div role="tabpanel" class="tab-pane fade active show" id="materInfoTab" aria-labelledby="profile-tab">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									标本编号:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.ybbh}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									患者姓名 :
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.hzxm}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									年龄:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:if="${sjxxDto.nl==null}" th:text="岁"></span>
+									<span th:if="${sjxxDto.nl!=null and sjxxDto.nldw!=null}" th:text="${sjxxDto.nl}+'&nbsp;'+${sjxxDto.nldw}" />
+									<span th:if="${sjxxDto.nl!=null and sjxxDto.nldw==null}" th:text="${sjxxDto.nl}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									性别:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.xbmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									电话:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.dh}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									医院名称:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.sjdwmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									科室:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.ksmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									主治医师:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.sjys}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									检测单位:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.jcdwmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									住院号:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.zyh}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									床位号:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.cwh}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									快递类型:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.kdlxmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									快递单号:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.kdh}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									检测项目:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.jcxmmct}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									立项编号:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.kyxmmc}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									区分:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.sjqfmc}" />
+								</div>
+							</div>
+						</div>
+						<!--<div class="col-md-6 col-sm-6">-->
+						<!--<div class="form-group">-->
+						<!--<label for="" class="col-sm-4 col-xs-4 control-label">-->
+						<!--自免目的地:-->
+						<!--</label>-->
+						<!--<div class="col-sm-8 col-xs-8">-->
+						<!--<span th:text="${sjxxDto.zmmddmc}" />-->
+						<!--</div>-->
+						<!--</div>-->
+						<!--</div>-->
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-xs-4 control-label">
+									负责人:
+								</label>
+								<div class="col-sm-8 col-xs-8">
+									<span th:text="${sjxxDto.db}" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-6">
+							<div class="form-group">
+								<div id="fjcfbDtos_fj"   th:if="${fjcfbDtos_fjs != null && fjcfbDtos_fjs.size() >0}" th:each="fjcfbDtos_fj:${fjcfbDtos_fjs}">
+									<label for="" class="col-sm-4 col-xs-4 col-md-2 control-label" th:if="${fjcfbDtos_fjStat.index == 0}" >附&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;件:</label>
+									<label for="" class="col-sm-4 col-xs-4 col-md-2 control-label" th:if="${fjcfbDtos_fjStat.index > 0}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+									<div class="col-md-10 col-sm-1 h30" style="display: flex; align-items: center;">
+										<label for="" th:if="${fjcfbDtos_fjs.size() > 1}" th:text="${fjcfbDtos_fjStat.index+1}+."></label>
+										<a href="javascript:void(0);" title="预览"  th:onclick="yl([[${fjcfbDtos_fj.fjid}]],[[${fjcfbDtos_fj.wjm}]],[[${fjcfbDtos_fj.sign}]])" style="flex-grow: 1;max-width: 90%;">
+											<span th:text="${fjcfbDtos_fj.wjm}" style="display:inline-block;max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+											<span class="glyphicon glyphicon-eye-open"></span>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div role="tabpanel" class="tab-pane fade" id="modInfoTab" aria-labelledby="profile-tab">
+			<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								标本类型:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.yblxmc}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								标本体积:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.ybtj}" />
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								采样日期:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.cyrq}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								接收日期:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.jsrq}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								报告日期:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.bgrq}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								临床症状:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.lczzmc}" />
+								<span th:text="${sjxxDto.lczz}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								前期诊断:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.qqzd}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6 sfqx">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								是否收费:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.sfsfmc}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								是否付款:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.fkbjmc}" />
+							</div>
+						</div>
+					</div>
+<!--					<div class="col-md-6 col-sm-6">-->
+<!--						<div class="form-group">-->
+<!--							<label for="" class="col-sm-4 col-xs-4 control-label">-->
+<!--								付款金额:-->
+<!--							</label>-->
+<!--							<div class="col-sm-8 col-xs-8">-->
+<!--								<span th:text="${sjxxDto.fkje}" />-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								实付金额:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.sfje}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								是否开票:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.kpsqmc}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								近期用药:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.jqyy}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								前期检测:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<span th:text="${sjxxDto.qqjcmc}" />
+							</div>
+						</div>
+					</div>
+<!--					<div class="col-md-6 col-sm-6">-->
+<!--						<div class="form-group">-->
+<!--							<label for="" class="col-sm-4 col-xs-4 control-label">-->
+<!--								上机情况:-->
+<!--							</label>-->
+<!--							<div class="col-sm-8 col-xs-8">-->
+<!--								<span th:if="${sfsj eq '1'}" style="color:green;">已上机</span>-->
+<!--								<span th:if="${sfsj eq '0'}" style="color:red;">未上机</span>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 control-label">
+								送检报告:
+							</label>
+							<div class="col-sm-8 col-xs-8">
+								<div th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+									<div class="col-sm-12 col-xs-12">
+										<button type="button" class="btn btn-success" th:onclick="view([[${fjcfbDto.fjid}]], [[${fjcfbDto.sign}]]);">
+											查看报告请点击此处
+										</button>
+									</div>
+									<div class="col-sm-12 col-xs-12 " th:if="${sjxxDto.db != '福州艾迪康'}">
+										<button  type="button" class="btn btn-success" style="margin-top:10px;margin-bottom:10px;" th:onclick="xz([[${fjcfbDto.fjid}]], [[${fjcfbDto.sign}]])">
+											下载报告请点击此处
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+		<div role="tabpanel" class="tab-pane fade" id="detectInfoTab" aria-labelledby="profile-tab">
+			<div class="panel-body">
+				<div class="row">
+					<div class="weui-panel" style="border-radius: 10px;margin: 8px;border: 1px solid #00AFEC;"  th:if="${sjsyglDtos != null && sjsyglDtos.size() >0}"
+						 th:each="dto:${sjsyglDtos}">
+						<div class="weui-cell__bd" style="border-radius: 10px;">
+							<div class="weui-form-preview" style="border-radius: 10px;">
+								<div style="height: 0.1rem;"></div>
+
+								<div class="weui-form-preview__bd" style="font-size: 14px;font-weight: bolder;padding: 0px 10px;">
+									<div style="display: flex">
+										<div class="weui-form-preview__item" style="flex: 12"><label class=""
+																									 style="margin-right: 2px;">检测项目：</label>
+											<span class="weui-form-preview__value"
+												  style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.jcxmmc}"></span>
+										</div>
+									</div>
+									<div style="display: flex">
+										<div class="weui-form-preview__item" style="flex: 12"><label class=""
+																									 style="margin-right: 2px;">检测子项目：</label>
+											<span class="weui-form-preview__value"
+												  style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.jczxmmc}"></span>
+										</div>
+									</div>
+									<div style="display: flex">
+										<div class="weui-form-preview__item" style="flex: 12"><label class=""
+																									 style="margin-right: 2px;">最早接收时间：</label>
+											<span class="weui-form-preview__value"
+												  style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.jsrq}"></span>
+										</div>
+									</div>
+									<div style="display: flex">
+										<div class="weui-form-preview__item" style="flex: 12"><label class=""
+																									 style="margin-right: 2px;">最早取样时间：</label>
+											<span class="weui-form-preview__value"
+												  style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.qysj}"></span>
+
+										</div>
+									</div>
+									<div style="display: flex">
+										<div class="weui-form-preview__item" style="flex: 12"><label class=""
+																									 style="margin-right: 2px;">最早实验日期：</label>
+											<span class="weui-form-preview__value"
+												  style="text-align: left;word-break: keep-all;overflow: hidden;white-space: nowrap;text-overflow:ellipsis;" th:text="${dto.syrq}"></span>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+<script type="text/javascript" src="/js/wechat/informed/wechat_reportView.js?v=20250226v2"></script>
+</body>
+</html>

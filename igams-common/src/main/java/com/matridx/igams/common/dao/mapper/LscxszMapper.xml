@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ILscxszDao" >
+	<!-- 临时表查询 -->
+	<select id="getPagedDtoList" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc,cx.bz,cx.cxdm,cx.cxqf,cx.lrry,cx.lrsj,cx.xgry,cx.xgsj,cx.scbj,cx.scry,
+		cx.scsj,jc_qf.csmc as cxqfmc,jc_xs.csmc as xsfsmc,cx.cxbm,cx.lbqf,cx.px
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'
+			<if test="cxqfdms !=null and cxqfdms.size > 0">
+				and jc_qf.csdm in
+				<foreach collection="cxqfdms" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cxqfs !=null and cxqfs.size > 0">
+				and cx.cxqf in
+				<foreach collection="cxqfs" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="xsfss !=null and xsfss.size > 0">
+				and cx.xsfs in
+				<foreach collection="xsfss" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cxmc !=null and cxmc != ''">
+				and cx.cxmc like '%'||#{cxmc}||'%'
+			</if>
+			<if test="cxbm !=null and cxbm != ''">
+				and cx.cxbm like '%'||#{cxbm}||'%'
+			</if>
+			<if test="lbqf !=null and lbqf != ''">
+				and cx.lbqf like '%'||#{lbqf}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 销售统计查询 -->
+	<select id="getPagedSimpDtoListByLimt" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc,cx.cxqf,jc_qf.csmc as cxqfmc,jc_xs.csmc as xsfsmc,cx.cxbm,cx.lbqf,cx.px,jc_xs.csdm as xsfsdm,cx.xsfs
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		left outer join matridx_lscxqx cxqx on cx.cxid = cxqx.cxid 
+		<where>
+			cx.scbj!='1'  
+			<if test="cxqfdms !=null and cxqfdms.size > 0">
+				and jc_qf.csdm in
+				<foreach collection="cxqfdms" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="allflg !=null and allflg == '1'">
+				and (jc_qf.csdm = 'ALL' or cxqx.yhid = #{yhid})
+			</if>
+			<if test="allflg ==null or allflg == ''">
+				and cxqx.yhid = #{yhid}
+			</if>
+			<if test="cxmc !=null and cxmc != ''">
+				and cx.cxmc like '%'||#{cxmc}||'%'
+			</if>
+			<if test="cxbm !=null and cxbm != ''">
+				and cx.cxbm like '%'||#{cxbm}||'%'
+			</if>
+			<if test="lbqf !=null and lbqf != ''">
+				and cx.lbqf = #{lbqf}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 统计查询 -->
+	<select id="getSimpDtoListByCode" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc,cx.cxqf,jc_qf.csmc as cxqfmc,jc_xs.csmc as xsfsmc,cx.cxbm,cx.lbqf,cx.px,jc_xs.csdm as xsfsdm,cx.xsfs
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'  
+			<if test="cxqfdms !=null and cxqfdms.size > 0">
+				and jc_qf.csdm in
+				<foreach collection="cxqfdms" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cxmc !=null and cxmc != ''">
+				and cx.cxmc like '%'||#{cxmc}||'%'
+			</if>
+			<if test="lbqf !=null and lbqf != ''">
+				and cx.lbqf = #{lbqf}
+			</if>
+		</where>
+		order by px
+	</select>
+	
+	<!-- 销售统计查询  用户限制-->
+	<select id="getPagedDtoListByLimt" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc,cx.bz,cx.cxdm,cx.cxqf,cx.lrry,cx.lrsj,cx.xgry,cx.xgsj,cx.scbj,cx.scry,cx.scsj,
+		  jc_qf.csmc as cxqfmc,jc_xs.csmc as xsfsmc,cx.cxbm,cx.lbqf,cx.px,jc_xs.csdm as xsfsdm,cx.xsfs
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'
+			<if test="cxqfdms !=null and cxqfdms.size > 0">
+				and jc_qf.csdm in
+				<foreach collection="cxqfdms" item="item" index="index" open="(" close=")" separator=",">
+					#{item} 
+				</foreach>
+			</if>
+			<if test='allflg !=null and allflg == "1"'>
+				and (jc_qf.csdm = 'ALL' or cx.cxid in (select cxid from matridx_lscxqx where yhid = #{yhid} or jsid =#{jsid}))
+			</if>
+			<if test="allflg ==null or allflg == ''">
+				and cx.cxid in (select cxid from matridx_lscxqx where yhid = #{yhid} or jsid =#{jsid})
+			</if>
+			<if test="cxmc !=null and cxmc != ''">
+				and cx.cxmc like '%'||#{cxmc}||'%'
+			</if>
+			<if test="cxbm !=null and cxbm != ''">
+				and cx.cxbm like '%'||#{cxbm}||'%'
+			</if>
+			<if test="lbqf !=null and lbqf != ''">
+				and cx.lbqf = #{lbqf}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 统计查询  用于消息-->
+	<select id="getDtoListByCode" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc,cx.bz,cx.cxdm,cx.cxqf,cx.lrry,cx.lrsj,cx.xgry,cx.xgsj,cx.scbj,cx.scry,cx.scsj,
+		  jc_qf.csmc as cxqfmc,jc_xs.csmc as xsfsmc,cx.cxbm,cx.lbqf,cx.px,jc_xs.csdm as xsfsdm,cx.xsfs
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'
+			<if test="cxqfdms !=null and cxqfdms.size > 0">
+				and jc_qf.csdm in
+				<foreach collection="cxqfdms" item="item" index="index" open="(" close=")" separator=",">
+					#{item} 
+				</foreach>
+			</if>
+			<if test="cxqfs !=null and cxqfs.size > 0">
+				and cx.cxqf in
+				<foreach collection="cxqfs" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="xsfss !=null and xsfss.size > 0">
+				and cx.xsfs in
+				<foreach collection="xsfss" item="item" index="index" open="(" close=")" separator=",">
+					#{item}
+				</foreach>
+			</if>
+			<if test="cxmc !=null and cxmc != ''">
+				and cx.cxmc like '%'||#{cxmc}||'%'
+			</if>
+			<if test="cxbm !=null and cxbm != ''">
+				and cx.cxbm like '%'||#{cxbm}||'%'
+			</if>
+			<if test="lbqf !=null and lbqf != ''">
+				and cx.lbqf = #{lbqf}
+			</if>
+		</where>
+		order by px
+	</select>
+	
+	<!-- 添加临时查询信息 -->
+	<insert id="insert" parameterType="LscxszDto">
+		insert into matridx_lscxsz(cxid
+		<if test="cxmc != null and cxmc!= ''">
+			,cxmc
+		</if>
+		<if test="bz != null and bz != ''">
+			,bz
+		</if>
+		<if test="cxqf != null and cxqf != ''">
+			,cxqf
+		</if>
+		<if test="xsfs != null and xsfs!= ''">
+			,xsfs
+		</if>
+		<if test="cxdm != null and cxdm != ''">
+			,cxdm
+		</if>
+		<if test="cxbm != null and cxbm != ''">
+			,cxbm
+		</if>
+		<if test="lbqf != null and lbqf != ''">
+			,lbqf
+		</if>
+		<if test="px != null and px != ''">
+			,px
+		</if>
+		,lrry,lrsj,scbj)
+		values(#{cxid}
+		<if test="cxmc != null and cxmc!= ''">
+			,#{cxmc}
+		</if>
+		<if test="bz != null and bz !=''">
+			,#{bz}
+		</if>
+		<if test="cxqf != null and cxqf !=''">
+			,#{cxqf}
+		</if>
+		<if test="xsfs != null and xsfs!= ''">
+			,#{xsfs}
+		</if>
+		<if test="cxdm != null and cxdm !=''">
+			,#{cxdm}
+		</if>
+		<if test="cxbm != null and cxbm !=''">
+			,#{cxbm}
+		</if>
+		<if test="lbqf != null and lbqf !=''">
+			,#{lbqf}
+		</if>
+		<if test="px != null and px !=''">
+			,cast(#{px} as integer)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,0)
+	</insert>
+	<!-- 根据cxid查看查询信息 -->
+	<select id="selectLscxByCxid" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxmc,cx.cxdm,cx.bz,cx.cxqf,cx.cxid,jc_qf.csdm cxqfdm,jc_qf.csmc cxqfmc,jc_xs.csmc xsfsmc,jc_xs.csdm xsfsdm,cx.lbqf,cx.cxbm,cx.px 
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'
+			and cx.cxid=#{cxid}
+		</where>
+	</select>
+	<!-- 修改临时查询信息 -->
+	<update id="update" parameterType="LscxszDto">
+		update matridx_lscxsz
+		<set>
+			xgry=#{xgry},
+			xgsj=LOCALTIMESTAMP
+			<if test="cxmc != null and cxmc !=''">
+				,cxmc=#{cxmc}
+			</if>
+			<if test="bz != null and bz !=''">
+				,bz=#{bz}
+			</if>
+			<if test="cxdm != null and cxdm !=''">
+				,cxdm=#{cxdm}
+			</if>
+			<if test="cxqf != null and cxqf !=''">
+				,cxqf=#{cxqf}
+			</if>
+			<if test="xsfs != null and xsfs !=''">
+				,xsfs=#{xsfs}
+			</if>
+			<if test="cxbm != null and cxbm !=''">
+				,cxbm=#{cxbm}
+			</if>
+			<if test="lbqf != null and lbqf !=''">
+				,lbqf=#{lbqf}
+			</if>
+			<if test="px != null and px !=''">
+				,px=cast(#{px} as integer)
+			</if>
+		</set>
+		<where>
+			cxid=#{cxid}
+		</where>
+	</update>
+	<!-- 删除临时查询信息 -->
+	<update id="delete" parameterType="LscxszDto">
+		update matridx_lscxsz
+		<set>
+			scbj='1',
+			scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			cxid in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	<!-- 执行临时查询SQL语句 -->
+	<select id="getQueryResult" parameterType="LscxszDto" resultType="java.util.HashMap">
+		${cxdm}
+	</select>
+
+	<!-- 执行临时查询SQL语句 -->
+	<update id="executeResult" parameterType="LscxszDto">
+		${cxdm}
+	</update>
+	
+	<select id="queryByCxid" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxid,cx.cxmc
+		from matridx_lscxsz cx
+		left join matridx_jcsj js_qx on js_qx.csid=cx.cxqf
+		<where>
+			js_qx.csdm != 'LIMIT' and js_qx.csdm != 'STATISTICS'
+			<if test="cids !=null and cids.size > 0">
+				and cx.cxid in
+				<foreach collection="cids" open="(" close=")"
+					separator="," item="items">
+					#{items}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="selectLscxByQfdm" parameterType="LscxszDto" resultType="LscxszDto">
+		select cx.cxmc,cx.cxdm,cx.bz,cx.cxqf,cx.cxid,jc_qf.csdm cxqfdm,jc_qf.csmc cxqfmc,jc_xs.csmc xsfsmc,jc_xs.csdm xsfsdm,cx.lbqf,cx.cxbm,cx.px,jc_qf.cskz1 as cxqfcskz1
+		from matridx_lscxsz cx
+		left join matridx_jcsj jc_qf on jc_qf.csid=cx.cxqf
+		left join matridx_jcsj jc_xs on jc_xs.csid=cx.xsfs
+		<where>
+			cx.scbj!='1'
+				and jc_qf.csdm in
+				<foreach collection="ids" open="(" close=")"
+						 separator="," item="items">
+					#{items}
+				</foreach>
+		</where>
+	</select>
+
+	<select id="getResult" parameterType="LscxszDto" resultType="java.util.LinkedHashMap">
+		${cxdm}
+	</select>
+</mapper>

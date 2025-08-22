@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IShgcDao" >
+<select id="getCurrentShgcxxList" resultType="ShgcDto" parameterType="ShgcDto">
+    	with ywlist as(
+    		select ywid,ordernum from (
+    		<foreach item="item" index="index" collection="ywids" separator=" union all ">  
+			   select #{item,jdbcType=VARCHAR} ywid,#{index} ordernum
+			</foreach>
+			) tmp where ywid is not null
+    	)
+    	select shgcxx.gcid, shgcxx.ywid, shgcxx.shid, shgcxx.xlcxh, shgcxx.hxlcxh, shgcxx.sqsj,
+		       shgcxx.gwmc shxx_gwmc,shgcxx.gwid shxx_gwid,shgcxx.dqgwmc shxx_dqgwmc,shgcxx.dqgwid shxx_dqgwid,
+		       shgcxx.shyj shxx_shyj,shgcxx.shsj shxx_shsj,ordernum,shgcxx.dqshr
+		from
+		(
+	    	select shgc.gcid, shgc.ywid, shgc.shid, shgc.xlcxh, shgc.hxlcxh, to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') sqsj,shgc.dqshr,
+			  xxspgw.gwmc, xxspgw.gwid, spgw.gwmc dqgwmc, spgw.gwid dqgwid, shxx.shyj, to_char(shxx.shsj,'yyyy-mm-dd hh24:mi:ss') shsj,ordernum,
+			  row_number() over(partition by shxx.ywid,ywlist.ordernum order by shxx.shsj desc) rown
+			  from ywlist
+			  left outer join matridx_shgc shgc on ywlist.ywid = shgc.ywid
+			  left join matridx_shlc shlc
+			    on shgc.shid = shlc.shid
+			   and shgc.xlcxh = shlc.lcxh
+			   and shgc.sqsj >= shlc.qysj
+			   and (shlc.tysj is null or shlc.tysj >= shgc.sqsj)
+			  left join matridx_spgw spgw
+			    on spgw.gwid = shlc.gwid 
+			  left join matridx_shxx <if test="fqmc != null">partition(${fqmc})</if> shxx on shxx.gcid = shgc.gcid
+			  left join matridx_spgw xxspgw on xxspgw.gwid = shxx.gwid
+			  left join matridx_xtsh xtsh on xtsh.shid = shgc.shid
+			  <where>
+		   		<if test="shlb != null">
+		   		  xtsh.shlb = #{shlb}
+		   		</if>
+		   	</where>
+		) shgcxx where rown = 1
+    </select>
+    
+    <!-- 查询当前审核过程信息 -->
+	<select id="getDtoById" parameterType="String" resultType="ShgcDto">
+		select gc.gcid,gc.ywid,gc.shid,gc.xlcxh,gc.hxlcxh,gc.sqsj,gc.sqr,sh.shlb,gc.sqbm
+		from matridx_shgc gc
+		left outer join matridx_xtsh sh on gc.shid = sh.shid
+		where
+			 gc.gcid =#{gcid}
+	</select>
+	
+	<!-- 查询当前审核过程信息 -->
+	<select id="getDtoByYwid" parameterType="String" resultType="ShgcDto">
+		select gc.gcid,gc.ywid,gc.shid,gc.xlcxh,gc.hxlcxh,gc.sqsj,gc.sqr,sh.shlb,yh.ddid sqrddid,yh.zsxm sqrxm,yh.yhm,gc.lxid,gc.lx,gc.sqbm
+		from matridx_shgc gc
+		left outer join matridx_xtsh sh on sh.shid = gc.shid
+		left outer join matridx_xtyh yh on gc.sqr = yh.yhid
+		where gc.ywid =#{ywid}
+	</select>
+	<select id="getDto" parameterType="ShgcDto" resultType="ShgcDto">
+		select gc.gcid,gc.ywid,gc.shid,gc.xlcxh,gc.hxlcxh,gc.sqsj,gc.sqr,sh.shlb,yh.ddid sqrddid,yh.zsxm sqrxm,yh.yhm,gc.lxid,gc.lx,gc.sqbm
+		from matridx_shgc gc
+		left outer join matridx_xtsh sh on sh.shid = gc.shid
+		left outer join matridx_xtyh yh on gc.sqr = yh.yhid
+		where gc.ywid =#{ywid}
+		<if test="shlb!=null and shlb!=''">
+			and sh.shlb=#{shlb}
+		</if>
+	</select>
+	<!-- 查询当前审核过程信息 -->
+	<select id="getDtoByYwids" parameterType="List" resultType="ShgcDto">
+		select gc.xlcxh
+		from matridx_shgc gc
+		where gc.ywid in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		group by gc.xlcxh
+	</select>
+
+	<select id="getSpgwcyByYwids" parameterType="List" resultType="ShgcDto">
+		select shgc.ywid,yh.yhm,yh.ddid
+		from matridx_shgc shgc
+		left join matridx_spgw spgw on shgc.shgwid = spgw.gwid
+		left join matridx_spgwcy spgwcy on spgwcy.gwid = spgw.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid and yh.scbj='0'
+		where shgc.ywid in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 删除已有审核过程信息 -->
+	<delete id="deleteByYwid" parameterType="ShgcDto">
+		delete
+		from matridx_shgc gc
+		where
+			 gc.ywid =#{ywid}
+	</delete>
+	
+	<!-- 用于更新更改过审核列表的审核过程信息 ，要同时更新提交日期-->
+	<update id="updateShgc" parameterType="ShgcDto">
+    	update matridx_shgc 
+    	<set>
+			<if test="shid != null">shid = #{shid},</if>
+			<if test="lxid != null">lxid = #{lxid},</if>
+			<if test="lx != null">lx = #{lx},</if>
+			<if test="ywdm != null">ywdm = #{ywdm},</if>
+			<if test="ywmc != null">ywmc = #{ywmc},</if>
+			<if test="ywlx != null">ywlx = #{ywlx},</if>
+			<if test="sqbm != null">sqbm = #{sqbm},</if>
+			<if test="shgwid != null">shgwid = #{shgwid},</if>
+			<if test="shgwid != null">dqshr = #{dqshr},</if>
+			xlcxh = cast(#{xlcxh} as numeric),
+			hxlcxh = cast(#{hxlcxh} as numeric),
+			sqsj = localtimestamp,
+			xgsj = localtimestamp
+    	</set> 
+    	where gcid = #{gcid}
+    </update>
+    
+    <!-- 用于更新审核过程信息 ，不更新提交日期-->
+	<update id="update" parameterType="ShgcDto">
+    	update matridx_shgc 
+    	<set>
+			<if test="shid != null">shid = #{shid},</if>
+			<if test="lxid != null">lxid = #{lxid},</if>
+			<if test="lx != null">lx = #{lx},</if>
+			<if test="ywdm != null">ywdm = #{ywdm},</if>
+			<if test="ywmc != null">ywmc = #{ywmc},</if>
+			<if test="ywlx != null">ywlx = #{ywlx},</if>
+			<if test="sqbm != null">sqbm = #{sqbm},</if>
+			<if test="shgwid != null">shgwid = #{shgwid},</if>
+			<if test="dqshr != null">dqshr = #{dqshr},</if>
+			xlcxh = cast(#{xlcxh} as numeric),
+			hxlcxh = cast(#{hxlcxh} as numeric),
+			xgsj = localtimestamp,
+			shyj = #{shxx_shyj}
+    	</set> 
+    	where gcid = #{gcid}
+    </update>
+
+
+	<!-- 用于更新至下一个流程-->
+	<update id="updateNext" parameterType="ShgcDto">
+		update matridx_shgc
+		<set>
+			xlcxh = cast((select cast(xlcxh as numeric)+1 from matridx_shgc where ywid = #{ywid})  as numeric),
+			xgsj = localtimestamp
+		</set>
+		where ywid = #{ywid}
+	</update>
+    
+    <!-- 插入Model -->
+    <insert id="insert" parameterType="ShgcModel">
+    	insert into matridx_shgc(gcid
+			,ywid
+			,shid
+			,xlcxh
+			,hxlcxh
+			,sqsj
+			,sqr
+			,xgsj
+			,lxid
+			,lx
+			,ywdm
+			,ywmc
+			,ywlx
+			,shgwid
+			,sqbm
+			,dqshr
+    	)
+    	values(
+    		#{gcid}
+			,#{ywid,jdbcType=VARCHAR}
+			,#{shid,jdbcType=VARCHAR}
+			,cast(#{xlcxh} as numeric)
+			,cast(#{hxlcxh} as numeric)
+			,localtimestamp
+			,#{sqr,jdbcType=VARCHAR}
+			,localtimestamp
+			,#{lxid}
+			,#{lx}
+			,#{ywdm}
+			,#{ywmc}
+			,#{ywlx}
+			,#{shgwid}
+			,#{sqbm}
+			,#{dqshr}
+    	)
+    </insert>
+    
+    <select id="isAuditabled" parameterType="hashmap" resultType="boolean">
+		select count(1)
+		where exists(
+			select 1
+			  from matridx_shgc shgc
+			  join matridx_shlc shlc
+			    on shgc.shid = shlc.shid
+			   and shgc.xlcxh = shlc.lcxh
+			   and shgc.sqsj >= shlc.qysj
+			   and (shlc.tysj is null or shlc.tysj >= shgc.sqsj)
+			  join matridx_xtsh xtsh
+			    on xtsh.shid = shgc.shid
+			  join matridx_spgw spgw
+			    on spgw.gwid = shlc.gwid
+			  left join matridx_xtjs xtjs
+			    on xtjs.jsid = spgw.ywjs
+			   and spgw.sfywjs = '1'
+			  left join (
+			  	select distinct yhid,jsid from matridx_yhjs 
+			  	<where>
+			  		yhid=#{user.yhid}
+			  		<!-- 过滤指定角色的权限 -->
+			  		and (
+			  			1=2
+						<if test="user.dqjs !=null and user.dqjs != ''">
+							or jsid = #{user.dqjs}
+						</if>
+					)
+			  	</where>
+			  ) yhjs
+			    on yhjs.jsid = xtjs.jsid
+			<where>
+				(
+				 exists (
+				 	select 1 from matridx_spgwcy spgwcy 
+				 		join matridx_xtjs cyjs on cyjs.jsid = spgwcy.jsid and cyjs.scbj!='1'
+				 	where spgwcy.gwid=spgw.gwid and (spgw.sfywjs='0' or spgw.sfywjs is null) 
+				 		and spgwcy.yhid=#{user.yhid}
+				  		<!-- 过滤指定角色的权限 -->
+				  		and (
+				  			1=2
+							<if test="user.dqjs !=null and user.dqjs != ''">
+								or cyjs.jsid = #{user.dqjs}
+							</if>
+						)
+				 )
+				 or yhjs.yhid = #{user.yhid}
+				) 
+				and shgc.ywid=#{shgcDto.ywid}
+				and shgc.gcid=#{shgcDto.gcid}
+				<if test="shgcDto.shlb!=null and shgcDto.shlb!=''">
+					and xtsh.shlb=#{shgcDto.shlb}
+				</if>
+			</where> 
+		)
+    </select>
+    
+    <select id="getRecallabledList" parameterType="ShgcDto" resultType="ShgcDto">
+		select gcid
+			  from matridx_shgc shgc
+			  left outer join matridx_xtsh xtsh on shgc.shid = xtsh.shid
+			<where>
+				shgc.ywid in
+				<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+				   #{item}
+				</foreach>
+				and xtsh.shlb=#{shlb}
+				and shgc.xlcxh =cast(#{xlcxh} as numeric) and shgc.hxlcxh is null
+			</where> 
+    </select>
+    
+    <!-- 删除 -->
+    <delete id="batchDelete" parameterType="List">
+    	delete from matridx_shgc 
+  	    <where>
+			gcid in
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+			   #{item}
+			</foreach>
+   	    </where> 
+    </delete>
+    
+    <!-- 删除已有审核过程信息 -->
+	<delete id="deleteByYwids" parameterType="List">
+		delete
+		from matridx_shgc gc
+		where
+			gc.ywid in 
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+			   #{item}
+			</foreach>
+	</delete>
+
+	<insert id="insertDtoList" parameterType="List">
+		insert into matridx_shgc (gcid,ywid,shid,xlcxh,hxlcxh,sqsj,sqr,lxid,lx)
+		values
+		<foreach collection="list" item="item" separator="," >
+			(#{item.gcid},#{item.ywid},#{item.shid},cast(#{item.xlcxh} as numeric),cast(#{item.hxlcxh} as numeric),LOCALTIMESTAMP,#{item.sqr},#{item.lxid},#{item.lx})
+		</foreach>
+	</insert>
+
+	<!-- 查询审核流程当前审批岗位 -->
+	<select id="getSpgwCurrent" parameterType="ShgcDto" resultType="ShgcDto">
+		select spgw.gwid,spgw.gwmc,spgw.wbgw,
+		       gc.gcid,gc.ywid,gc.shid,gc.xlcxh,gc.hxlcxh,gc.sqsj,gc.sqr,sh.shlb,yh.ddid sqrddid,yh.zsxm sqrxm
+		from matridx_shgc gc
+		join matridx_shlc shlc on gc.shid = shlc.shid
+			and gc.xlcxh = shlc.lcxh
+			and gc.sqsj >= shlc.qysj
+			and (shlc.tysj is null or shlc.tysj >= gc.sqsj)
+		join matridx_spgw spgw on spgw.gwid=shlc.gwid
+		left outer join matridx_xtsh sh on sh.shid = gc.shid
+		left outer join matridx_xtyh yh on gc.sqr = yh.yhid
+		where gc.ywid=#{ywid}
+		and gc.gcid=#{gcid}
+		and sh.shlb=#{shlb}
+	</select>
+
+	<delete id="scheduledDeleteData" parameterType="ShgcDto">
+		delete from matridx_shgc
+		where gcid in (
+			SELECT shgc.gcid FROM matridx_shgc shgc
+			left join matridx_xtsh xtsh on xtsh.shid=shgc.shid and xtsh.scbj='0'
+			where
+			    xtsh.shid is null
+			or  (to_char(shgc.sqsj,'yyyy-mm-dd')&lt;to_char(CURRENT_DATE - INTERVAL '6 month','yyyy-mm-dd') and shgc.xlcxh is null)
+			   or  (to_char(shgc.sqsj,'yyyy-mm-dd')&lt;to_char(CURRENT_DATE - INTERVAL '1 year','yyyy-mm-dd') and shgc.xlcxh is not null)
+			)
+	</delete>
+
+	<select id="getOverThreeMonthsData" parameterType="ShgcDto" resultType="ShgcDto">
+		SELECT shlb.hdl,string_agg (distinct  shgc.ywid, ',' ) ywid FROM matridx_shgc shgc
+		left join matridx_xtsh xtsh on xtsh.shid=shgc.shid and xtsh.scbj='0'
+		left join matridx_shlb shlb on shlb.shlb=xtsh.shlb
+		where to_char(shgc.sqsj,'yyyy-mm-dd')&lt;to_char(CURRENT_DATE - INTERVAL '3 month','yyyy-mm-dd') and xtsh.shlb is not null
+		group by shlb.hdl
+	</select>
+
+	<select id="getAuditTaskWaitingCount" parameterType="ShgcDto" resultType="Map">
+		SELECT
+		COALESCE(shgc.dbs,0) dbs,tmp.shlb,tmp.shlbbm,tmp.zylj,tmp.xh
+		FROM
+		<foreach collection="dbszDtos" separator=" union all " open="(" close=") "
+				 item="item" index="index">
+			select #{item.shlb} shlb,#{item.shlbbm} shlbbm,#{item.zylj} zylj,#{item.xh} xh
+		</foreach> tmp
+		LEFT JOIN (
+		select
+		shgc.ywdm,count(distinct shgc.gcid) dbs
+		from
+		matridx_shgc shgc
+		join matridx_xtsh xtsh on xtsh.shid = shgc.shid
+		join matridx_shlc shlc on shgc.shid = shlc.shid and shgc.xlcxh = shlc.lcxh and shgc.sqsj >= shlc.qysj and (shlc.tysj is null or shlc.tysj >= shgc.sqsj)
+		join matridx_spgw gw on gw.gwid = shlc.gwid
+		left join matridx_spgwcy spgwcy on gw.gwid = spgwcy.gwid
+		left outer join matridx_xtjs gwjs on gwjs.jsid = spgwcy.jsid and gwjs.scbj != '1'
+		left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when gw.dwxz = '1' then 1 = 1 else 1 = 2 end
+		left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1 = 2 end
+		WHERE shgc.ywdm is not null and spgwcy.yhid  = #{yhid} and
+		case when gw.dwxz ='1' then case when xtjs.dwxdbj = '1' then shgc.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		group by
+		shgc.ywdm) shgc  on  shgc.ywdm = tmp.shlb
+		order by tmp.xh asc
+	</select>
+
+	<select id="getPagedAuditTaskWaitingList" parameterType="ShgcDto" resultType="ShgcDto">
+		select
+		shgc.gcid,shgc.ywdm,shgc.ywmc,to_char(shgc.sqsj,'yyyy-MM-dd') sqsj
+		from
+		matridx_shgc shgc
+		join matridx_xtsh xtsh on xtsh.shid = shgc.shid
+		join matridx_shlc shlc on shgc.shid = shlc.shid and shgc.xlcxh = shlc.lcxh and shgc.sqsj >= shlc.qysj and (shlc.tysj is null or shlc.tysj >= shgc.sqsj)
+		join matridx_spgw gw on gw.gwid = shlc.gwid
+		join matridx_spgwcy spgwcy on gw.gwid = spgwcy.gwid
+		left outer join matridx_xtjs gwjs on gwjs.jsid = spgwcy.jsid and gwjs.scbj != '1'
+		left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when gw.dwxz = '1' then 1 = 1 else 1 = 2 end
+		left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1 = 2 end
+		WHERE shgc.ywdm is not null and spgwcy.yhid = #{yhid} and
+		case when gw.dwxz ='1' then case when xtjs.dwxdbj = '1' then shgc.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		and shgc.ywdm in
+		<foreach item="item" index="index" collection="shlbs" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		group by shgc.gcid,shgc.ywdm,shgc.ywmc,shgc.sqsj
+	</select>
+
+
+</mapper>

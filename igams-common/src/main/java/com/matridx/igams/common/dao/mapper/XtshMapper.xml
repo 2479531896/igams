@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IXtshDao" >
+	<!-- 查询系统审核列表 -->
+	<select id="getDtoList" parameterType="XtshDto" resultType="XtshDto">
+		select sh.shid,sh.shmc,sh.shlb,sh.mrsz,sh.ms,sh.kzcs,sh.sfgb
+		from matridx_xtsh sh
+		<where> sh.scbj !='1'
+		<if test="shlb !=null and shlb != ''">
+			and shlb =#{shlb}
+		</if>
+		<if test="shid !=null and shid != ''">
+			and shid =#{shid}
+		</if>
+		<if test="extend_2 !=null and extend_2!= ''">
+			and kzcs =#{extend_2}
+		</if>
+		<if test="mrsz !=null and mrsz!= ''">
+			and mrsz =#{mrsz}
+		</if>
+		<if test="ids !=null and ids.size > 0">
+			and shlb in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		</where>
+	</select>
+
+	<select id="getGwDtoList" parameterType="XtshDto" resultType="XtshDto">
+		select
+		sh.shid,
+		sh.shmc,
+		sh.shlb,
+		gw.gwid,
+		gw.gwmc as spgwmc,
+		lc.lcxh
+		from matridx_xtsh sh
+		LEFT OUTER JOIN matridx_shlc lc ON lc.shid = sh.shid
+		LEFT OUTER JOIN matridx_spgw gw on lc.gwid = gw.gwid
+		where sh.scbj !='1' and lc.tysj is null and shlb =#{shlb}
+		order by lc.lcxh asc
+	</select>
+	
+	<!-- 查询系统审核信息 -->
+	<select id="getDtoById" parameterType="XtshDto" resultType="XtshDto">
+		select sh.shid,sh.shmc,sh.shlb,sh.mrsz,sh.ms,sh.kzcs,sh.sfgb
+		from matridx_xtsh sh
+		where
+			scbj !='1'
+			and shid =#{shid}
+	</select>
+	<!-- 分页查询系统审核信息列表 -->
+	<select id="getPagedDtoList" parameterType="XtshDto" resultType="XtshDto">
+		select sh.shid,sh.shmc,sh.shlb,sh.mrsz,sh.ms,sh.kzcs,lb.shlbmc,sh.sfgb
+		from matridx_xtsh sh
+		left outer join matridx_shlb lb on sh.shlb = lb.shlb
+		<where> sh.scbj !='1'
+			<if test="entire != null and entire != ''">
+				and (shmc like '%'||#{entire}||'%'
+				or ms like '%'||#{entire}||'%'
+				or sh.shlb like '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="shmc !=null and shmc != ''">
+				and shmc like '%'||#{shmc}||'%'
+			</if>
+			<if test="ms !=null and ms != ''">
+				and ms like '%'||#{ms}||'%'
+			</if>
+			<if test="shlb !=null and shlb != ''">
+				and lb.shlb like '%'||#{shlb}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 增加审核信息 -->
+	<insert id="insert" parameterType="XtshModel">
+		insert into matridx_xtsh(shid
+		<if test="shmc !=null and shmc != ''">
+			,shmc
+		</if>
+		<if test="shlb !=null and shlb != ''">
+			,shlb
+		</if>
+		<if test="mrsz !=null and mrsz != ''">
+			,mrsz
+		</if>
+		<if test="ms !=null and ms != ''">
+			,ms
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			,kzcs
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			,sfgb
+		</if>
+		,lrry,lrsj,scbj) values(#{shid}
+		<if test="shmc !=null and shmc != ''">
+			,#{shmc}
+		</if>
+		<if test="shlb !=null and shlb != ''">
+			,#{shlb}
+		</if>
+		<if test="mrsz !=null and mrsz != ''">
+			,#{mrsz}
+		</if>
+		<if test="ms !=null and ms != ''">
+			,#{ms}
+		</if>
+		<if test="kzcs !=null and kzcs !=''">
+			,#{kzcs}
+		</if>
+		<if test="sfgb !=null and sfgb !=''">
+			,#{sfgb}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!--更新审核信息-->
+	<update  id="update" parameterType="XtshModel">
+		update matridx_xtsh 
+		<set>
+		<if test="shmc !=null and shmc != ''">
+			shmc = #{shmc},
+		</if>
+		<if test="shlb !=null and shlb != ''">
+			shlb = #{shlb},
+		</if>
+		<if test="mrsz !=null and mrsz != ''">
+			mrsz = #{mrsz},
+		</if>
+		<if test="ms !=null and ms != ''">
+			ms = #{ms},
+		</if>
+		<if test="kzcs !=null and kzcs != ''">
+			kzcs = #{kzcs},
+		</if>
+		<if test="sfgb !=null and sfgb != ''">
+			sfgb = #{sfgb},
+		</if>
+			xgsj = LOCALTIMESTAMP,
+			xgry = #{xgry}
+		</set>
+		<where>
+			shid = #{shid}
+		</where>
+	</update>
+	
+	<!--更新审核的删除状态-->
+	<update  id="delete" parameterType="XtshModel">
+		update matridx_xtsh set scry = #{scry},scsj = LOCALTIMESTAMP,scbj=#{scbj}
+		<where>
+			<if test="shid !=null and shid != ''">
+				or shid = #{shid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or shid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<!-- 根据ids获取系统审核信息 -->
+	<select id="getXtshByIds" parameterType="XtshDto" resultType="XtshDto">
+		select sh.shid,sh.shmc,sh.shlb,sh.mrsz,sh.ms,sh.kzcs,sh.sfgb
+		from matridx_xtsh sh
+		<where>
+			sh.scbj!='1'
+			<if test="ids !=null and ids.size > 0">
+			and shid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item" index="index">
+				#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 到货审核延期列表 -->
+	<select id="getPagedDaoHuoSpyq" parameterType="XtshDto" resultType="XtshDto">
+		SELECT xtsh.shlb, xtsh.shid, shgc.ywid, dhxx.dhdh as ywmc, trunc(date_part('day', localtimestamp - shgc.xgsj)) AS yqrs,
+		  xtsh.shmc as shlbmc, spgw.gwmc as spgwmc, to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS shsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjsj,
+		  (date_part('day',to_char(localtimestamp ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+		  + date_part('hour',to_char(localtimestamp ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs
+		FROM matridx_xtsh xtsh 
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+				  AND shgc.xlcxh = shlc.lcxh
+				  AND shgc.sqsj >= shlc.qysj
+				  AND (shlc.tysj IS NULL OR shlc.tysj >= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid	
+		LEFT JOIN igams_dhxx dhxx ON shgc.ywid = dhxx.dhdh
+		<where>
+		   xtsh.shlb = #{shlb}
+		</where>
+	</select>
+	
+	<!-- 查看某条到货审批延期列表数据 -->
+	<select id="getDHspyqByShid" parameterType="XtshDto" resultType="XtshDto">
+		SELECT xtsh.shlb, xtsh.shid, shgc.ywid, dhxx.dhdh as ywmc, trunc(date_part('day', localtimestamp - shgc.xgsj)) AS yqrs,
+		  xtsh.shmc as shlbmc, spgw.gwmc as spgwmc, to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS shsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjsj,
+		  (date_part('day',to_char(localtimestamp ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+		  + date_part('hour',to_char(localtimestamp ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs
+		FROM matridx_xtsh xtsh 
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+				  AND shgc.xlcxh = shlc.lcxh
+				  AND shgc.sqsj >= shlc.qysj
+				  AND (shlc.tysj IS NULL OR shlc.tysj >= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid	
+		LEFT JOIN igams_dhxx dhxx ON shgc.ywid = dhxx.dhdh
+		<where>
+		   xtsh.shlb = #{shlb}
+		   and shgc.ywid = #{ywid}
+		</where>
+	</select>
+</mapper>

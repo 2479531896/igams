@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IWtxxDao" >
+	<select id="getWtr" parameterType="Map" resultType="User">
+		select distinct wtxx.wtr yhid, wtxx.jsid dqjs 
+		from matridx_wtxx wtxx join matridx_wtzy wtzy on wtxx.wtbh = wtzy.wtbh 
+		where wtxx.wtbh = #{wtbh} and wtzy.xtzy = #{xtzy} and wtxx.str = #{str}
+		<if test="is_role_switch">
+			and wtxx.jsid is not null
+		</if>
+		<if test="!is_role_switch">
+			and wtxx.jsid is null
+		</if>
+		and localtimestamp between wtxx.kssj and wtxx.jssj and wtxx.scbj='0'
+	</select>
+	
+	<!-- 根据给定登录号查询其所有资源对应权限限定标记 -->
+    <select id="listQxxdbjByYh" parameterType="String" resultType="map">
+    	select tab.zyid,sum(tab.dwxdbj) as dwbj,count(1) as tally from (
+			select distinct jszy.zyid,to_number(xtjs.dwxdbj,'9') dwxdbj from matridx_xtjs xtjs
+			join matridx_jszyczb jszy on jszy.jsid=xtjs.jsid
+			join matridx_yhjs yhjs on yhjs.jsid=jszy.jsid and yhjs.yhid= #{yhid}
+			<if test="jsIds!=null and jsIds.size() > 0"> <!-- 过滤指定角色的权限 -->
+				<foreach item="item" index="index" collection="jsIds" open=" and ("
+					separator=" or " close=") ">
+					yhjs.jsid = #{item}
+				</foreach>
+			</if>
+		) tab group by tab.zyid
+    </select>
+</mapper>

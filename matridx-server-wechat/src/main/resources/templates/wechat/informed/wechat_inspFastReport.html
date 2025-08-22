@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="referrer" content="never">
+	<meta content="webkit" name="renderer"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="Copyright" content="matridx"/>
+	<link rel="icon" href="/images/favicon.ico" type="image/x-icon"/>
+	<title>快捷支付</title>
+	<link rel="stylesheet" href="/js/weui/jquery-weui.min.css">
+	<link rel="stylesheet" href="/css/weui.css">
+	<link rel="stylesheet" type="text/css" href="/css/base.css?v=20241230v3" />
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/api/site.css?v=20250217v2" />
+	<style>
+		.row{
+            display: block ;
+        }
+        @font-face {
+            font-family: 'Glyphicons Halflings';
+            src: url('/fonts/glyphicons-halflings-regular.eot');
+            src: url('/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+        }
+        .glyphicon {
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: normal;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+	</style>
+	<style>
+		.weui-cell__desc {
+			font-size: 15px;
+			color: rgba(0,0,0,0.3);
+			color: var(--weui-FG-2);
+			line-height: 1.4;
+			padding-top: 4px;
+			font-weight: bolder;
+		}
+		label{
+			font-size: 16px;
+			font-weight: normal;
+			margin-bottom: 0
+		}
+		/**蓝色按钮*/
+		.weui-btn_bule,.weui-btn_primary {
+			color: white;
+			background-color: #00AFEC;
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+			color: rgba(0, 208, 236, 0.98);
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+			background-color: #00e4ec;
+		}
+		/**单选框、多选框样式*/
+		.Radio input,
+		.Checkbox input {
+			display: none
+		}
+		.Radio label,
+		.Checkbox label {
+			padding: 0 3px;
+			display: inline-block;
+			cursor: pointer;
+			position: relative
+		}
+		.Radio label:before,
+		.Checkbox label:before {
+			box-sizing: border-box;
+			content: "";
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			border: 1px solid #999;
+			margin: 0 2px;
+			vertical-align: middle;
+			display: inline-block;
+			transition: 0.1S;
+		}
+		.Radio input:checked + label:before {
+			border: 5px solid #00a4ff;
+		}
+		.Checkbox label:before {
+			background: url(/images/ico_tick.svg) no-repeat center;
+			background-size: 0;
+			border-radius: 4px;
+			transition: 0.2S;
+		}
+		.Checkbox input:checked + label:before {
+			background-color: #00a4ff;
+			background-size: 16px;
+			border-color: #00a4ff;
+		}
+		/*选择框样式*/
+		.RadioStyle input {
+			display: none
+		}
+		.RadioStyle label {
+			border: 2px solid #CCC;
+			color: #666;
+			padding: 1px 10px 1px 5px;
+			line-height: 28px;
+			min-width: 40px;
+			text-align: center;
+			float: left;
+			margin: 2px;
+			border-radius: 4px
+		}
+		.RadioStyle input:checked + label {
+			background: url(/images/ico_checkon.svg) no-repeat right bottom;
+			border: 2px solid #00a4ff;
+			background-size: 21px 21px;
+			color: #00a4ff
+		}
+		.RadioStyle input:disabled + label {
+			opacity: 0.7;
+		}
+		#ajaxForm .weui-cell__bd{
+			padding-left: 20px;
+		}
+		.sjdwlistclass .weui-cells:before{
+			left: 0;
+		}
+		.sjdwlistclass .weui-cells .weui-cell:before{
+			left: 0;
+		}
+		.weui-cell {
+			padding: 10px;
+		}
+		.weui-cell:before {
+			right: 10px;
+			left: 10px;
+		}
+		.weui-cells:after,.weui-cells:before {
+			border: none;
+		}
+		.weui-panel:before,.weui-form-preview:before {
+			border-top: none;
+		}
+		.weui-panel:after,.weui-form-preview:after {
+			border-bottom: none;
+		}
+		.weui-picker__indicator{
+			background-color: #00afec21;
+		}
+		.weui-mask {
+			visibility: visible;
+		}
+		.weui-panel_access .weui-panel__bd .weui-media-box .weui-panel {
+			margin-top: 0
+		}
+		.weui-panel_access .weui-panel__hd:after {
+			border-bottom: none;
+		}
+		.weui-media-box .weui-cell_swiped:before {
+			border-top: none;
+		}
+		.weui_loading_toast .weui-toast_content{
+			font-size: 16px;
+		}
+	</style>
+</head>
+<body style="background-color: #F5F5F5" data-weui-theme="light">
+<form id="ajaxForm">
+	<input type="hidden" id="sjid" name="sjid">
+	<input type="hidden" id="wxid" name="wxid" th:value="${wxid}"/>
+	<input type="hidden" id="wbcxdm" name="wbcxdm" th:value="${wbcxdm}"/>
+	<input type="hidden" id="ywlx" name="ywlx" th:value="${ywlx}"/>
+	<input type="hidden" id="flag" name="flag" th:value="${flag}"/>
+	<input type="hidden" id="path" name="path"/>
+	<input type="hidden" id="jcxmids" name="jcxmids"/>
+	<input type="hidden" id="jczxmids" name="jczxmids"/>
+	<input type="hidden" id="zfjcxm" name="zfjcxm"/>
+	<!--核对支付信息-->
+	<div id="hzxxInfo" class="page__bd">
+		<div style="margin: 10px;border-radius: 10px;background-color: white">
+			<!--基本信息-->
+			<div class="weui-cells weui-cells_form" style="border-radius: 10px;margin: 0;margin-top: 10px;">
+				<!--样本编号-->
+				<div class="weui-cell">
+					<div  class="weui-cell__hd">
+						<label>样本编号<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="ybbh" name="ybbh" th:value="${sjxxDto.ybbh}" class="weui-input" placeholder="请输入样本编号" validate="{required:true,stringMaxLength:32}">
+					</div>
+					<div class="weui-cell__ft">
+						<button id="QRCode" onclick="getQRCode()" type="button" class="weui-icon-scan" style="color: #00AFEC"></button>
+					</div>
+				</div>
+				<!--姓名-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>姓　　名<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input id="hzxm" name="hzxm" th:value="${sjxxDto.hzxm}" class="weui-input" placeholder="请填写姓名">
+					</div>
+				</div>
+				<!--合作伙伴-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>负责人<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<input class="weui-input" id="db" name="db" th:value="${sjxxDto.db}" onblur="getChargingStandards()" placeholder="请填写负责人"/>
+					</div>
+					<div class="weui-cell__ft">
+						<button class="weui-icon-reFlesh" style="color: #00AFEC" type="button"  onclick="getChargingStandards()"></button>
+					</div>
+				</div>
+				<!--检测项目，录单必填项-->
+				<div class="weui-cell" style="align-items: flex-start">
+					<div class="weui-cell__hd">
+						<label>检测项目<span style="color: red;">*</span></label>
+					</div>
+
+					<div class="weui-cell__bd" id="jcxm">
+					</div>
+				</div>
+				<div class="weui-cell" style="align-items: flex-start" id="jczxmDiv">
+					<div class="weui-cell__hd">
+						<label>检测子项目<span style="color: red;">*</span></label>
+					</div>
+
+					<div class="weui-cell__bd" id="jczxm">
+					</div>
+				</div>
+				<div id="sfbzDiv" hidden style="border-top: 1px solid var(--weui-FG-3);">
+
+				</div>
+				<!--付款方式-->
+				<div class="weui-cell">
+					<div class="weui-cell__hd">
+						<label>付款方式<span style="color: red;">*</span></label>
+					</div>
+					<div class="weui-cell__bd">
+						<span class="Radio">
+							<input id="scan" value="scan" name="zffs" type="radio" validate="{required:true}" checked/><label for="scan"><span>扫码</span></label>
+						</span>
+						<span class="Radio">
+							<input id="transfer" value="transfer" name="zffs" type="radio"  validate="{required:true}"/><label for="transfer"><span>支付宝</span></label>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="weui-cells__title">
+				<p class="" style="color: #666666;font-size: small;">注：使用快捷支付后，请尽快至“录入清单”完善信息！</p>
+			</div>
+			<div class="weui-cells_form" style="border-radius: 50px;padding: 10px 0;">
+				<button id="nextbtn" class="weui-btn weui-btn_bule preBtn" type="button" style="border-radius: 20px;width: 80%;" onclick="editconfirm(event)" data-fkfs="1"><span id="buttonText">确定</span></button>
+			</div>
+		</div>
+	</div>
+</form>
+<script type="text/javascript" src="/js/jquery-3.6.1.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/jquery-weui.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/weui/weui.js"></script>
+<script type="text/javascript" src="/js/jquery-qrcode.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/wechat/flexible.js" charset="utf-8"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js" charset="utf-8"></script>
+<script src="/js/wechat/informed/jquery-labelauty.js"></script>
+<script type="text/javascript" src="/js/wechat/informed/wechat_inspFastReport.js?v=20240129"></script></body>
+</html>

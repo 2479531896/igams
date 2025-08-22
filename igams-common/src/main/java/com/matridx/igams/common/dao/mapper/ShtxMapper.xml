@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IShtxDao" >
+
+   <!-- 显示所有审核提醒列表 -->
+   <select id="getPagedDtoList" parameterType="ShtxDto" resultType="ShtxDto">
+      select shtx.txid, shtx.txyqrs, shlbb.shlbmc as txlb
+      from matridx_shtx as shtx
+      left join matridx_shlb shlbb on shtx.txlb = shlbb.shlb 
+      <where>
+         <if test="txid != null and txid != ''">
+            and shtx.txid ILIKE '%'|| #{txid} ||'%'
+         </if>
+         <if test="txlb != null and txlb != ''">
+            and shlbb.shlbmc ILIKE '%'|| #{txlb} ||'%'
+         </if>
+         <if test="txyqrs != null and txyqrs != ''">
+            and shtx.txyqrs = cast(#{txyqrs} as numeric)
+         </if>
+      </where>
+   </select>
+   
+   <!-- 查找一条审核提醒信息 -->
+   <select id="getDto" parameterType="ShtxDto" resultType="ShtxDto">
+      select shtx.txid, shtx.txlb, shtx.txyqrs, shlbb.shlbmc as txlbmc
+      from matridx_shtx as shtx
+      left join matridx_shlb shlbb on shtx.txlb = shlbb.shlb 
+      <where>
+         shtx.txid=#{txid}
+      </where>
+   </select>
+   
+   
+   <select id="getCount" parameterType="ShtxDto" resultType="int">
+      select count(shtx.txid) from matridx_shtx as shtx
+      <where>
+         shtx.txid=#{txid}
+      </where>
+   </select>
+   
+   <!-- 新增一条数据 -->
+   <insert id="insertshtx" parameterType="ShtxDto">
+     insert into matridx_shtx
+     (<if test="txid !=null and txid !=''">
+          txid
+       </if>
+       <if test="txlb !=null and txlb !=''">
+          ,txlb
+       </if>
+       <if test="txyqrs !=null and txyqrs !=''">
+          ,txyqrs
+       </if> )
+     values(
+       <if test="txid !=null and txid !=''">
+          #{txid}
+       </if>
+       <if test="txlb !=null and txlb !=''">
+          ,#{txlb}
+       </if>
+       <if test="txyqrs !=null and txyqrs !=''">
+          ,cast(#{txyqrs} as numeric)
+       </if>)
+   </insert> 
+   
+   <!--    修改审核信息 -->
+   <update id="updateDto" parameterType="ShtxDto">
+      update matridx_shtx
+      set 
+      <if test="txyqrs != null and txyqrs != ''">
+         txyqrs=cast(#{txyqrs} as numeric)
+      </if>
+      <if test="txlb != null and txlb != ''">
+         ,txlb=#{txlb}
+      </if>
+
+      <where>
+         txid=#{txid}
+      </where>
+   </update>
+   
+   <!--    删除审核信息 -->
+   <delete id="delete" parameterType="ShtxDto">
+       delete from matridx_shtx
+       <where>
+             txid in
+             <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+             </foreach>
+       </where>
+   </delete>
+   
+   <!-- 得到审核需要提醒的类别 -->
+   <select id="getTxlbList" parameterType="ShtxDto" resultType="ShtxDto">
+       select xtsh.shid,shtx.txid, shtx.txlb, xtsh.shmc as txlbmc
+       from matridx_shtx shtx 
+       left join matridx_xtsh xtsh on shtx.txlb = xtsh.shlb and xtsh.scbj='0'
+   </select>
+   
+   <!-- 得到审批延期的数据（全部审批和个人审批使用同一个sql） -->
+   <select id="getPagedSpyq" parameterType="ShtxDto" resultType="ShtxDto">
+	   SELECT xtsh.shlb, xtsh.shid, shgc.ywid, shgc.xgsj, sp.txyqrs
+		  , trunc(date_part('day', localtimestamp  - shgc.xgsj)) AS yqrs,
+		  sp.txlb,xtsh.shmc as txlbmc,spgw.gwmc as gwmc,to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS scshsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjrq,
+		  (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+       + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs,spgw.gwid
+	   FROM matridx_shtx sp
+	   LEFT JOIN matridx_xtsh xtsh ON sp.txlb = xtsh.shlb and xtsh.scbj !='1'
+	   LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+	   LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+		    AND shgc.xlcxh = shlc.lcxh
+		    AND shgc.sqsj &gt;= shlc.qysj
+		    AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+       LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid		          
+	   <where>
+	       	shgc.xlcxh IS NOT NULL
+		    AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+             + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= sp.txyqrs
+	        <if test="txlbmc != null and txlbmc !=''">
+		      AND xtsh.shmc ILIKE '%'|| #{txlbmc} ||'%'
+		    </if>
+	  </where>
+   </select>
+   
+   
+   <!-- 个人审批延期列表  -->
+   <select id="getPagedPersonSpyq" parameterType="ShtxDto" resultType="ShtxDto">
+       SELECT xtsh.shlb, xtsh.shid, shgc.ywid, shgc.xgsj, sp.txyqrs
+	 	  , trunc(date_part('day', localtimestamp  - shgc.xgsj)) AS yqrs,
+		  sp.txlb,xtsh.shmc as txlbmc,spgw.gwmc as gwmc,to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS scshsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjrq,
+		  (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+          + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs,spgw.gwid
+	   FROM matridx_shtx sp
+		  LEFT JOIN matridx_xtsh xtsh ON sp.txlb = xtsh.shlb and xtsh.scbj ='0'
+		  LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		  LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			    AND shgc.xlcxh = shlc.lcxh
+			    AND shgc.sqsj &gt;= shlc.qysj
+			    AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+	      LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid	
+	      LEFT JOIN matridx_spgwcy spgwcy on spgwcy.gwid =spgw.gwid	
+	      <if test="dqsxlb =='AUDIT_REQUISITIONS'.toString()">
+		   left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+		   left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+		   left join igams_qggl qggl on  qggl.qgid = shgc.ywid  and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then qggl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end    
+		  </if> 		  
+		  <if test="dqsxlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+           left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+           left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+           LEFT JOIN igams_qgqxgl qgqxgl ON qgqxgl.qgqxid = shgc.ywid AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN qgqxgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END   
+	     </if>
+	     <if test="dqsxlb =='AUDIT_CONTRACT'.toString()">
+	       left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+	       left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+	       LEFT JOIN igams_htgl htgl ON htgl.qgid = shgc.ywid AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN htgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END    
+		 </if>
+		 <if test="dqsxlb =='QUALITY_FILE_ADD'.toString() or dqsxlb =='QUALITY_FILE_MOD'.toString()">
+	       LEFT JOIN matridx_xtjs xtjs ON xtjs.jsid = spgwcy.jsid AND CASE WHEN spgw.dwxz = '1' THEN 1 = 1 ELSE 1 = 2 END
+	       LEFT JOIN matridx_jsdwqx jsdwqx ON CASE WHEN xtjs.dwxdbj = '1' THEN jsdwqx.jsid = spgwcy.jsid ELSE 1 = 2 END
+           left join igams_wjgl wjgl on wjgl.wjid = shgc.ywid
+	       left join igams_wjssdw wjssdw on wjssdw.wjid = wjgl.wjid  
+	       AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN wjssdw.jgid = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END
+	     </if> 
+	     <if test="dqsxlb =='AUDIT_GOODS_ARRIVAL'.toString()">
+	       LEFT JOIN matridx_xtjs xtjs ON xtjs.jsid = spgwcy.jsid AND CASE WHEN spgw.dwxz = '1' THEN 1 = 1 ELSE 1 = 2 END
+	       LEFT JOIN matridx_jsdwqx jsdwqx ON CASE WHEN xtjs.dwxdbj = '1' THEN jsdwqx.jsid = spgwcy.jsid ELSE 1 = 2 END
+           LEFT JOIN igams_dhxx dhxx on dhxx.scbj ='0' and dhxx.dhid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then dhxx.bm = jsdwqx.jgid else 1=1 end else 1=1 end
+	     </if> 
+		     
+	   <where>
+	       	shgc.xlcxh IS NOT NULL
+		    AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+             + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= sp.txyqrs
+		    <if test="dqshjs != null and dqshjs !='' and dqshyh != null and dqshyh !=''">
+		      AND spgwcy.jsid=#{dqshjs}  AND spgwcy.yhid=#{dqshyh}
+		    </if>
+		    <if test="txlbmc != null and txlbmc !=''">
+		      AND xtsh.shmc ILIKE '%'|| #{txlbmc} ||'%'
+		    </if>
+		    
+		     <if test="dqsxlb =='AUDIT_REQUISITIONS'.toString()">
+		        and qggl.scbj='0' and qggl.zt!='80' and sp.txlb=#{txlb}
+		     </if>
+		     <if test="dqsxlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+		        and qgqxgl.scbj = '0' and qgqxgl.zt!='80' and sp.txlb=#{txlb}  
+		     </if>
+		     <if test="dqsxlb =='AUDIT_CONTRACT'.toString()">
+		        and htgl.scbj='0' and htgl.zt!='80' and sp.txlb=#{txlb}
+		     </if>
+		     <if test="dqsxlb =='QUALITY_FILE_ADD'.toString() or dqsxlb =='QUALITY_FILE_MOD'.toString()">
+	            and wjgl.scbj='0' and wjgl.zt!='80' and sp.txlb=#{txlb}
+		     </if>
+		     <if test="dqsxlb =='AUDIT_GOODS_ARRIVAL'.toString()">
+	            and dhxx.scbj='0' and dhxx.zt!='80' and sp.txlb=#{txlb}
+		     </if>
+	  </where>
+   
+   </select>
+   
+   <!-- 查看审核信息 -->
+   <select id="getShyqxxByShid" parameterType="ShtxDto" resultType="ShtxDto">
+       SELECT xtsh.shid, shgc.ywid, sp.txyqrs
+		  , trunc(date_part('day', localtimestamp  - shgc.xgsj)) AS yqrs,
+		  sp.txlb,xtsh.shmc as txlbmc,spgw.gwmc as gwmc,to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS scshsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjrq,
+		  (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+          + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs
+	   FROM matridx_shtx sp
+	   LEFT JOIN matridx_xtsh xtsh ON sp.txlb = xtsh.shlb and xtsh.scbj !='1'
+	   LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+	   LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid AND shgc.xlcxh = shlc.lcxh AND shgc.sqsj &gt;= shlc.qysj AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+	   LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+	   <where>
+	       	shgc.shid = #{shid}
+		    AND shgc.ywid = #{ywid} 
+	  </where>
+   </select>
+   
+   <!-- 审核提醒的审核lb -->
+   <select id="getShtxlb" resultType="ShtxDto">
+      select txlb from matridx_shtx
+   </select>
+   
+   <!-- 发送钉钉消息的内容 -->
+   <select id="getMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid,count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+		  AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+              + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+		  and shtx.txlb=#{txlb} 
+		  and yh.sfsd ='0'
+		  and yh.scbj='0' 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc
+   </select>
+   
+   <!-- 发送钉钉信息特殊处理物料请购申请，做部门经理的限制 -->
+   <select id="getWlqgMgsToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc,
+		       qggl.sqbm,jsdwqx.jgid, spgw.dwxz
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end 
+		left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		LEFT JOIN igams_qggl qggl on qggl.scbj ='0' and qggl.qgid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then qggl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+          AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+	      + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+          and qggl.zt !='80' and qggl.scbj ='0' and yh.sfsd='0' and yh.scbj='0' and shtx.txlb = #{txlb} 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc, qggl.sqbm,jsdwqx.jgid,spgw.dwxz
+   </select>
+   
+   
+   <!-- 发送钉钉信息特殊处理取消请购审核，做部门经理的限制 -->
+   <select id="getQxqgMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc,
+		     qgqxgl.sqbm,jsdwqx.jgid, spgw.dwxz
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end 
+		left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		LEFT JOIN igams_qgqxgl qgqxgl on qgqxgl.qgqxid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then qgqxgl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+          AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+	      + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+          and qgqxgl.zt !='80' and qgqxgl.scbj ='0'  and yh.sfsd='0' and yh.scbj='0' and shtx.txlb = #{txlb} 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc, qgqxgl.sqbm,jsdwqx.jgid,spgw.dwxz
+   </select>
+   
+   <!-- 发送钉钉信息特殊处理合同审核，做部门经理的限制 -->
+   <select id="getHtshMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc,
+		       htgl.sqbm,jsdwqx.jgid, spgw.dwxz
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end 
+		left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		LEFT JOIN igams_htgl htgl on htgl.htid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then htgl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+          AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+	      + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+          and htgl.zt !='80' and htgl.scbj ='0' and yh.sfsd='0' and yh.scbj='0'  and shtx.txlb = #{txlb} 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc, htgl.sqbm,jsdwqx.jgid,spgw.dwxz
+   </select>
+   
+   <!-- 发送钉钉信息特殊处理复检审核，做检测单位的限制 -->
+   <select id="getFjshMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid
+		LEFT JOIN matridx_jsjcdw jsjcdw on jsjcdw.jsid = spgwcy.jsid 
+		LEFT JOIN igams_fjsq fjsq on fjsq.fjid = shgc.ywid 
+		     and case when xtjs.dwxdbj ='1' then fjsq.jcdw = jsjcdw.jcdw else 1=1 end
+		
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+          AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+	      + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+          and fjsq.zt !='80' and fjsq.scbj ='0' and yh.sfsd='0' and yh.scbj='0' and shtx.txlb = #{txlb} 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc
+   </select>
+   
+   <!-- 发送钉钉信息特殊处理送检验证审核，做检测单位的限制 -->
+   <select id="getYzshMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+        select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, count(ywid) as tasknum, shtx.txlb, xtsh.shmc as txlbmc
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj &gt;= shlc.qysj
+			AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid 
+		
+		LEFT JOIN matridx_jsjcdw jsjcdw on jsjcdw.jsid = spgwcy.jsid 
+		LEFT JOIN igams_sjyz sjyz on sjyz.yzid = shgc.ywid
+	    left join igams_sjxx sjxx on sjyz.sjid = sjxx.sjid
+	   <where>
+		  shgc.xlcxh IS NOT NULL
+          AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+	      + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+          and sjyz.zt !='80' and sjyz.scbj ='0' and yh.sfsd='0' and yh.scbj='0'  and shtx.txlb = #{txlb}
+		  and sjxx.sjid is not null and sjxx.sfjs='1' and sjxx.scbj='0'
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc
+   </select>
+   
+   <select id="getHwxzshMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+		select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, shtx.txlb, xtsh.shmc as txlbmc, count(ywid) as tasknum,
+		    jsdwqx.jgid, spgw.dwxz , dhxx.bm
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+		  AND shgc.xlcxh = shlc.lcxh
+		  AND shgc.sqsj &gt;= shlc.qysj
+		  AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+		
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end  
+		LEFT JOIN matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		LEFT JOIN igams_dhxx dhxx on dhxx.scbj ='0' and dhxx.dhid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then dhxx.bm = jsdwqx.jgid else 1=1 end else 1=1 end
+		<where>
+		  shgc.xlcxh IS NOT NULL 
+		  AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+		  + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) &gt;= shtx.txyqrs
+		  and yh.sfsd='0' and yh.scbj='0' and shtx.txlb = #{txlb}
+		  and dhxx.zt ='10' and dhxx.scbj ='0' 
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc, jsdwqx.jgid,spgw.dwxz , dhxx.bm
+   </select>
+
+	<!-- 发送钉钉信息特殊处理领料申请审核，做检测单位的限制 -->
+	<select id="getLlsqshMgsnrToSend" parameterType="ShtxDto" resultType="ShtxDto">
+		select spgwcy.yhid as yhid ,spgwcy.jsid as dqshjs, yh.zsxm as yhmc,yh.yhm, yh.ddid as ddid, shtx.txlb, xtsh.shmc as txlbmc, count(ywid) as tasknum,
+		jsdwqx.jgid, spgw.dwxz , llgl.sqbm
+		FROM matridx_shtx shtx
+		LEFT JOIN matridx_xtsh xtsh ON shtx.txlb = xtsh.shlb and xtsh.scbj ='0'
+		LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+		AND shgc.xlcxh = shlc.lcxh
+		AND shgc.sqsj >= shlc.qysj
+		AND (shlc.tysj IS NULL OR shlc.tysj >= shgc.sqsj)
+		LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		LEFT JOIN matridx_xtyh yh on spgwcy.yhid = yh.yhid
+
+		LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+		LEFT JOIN matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		LEFT JOIN igams_llgl llgl on llgl.scbj ='0' and llgl.llid = shgc.ywid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then llgl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		<where>
+			shgc.xlcxh IS NOT NULL
+			AND (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+			+ date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) >= shtx.txyqrs
+			and yh.sfsd='0' and yh.scbj='0' and shtx.txlb = #{txlb}
+			and llgl.zt ='10' and llgl.scbj ='0'
+		</where>
+		group by spgwcy.yhid,spgwcy.jsid,yh.zsxm,yh.yhm,yh.ddid, shtx.txlb, xtsh.shmc, jsdwqx.jgid,spgw.dwxz , llgl.sqbm
+	</select>
+   
+   <!-- 点击钉钉消息上查看某审核类别的延期审核任务列表 -->
+   <select id="getSpyqDdview" parameterType="ShtxDto" resultType="ShtxDto">
+   		SELECT xtsh.shlb, xtsh.shid, shgc.ywid, shgc.xgsj, sp.txyqrs
+		  , trunc(date_part('day', localtimestamp  - shgc.xgsj)) AS yqrs,
+		  sp.txlb,xtsh.shmc as txlbmc,spgw.gwmc as gwmc,to_char(shgc.xgsj,'yyyy-mm-dd hh24:mi:ss') AS scshsj,
+		  to_char(shgc.sqsj,'yyyy-mm-dd hh24:mi:ss') as tjrq,
+		  (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+          + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)) as yqxs
+	    FROM matridx_shtx sp
+		  LEFT JOIN matridx_xtsh xtsh ON sp.txlb = xtsh.shlb and xtsh.scbj ='0'
+		  LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+		  LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			    AND shgc.xlcxh = shlc.lcxh
+			    AND shgc.sqsj &gt;= shlc.qysj
+			    AND (shlc.tysj IS NULL OR shlc.tysj &gt;= shgc.sqsj)
+	      LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+		  LEFT JOIN matridx_spgwcy spgwcy on shlc.gwid = spgwcy.gwid
+		  <if test="txlb =='AUDIT_REQUISITIONS'.toString()">
+		   left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+		   left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+		   left join igams_qggl qggl on  qggl.qgid = shgc.ywid  and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then qggl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end    
+		  </if> 		  
+		  <if test="txlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+           left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+           left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+           LEFT JOIN igams_qgqxgl qgqxgl ON qgqxgl.qgqxid = shgc.ywid AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN qgqxgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END   
+	     </if>
+	     <if test="txlb =='AUDIT_CONTRACT'.toString()">
+	       left join matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+	       left join matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end  
+	       LEFT JOIN igams_htgl htgl ON htgl.qgid = shgc.ywid AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN htgl.sqbm = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END    
+		 </if>
+		 <if test="txlb =='QUALITY_FILE_ADD'.toString()">
+	       LEFT JOIN matridx_xtjs xtjs ON xtjs.jsid = spgwcy.jsid AND CASE WHEN spgw.dwxz = '1' THEN 1 = 1 ELSE 1 = 2 END
+	       LEFT JOIN matridx_jsdwqx jsdwqx ON CASE WHEN xtjs.dwxdbj = '1' THEN jsdwqx.jsid = spgwcy.jsid ELSE 1 = 2 END
+           left join igams_wjgl wjgl on wjgl.wjid = shgc.ywid
+	       left join igams_wjssdw wjssdw on wjssdw.wjid = wjgl.wjid  
+	       AND CASE WHEN spgw.dwxz = '1' THEN CASE WHEN xtjs.dwxdbj = '1' THEN wjssdw.jgid = jsdwqx.jgid ELSE 1 = 1 END ELSE 1 = 1 END
+	     </if>
+	     <if test="txlb =='AUDIT_GOODS_APPLY'.toString()">
+		   LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+		   LEFT JOIN matridx_jsdwqx jsdwqx on case when xtjs.dwxdbj = '1' then jsdwqx.jsid = spgwcy.jsid else 1=2 end
+		   LEFT JOIN igams_llgl llgl on llgl.llid = shgc.ywid and llgl.scbj ='0' and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then llgl.sqbm = jsdwqx.jgid else 1=1 end else 1=1 end
+		 </if>
+		 <if test="txlb =='AUDIT_VERIFICATION'.toString()">
+			 LEFT JOIN matridx_xtjs xtjs on xtjs.jsid = spgwcy.jsid and case when spgw.dwxz ='1' then 1=1 else 1=2 end
+			 LEFT JOIN matridx_jsjcdw jsjcdw on case when xtjs.dwxdbj = '1' then jsjcdw.jsid = xtjs.jsid else 1=2 end
+			 LEFT JOIN igams_sjyz sjyz on  sjyz.yzid = shgc.ywid
+			 left join igams_sjxx sjxx on sjyz.sjid = sjxx.sjid and case when spgw.dwxz ='1' then case when xtjs.dwxdbj = '1' then sjxx.jcdw = jsjcdw.jcdw else 1=1 end else 1=1 end
+		 </if>
+
+	      <where>
+	       	shgc.xlcxh IS NOT NULL
+		    AND sp.txyqrs &lt;= (date_part('day',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp)*24
+                + date_part('hour',to_char(localtimestamp  ,'yyyy-MM-dd HH24'||':00:00')::timestamp  -  to_char(shgc.xgsj,'yyyy-MM-dd HH24:00:00')::timestamp))
+		    AND spgwcy.yhid=#{dqshyh}
+			AND spgwcy.jsid=#{dqshjs} 
+			AND sp.txlb=#{txlb}
+			<if test="txlb =='AUDIT_REQUISITIONS'.toString()">
+		        and qggl.scbj='0' and qggl.zt!='80' 
+		    </if>
+		    <if test="txlb =='AUDIT_REQUISITIONS_CANCEL'.toString()">
+		        and qgqxgl.scbj = '0' and qgqxgl.zt!='80' 
+		    </if>
+		    <if test="txlb =='AUDIT_CONTRACT'.toString()">
+		        and htgl.scbj='0' and htgl.zt!='80' 
+		    </if>
+		    <if test="txlb =='QUALITY_FILE_ADD'.toString()">
+	            and wjgl.scbj='0' and wjgl.zt!='80' 
+		    </if>
+		    <if test="txlb =='AUDIT_GOODS_APPLY'.toString()">
+				and llgl.scbj='0' and llgl.zt!='80'
+			</if>
+			  <if test="txlb =='AUDIT_VERIFICATION'.toString()">
+				  and sjyz.scbj='0' and sjyz.zt!='80'
+				  and sjxx.scbj='0' and sjxx.sfjs='1'
+			  </if>
+		</where>
+   </select>
+  
+  <sql id="selectYwmc">
+       <foreach collection="list" index="index" item="item" open="(" close=")" separator=" union all ">
+		      select #{item.lsxh} lsxh,#{item.ywid} ywid
+	   </foreach>
+   </sql>
+   
+   <!-- 得到物料请购审核业务名称 -->
+   <select id="WlqgshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, qggl.djh AS ywmc from 
+	    <include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_qggl qggl on qggl.qgid = tmp.ywid		
+   </select>
+    
+   <!-- 得到取消请购审核业务名称 -->
+   <select id="QxqgshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, qgqxgl.djh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_qgqxgl qgqxgl on qgqxgl.qgqxid = tmp.ywid		
+   </select> 
+   
+   <!-- 得到物料申请业务名称  -->
+   <select id="WlsqYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, wlgl.wlmc AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_wlgl wlgl on wlgl.wlid = tmp.ywid		
+   </select> 
+   
+   <!-- 得到物料修改审核业务名称 -->
+   <select id="WlxgshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, wlgllsb.wlmc AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_wlgllsb wlgllsb on wlgllsb.lsid = tmp.ywid		
+   </select>
+   
+   <!-- 得到文件申请业务名称 -->
+   <select id="WjsqYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, wjgl.wjmc AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_wjgl wjgl on wjgl.wjid = tmp.ywid		
+   </select>
+   
+   <!--  得到合同审核业务名称 -->
+   <select id="HtshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, htgl.htnbbh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_htgl htgl on htgl.htid = tmp.ywid		
+   </select> 
+   
+   <!--  得到设备审核业务名称 -->
+   <select id="SbshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, sbgl.sbh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_sbgl sbgl on sbgl.sbid = tmp.ywid		
+   </select>
+   
+   <!-- 得到领料申请审核业务名称 -->
+   <select id="LlsqshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, llgl.lldh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_llgl llgl on llgl.llid = tmp.ywid		
+   </select>
+   
+   
+   <!-- 得到到货检验（仪器和试剂质检）业务名称 -->
+   <select id="DhjyYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, dhjy.jydh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_dhjy dhjy on dhjy.dhjyid = tmp.ywid		
+   </select>
+   
+   <!-- 得到入库审核业务名称 -->
+   <select id="RkshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, rkgl.rkdh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_rkgl rkgl on rkgl.rkid = tmp.ywid		
+   </select>
+	<!-- 得到送检验证审核业务名称 -->
+	<select id="SjyzshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+		select lsxh, sj.ybbh||'--'||yzlb_jc.csmc AS ywmc from
+		<include refid="selectYwmc"></include>
+		tmp
+		left outer join igams_sjyz yz on tmp.ywid =yz.yzid
+		left outer join igams_sjxx sj on yz.sjid= sj.sjid and sj.scbj!='1'
+		left outer join matridx_jcsj yzlb_jc on yzlb_jc.csid = yz.yzlb and yzlb_jc.scbj='0'
+	</select>
+	<!-- 得到复检审核业务名称 -->
+	<select id="FjshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+		select lsxh, sj.ybbh||'--'||sj.hzxm AS ywmc from
+		<foreach collection="list" index="index" item="item" open="(" close=")" separator=" union all ">
+			select #{item.lsxh} lsxh,#{item.ywid} ywid
+		</foreach>
+		tmp
+		left outer join igams_fjsq fj on fj.fjid = tmp.ywid
+		left outer join igams_sjxx sj on sj.sjid= fj.sjid
+	</select>
+   <!-- 得到货物到货审核dhxx业务名称 -->
+   <select id="HwdhshYwmcList"  parameterType="ShtxDto" resultType="ShtxDto">
+	  select lsxh, dhxx.dhdh AS ywmc from 
+	  	<include refid="selectYwmc"></include>
+	  	 tmp
+	    left outer join igams_dhxx dhxx on dhxx.dhid = tmp.ywid		
+   </select>
+	<!-- 获取所有待审核的任务 -->
+	<select id="getAllAuditings" parameterType="ShtxDto" resultType="ShtxDto">
+	select 	tb.string_agg,tb.ddid,tb.yhid,tb.yhm,tmp.zs
+	from
+	( SELECT string_agg ( tab.shmc || '@' || tab.sl, ',' ), tab.ddid, tab.yhid, tab.yhm
+	FROM
+		(
+		SELECT
+			xtsh.shmc,
+			COUNT ( shlb ) AS sl,
+			yh.ddid, yh.yhid, yh.yhm
+		FROM
+			matridx_xtsh xtsh
+			LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+			AND xtsh.scbj = '0'
+			LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj >= shlc.qysj
+			AND ( shlc.tysj IS NULL OR shlc.tysj >= shgc.sqsj )
+			LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+			LEFT JOIN matridx_spgwcy spgwcy ON shlc.gwid = spgwcy.gwid
+			LEFT JOIN matridx_xtyh yh ON spgwcy.yhid = yh.yhid
+			where shgc.xlcxh IS NOT NULL and yh.ddid is not null
+		GROUP BY
+			xtsh.shmc,
+			yh.ddid, yh.yhid, yh.yhm
+		) tab
+	GROUP BY
+		tab.ddid, tab.yhid, tab.yhm
+		) tb
+		left join (
+		select yh.ddid,yh.yhid,count(shlc.shid) zs
+		from 	matridx_xtsh xtsh
+			LEFT JOIN matridx_shgc shgc ON shgc.shid = xtsh.shid
+			AND xtsh.scbj = '0'
+			LEFT JOIN matridx_shlc shlc ON shgc.shid = shlc.shid
+			AND shgc.xlcxh = shlc.lcxh
+			AND shgc.sqsj >= shlc.qysj
+			AND ( shlc.tysj IS NULL OR shlc.tysj >= shgc.sqsj )
+			LEFT JOIN matridx_spgw spgw ON spgw.gwid = shlc.gwid
+			LEFT JOIN matridx_spgwcy spgwcy ON shlc.gwid = spgwcy.gwid
+			LEFT JOIN matridx_xtyh yh ON spgwcy.yhid = yh.yhid
+			where shgc.xlcxh IS NOT NULL
+			group by yh.ddid,yh.yhid
+		) tmp on tmp.ddid=tb.ddid and tmp.yhid=tb.yhid
+	</select>
+</mapper>

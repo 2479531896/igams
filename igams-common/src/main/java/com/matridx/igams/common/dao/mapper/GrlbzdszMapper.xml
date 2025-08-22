@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IGrlbzdszDao" >
+	<select id="getChoseList"  parameterType="GrlbzdszDto"  resultType="LbzdszDto" >
+		select 
+			lb.ywid,lb.xszd,lb.ywmc,lb.xszdmc,lb.pxzd,gr.xssx xsxx,lb.sqlzd,lb.xskd,lb.xsgs,lb.zdsm,lb.mrxs,gr.xskd as width ,lb.zj,lb.jz
+		from matridx_grlbzdsz  gr  
+		left join matridx_lbzdsz lb on gr.ywid=lb.ywid and gr.xszd=lb.xszd
+		<where>
+			gr.yhid = #{yhid} and gr.ywid = #{ywid}
+		</where>
+		order by gr.xssx
+	</select>
+	
+	<delete id="delete" parameterType="GrlbzdszDto">
+		delete from matridx_grlbzdsz gr
+		<where>
+			gr.yhid = #{yhid} and gr.ywid = #{ywid}
+		</where>
+	</delete>
+	
+	<update id="SaveChoseList" parameterType="GrlbzdszDto">
+		insert into matridx_grlbzdsz(xszd,xssx,yhid,ywid)
+		<foreach item="item" index="index" collection="choseList" separator=" union all ">  
+		   select #{item,jdbcType=VARCHAR} xszd,#{index} xssx,#{yhid} ,#{ywid}
+		</foreach>
+	</update>
+
+	<update id="SaveChoseListVue" parameterType="List">
+		insert into matridx_grlbzdsz(xszd,xssx,yhid,ywid,xskd)
+		<foreach item="item" index="index" collection="choseListVue" separator=" union all ">
+			select #{item.xszd,jdbcType=VARCHAR} xszd,#{index} xssx,#{yhid} ,#{ywid},#{item.xskd}
+		</foreach>
+	</update>
+</mapper>

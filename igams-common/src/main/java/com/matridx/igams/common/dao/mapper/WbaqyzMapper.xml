@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IWbaqyzDao" >
+	<sql id="SEARCH_TERMS">
+		<if test="entire != null and entire != ''">
+			and (
+			wb.code ilike '%'||#{entire}||'%'
+			or wb.mc ilike '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="code !=null and code != ''">
+			and wb.code like '%'||#{code}||'%'
+		</if>
+		<if test="mc!=null and mc != ''">
+			and wb.mc like '%'||#{mc}||'%'
+		</if>
+	</sql>
+	<!-- 查询审核岗位信息 -->
+	<select id="getDtoById" parameterType="WbaqyzDto" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address,wb.code as beforeCode,wb.iswbbmmust
+		from matridx_wbaqyz wb
+
+		where wb.code =#{code}
+	</select>
+
+	<select id="getDto" parameterType="WbaqyzDto" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address,wb.code as beforeCode
+		from matridx_wbaqyz wb
+		where wb.code =#{code}
+		<if test="beforeCode !=null and beforeCode != ''">
+			and wb.code != #{beforeCode}
+		</if>
+	</select>
+	<select id="getPageWbaqyzDtoList" parameterType="WbaqyzDto" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address
+		from matridx_wbaqyz wb
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	<insert id="insertDto" parameterType="WbaqyzDto" >
+		insert into matridx_wbaqyz(code,mc,key,word,address
+
+		)values(#{code},#{mc},#{key},#{word},#{address}
+		)
+	</insert>
+	<update id="updateDto" parameterType="WbaqyzDto">
+		update matridx_wbaqyz
+		set
+		code=#{code},
+			mc = #{mc},
+			key = #{key},
+			word = #{word},
+			address = #{address},
+			yzcs = 0
+		<where>
+			 code=#{beforeCode}
+		</where>
+
+	</update>
+	<update id="updateDtoByIndex" parameterType="WbaqyzDto">
+		update matridx_wbaqyz
+        set yzsj= cast(#{yzsj} as timestamp)
+			<if test="yzcs == 0">
+				, yzcs = 0
+			</if>
+			<if test="yzcs == 1">
+				, yzcs = cast(yzcs as numeric)+1
+			</if>
+
+			where code=#{code}
+	</update>
+	<update id="delete" parameterType="WbaqyzDto">
+		delete from matridx_wbaqyz
+		where code in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+	</update>
+	<select id="queryByHbid" parameterType="String" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address
+			from matridx_wbaqyz wb
+			left join matridx_wbhbyz wh on wh.code = wb.code
+			<where>
+				 wh.hbid=#{hbid}
+			</where>
+	</select>
+
+	<!-- 查询伙伴信息 -->
+	<select id="getListDtoById" parameterType="WbaqyzDto" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address,wb.code,sjhbxx.hbmc as hbmc,wbhbyz.hbid as hbid
+		from matridx_wbaqyz wb
+				 left join matridx_wbhbyz wbhbyz on wb.code = wbhbyz.code
+				 left join igams_sjhbxx sjhbxx on wbhbyz.hbid = sjhbxx.hbid
+		where wb.code =#{code} and wbhbyz.hbid is not null
+	</select>
+
+	<!-- 查询审核岗位信息 -->
+	<select id="getDtoList" parameterType="WbaqyzDto" resultType="WbaqyzDto">
+		select wb.code,wb.mc,wb.key,wb.word,wb.address,wb.code as beforeCode,wb.iswbbmmust
+		from matridx_wbaqyz wb
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+</mapper>

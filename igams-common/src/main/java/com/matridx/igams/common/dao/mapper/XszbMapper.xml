@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IXszbDao" >
+
+   <select id="getPagedDtoList" parameterType="XszbDto" resultType="XszbDto">
+       select xszb.zbid, xszb.yhid, xszb.zblx, jc.csmc as zblxcsmc, xszb.kszq, xszb.jszq, sz,
+              fl.csmc zbflmc, zfl.csmc zbzflmc, case when fl.csdm='PT' then pt_jc.csmc when fl.csdm ='TJXSTJ' then hbxx.hbmc else xtyh.zsxm end zsxm,xszb.sfqr
+       from igams_xszb xszb
+       left join matridx_jcsj jc on xszb.zblx = jc.csid
+       left join matridx_jcsj fl on fl.csid = xszb.zbfl
+       left join matridx_jcsj zfl on zfl.csid = xszb.zbzfl
+       left join matridx_xtyh xtyh on xtyh.yhid = xszb.yhid
+       left join matridx_jcsj pt_jc on pt_jc.csid = xszb.yhid and fl.csdm ='PT'
+       left join igams_sjhbxx hbxx on hbxx.hbid = xszb.yhid and fl.csdm ='TJXSTJ'
+       <where>
+           xszb.scbj='0'
+           <if test="zsxm != null and zsxm != ''">
+			  and (xtyh.zsxm ILIKE '%'||#{zsxm}||'%' or pt_jc.csmc ILIKE '%'||#{zsxm}||'%' or hbxx.hbmc ILIKE '%'||#{zsxm}||'%')
+           </if>
+		   <if test="zblx != null and zblx != ''">
+			  and jc.csmc ILIKE '%'||#{zblx}||'%'
+		   </if>
+           <if test="zbflmc != null and zbflmc != ''">
+               and fl.csmc ILIKE '%'||#{zbflmc}||'%'
+           </if>
+           <if test="zbzflmc != null and zbzflmc != ''">
+               and zfl.csmc ILIKE '%'||#{zbzflmc}||'%'
+           </if>
+           <if test="kszq != null and kszq != ''">
+               and xszb.kszq ILIKE '%'||#{kszq}||'%'
+           </if>
+           <if test="jszq != null and jszq != ''">
+               and xszb.jszq ILIKE '%'||#{jszq}||'%'
+           </if>
+           <if test="zblxs != null and zblxs.length>0">
+               and jc.csid in
+               <foreach collection="zblxs" open="(" close=")" index="index" item="item" separator=",">
+                   #{item}
+               </foreach>
+           </if>
+           <if test="zbfls != null and zbfls.length>0">
+               and fl.csid in
+               <foreach collection="zbfls" open="(" close=")" index="index" item="item" separator=",">
+                   #{item}
+               </foreach>
+           </if>
+           <if test="zbzfls != null and zbzfls.length>0">
+               and zfl.csid in
+               <foreach collection="zbzfls" open="(" close=")" index="index" item="item" separator=",">
+                   #{item}
+               </foreach>
+           </if>
+       </where>      
+   </select>
+
+    <select id="getDtoList" parameterType="XszbDto" resultType="XszbDto">
+        select xszb.zbid, xszb.yhid, xszb.zblx, jc.csmc as zblxcsmc, xszb.kszq, xszb.jszq, sz,
+        fl.csmc zbflmc, zfl.csmc zbzflmc, case when fl.csdm='PT' then pt_jc.csmc when fl.csdm ='TJXSTJ' then hbxx.hbmc else xtyh.zsxm end zsxm
+        from igams_xszb xszb
+        left join matridx_jcsj jc on xszb.zblx = jc.csid
+        left join matridx_jcsj fl on fl.csid = xszb.zbfl
+        left join matridx_jcsj zfl on zfl.csid = xszb.zbzfl
+        left join matridx_xtyh xtyh on xtyh.yhid = xszb.yhid
+        left join matridx_jcsj pt_jc on pt_jc.csid = xszb.yhid and fl.csdm ='PT'
+        left join igams_sjhbxx hbxx on hbxx.hbid = xszb.yhid and fl.csdm ='TJXSTJ'
+        <where>
+            xszb.scbj='0'
+            <if test="yhid != null and yhid != ''">
+                and xszb.yhid=#{yhid}
+            </if>
+            <if test="zbfl != null and zbfl != ''">
+                and xszb.zbfl=#{zbfl}
+            </if>
+            <if test="zbzfl != null and zbzfl != ''">
+                and xszb.zbzfl=#{zbzfl}
+            </if>
+            <if test="zblx != null and zblx != ''">
+                and xszb.zblx=#{zblx}
+            </if>
+        </where>
+    </select>
+   
+   <select id="getDto" parameterType="XszbDto" resultType="XszbDto">
+       select xszb.zbid, xszb.yhid, xszb.zblx, jc.csmc as zblxcsmc, xszb.kszq, xszb.jszq, sz, fl.csmc zbflmc, zfl.csmc zbzflmc, xszb.zbfl, xszb.zbzfl,
+              case when fl.csdm='PT' then pt_jc.csmc when fl.csdm ='TJXSTJ' then hbxx.hbmc else xtyh.yhm end zsxm
+       from igams_xszb xszb
+       left join matridx_jcsj jc on xszb.zblx = jc.csid
+       left join matridx_jcsj fl on fl.csid = xszb.zbfl
+       left join matridx_jcsj zfl on zfl.csid = xszb.zbzfl
+       left join matridx_xtyh xtyh on xtyh.yhid = xszb.yhid
+       left join matridx_jcsj pt_jc on pt_jc.csid = xszb.yhid and fl.csdm ='PT'
+       left join igams_sjhbxx hbxx on hbxx.hbid = xszb.yhid and fl.csdm ='TJXSTJ'
+       <where>
+           xszb.scbj='0'
+           <if test="zbid != null and zbid != ''">
+               and xszb.zbid = #{zbid}
+           </if>
+           <if test="zbfl != null and zbfl != ''">
+               and xszb.zbfl = #{zbfl}
+           </if>
+           <if test="kszq != null and kszq != ''">
+               and xszb.kszq = #{kszq}
+           </if>
+           <if test="jszq != null and jszq != ''">
+               and xszb.jszq = #{jszq}
+           </if>
+           <if test="zblxcsmc != null and zblxcsmc != '' ">
+               and jc.csdm = #{zblxcsmc}
+           </if>
+           <if test="yhid != null and yhid != '' ">
+               and xszb.yhid = #{yhid}
+           </if>
+           <if test="sfqr != null and sfqr != '' ">
+               and xszb.sfqr = #{sfqr}
+           </if>
+       </where> 
+   </select>
+
+   <select id="getYhxxByYhm" resultType="XszbDto" parameterType="String">
+       select yhid
+       from matridx_xtyh 
+       where yhm =#{yhm} and scbj!='1'
+   </select>
+    <select id="getSjhbByHbmc" resultType="XszbDto" parameterType="String">
+        select hbid yhid, hbmc zsxm
+        from igams_sjhbxx
+        where hbmc = #{hbmc} and scbj='0'
+    </select>
+   
+   <insert id="insertDto" parameterType="XszbDto">
+       insert into igams_xszb (zbid
+       <if test="yhid != null and yhid !=''">
+          ,yhid
+       </if>
+       <if test="zblx != null and zblx !=''">
+          ,zblx
+       </if>
+       <if test="kszq != null and kszq !=''">
+          ,kszq
+       </if>
+       <if test="jszq != null and jszq !=''">
+          ,jszq
+       </if>
+       <if test="sz != null and sz !=''">
+          ,sz
+       </if>
+       <if test="zbfl != null and zbfl !=''">
+           ,zbfl
+       </if>
+       <if test="zbzfl != null and zbzfl !=''">
+           ,zbzfl
+       </if>
+       ,lrry,lrsj,scbj) values(
+       #{zbid}
+       <if test="yhid != null and yhid !=''">
+          ,#{yhid}
+       </if>
+       <if test="zblx != null and zblx !=''">
+          ,#{zblx}
+       </if>
+       <if test="kszq != null and kszq !=''">
+          ,#{kszq}
+       </if>
+       <if test="jszq != null and jszq !=''">
+          ,#{jszq}
+       </if>
+       <if test="sz != null and sz !=''">
+          ,#{sz}
+       </if>
+       <if test="zbfl != null and zbfl !=''">
+           ,#{zbfl}
+       </if>
+       <if test="zbzfl != null and zbzfl !=''">
+           ,#{zbzfl}
+       </if>
+       ,#{lrry},LOCALTIMESTAMP,'0')
+   </insert>
+    <select id="getXszbQyxx" parameterType="XszbDto" resultType="XszbDto">
+        SELECT
+	        j_zlx.csid qyid,
+	        j_zlx.csmc qymc
+        FROM
+	        matridx_jcsj j_zlx
+        WHERE
+	        j_zlx.jclb = 'USER_SUB_DISTINGUISH'
+	    AND j_zlx.fcsid = ( SELECT csid FROM matridx_jcsj WHERE csmc = #{jsmc} )
+    </select>
+    
+    <!-- 判断数据库中是否存在一条一摸一样的数据 -->
+    <select id="getXszbRepeat" parameterType="XszbDto" resultType="XszbDto">
+	    select xszb.zbid, xszb.yhid, xszb.zblx, xszb.kszq, xszb.jszq, xszb.sz
+        from igams_xszb xszb
+        <where>
+            xszb.scbj='0' and
+            xszb.yhid = #{yhid} and 
+            xszb.zblx = #{zblx}  and
+            xszb.kszq = #{kszq}  and
+            xszb.jszq = #{jszq}
+            <choose>
+                <when test="zbfl != null and zbfl !=''">
+                    and xszb.zbfl = #{zbfl}
+                </when>
+                <otherwise>
+                    and xszb.zbfl is null
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="zbzfl != null and zbzfl !=''">
+                    and xszb.zbzfl  = #{zbzfl}
+                </when>
+                <otherwise>
+                    and xszb.zbzfl is null
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <update id="updateDto" parameterType="XszbDto">
+        update igams_xszb set sz=#{sz},xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <where>
+            zbid = #{zbid}
+        </where>
+    </update>
+
+    <select id="getDtosByZfl" parameterType="XszbDto" resultType="string">
+        select sjhbxx.hbid from
+        (
+            select hb.yhid, hb.swmc
+            from igams_xszb zb
+            left join igams_sjhbxx hb on hb.hbid = zb.yhid
+            <where>
+                zb.scbj='0'
+                <if test="zbzfl != null and zbzfl !=''">
+                    and zb.zbzfl=#{zbzfl}
+                </if>
+                <if test="kszq != null and kszq !=''">
+                    and zb.kszq=#{kszq}
+                </if>
+                <if test="jszq != null and jszq !=''">
+                    and zb.jszq = #{jszq}
+                </if>
+            </where>
+        )tt
+        left join igams_sjhbxx sjhbxx on tt.swmc = sjhbxx.swmc
+        where sjhbxx.scbj='0'
+    </select>
+        <update id="update" parameterType="XszbDto">
+        update igams_xszb set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="yhid != null and yhid !=''">
+            ,yhid=#{yhid}
+        </if>
+        <if test="zblx != null and zblx !=''">
+            ,zblx=#{zblx}
+        </if>
+        <if test="zbfl != null and zbfl !=''">
+            ,zbfl=#{zbfl}
+        </if>
+        <if test="zbzfl != null and zbzfl !=''">
+            ,zbzfl=#{zbzfl}
+        </if>
+        <if test="kszq != null and kszq !=''">
+            ,kszq=#{kszq}
+        </if>
+        <if test="jszq != null and jszq !=''">
+            ,jszq=#{jszq}
+        </if>
+        <where>
+            zbid = #{zbid}
+        </where>
+    </update>
+
+    <!-- 删除消息 -->
+    <delete id="delete" parameterType="XxglDto">
+        delete from igams_xszb
+        <where>
+            zbid in
+            <foreach collection="ids" open="(" close=")" separator="," item="ids">
+                #{ids}
+            </foreach>
+        </where>
+    </delete>
+    <select id="getMySalesIndicator" parameterType="XszbDto" resultType="XszbDto">
+        select substring(kszq,1,4) nf,'Q'|| CEIL(EXTRACT(MONTH FROM TO_DATE(kszq, 'YYYY-MM')) / 3) AS jd,coalesce(xszb.sz::numeric,0) sz,xszb.sfqr from
+        igams_xszb xszb
+        left join matridx_jcsj zblx on zblx.csid=xszb.zblx
+        where xszb.scbj='0' and xszb.yhid=#{yhid} and xszb.zbfl=#{zbfl} and zblx.csdm='Q'
+        <if test="nf != null and nf !=''">
+           and substring(xszb.kszq,1,4) = #{nf}
+        </if>
+        order by substring(kszq,1,4) desc ,substring(kszq,6,2) asc
+    </select>
+    <select id="getSubordinateIndicator" parameterType="XszbDto" resultType="XszbDto">
+        select xtyh.yhid,xtyh.yhm,xtyh.zsxm,coalesce(xszb.sz::numeric,0) sz,xszb.sfqr  from
+        matridx_yhqtxx yhqtxx
+        left join matridx_xtyh xtyh on yhqtxx.yhid = xtyh.yhid
+        left join igams_xszb xszb on xszb.yhid= xtyh.yhid and xszb.scbj='0' and xszb.zbfl=#{zbfl} and substring(xszb.kszq,1,4) = #{nf} and xszb.zblx = (select csid from matridx_jcsj where scbj ='0' and jclb ='SALE_TYPE' and csdm = 'Y' )
+        where xtyh.scbj ='0' and xtyh.sfsd ='0' and yhqtxx.sjid =#{yhid}
+    </select>
+    <update id="confirmSalesIndicator" parameterType="XszbDto">
+        update igams_xszb set sfqr='1'
+        <where>
+            scbj ='0' and yhid=#{yhid} and zbfl=#{zbfl} and substring(kszq,1,4) = #{nf}
+        </where>
+    </update>
+    <update id="discardSalesIndicator" parameterType="XszbDto">
+        update igams_xszb set scbj='2',scry=#{scry},scsj=LOCALTIMESTAMP
+        <where>
+            scbj ='0' and yhid=#{yhid} and zbfl=#{zbfl} and substring(kszq,1,4) = #{nf}
+        </where>
+    </update>
+    <insert id="insertXszbDtos" parameterType="List">
+        insert into igams_xszb(zbid, yhid, zbfl,zbzfl,zblx, kszq, jszq, sz, lrry, lrsj, scbj, sfqr)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.zbid},#{item.yhid},#{item.zbfl},#{item.zbzfl},#{item.zblx},#{item.kszq},#{item.jszq},#{item.sz},#{item.lrry},LOCALTIMESTAMP,'0','0'
+                )
+            </foreach>
+        </if>
+    </insert>
+    <select id="getSalesIndicatorList" parameterType="XszbDto" resultType="XszbDto">
+        select xtyh.zsxm,zblx.csdm zblxdm,zblx.csmc,kszq,substring(kszq,1,4) nf,'Q'|| CEIL(EXTRACT(MONTH FROM TO_DATE(kszq, 'YYYY-MM')) / 3) AS jd,substring(kszq,6,2) yf,xszb.sz,xszb.yhid
+        from igams_xszb xszb
+        left join matridx_jcsj zblx on zblx.csid=xszb.zblx
+        left join matridx_xtyh xtyh on xtyh.yhid = xszb.yhid
+        where xszb.scbj ='0' and xszb.zbfl = #{zbfl}
+        <if test="dwxzbj != null and dwxzbj != '' and dwxzbj=='1'.toString() and yhid != null and yhid !=''">
+            and ((xszb.yhid=#{yhid} or xszb.lrry=#{yhid})
+            <if test="yhids != null and yhids.size()>0">
+                or xszb.yhid in
+                <foreach collection="yhids" item="item" separator="," close=")" open="(">
+                    #{item}
+                </foreach>
+            </if>
+            )
+        </if>
+        <if test="nf != null and nf !=''">
+            and substring(xszb.kszq,1,4) = #{nf}
+        </if>
+        <if test="zblxdm != null and zblxdm !=''">
+            and zblx.csdm = #{zblxdm}
+        </if>
+        <if test="sfqr != null and sfqr !=''">
+            and xszb.sfqr = #{sfqr}
+        </if>
+        order by xtyh.yhm,substring(kszq,1,4) desc,substring(kszq,6,2) desc
+    </select>
+    <select id="getSalesIndicator" parameterType="XszbDto" resultType="XszbDto">
+        select coalesce(tmp.fkje,0) fkje, coalesce(xszb.sz,'0') sz from (
+            select sum(sj.fkje) fkje,#{yhid} yhid
+            from igams_sjxx sj
+            left join igams_sjhbxx hb on hb.hbmc=sj.db and hb.scbj !='1'
+            left join igams_hbqx hbqx on hbqx.hbid=hb.hbid
+            where sj.scbj='0' and sj.sfsf!='0' and hbqx.yhid =#{yhid} and to_char(sj.jsrq,'YYYY-MM')>= #{kszq} and to_char(sj.jsrq,'YYYY-MM')&lt;= #{jszq}
+        )tmp
+        left join igams_xszb xszb on xszb.yhid = tmp.yhid and xszb.kszq = #{kszq} AND xszb.jszq = #{jszq} and xszb.scbj='0' and xszb.zbfl = #{zbfl}
+    </select>
+
+    <select id="getTempSaleList" parameterType="List" resultType="XszbDto">
+        select tmp.*,xszb.zbid from(
+            <foreach collection="list" item="item" separator="union all" open="(" close=")">
+                select #{item.yhid} yhid,#{item.zblx} zblx,#{item.kszq} kszq,#{item.jszq} jszq,#{item.sz} sz,#{item.zbfl} zbfl,#{item.zbzfl} zbzfl
+            </foreach>
+        ) tmp
+        left join igams_xszb xszb on xszb.kszq=tmp.kszq and xszb.jszq=tmp.jszq and tmp.zbfl=xszb.zbfl and tmp.zbzfl=xszb.zbzfl and tmp.zblx=xszb.zblx and xszb.scbj='0' and tmp.yhid=xszb.yhid
+
+    </select>
+
+
+    <update id="updateDtoList" parameterType="List">
+        update igams_xszb set sz=tmp.sz,xgry=tmp.xgry,xgsj=LOCALTIMESTAMP from
+        (
+            <foreach collection="list" item="item" open="(" close=")" separator="union all">
+                select #{item.zbid} zbid,#{item.xgry} xgry, #{item.yhid} yhid, #{item.zblx} zblx, #{item.kszq} kszq, #{item.jszq} jszq, #{item.sz} sz
+            </foreach>
+        )tmp
+        <where>
+            tmp.zbid=igams_xszb.zbid
+        </where>
+    </update>
+</mapper>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IJgxxDao" >
+
+    <!-- 批量更新机构信息 -->
+	<update id="updateJgxxList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update matridx_jgxx jgxx
+			set jgmc = tmp.jgmc,
+			wbcxid = tmp.wbcxid,
+			fjgid = tmp.fjgid,
+			bmzgs = tmp.bmzgs
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.jgid} jgid,#{item.jgmc} jgmc,#{item.wbcxid} wbcxid,#{item.fjgid} fjgid,#{item.bmzgs} bmzgs
+			</foreach>
+			) tmp
+			where
+			jgxx.jgid=tmp.jgid
+		</if>
+	</update>
+	<!-- 查询机构信息 -->
+	<select id="getJgxxList"  resultType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.kzcs1,jg.kzcs2,jg.lrry,jg.lrsj,jg.xgry,jg.xgsj,jg.scry,jg.scsj,jg.scbj,jg.jgdm,wbcx.wbcxid,wbcx.wbcxmc,jg.jgid as csid,jg.jgmc ||'('|| wbcx.wbcxmc ||')' as csmc
+		from matridx_jgxx jg
+		left join matridx_wbcx wbcx on wbcx.wbcxid = jg.wbcxid and wbcx.scbj ='0'
+		<where>
+			jg.scbj='0'
+		</where>
+	</select>
+	
+	<!-- 查询所有机构数据(包含删除的和没有被删除的) -->
+	<select id="getAllJgxxList"  resultType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.kzcs1,jg.kzcs2,jg.lrry,jg.lrsj,jg.xgry,jg.xgsj,jg.scry,jg.scsj,jg.scbj,jg.jgdm,jg.sfty
+		from matridx_jgxx jg
+	</select>
+	
+	<!-- 增加机构信息 -->
+	<insert id="insert" parameterType="JgxxModel">
+		insert into matridx_jgxx(jgid
+		<if test="jgmc !=null and jgmc != ''">
+			,jgmc
+		</if>
+		<if test="fjgid !=null and fjgid != ''">
+			,fjgid
+		</if>
+		<if test="jgdm !=null and jgdm != ''">
+			,jgdm
+		</if>
+		<if test="kzcs1 !=null and kzcs1 != ''">
+			,kzcs1
+		</if>
+		<if test="kzcs2 !=null and kzcs2 != ''">
+			,kzcs2
+		</if>
+		<if test="sfty !=null and sfty != ''">
+			,sfty
+		</if>
+		<if test="fbsbj !=null and fbsbj != ''">
+			,fbsbj
+		</if>
+		,lrry,lrsj,scbj) values(#{jgid}
+		<if test="jgmc !=null and jgmc != ''">
+			,#{jgmc}
+		</if>
+		<if test="fjgid !=null and fjgid != ''">
+			,#{fjgid}
+		</if>
+		<if test="jgdm !=null and jgdm != ''">
+			,#{jgdm}
+		</if>
+		<if test="kzcs1 !=null and kzcs1 != ''">
+			,#{kzcs1}
+		</if>
+		<if test="kzcs2 !=null and kzcs2 != ''">
+			,#{kzcs2}
+		</if>
+		<if test="sfty !=null and sfty != ''">
+			,#{sfty}
+		</if>
+		<if test="fbsbj !=null and fbsbj != ''">
+			,#{fbsbj}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 获取机构信息列表 -->
+	<select id="getPagedJgxxList" parameterType="JgxxDto" resultType="JgxxDto">
+		select jg.jgid,jg.jgdm,jg.jgmc,jg.fjgid,jg.kzcs1,jg.kzcs2,jg.lrsj, xtyh.zsxm lrry,fjg.jgmc fjgmc,wbcx.wbcxmc,jg.sfty
+		from matridx_jgxx jg
+		left join matridx_xtyh xtyh on jg.lrry=xtyh.yhid
+		left join matridx_jgxx fjg on fjg.jgid=jg.fjgid
+		left join matridx_wbcx wbcx on wbcx.wbcxid = jg.wbcxid
+		<where>
+			jg.scbj!='1'
+			<if test="jgmc != null and jgmc != ''">
+			and jg.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="jgdm != null and jgdm != ''">
+			and jg.jgdm like '%'||#{jgdm}||'%'
+			</if>
+			<if test="wbcxmc != null and wbcxmc != ''">
+				and wbcx.wbcxmc like '%'||#{wbcxmc}||'%'
+			</if>
+			<if test="sfty != null and sfty != '' and sfty=='1'.toString">
+				and jg.sfty ='1'
+			</if>
+			<if test="sfty != null and sfty != '' and sfty=='0'.toString">
+				and (jg.sfty ='0' or jg.sfty is null or jg.sfty ='')
+			</if>
+		</where>
+	</select>
+
+	<select id="getDtoList" parameterType="JgxxDto" resultType="JgxxDto">
+		select jg.jgid,jg.jgdm,jg.jgmc,jg.fjgid,jg.kzcs1,jg.kzcs2,jg.lrsj, xtyh.zsxm lrry,fjg.jgmc fjgmc
+		from matridx_jgxx jg
+		left join matridx_xtyh xtyh on jg.lrry=xtyh.yhid
+		left join matridx_jgxx fjg on fjg.jgid=jg.fjgid
+		<where>
+			jg.scbj!='1'
+			<if test="jgmc != null and jgmc != ''">
+				and jg.jgmc like '%'||#{jgmc}||'%'
+			</if>
+			<if test="jgdm != null and jgdm != ''">
+				and jg.jgdm like '%'||#{jgdm}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据机构ID查询查询机构信息 -->
+	<select id="selectJgxxByJgid" parameterType="JgxxDto" resultType="JgxxDto">
+		select jgid,jgmc,fjgid,jgdm,kzcs1,kzcs2,sfty
+		from matridx_jgxx 
+		<where>
+			scbj!='1'
+			and jgid=#{jgid}
+		</where>
+	</select>
+	
+	<!-- 修改机构信息 -->
+	<update id="updateJgxx" parameterType="JgxxDto">
+		update matridx_jgxx set jgmc=#{jgmc},fjgid=#{fjgid},kzcs1=#{kzcs1},kzcs2=#{kzcs2},sfty=#{sfty},xgry=#{xgry},xgsj=LOCALTIMESTAMP,jgdm=#{jgdm}
+		<where>
+			scbj!='1'
+			and jgid=#{jgid}
+		</where>
+	</update>
+
+	<!-- 修改机构信息 -->
+	<update id="updateKzcs2ByJgid" parameterType="JgxxDto">
+		update matridx_jgxx set kzcs2=#{kzcs2}
+		<where>
+			scbj!='1'
+			and jgid=#{jgid}
+		</where>
+	</update>
+	
+	<!-- 删除机构信息 -->
+	<update id="deleteJgxx" parameterType="JgxxDto">
+		update matridx_jgxx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			<if test="jgid !=null and jgid !=''">
+	 			or jgid = #{sjid}
+	 		</if>
+	 	  	<if test="ids !=null and ids.size>0">
+	 	  	  	or jgid in
+	 	  	  		<foreach collection="ids" open="(" close=")" separator="," item="item">
+	 	  	  			 #{item}
+	 	  	  		</foreach>
+	 	  	</if>
+		</where>
+	</update>
+	<!-- 删除机构信息 -->
+	<update id="deleteByWbcxid" parameterType="JgxxDto">
+		update matridx_jgxx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		where  scbj ='0' and wbcxid = #{wbcxid} AND
+	 	jgid not in
+	 	<foreach collection="ids" open="(" close=")" separator="," item="item">
+	 		 #{item}
+	 	</foreach>
+	</update>
+	
+	<!-- 根据机构名称查询机构信息 -->
+	<select id="getJgxxByJgmc" parameterType="JgxxDto" resultType="JgxxDto">
+		select jgid,jgmc,fjgid,jgdm,kzcs1,kzcs2
+		from matridx_jgxx
+		<where>
+			scbj!='1'
+			and jgmc=#{jgmc}
+			<if test="jgid !=null and jgid != ''">
+			and jgid!=#{jgid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询机构列表(除已选择的) -->
+	<select id="getPagedOtherJgxxList" parameterType="JgxxDto" resultType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.jgdm ,jg.kzcs1,jg.kzcs2
+		from matridx_jgxx jg
+		<where>
+			scbj!='1' and sfty!='1'
+	 	  	  	and jgid not in	(select jgid from matridx_jsdwqx where jsid=#{jsid})
+	 	  	  	<if test="jgmc !=null and jgmc !=''">
+				and jg.jgmc like '%'||#{jgmc}||'%'
+				</if>
+				<if test="jgdm !=null and jgdm !=''">
+				and jg.jgdm like '%'||#{jgdm}||'%'
+				</if>
+		</where>
+	</select>
+	
+	<select id="selsetJgxxByjgmc" parameterType="JgxxDto" resultType="JgxxDto"> 
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.kzcs1,jg.kzcs2,jg.lrry,jg.lrsj,jg.xgry,jg.xgsj,jg.scry,jg.scsj,jg.scbj,jg.jgdm
+		from matridx_jgxx jg
+		<where>
+			jg.scbj!='1' 
+			  	<if test="jgmc !=null and jgmc !=''">
+					and jg.jgmc like '%'||#{jgmc}||'%'
+				</if>
+		</where>
+	</select>
+    <!-- 查询机构信息 -->
+    <select id="getJgxxByWbcx"  resultType="JgxxDto" parameterType="JgxxDto">
+        select jg.jgid,jg.jgmc,jg.fjgid,jg.bmzgs
+        from matridx_jgxx jg
+        <where>
+            jg.scbj='0' and jg.wbcxid = #{wbcxid}
+        </where>
+    </select>
+	<!-- 查询所有机构数据(包含删除的和没有被删除的) -->
+	<select id="getJgxx2List"  resultType="JgxxDto" parameterType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.kzcs2,jg.fbsbj
+		from matridx_jgxx2 jg
+		where jg.scbj='0' and jg.kzcs2 is not null and jg.wbcxid = #{wbcxid}
+	</select>
+	<!-- 查询所有机构数据(包含删除的和没有被删除的) -->
+	<select id="getJgxx2ListAll"  resultType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.kzcs2,jg.fbsbj
+		from matridx_jgxx2 jg
+		where jg.scbj='0'
+	</select>
+
+	<select id="getDtoById" parameterType="String" resultType="JgxxDto">
+		select jgid,jgmc,fjgid,jgdm,kzcs1,kzcs2
+		from matridx_jgxx
+		<where>
+			scbj!='1' and jgid=#{jgid}
+		</where>
+	</select>
+
+	<select id="queryByWbcx"  resultType="JgxxDto" parameterType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.bmzgs
+		from matridx_jgxx jg
+		<where>
+			jg.wbcxid = #{wbcxid}
+		</where>
+	</select>
+
+	<select id="queryByJgxxDto"  resultType="JgxxDto" parameterType="JgxxDto">
+		select jg.jgid,jg.jgmc,jg.fjgid,jg.bmzgs
+		from matridx_jgxx2 jg
+		<where>
+			jg.wbcxid = #{wbcxid}
+			<if test="jgmc !=null and jgmc !=''">
+				and jg.jgmc=#{jgmc}
+			</if>
+			<if test="fbsbj !=null and fbsbj !=''">
+				and jg.fbsbj =#{fbsbj}
+			</if>
+			<if test="jgid !=null and jgid !=''">
+				and jg.jgid =#{jgid}
+			</if>
+		</where>
+	</select>
+
+</mapper>

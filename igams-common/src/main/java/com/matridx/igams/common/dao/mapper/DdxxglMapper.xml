@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IDdxxglDao" >
+
+	<!-- 根据钉钉消息类型查询用户信息-->
+	<select id="selectByDdxxlx" parameterType="String" resultType="DdxxglDto">
+		select ddxx.yhid,yh.yhm,yh.zsxm,yh.ddid,ddxx.ddxxlx,yh.wechatid,jcsj.csmc as ddxxmc,jcsj.cskz1,jcsj.cskz2
+		from matridx_ddxxgl ddxx
+		left outer join matridx_xtyh yh on ddxx.yhid = yh.yhid
+		left join matridx_jcsj jcsj on jcsj.csdm = ddxx.ddxxlx and jcsj.scbj='0'
+		<where>
+			yh.scbj='0' and ddxx.ddxxlx = #{ddxxlx}
+		</where>
+	</select>
+	<select id="getPagedDtoList" parameterType="DdxxglDto" resultType="DdxxglDto">
+		select xxgl.ddxxid,xxgl.ddxxlx,xxgl.tzlx,xxgl.yhid,xtyh.zsxm,xtyh.yhm
+			from matridx_ddxxgl xxgl
+			left join matridx_xtyh xtyh on xtyh.yhid=xxgl.yhid
+			<where>
+				<if test="ddxxlx!=null and ddxxlx!=''">
+					and xxgl.ddxxlx =#{ddxxlx} 
+				</if>
+				<if test="tzlx!=null and tzlx!=''">
+					and xxgl.tzlx =#{tzlx}
+				</if>
+				<if test="entire != null and entire != ''">
+					and (
+					xtyh.zsxm ILIKE '%'||#{entire}||'%'
+					or xtyh.yhm ILIKE '%'||#{entire}||'%'
+					)
+				</if>
+				<if test="zsxm!=null and zsxm!=''">
+					and xtyh.zsxm ILIKE '%'||#{zsxm}||'%'
+				</if>
+				<if test="yhm!=null and yhm!=''">
+					and xtyh.yhm ILIKE '%'||#{yhm}||'%'
+				</if>
+			</where>
+	</select>
+	<select id="getXtyh"  resultType="DdxxglDto">
+		select xtyh.yhid as xtyhid,xtyh.yhm||'-'||xtyh.zsxm as xtyhmc
+		from matridx_xtyh xtyh
+		where xtyh.sfsd ='0' and xtyh.scbj='0'
+	</select>
+	<!-- 新增钉钉消息 -->
+	<insert id="insert" parameterType="DdxxglDto">
+		insert into matridx_ddxxgl(ddxxid
+		<if test="ddxxlx !=null and ddxxlx !=''">
+			,ddxxlx
+		</if>
+		<if test="tzlx !=null and tzlx !=''">
+			,tzlx
+		</if>
+		<if test="yhid !=null and yhid !=''">
+			,yhid
+		</if>
+		)values(#{ddxxid}
+		<if test="ddxxlx !=null and ddxxlx !=''">
+			,#{ddxxlx}
+		</if>
+		<if test="tzlx !=null and tzlx !=''">
+			,#{tzlx}
+		</if>
+		<if test="yhid !=null and yhid !=''">
+			,#{yhid}
+		</if>
+		)
+	</insert >
+	<select id="getDtoById" parameterType="String" resultType="DdxxglDto">
+		select xxgl.ddxxid,xxgl.ddxxlx,xxgl.tzlx,xxgl.yhid,xtyh.yhm,xtyh.zsxm
+			from matridx_ddxxgl xxgl
+			left join matridx_xtyh xtyh on xtyh.yhid=xxgl.yhid
+			<where>
+				xxgl.ddxxid=#{ddxxid}
+			</where>
+	</select>
+	
+		<!-- 修改钉钉消息 -->
+	<update id="update" parameterType="DdxxglDto" >
+		update  matridx_ddxxgl set
+			<if test="ddxxlx !=null and ddxxlx !=''">
+				ddxxlx=#{ddxxlx}
+			</if>
+			<if test="tzlx !=null and tzlx !=''">
+				,tzlx=#{tzlx}
+			</if>
+			<if test="yhid !=null and yhid !=''">
+				,yhid=#{yhid}
+			</if>
+			<where>
+				ddxxid=#{ddxxid}
+			</where>
+	</update>
+	<delete id="delete" parameterType="DdxxglDto">
+		delete from  matridx_ddxxgl 
+		<where>
+	  	 	<if test="ddxxid !=null and ddxxid !=''">
+	  	 		or ddxxid=#{ddxxid}
+	  	 	</if>
+	  	 	<if test="ids !=null and ids.size() !=''">
+	  	 	 	or ddxxid in
+	  	 	 		<foreach collection="ids" open="(" close=")" separator="," item="item" >
+	  	 	 		 	#{item}
+	  	 	 		</foreach>
+	  	 	</if>
+		</where>
+	</delete>
+	<select id="getProcessByJgid" parameterType="String" resultType="DdxxglDto">
+		select spr,csr
+			from matridx_ddsplc
+			<where>
+				scbj != '1' and jgid = #{jgid} and splx=#{splx}
+			</where>
+	</select>
+	<!-- 获取钉钉审批流程表中现有部门 -->
+	<select id="getDingtalkAuditDep" parameterType="String" resultType="DdxxglDto">
+		select ddsplc.spr,ddsplc.csr,ddsplc.jgid,jg.jgmc,jg.jgid,ddsplc.spr,ddsplc.csr,ddsplc.spid
+			from matridx_ddsplc ddsplc
+			left join matridx_jgxx jg on jg.jgid=ddsplc.jgid
+			<where>
+				ddsplc.scbj != '1' and ddsplc.splx=#{splx}
+			</where>
+	</select>
+	<select id="getProcessBySpid" parameterType="String" resultType="DdxxglDto">
+		select spr,csr,spid
+			from matridx_ddsplc
+			<where>
+				scbj != '1' and spid=#{spid}
+			</where>
+	</select>
+	
+</mapper>

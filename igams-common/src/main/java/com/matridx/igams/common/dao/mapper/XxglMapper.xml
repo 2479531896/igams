@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IXxglDao" >
+	<!-- 查询消息信息 -->
+	<select id="getModelById" parameterType="java.lang.String" resultType="XxglDto">
+		select xxid,xxlx,xxnr,ddqid from matridx_xxgl where xxid =#{xxid}
+	</select>
+	
+    <!--显示信息列表 -->
+	<select id="getPagedDtoList" parameterType="XxglDto" resultType="XxglDto">
+	    select xxgl.xxid, jcsj.csmc as xxlxmc, xxgl.xxnr , xxgl.ddqid
+	    from matridx_xxgl as xxgl
+	    left join matridx_jcsj as jcsj 
+	    on xxgl.xxlx=jcsj.csid
+	    <where>
+	        <if test="xxid!=null and xxid !=''">
+	            and xxgl.xxid ILIKE '%' ||#{xxid}||'%'
+	        </if>
+	        <if test="xxnr!=null and xxnr !=''">
+	            and xxgl.xxnr ILIKE '%' ||#{xxnr}||'%'
+	        </if>
+	        <if test="xxlxmc!=null and xxlxmc !=''">
+	            and jcsj.csmc ILIKE '%' ||#{xxlxmc}||'%'
+	        </if>
+			<if test = "xxlxs != null and xxlxs.length > 0 "  >
+				and xxgl.xxlx in
+				<foreach collection="xxlxs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+	    </where>
+	</select>
+	
+	<!-- 检验管理信息是否已经存在 -->
+	<select id="getCount" parameterType="XxglDto" resultType="int">
+		select count(xxid) from matridx_xxgl 
+		<where>
+		   <if test="xxid != null and xxid !=''">
+		      and xxid=#{xxid}
+		   </if>
+		</where>
+	</select> 
+	
+	<!-- 插入一条管理消息 -->
+	<insert id="insertDto" parameterType="XxglDto">
+	   insert into matridx_xxgl (
+	   <if test="xxid !=null and xxid !=''">
+            xxid	   
+	   </if>
+	   <if test="xxlx!=null and xxlx!=''">
+	        ,xxlx
+	   </if>
+	   <if test="xxnr!=null and xxnr!=''">
+	        ,xxnr
+	   </if>
+		<if test="ddqid!=null and ddqid!=''">
+			,ddqid
+		</if>
+	   )
+	   values (
+	   <if test="xxid !=null and xxid !=''">
+	       #{xxid}
+	   </if>
+	   <if test="xxlx !=null and xxlx !=''">
+	       ,#{xxlx}
+	   </if>
+	   <if test="xxnr !=null and xxnr !=''">
+	       ,#{xxnr}
+	   </if>
+		<if test="ddqid !=null and ddqid !=''">
+			,#{ddqid}
+		</if>
+       )
+	</insert>
+	
+	<!-- 修改消息 -->
+	<update id="updateDto" parameterType="XxglDto">
+	   update matridx_xxgl set  xxlx = #{xxlx}
+	   <if test="xxid !=null and xxid != ''">
+	       ,xxid = #{xxid}
+	   </if>
+   	   <if test="xxnr !=null and xxnr != ''">
+	       ,xxnr = #{xxnr}
+	   </if>
+		<if test="ddqid !=null ">
+			,ddqid = #{ddqid}
+		</if>
+	   <where>
+	       xxid = #{xxid}
+	   </where>
+	</update>
+	
+	<!-- 删除消息 -->
+	<delete id="delete" parameterType="XxglDto">
+	    delete from matridx_xxgl
+	    <where> 
+	           xxid in 
+	           <foreach collection="ids" open="(" close=")" separator="," item="ids">
+	               #{ids}
+	           </foreach>
+	    </where>
+	</delete>
+	
+	<!-- 查找对应xxid的消息  -->
+	<select id="getDto" parameterType="XxglDto" resultType="XxglDto"> 
+	    select xxgl.xxid, xxgl.xxlx, xxgl.xxnr, jcsj.csmc as xxlxmc, xxgl.ddqid
+	    from matridx_xxgl xxgl
+	    left join matridx_jcsj jcsj on xxgl.xxlx=jcsj.csid
+	    where xxid=#{xxid}
+	</select>
+
+</mapper>

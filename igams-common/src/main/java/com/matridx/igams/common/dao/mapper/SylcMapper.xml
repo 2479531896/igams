@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISylcDao" >
+
+    <select id="getPagedDtoList" parameterType="SylcDto" resultType="SylcDto">
+        select sylc.lcid, sylc.lcmc, sylc.xh, sylc.lx, sylc.lcbj,jc_lx.csmc as lxmc
+        from igams_sylc sylc
+        left join matridx_jcsj jc_lx on jc_lx.csid =sylc.lx
+        <where>
+            sylc.scbj='0'
+            <if test="lcmc !=null and lcmc != ''">
+                and sylc.lcmc like '%'||#{lcmc}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="SylcDto" resultType="SylcDto">
+        select sylc.lcid, sylc.lcmc, sylc.xh, sylc.lx, sylc.lcbj,jc_lx.csmc as lxmc
+        from igams_sylc sylc
+        left join matridx_jcsj jc_lx on jc_lx.csid =sylc.lx
+        <where>
+            sylc.scbj='0'
+            and sylc.lcid = #{lcid}
+        </where>
+    </select>
+
+    <select id="getAllData"  resultType="SylcDto">
+        select sylc.lcid, sylc.lcmc, sylc.xh, sylc.lcbj,jc_lx.csmc as lxmc,sylcmx.xsmc,xtzy_cd.zybt,xtzy_cd.zylj,xtzy_cd.fwlj,czdm.czmc,zyczb.dyym,sylc.lcbj,sylcmx.tzcs,sylcmx.zyid
+        from igams_sylc sylc
+        left join matridx_jcsj jc_lx on jc_lx.csid =sylc.lx
+        left join igams_sylcmx sylcmx on sylcmx.lcid=sylc.lcid and sylcmx.scbj='0'
+        left join matridx_xtzy xtzy_cd on xtzy_cd.zyid = sylcmx.zyid
+        left join matridx_czdm czdm on czdm.czdm = sylcmx.tzcs
+        left join matridx_zyczb zyczb on zyczb.czdm = sylcmx.tzcs and zyczb.zyid=sylcmx.zyid
+        <where>
+            sylc.scbj='0'
+        </where>
+        order by cast(sylc.xh as numeric) asc,cast(sylcmx.xh as numeric) asc
+    </select>
+
+    <select id="getMenuList" parameterType="Map" resultType="Map">
+        select xtzy.zyid,xtzy.fjd,xtzy.zybt,fxtzy.fjd as ffjd
+        from matridx_xtzy xtzy
+        left outer join matridx_xtzy fxtzy on fxtzy.zyid = xtzy.fjd
+        <where>
+            <if test="cdcc !=null and cdcc != ''">
+                xtzy.cdcc= cast (#{cdcc} as decimal)
+            </if>
+        </where>
+        order by fxtzy.zyid asc,xtzy.zyid asc
+    </select>
+    <select id="getButtonList" parameterType="Map" resultType="Map">
+        select zyczb.czdm,czdm.czmc,zyczb.zyid
+        from matridx_zyczb zyczb
+        left join matridx_czdm czdm on czdm.czdm = zyczb.czdm
+        <where>
+            <if test="zyid !=null and zyid != ''">
+                zyid=#{zyid}
+            </if>
+        </where>
+        order by czdm.xssx asc
+    </select>
+
+    <insert id="insert" parameterType="SylcDto" >
+        insert into igams_sylc(lcid
+        <if test="lcmc != null and lcmc != ''">
+            , lcmc
+        </if>
+        <if test="xh != null and xh != ''">
+            , xh
+        </if>
+        <if test="lx != null and lx != ''">
+            , lx
+        </if>
+        <if test="lcbj != null and lcbj != ''">
+            , lcbj
+        </if>
+        , lrry, lrsj, scbj)
+        values (#{lcid}
+        <if test="lcmc != null and lcmc != ''">
+            , #{lcmc}
+        </if>
+        <if test="xh != null and xh != ''">
+            ,  #{xh}
+        </if>
+        <if test="lx != null and lx != ''">
+            ,  #{lx}
+        </if>
+        <if test="lcbj != null and lcbj != ''">
+            ,  #{lcbj}
+        </if>
+       , #{lrry}, LOCALTIMESTAMP, '0')
+    </insert>
+
+    <update id="update" parameterType="SylcDto" >
+        update igams_sylc  set
+        xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        <if test="lcmc != null and lcmc != ''">
+            , lcmc=#{lcmc}
+        </if>
+        <if test="xh != null and xh != ''">
+            ,  xh=#{xh}
+        </if>
+        <if test="lx != null and lx != ''">
+            ,  lx=#{lx}
+        </if>
+        <if test="lcbj != null and lcbj != ''">
+            ,  lcbj=#{lcbj}
+        </if>
+        <where>
+            lcid=#{lcid}
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="SylcmxDto">
+        update igams_sylc set scry = #{scry},scsj = LOCALTIMESTAMP,scbj = '1'
+        where lcid in
+        <foreach collection="ids" open="(" close=")" index="index" item="item" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

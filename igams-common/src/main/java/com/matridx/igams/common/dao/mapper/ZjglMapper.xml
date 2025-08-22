@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IZjglDao" >
+    <select id="getAllComponent" parameterType="ZjglDto" resultType="ZjglDto">
+        SELECT zjid,zjmc,fbsmc,fbsbj,zjqf,width,height,zjlx,zjlj from igams_zjgl
+        where scbj = '0'
+    </select>
+    <select id="getDtoList" parameterType="ZjglDto" resultType="ZjglDto">
+        SELECT zjid,zjmc,fbsmc,fbsbj,zjqf,width,height,zjlx,zjlj,zylj from igams_zjgl
+        <where>
+            scbj = '0'
+            <if test="ids !=null and ids.size >0" >
+                and zjlx in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by xh asc
+    </select>
+    <insert id="insert" parameterType="ZjglDto">
+        INSERT INTO igams_zjgl (zjid,zjmc,zylj,zjlx,xh,zjqf,width,height,zjlj,lrsj,lrry,scbj)
+        VALUES
+        (#{zjid},#{zjmc},#{zylj},'external',cast(#{xh} as numeric),'external','250','180'
+        ,'/matridx/oa/production/newIndex/comments/CommonExternal',LOCALTIMESTAMP,#{lrry},'0')
+    </insert>
+
+    <insert id="insertList" parameterType="list">
+        INSERT INTO igams_zjgl (zjid,zjmc,zylj,zjlx,xh,zjqf,width,height,zjlj,lrsj,lrry,scbj)VALUES
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (#{item.zjid},#{item.zjmc},#{item.zylj},'tool',cast(#{item.xh} as numeric),'tool','250','180'
+                ,'/matridx/oa/production/newIndex/comments/CommonExternal',LOCALTIMESTAMP,#{item.lrry},'0')
+            </foreach>
+        </if>
+    </insert>
+
+    <select id="generateZjid" parameterType="ZjglDto" resultType="String">
+        select coalesce(cast(max(xh) as numeric),1000000)+1 from igams_zjgl
+        <where>
+            zjlx = #{zjlx}
+        </where>
+    </select>
+    <update id="delete" parameterType="ZjglDto">
+        update igams_zjgl set scbj = #{scbj},scry=#{scry},scsj=LOCALTIMESTAMP where zjid = #{zjid}
+    </update>
+</mapper>

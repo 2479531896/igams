@@ -1,0 +1,317 @@
+package com.matridx.igams.common.enums;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 导出类型枚举类
+ * @author yxj
+ *
+ */
+public enum ExportTypeEnum {
+	XXDY_SELECT("XXDY_SELECT","信息对应选择导出"),
+	XXDY_SEARCH("XXDY_SEARCH","信息对应搜索导出"),
+	ASSET_SELECT("ASSET_SELECT","固定资产选择导出"),
+	ASSET_SEARCH("ASSET_SEARCH","固定资产搜索导出"),
+	INVOICE_SELECT("INVOICE_SELECT","发票列表选中导出"),
+	INVOICE_SEARCH("INVOICE_SEARCH","发票列表搜索导出"),
+	MATERIEL_SELECT("MATERIEL_SELECT","物料选中导出"),
+	MATERIEL_SEARCH("MATERIEL_SEARCH","物料搜索导出"),
+	TEST_SELECT("TEST_SELECT","考试选中导出"),
+	TEST_SEARCH("TEST_SEARCH","考试搜索导出"),
+	TEST_SELLSEARCH("TEST_SELLSEARCH","考试销售导出"),
+	INSPECT_SELECT("INSPECT_SELECT","送检选中导出"),
+	INSPECT_SEARCH("INSPECT_SEARCH","送检搜索导出"),
+	AIDIKANG_SELECT("AIDIKANG_SELECT","艾迪康选中导出"),
+	AIDIKANG_SEARCH("AIDIKANG_SEARCH","艾迪康搜索导出"),
+	NDZ_SELECT("NDZ_SELECT","脓毒症选中导出"),
+	NDZ_SEARCH("NDZ_SEARCH","脓毒症搜索导出"),
+	HBP_SELECT("HBP_SELECT","HBP选中导出"),
+	QMNGSNDZ_SELECT("QMNGSNDZ_SELECT","Qmngs脓毒症选中导出"),
+	RECRUIT_SELECT("RECRUIT_SELECT","人事招聘选中导出"),
+	RECRUIT_SEARCH("RECRUIT_SEARCH","人事招聘搜索导出"),
+	COVID_SELECT("COVID_SELECT","新冠选中导出"),
+	COVID_SEARCH("COVID_SEARCH","新冠搜索导出"),
+	COVID_AMOUNTSELECT("COVID_AMOUNTSELECT","新冠选中导出(全)"),
+	COVID_AMOUNTSEARCH("COVID_AMOUNTSEARCH","新冠搜索导出(全)"),
+	ATTENDENCE_SELECT("ATTENDENCE_SELECT","考勤选中导出"),
+	ATTENDENCE_SEARCH("ATTENDENCE_SEARCH","考勤搜索导出"),
+	ALLSTOCK_SELECT("ALLSTOCK_SELECT","库存选中导出"),
+	ALLSTOCK_SEARCH("ALLSTOCK_SEARCH","库存搜索导出"),
+	INSPECT_AMOUNT_SELECT("INSPECT_AMOUNT_SELECT","送检金额选中导出"),
+	INSPECT_AMOUNT_SEARCH("INSPECT_AMOUNT_SEARCH","送检金额搜索导出"),
+	STOCK_SELECT("STOCK_SELECT","库存选中导出"),
+	STOCK_SEARCH("STOCK_SEARCH","库存搜索导出"),
+
+	STOCK_SECURE_SELECT("STOCK_SECURE_SELECT","安全库存选中导出"),
+	STOCK_SECURE_SEARCH("STOCK_SECURE_SEARCH","安全库存搜索导出"),
+	REQUISITION_SELECT("REQUISITION_SELECT","领料选中导出"),
+	REQUISITION_SEARCH("REQUISITION_SEARCH","领料搜索导出"),
+	PRODUCTION_REQUISITION_SELECT("PRODUCTION_REQUISITION_SELECT","生产领料选中导出"),
+	PRODUCTION_REQUISITION_SEARCH("PRODUCTION_REQUISITION_SEARCH","生产领料搜索导出"),
+	GOODS_SELECT("GOODS_SELECT","货物选中导出"),
+	GOODS_SEARCH("GOODS_SEARCH","货物搜索导出"), 
+	LIBRARY_SELECT("LIBRARY_SELECT","文库选中导出"),
+	LIBRARY_SELECTOLD("LIBRARY_SELECTOLD","文库选中导出(旧)"),
+	CHECKOUT_SELECT("CHECKOUT_SELECT","质检选中导出"),
+	CHECKOUT_SEARCH("CHECKOUT_SEARCH","质检搜索导出"),
+	GOODSRK_SEARCH("GOODSRK_SEARCH","入库搜索导出"),
+	GOODSRK_SELECT("GOODSRK_SELECT","入库选中导出"),
+	INFORMATION_REGISTER_SEARCH("INFORMATION_REGISTER_SEARCH","信息登记会议注册搜索导出"),
+	INSPECT_CLINIC_SELECT("INSPECT_CLINIC_SELECT","特检列表选中导出"),
+	INSPECT_CLINIC_SEARCH("INSPECT_CLINIC_SEARCH","特检列表搜索导出"),
+	POOLING_EXPORT("POOLING_EXPORT","polling表导出"),
+	DEVICEINFO_SELECT("DEVICEINFO_SELECT","设备信息选中导出"),
+	DEVICEINFO_SEARCH("DEVICEINFO_SEARCH","设备信息搜索导出"),
+	DOCUMENT_SELECT("DOCUMENT_SELECT","文件选中导出"),
+	DOCUMENT_SEARCH("DOCUMENT_SEARCH","文件搜索导出"),
+	ABNORMAL_SELECT("ABNORMAL_SELECT","送检异常选中导出"),
+	ABNORMAL_SEARCH("ABNORMAL_SEARCH","送检异常搜索导出"),
+	VISIT_SELECT("VISIT_SELECT","拜访清单选中导出"),
+	VISIT_SEARCH("VISIT_SEARCH","拜访清单搜索导出"),
+	RECHECK_SELECT("RECHECK_SELECT","复检加测选中导出"),
+	RECHECK_SEARCH("RECHECK_SEARCH","复检加测搜索导出"),
+	VERIFICATION_SELECT("VERIFICATION_SELECT","送检验证选中导出"),
+	VERIFICATION_SEARCH("VERIFICATION_SEARCH","送检验证搜索导出"),
+	NGS_SELECT("NGS_SELECT","NGS选中导出"),
+	NGS_SEARCH("NGS_SEARCH","NGS搜索导出"),
+	YYXX_SELECT("YYXX_SELECT","医院信息选中导出"),
+	YYXX_SEARCH("YYXX_SEARCH","医院信息搜索导出"),
+	HTGL_SELECT("HTGL_SELECT","合同列表选中导出"),
+	HTGL_SEARCH("HTGL_SEARCH","合同列表搜索导出"),
+	HTGL_AUDITINGSELECT("HTGL_AUDITINGSELECT","合同列表审核选中导出"),
+	HTGL_AUDITINGSEARCH("HTGL_AUDITINGSEARCH","合同列表审核搜索导出"),
+	QGGL_SELECT("QGGL_SELECT","请购列表选中导出"),
+	QGGL_SEARCH("QGGL_SEARCH","请购列表搜索导出"),
+	QGGL_AUDITINGSELECT("QGGL_AUDITINGSELECT","请购列表审核选择导出"),
+	QGGL_AUDITINGSEARCH("QGGL_AUDITINGSEARCH","请购列表审核搜索导出"),
+	QGGL_CGAUDITINGSELECT("QGGL_CGAUDITINGSELECT","请购列表采购审核选择导出"),
+	QGGL_CGAUDITINGSEARCH("QGGL_CGAUDITINGSEARCH","请购列表采购审核搜索导出"),
+	QGWL_AUDITINGSELECT("QGWL_AUDITINGSELECT","请购物料列表审核选择导出"),
+	QGWL_AUDITINGSEARCH("QGWL_AUDITINGSEARCH","请购物料列表审核搜索导出"),
+	PURCHASEADMINISTRATION_SELECT("PURCHASEADMINISTRATION_SELECT","行政请购列表选中导出"),
+	PURCHASEADMINISTRATION_SEARCH("PURCHASEADMINISTRATION_SEARCH","行政请购列表搜索导出"),
+	PURCHASE_MATER_SELECT("PURCHASE_MATER_SELECT","采购物料明细选中导出"),
+	PURCHASE_MATER_SEARCH("PURCHASE_MATER_SEARCH","采购物料明细搜索导出"),
+	PURCHASEMATTER_SELECT("PURCHASEMATTER_SELECT","请购物料选中导出"),
+	PURCHASEMATTER_SEARCH("PURCHASEMATTER_SEARCH","请购物料搜索导出"),
+	PURCHASECANCEL_SELECT("PURCHASECANCEL_SELECT","请购取消列表选中导出"),
+	PURCHASECANCEL_SEARCH("PURCHASECANCEL_SEARCH","请购取消列表搜索导出"),
+	PAYMENT_SELECT("PAYMENT_SELECT","支付列表选中导出"),
+	PAYMENT_SEARCH("PAYMENT_SEARCH","支付列表搜索导出"),
+	BUSINESS_SEARCH("BUSINESS_SEARCH","商务客户搜索导出"),
+	BUSINESS_SELECT("BUSINESS_SELECT","商务客户选中导出"),
+	CONTRACT_SELECT("CONTRACT_SELECT","商务合同选中导出"),
+	CONTRACT_SEARCH("CONTRACT_SEARCH","商务合同搜索导出"),
+	ARRIVALGOODS_SELECT("ARRIVALGOODS_SELECT","到货列表选中导出"),
+	ARRIVALGOODS_SEARCH("ARRIVALGOODS_SEARCH","到货列表搜索导出"),
+	INSPECTION_SELECT("INSPECTION_SELECT","检验列表选中导出"),
+	INSPECTION_SEARCH("INSPECTION_SEARCH","检验列表搜索导出"),
+	INSPECTION_GOODS_SELECT("INSPECTION_GOODS_SELECT","检验物料列表选中导出"),
+	INSPECTION_GOODS_SEARCH("INSPECTION_GOODS_SEARCH","检验物料列表搜索导出"),
+	SHIP_SELECT("SHIP_SELECT","发货列表选中导出"),
+	SHIP_SEARCH("SHIP_SEARCH","发货列表搜索导出"),
+	PENDINGINSPECTION_SELECT("PENDINGINSPECTION_SELECT","待检验列表选中导出"),
+	PENDINGINSPECTION_SEARCH("PENDINGINSPECTION_SEARCH","待检验列表搜索导出"),
+	GOODBACK_SEARCH("GOODBACK_SEARCH","到货退回处理列表搜索导出"),
+	GOODBACK_SELECT("GOODBACK_SELECT","到货退回处理列表选中导出"),
+	JNSJ_SELECT("JNSJ_SELECT","艰难梭菌选中导出"),
+	ADMINPURCHASEPAY_SEARCH("ADMINPURCHASEPAY_SEARCH","行政请购付款列表搜索导出"),
+	ADMINPURCHASEPAY_SELECT("ADMINPURCHASEPAY_SELECT","行政请购付款列表选中导出"),
+	PARTNER_SELECT("PARTNER_SELECT","送检伙伴列表选中导出"),
+	PAPER_SELECT("PAPER_SELECT","纸质报告列表选中导出"),
+	PAPER_SEARCH("PAPER_SEARCH","纸质报告列表搜索导出"),
+	PARTNER_SEARCH("PARTNER_SEARCH","送检伙伴列表搜索导出"),
+	KHGL_SELECT("KHGL_SELECT","客户管理列表选中导出"),
+	KHGL_SEARCH("KHGL_SEARCH","客户给管理列表搜索导出"),
+	YBKCXX_SELECT("YBKCXX_SELECT","样本库存列表选中导出"),
+	YBKCXX_SEARCH("YBKCXX_SEARCH","样本库存列表搜索导出"),
+	FLOWING_SELECT("FLOWING_SELECT","出入库流水列表选中导出"),
+	FLOWING_SEARCH("FLOWING_SEARCH","出入库流水列表搜索导出"),
+	SALES_SELECT("SALES_SELECT","销售列表选中导出"),
+	SALES_SEARCH("SALES_SEARCH","销售列表搜索导出"),
+	HTFK_SELECT("HTFK_SELECT","合同付款列表选择导出"),
+	HTFK_SEARCH("HTFK_SEARCH","合同付款列表搜索导出"),
+	HTFKMX_SELECT("HTFKMX_SELECT","合同付款明细列表选择导出"),
+	HTFKMX_SEARCH("HTFKMX_SEARCH","合同付款明细列表搜索导出"),
+	KSWWC_SELECT("KSWWC_SELECT","考试未完成列表选择导出"),
+	KSWWC_SEARCH("KSWWC_SEARCH","考试未完成列表搜索导出"),
+	YGHMC_SELECT("YGHMC_SELECT","员工花名册列表选择导出"),
+	YGHMC_SEARCH("YGHMC_SEARCH","员工花名册列表搜索导出"),
+	DRUG_RESISTANCE_RESULT("DRUG_RESISTANCE_RESULT","耐药结果导出"),
+	VIRULENCE_RESULT("VIRULENCE_RESULT","毒力结果导出"),
+	AI_RESULT("AI_RESULT","AI结果导出"),
+	AUDIT_RESULT("AUDIT_RESULT","审核结果导出"),
+	EXPERIMENT_SEARCH("EXPERIMENT_SEARCH","实验结果导出"),
+	EXPERIMENT_SELECT("EXPERIMENT_SELECT","实验结果选择导出"),
+	SJPDGL_SELECT("SJPDGL_SELECT","物流管理列表选择导出"),	
+	MARKETINGINSPECT_SELECT("MARKETINGINSPECT_SELECT","营销检测选中导出"),
+	MARKETINGINSPECT_SEARCH("MARKETINGINSPECT_SEARCH","营销检测搜索导出"),
+	MARKETINGINSPECT_AMOUNTSELECT("MARKETINGINSPECT_AMOUNTSELECT","营销检测选中导出(全)"),
+	MARKETINGINSPECT_AMOUNTSEARCH("MARKETINGINSPECT_AMOUNTSEARCH","营销检测搜索导出(全)"),
+	JCJYGL_SELECT("JCJYGL_SELECT","借出借用列表选择导出"),
+	JCJYGL_SEARCH("JCJYGL_SEARCH","借出借用列表搜索导出"),
+	SJPDGL_SEARCH("SJPDGL_SEARCH","物流管理列表搜索导出"),		
+	RECHECK_AUDIT_SELECT("RECHECK_AUDIT_SELECT","复测审核列表选择导出"),
+	RECHECK_AUDIT_SEARCH("RECHECK_AUDIT_SEARCH","复测审核列表搜索导出"),
+	TRAIN_SEARCH("TRAIN_SEARCH","培训列表搜素导出"),
+	TRAIN_SELECT("TRAIN_SELECT","培训列表选择导出"),
+	XSMX_SELECT("XSMX_SELECT","销售明细列表选择导出"),
+	XSMX_SEARCH("XSMX_SEARCH","销售明细列表搜索导出"),
+	XSMX_REPORTSEARCH("XSMX_REPORTSEARCH","销售明细列表报表导出"),
+	XZLL_SELECT("XZLL_SELECT","行政领料列表选择导出"),
+	XZLL_SEARCH("XZLL_SEARCH","行政领料列表搜索导出"),
+	XZKCGL_SELECT("XZKCGL_SELECT","行政库存列表选择导出"),
+	XZKCGL_SEARCH("XZKCGL_SEARCH","行政库存列表搜索导出"),
+	JXMB_SELECT("JXMB_SELECT","绩效模板列表选择导出"),
+	JXMB_SEARCH("JXMB_SEARCH","绩效模板列表搜索导出"),
+	GRJX_SELECT("GRJX_SELECT","个人绩效列表选择导出"),
+	GRJX_SEARCH("GRJX_SEARCH","个人绩效列表搜索导出"),
+	GRJXXX_SELECT("GRJXXX_SELECT","个人绩效列表详细选择导出"),
+	GRJXXX_SEARCH("GRJXXX_SEARCH","个人绩效列表详细搜索导出"),
+	GRHBGL_SELECT("GRHBGL_SELECT","个人红包列表选择导出"),
+	GRHBGL_SEARCH("GRHBGL_SEARCH","个人红包列表搜索导出"),
+	APPLICATION_SELECT("APPLICATION_SELECT","送检特殊申请列表选择导出"),
+	APPLICATION_SEARCH("APPLICATION_SEARCH","送检特殊申请列表搜索导出"),
+	EQUIPMENTACCEPTANCE_SELECT("EQUIPMENTACCEPTANCE_SELECT","固定资产选择导出"),
+	EQUIPMENTACCEPTANCE_SEARCH("EQUIPMENTACCEPTANCE_SEARCH","固定资产搜索导出"),
+	MAINTABLESALES_SELECT("MAINTABLESALES_SELECT","销售主表选择导出"),
+	MAINTABLESALES_SEARCH("MAINTABLESALES_SEARCH","销售主表搜索导出"),
+	QUALITY_SELECT("QUALITY_SELECT","质量协议选择导出"),
+	QUALITY_SEARCH("QUALITY_SEARCH","质量协议搜索导出"),
+	YXHT_SELECT("YXHT_SELECT","营销合同选择导出"),
+	YXHT_SEARCH("YXHT_SEARCH","营销合同搜索导出"),
+	USER_SEARCH("USER_SEARCH","用户列表搜索导出"),
+	USER_SELECT("USER_SELECT","用户列表选择导出"),
+	BBSY_SELECT("BBSY_SELECT","标本实验列表选中导出"),
+	BBSY_SEARCH("BBSY_SEARCH","标本实验列表搜索导出"),
+	PRODUCTIONMATERIAL_SELECT("PRODUCTIONMATERIAL_SELECT","生产领料选中导出"),
+	PRODUCTIONMATERIAL_SEARCH("PRODUCTIONMATERIAL_SEARCH","生产领料搜索导出"),
+	ATTENDANCESTATIS_SEARCH("ATTENDANCESTATIS_SEARCH","用户考勤搜索导出"),
+	ATTENDANCESTATIS_SELECT("ATTENDANCESTATIS_SELECT","用户考勤选择导出"),
+	ATTENDANCESTATIS_DETAILS_SEARCH("ATTENDANCESTATIS_DETAILS_SEARCH","用户考勤明细搜索导出"),
+	ATTENDANCESTATIS_DETAILS_SELECT("ATTENDANCESTATIS_DETAILS_SELECT","用户考勤明细选择导出"),
+	ACCOUNTSDUE_SELECT("ACCOUNTSDUE_SELECT","应收款清单选中导出"),
+	ACCOUNTSDUE_SEARCH("ACCOUNTSDUE_SEARCH","应收款清单搜索导出"),
+	ACMATERIAL_SELECT("ACMATERIAL_SELECT","需求物料选中导出"),
+	ACMATERIAL_SEARCH("ACMATERIAL_SEARCH","需求物料搜索导出"),
+	PRODUCTIONORDER_SELECT("PRODUCTIONORDER_SELECT","生产指令列表选择导出"),
+	PRODUCTIONORDER_SEARCH("PRODUCTIONORDER_SEARCH","生产指令列表搜索导出"),
+	PAYMENTRECEIVED_SEARCH("PAYMENTRECEIVED_SEARCH","到款列表搜索导出"),
+	PAYMENTRECEIVED_SELECT("PAYMENTRECEIVED_SELECT","到款列表搜索导出"),
+	NOTPAYMENTRECEIVED_SEARCH("NOTPAYMENTRECEIVED_SEARCH","未到款列表搜索导出"),
+	NOTPAYMENTRECEIVED_SELECT("NOTPAYMENTRECEIVED_SELECT","未到款列表搜索导出"),
+	ANNUALPLAN_SEARCH("ANNUALPLAN_SEARCH","年度培训搜素导出"),
+	ANNUALPLAN_SELECT("ANNUALPLAN_SELECT","年度培训选择导出"),
+	INVENTORY_SELECT("INVENTORY_SELECT","设备盘点选择导出"),
+	INVENTORY_SEARCH("INVENTORY_SEARCH","设备盘点搜索导出"),
+	VISITINGOBJECT_SELECT("VISITINGOBJECT_SELECT","拜访对象选择导出"),
+	VISITINGOBJECT_SEARCH("VISITINGOBJECT_SEARCH","拜访对象搜素导出"),
+	;
+
+
+	private final String code;
+	private final String value;
+	
+	/**
+	 * @Description:常用导出字段设置用，新增导出类型时也在此方法内新增
+	 * @return
+	 * @Author yujt
+	 * @Date 2017-2-20 上午10:59:00
+	 */
+	public static List<ExportTypeEnum> getExportTypeList(){
+		List<ExportTypeEnum> status = new ArrayList<>();
+		status.add(ExportTypeEnum.XXDY_SELECT);
+		status.add(ExportTypeEnum.XXDY_SEARCH);
+		status.add(ExportTypeEnum.ASSET_SELECT);
+		status.add(ExportTypeEnum.ASSET_SEARCH);
+		status.add(ExportTypeEnum.MATERIEL_SELECT);
+		status.add(ExportTypeEnum.MATERIEL_SEARCH);
+		status.add(ExportTypeEnum.TEST_SELECT);
+		status.add(ExportTypeEnum.TEST_SEARCH);
+		status.add(ExportTypeEnum.TEST_SELLSEARCH);
+		status.add(ExportTypeEnum.INSPECT_SELECT);
+		status.add(ExportTypeEnum.INSPECT_SEARCH);
+		status.add(ExportTypeEnum.AIDIKANG_SELECT);
+		status.add(ExportTypeEnum.AIDIKANG_SEARCH);
+		status.add(ExportTypeEnum.NDZ_SELECT);
+		status.add(ExportTypeEnum.NDZ_SEARCH);
+		status.add(ExportTypeEnum.RECRUIT_SELECT);
+		status.add(ExportTypeEnum.RECRUIT_SEARCH);
+		status.add(ExportTypeEnum.COVID_SELECT);
+		status.add(ExportTypeEnum.COVID_SEARCH);
+		status.add(ExportTypeEnum.COVID_AMOUNTSELECT);
+		status.add(ExportTypeEnum.COVID_AMOUNTSEARCH);
+		status.add(ExportTypeEnum.ALLSTOCK_SELECT);
+		status.add(ExportTypeEnum.ALLSTOCK_SEARCH);
+		status.add(ExportTypeEnum.ATTENDENCE_SELECT);
+		status.add(ExportTypeEnum.ATTENDENCE_SEARCH);
+		status.add(ExportTypeEnum.STOCK_SELECT);
+		status.add(ExportTypeEnum.STOCK_SEARCH);
+		status.add(ExportTypeEnum.STOCK_SECURE_SELECT);
+		status.add(ExportTypeEnum.STOCK_SECURE_SEARCH);
+		status.add(ExportTypeEnum.REQUISITION_SELECT);
+		status.add(ExportTypeEnum.REQUISITION_SEARCH);
+		status.add(ExportTypeEnum.GOODS_SELECT);
+		status.add(ExportTypeEnum.GOODS_SEARCH);
+		status.add(ExportTypeEnum.CHECKOUT_SELECT);
+		status.add(ExportTypeEnum.CHECKOUT_SEARCH);
+		status.add(ExportTypeEnum.INSPECT_CLINIC_SELECT);
+		status.add(ExportTypeEnum.INSPECT_CLINIC_SEARCH);
+		status.add(ExportTypeEnum.DOCUMENT_SELECT);
+		status.add(ExportTypeEnum.DOCUMENT_SEARCH);
+		status.add(ExportTypeEnum.ABNORMAL_SELECT);
+		status.add(ExportTypeEnum.ABNORMAL_SEARCH);
+		status.add(ExportTypeEnum.VISIT_SELECT);
+		status.add(ExportTypeEnum.VISIT_SEARCH);
+		status.add(ExportTypeEnum.RECHECK_SELECT);
+		status.add(ExportTypeEnum.RECHECK_SEARCH);
+		status.add(ExportTypeEnum.VERIFICATION_SELECT);
+		status.add(ExportTypeEnum.VERIFICATION_SEARCH);
+		status.add(ExportTypeEnum.GOODSRK_SELECT);
+		status.add(ExportTypeEnum.GOODSRK_SEARCH);
+		status.add(ExportTypeEnum.ADMINPURCHASEPAY_SEARCH);
+		status.add(ExportTypeEnum.ADMINPURCHASEPAY_SELECT);
+		status.add(ExportTypeEnum.KHGL_SELECT);
+		status.add(ExportTypeEnum.KHGL_SEARCH);
+		status.add(ExportTypeEnum.YBKCXX_SELECT);
+		status.add(ExportTypeEnum.YBKCXX_SEARCH);
+		status.add(ExportTypeEnum.PAYMENTRECEIVED_SEARCH);
+		status.add(ExportTypeEnum.PAYMENTRECEIVED_SELECT);
+		status.add(ExportTypeEnum.NOTPAYMENTRECEIVED_SEARCH);
+		status.add(ExportTypeEnum.NOTPAYMENTRECEIVED_SELECT);
+		return status;
+	}
+	
+	ExportTypeEnum(String code, String value){
+		this.value = value;
+		this.code = code;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	public String getCode(){
+		return code;
+	}
+	
+	public static String getValueByCode(String code){
+		for (ExportTypeEnum enumi : values()) {
+			if(enumi.getCode().equals(code)){
+				return enumi.getValue();
+			}
+		}
+		return null;
+	}
+	
+	public static String getCodeByValue(String value){
+		for (ExportTypeEnum enumi : values()) {
+			if(enumi.getValue().equals(value)){
+				return enumi.getCode();
+			}
+		}
+		return null;
+	}
+	
+}

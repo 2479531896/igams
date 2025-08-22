@@ -1,0 +1,1999 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.IGzglDao" >
+	<sql id="SEARCH_TERMS">
+		gzgl.scbj !='1'
+		<if test="(fzr != null and fzr != '') or (qrry != null and qrry != '')">
+			and (
+			<trim prefixOverrides="or">
+				<if test="fzr != null and fzr != ''">
+					or gzgl.fzr=#{fzr}
+				</if>
+				<if test="qrry != null and qrry != ''">
+					or gzgl.qrry=#{qrry}
+				</if>
+			</trim>
+
+			)
+		</if>
+		<if test="fzrxm != null and fzrxm != ''">
+			 and yh.zsxm like '%'|| #{fzrxm}||'%' 
+		</if>
+		<if test="lrry != null and lrry != ''">
+			and gzgl.lrry=#{lrry}
+		</if>
+		<if test="qrrymc != null and qrrymc != ''">
+			 and qrr.zsxm like '%'|| #{qrrymc}||'%' 
+		</if>
+		<if test="jgmc != null and jgmc != ''">
+			and jgxx.jgmc like '%'|| #{jgmc}||'%'
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			and gzgl.rwmc like '%'||#{rwmc}||'%'
+		</if>
+		<if test="ywmc !=null and ywmc != ''">
+			and gzgl.ywmc like '%'||#{ywmc}||'%'
+		</if>
+		<if test="qwwcsjstart != null and qwwcsjstart != ''">
+			and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &gt;= #{qwwcsjstart}
+		</if>
+		<if test="qwwcsjend != null and qwwcsjend != ''">
+			and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &lt;= #{qwwcsjend}
+		</if>
+		<if test="wcsjstart != null and wcsjstart != ''">
+			and to_char(gzgl.wcsj,'YYYY-MM-dd') &gt;= #{wcsjstart}
+		</if>
+		<if test="wcsjend != null and wcsjend != ''">
+			and to_char(gzgl.wcsj,'YYYY-MM-dd') &lt;= #{wcsjend}
+		</if>
+        <if test="lrsjstart != null and lrsjstart != ''">
+            and to_char(gzgl.lrsj,'YYYY-MM-dd') &gt;= #{lrsjstart}
+        </if>
+        <if test="lrsjend != null and lrsjend != ''">
+            and to_char(gzgl.lrsj,'YYYY-MM-dd') &lt;= #{lrsjend}
+        </if>
+		<if test="((qrsjstart != null and qrsjstart != '') or (qrsjend != null and qrsjend != '')) and yhid != null and yhid != ''">
+			and exists (
+			select gzlcgl.gzid from igams_gzlcgl gzlcgl
+			where gzlcgl.gzid = gzgl.gzid and gzlcgl.lrry = #{yhid}
+			<if test="qrsjstart != null and qrsjstart != ''">
+				and to_char(gzlcgl.lrsj,'YYYY-MM-dd') &gt;= #{qrsjstart}
+			</if>
+			<if test="qrsjend != null and qrsjend != ''">
+				and to_char(gzlcgl.lrsj,'YYYY-MM-dd') &lt;= #{qrsjend}
+			</if>
+			)
+		</if>
+		<if test = "zts != null and zts.length > 0 "  >
+			and gzgl.zt in 
+			<foreach collection="zts" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "jgs != null and jgs.length > 0 "  >
+			and gzgl.jgid in
+			<foreach collection="jgs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "rwmcs != null and rwmcs.length > 0 "  >
+			and gzgl.rwmc in
+			<foreach collection="rwmcs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<!-- 分页查询工作管理信息列表 -->
+	<select id="getPagedDtoList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.jgid,gzgl.fzr,gzgl.zt,gzgl.qrry,
+		gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh2.zsxm AS lrryxm,jc.csdm jjddm,jc.cspx jjdpx,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,gzgl.yjgzl,gzgl.sjgzl,qrr.zsxm qrrymc,jgxx.jgmc,xmjdxx.jdmc,xmjdrw.fs,rwrq.jdfs,rwjb.csmc as jjdmc,rwjb.cskz1 as rwjbcskz1,
+		xmjdrw.xmjdid,xmjdrw.xmid,xmjdrw.jssj
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_xtyh yh2 on gzgl.lrry = yh2.yhid
+		left outer join matridx_jcsj jc on gzgl.jjd = jc.csid
+		left outer join matridx_xtyh qrr on qrr.yhid = gzgl.qrry
+		left outer join matridx_jgxx jgxx on jgxx.jgid = gzgl.jgid
+		left join igams_xmjdrw xmjdrw on xmjdrw.rwid=gzgl.rwid
+		left join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = xmjdrw.xmjdid and xmjdxx.scbj='0'
+		left join igams_rwrq rwrq on rwrq.rwid=gzgl.rwid and rwrq.xmjdid=xmjdrw.xmjdid
+		left outer join matridx_jcsj rwjb on rwjb.csid= xmjdrw.rwjb and rwjb.scbj='0'
+		<where> 
+			<include refid="SEARCH_TERMS"></include>
+			<if test="lrryxm !=null and lrryxm != ''">
+				and yh2.zsxm like '%'||#{lrryxm}||'%'
+			</if>
+			<if test="listFlag !=null and listFlag != '' and listFlag=='1'.toString()">
+				and rwrq.jzrq is not null and gzgl.zt!='80' and cast(rwrq.jzrq as date) &lt; current_date
+			</if>
+			<if test="listFlag !=null and listFlag != '' and listFlag=='2'.toString()">
+				and rwrq.jzrq is not null and gzgl.zt!='80' and date_part('day',cast(rwrq.jzrq as TIMESTAMP)-cast(CURRENT_DATE as TIMESTAMP))&gt;=0 and date_part('day',cast(rwrq.jzrq as TIMESTAMP)-cast(CURRENT_DATE as TIMESTAMP))&lt;=2
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and gzgl.fzr in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="yhms !=null and yhms.size > 0">
+				and (yh.yhm in
+				<foreach collection="yhms" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+				or
+				qrr.yhm in
+				<foreach collection="yhms" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+				)
+			</if>
+		</where>
+	</select>
+	<!-- 分页查询个人培训工作管理信息列表 -->
+	<select id="getDtoTrainList" parameterType="GzglDto" resultType="GzglDto">
+		select tmp.xh,tmp.gzid,tmp.ywid,tmp.ywmc,tmp.rwmc,tmp.zt,tmp.fzr,
+		tmp.qwwcsj,tmp.pxid,tmp.fjid,tmp.gqsj,tmp.pxlbmc,tmp.lrsj,tmp.sfgk,tmp.sfcs
+		from (
+		select ROW_NUMBER() OVER (ORDER BY tmp2.lrsj desc) AS xh,tmp2.gzid,tmp2.ywid,tmp2.ywmc,tmp2.rwmc,tmp2.zt,tmp2.fzr,
+		tmp2.qwwcsj,tmp2.pxid,tmp2.fjid,tmp2.gqsj,tmp2.pxlbmc,tmp2.lrsj,tmp2.sfgk,tmp2.sfcs
+		from (select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.rwmc,gzgl.zt,yh.zsxm fzr,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,to_char(gzgl.lrsj,'YYYY-MM-DD') lrsj,'0' sfgk,pxgl.sfcs
+		FROM
+		igams_pxgl pxgl
+		LEFT OUTER JOIN igams_gzgl gzgl ON pxgl.pxid = gzgl.ywid
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = gzgl.ywid
+		LEFT OUTER JOIN matridx_xtyh yh ON gzgl.fzr = yh.yhid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		<where>
+			gzgl.scbj!='1' and fj.ywlx='IMP_TRAIN_PICTURE' and gzgl.sfqd is null
+			<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='1'.toString()">
+				and to_char(pxgl.gqsj,'YYYY-MM-dd') &lt;= #{gqsj}
+			</if>
+			<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+				and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+			</if>
+			<if test="ddid !=null and ddid != ''">
+			and  yh.ddid=#{ddid}
+			</if>
+			<if test=" lbdm !=null and lbdm != ''">
+				and lb.csdm = #{lbdm}
+			</if>
+			<if test=" zlbdm !=null and zlbdm != ''">
+				and zlb.csdm = #{zlbdm}
+			</if>
+			<if test=" sfcs !=null and sfcs != ''">
+				and pxgl.sfcs = #{sfcs}
+			</if>
+			<if test=" spbj !=null and spbj != ''">
+				and pxgl.spbj = #{spbj}
+			</if>
+			<if test = "zts != null and zts.length > 0 "  >
+				and gzgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="pxbt !=null and pxbt != ''">
+				and  pxgl.pxbt like '%'|| #{pxbt}||'%'
+			</if>
+		</where>
+		union all
+		select  'admin' gzid,pxgl.pxid,pxgl.pxbt ywmc,lb.csmc rwmc,'00' zt,
+		'admin' fzr,to_char(pxgl.gqsj,'YYYY-MM-DD') qwwcsj,
+		pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,
+		to_char(pxgl.lrsj,'YYYY-MM-DD') lrsj,'1' sfgk,'0' as sfcs
+		from igams_pxgl pxgl
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = pxgl.pxid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		where pxgl.sfgk ='1' and pxgl.scbj!='1' and fj.ywlx='IMP_TRAIN_PICTURE'
+		<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='1'.toString()">
+			and to_char(pxgl.gqsj,'YYYY-MM-dd') &lt;= #{gqsj}
+		</if>
+		<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+			and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+		</if>
+		<if test=" lbdm !=null and lbdm != ''">
+			and lb.csdm = #{lbdm}
+		</if>
+		<if test=" zlbdm !=null and zlbdm != ''">
+			and zlb.csdm = #{zlbdm}
+		</if>
+		<if test=" sfcs !=null and sfcs != ''">
+			and pxgl.sfcs = #{sfcs}
+		</if>
+		<if test=" spbj !=null and spbj != ''">
+			and pxgl.spbj = #{spbj}
+		</if>
+		<if test="pxbt !=null and pxbt != ''">
+			and  pxgl.pxbt like '%'|| #{pxbt}||'%'
+		</if>
+		)tmp2
+		<where>
+			1=1
+			<if test = "zts != null and zts.length > 0 "  >
+				and tmp2.zt in
+				<foreach collection="zts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+
+		order by tmp2.lrsj desc
+		)tmp
+		<if test="pageSize !=null and pageSize !=''">
+			limit #{pageSize}
+		</if>
+		<if test="pageNumber !=null and pageNumber !=''">
+			OFFSET #{pageStart}
+		</if>
+	</select>
+
+	<!-- 分页查询培训工作管理信息列表 -->
+	<select id="getPagedTrainList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.rwmc,yh.zsxm fzr,jgxx.jgmc jgmc,yh.yhid,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_jgxx jgxx on jgxx.jgid = gzgl.jgid
+		<where>
+			gzgl.ywid=#{pxid}  and gzgl.scbj!='1'
+			<if test = "zts != null and zts.length > 0 "  >
+				and gzgl.zt in
+				<foreach collection="zts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+
+	</select>
+	<!-- 新增文件权限 -->
+	<insert  id="insertDtoByWjsh" parameterType="list">
+		insert into igams_gzgl (gzid,ywmc, ywid, rwmc,rwid,fzr,gzlx,qwwcsj,zt,lrry,lrsj,scbj,ywdz,jgid,rwqx)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.gzid},#{item.ywmc},#{item.ywid},#{item.rwmc},#{item.rwid},#{item.fzr},#{item.gzlx,jdbcType=VARCHAR},cast(#{item.qwwcsj} as TIMESTAMP),#{item.zt},#{item.lrry},LOCALTIMESTAMP,'0',#{item.ywdz},#{item.jgid},cast(#{item.rwqx} as numeric))
+			</foreach>
+		</if>
+	</insert>
+	<!-- 根据工作ID工作信息 -->
+	<select id="getDtoById" parameterType="String" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,jc.csmc jjdmc,jc.csdm jjddm,
+			gzgl.zt,gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh2.zsxm AS lrryxm,yh.ddid,yh.yhid,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,
+		gzgl.yjgzl,gzgl.sjgzl,qrr.zsxm qrrymc,gzgl.urlqz,qrr.ddid,xmjdrw.xmjdid,xmjdrw.fs,jc_jb.csdm rwjbdm,xmjdxx.jdmc,rwrq.jdfs,gzgl.ks,gzgl.pxfs,gzgl.ssgs,gzgl.jlbh,gzgl.tgbj,qrr.yhm as qrryhm,yh.yhm as fzryhm
+			from igams_gzgl gzgl
+			left outer join igams_xmjdrw xmjdrw on xmjdrw.rwid = gzgl.rwid
+			left outer join igams_xmjdxx xmjdxx on xmjdxx.xmjdid=xmjdrw.xmjdid
+			left outer join igams_rwrq rwrq on xmjdrw.xmjdid=rwrq.xmjdid and rwrq.rwid=gzgl.rwid and rwrq.scbj='0'
+			left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+			left outer join matridx_xtyh yh2 on gzgl.lrry = yh2.yhid
+			left outer join matridx_jcsj jc on gzgl.jjd = jc.csid
+			left outer join matridx_jcsj jc_jb on jc_jb.csid= xmjdrw.rwjb
+			left outer join matridx_xtyh qrr on qrr.yhid = gzgl.qrry
+			<where>
+				gzgl.scbj !='1' and gzgl.gzid = #{gzid}
+			</where>
+	</select>
+	<!-- 根据工作ID工作信息 -->
+	<select id="getGzDtoByGzid" parameterType="String" resultType="GzglDto">
+		select gzgl.gzid,gzgl.tgbj
+		from igams_gzgl gzgl
+		<where>
+			gzgl.scbj !='1' and gzgl.gzid = #{gzid}
+		</where>
+	</select>
+	<!-- 根据用户ID查询用户信息 -->
+	<select id="getXtyhByYhid" parameterType="String" resultType="GzglDto">
+		select yh.zsxm,yh.ddid,yh.yhid as qrry,yh.yhm
+			from matridx_xtyh yh
+			<where>
+				yh.scbj !='1' and yh.yhid = #{yhid}
+			</where>
+	</select>
+	<!-- 更新任务信息 -->
+	<update  id="update" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+		<if test="ywid !=null and ywid != ''">
+			ywid = #{ywid},
+		</if>
+		<if test="ywmc !=null and ywmc != ''">
+			ywmc = #{ywmc},
+		</if>
+		<if test="ywdz !=null and ywdz != ''">
+			ywdz = #{ywdz},
+		</if>
+		<if test="rwid !=null and rwid != ''">
+			rwid = #{rwid},
+		</if>
+		<if test="rwmc !=null and rwmc != ''">
+			rwmc = #{rwmc},
+		</if>
+		<if test="gzlx !=null and gzlx != ''">
+			gzlx = #{gzlx},
+		</if>
+		<if test="qwwcsj !=null and qwwcsj != ''">
+			qwwcsj = cast(#{qwwcsj} as TIMESTAMP),
+		</if>
+		<if test="wcsj !=null and wcsj != ''">
+			wcsj = LOCALTIMESTAMP,
+		</if>
+		<if test="gzjssj !=null and gzjssj != ''">
+			gzjssj = cast(#{gzjssj} as TIMESTAMP),
+		</if>
+		<if test="dqjd !=null and dqjd != ''">
+			dqjd = #{dqjd},
+		</if>
+		<if test="jgid !=null and jgid != ''">
+			jgid = #{jgid},
+		</if>
+		<if test="fzr !=null and fzr != ''">
+			fzr = #{fzr},
+		</if>
+		<if test="qrry !=null and qrry != ''">
+			qrry = #{qrry},
+		</if>
+		<if test="zt !=null and zt != ''">
+			zt = #{zt},
+		</if>
+		<if test="bz !=null and bz != ''">
+			bz = #{bz},
+		</if>
+		<if test="scbj !=null and scbj != ''">
+			scbj = #{scbj},
+		</if>
+		<if test="jjd !=null and jjd != ''">
+			jjd = #{jjd},
+		</if>
+		<if test="yjgzl !=null and yjgzl != ''">
+			yjgzl=#{yjgzl},
+		</if>
+		<if test="pxjd !=null and pxjd != ''">
+			pxjd=#{pxjd},
+		</if>
+		<if test="spwcbj !=null and spwcbj != ''">
+			spwcbj=#{spwcbj},
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			sjgzl=#{sjgzl},
+		</if>
+		<if test="urlqz !=null and urlqz != ''">
+			urlqz=#{urlqz},
+		</if>
+		<if test="tgbj !=null and tgbj != ''">
+			tgbj=#{tgbj},
+		</if>
+		<if test="jlbh !=null and jlbh != ''">
+			jlbh=#{jlbh},
+		</if>
+		<if test="sfqd !=null and sfqd != ''">
+			sfqd=#{sfqd},
+		</if>
+		<if test="ks !=null and ks != ''">
+			ks=#{ks},
+		</if>
+		<if test="ssgs !=null and ssgs != ''">
+			ssgs=#{ssgs},
+		</if>
+		<if test="pxfs !=null and pxfs != ''">
+			pxfs=#{pxfs},
+		</if>
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="gzid!=null and gzid !=''">
+				and gzid = #{gzid}
+			</if>
+			<if test="ywid!=null and ywid !=''">
+				and ywid = #{ywid}
+			</if>
+		</where>
+	</update>
+	<!-- 根据文件ID查询附件表信息 -->
+	<select id="selectFjcfbDtoByGzid" parameterType="String" resultType="FjcfbDto">
+		select fjcfb.ywlx,fjcfb.wjm,fjcfb.wjlj,fjcfb.fjid
+			from igams_gzgl gzgl
+			left outer join matridx_fjcfb fjcfb on gzgl.gzid = fjcfb.ywid
+			<where>
+				fjcfb.scbj !='1' and fjcfb.ywid= #{gzid}
+			</where>
+	</select>
+	<!-- 更改工作删除标记 -->
+	<update  id="delete" parameterType="GzglModel">
+		update igams_gzgl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1' 
+		<where>
+			<if test="gzid !=null and gzid != ''">
+				or gzid = #{gzid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<update  id="deleteByYwids" parameterType="GzglDto">
+		update igams_gzgl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			<if test="ids !=null and ids.size > 0">
+				 ywid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 根据ids查询任务信息 -->
+	<select id="selectDtoByIds" parameterType="list" resultType="GzglDto">  
+        select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,
+			gzgl.zt,gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+        from igams_gzgl gzgl
+        WHERE gzgl.gzid in  
+        <foreach collection="list" item="item" open="(" close=")" separator=",">  
+            #{item}  
+        </foreach>
+    </select>
+    <!-- 根据输入信息查询负责人 -->
+	<select id="selectTaskFzr" parameterType="GzglDto" resultType="GzglDto">  
+        select yh.zsxm,yh.yhid,yh.ddid,yh.yhm
+        from matridx_xtyh yh
+		<where>
+		    yh.scbj='0' and yh.sfsd='0'
+			<if test="zsxm !=null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+		</where>
+    </select>
+    <!-- 查询负责人列表 -->
+	<select id="getPagedFzrList" parameterType="GzglDto" resultType="GzglDto">  
+        select yh.zsxm,yh.yhid,yh.gwmc,yh.yhm,yh.ddid,xtjs.jsmc,js.dwxdbj,jgxx.jgmc
+        from matridx_xtyh yh
+		LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yh.yhid
+		LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = yhssjg.jgid
+		left join matridx_xtjs js on yh.dqjs = js.jsid
+		LEFT JOIN
+		(
+			select yhjs.yhid,string_agg(xtjs.jsmc,',')  jsmc
+			from matridx_yhjs yhjs
+			left join matridx_xtjs xtjs on yhjs.jsid = xtjs.jsid where xtjs.scbj = '0'
+			group by yhjs.yhid
+		) xtjs on xtjs.yhid = yh.yhid
+        left join matridx_ryczxg czxg on czxg.dxid = yh.yhid and czxg.qf = #{qf} and czxg.yhid = #{yhid}
+		<where>
+			yh.scbj!='1' and yh.sfsd='0'
+			<if test="entire != null and entire != ''">
+				and (
+				yh.zsxm like '%'||#{entire}||'%'
+				or yh.yhm like '%'||#{entire}||'%'
+				or xtjs.jsmc like '%'||#{entire}||'%'
+				or yh.gwmc like '%'||#{entire}||'%'
+				)
+			</if>
+			<if test="jsmc !=null and jsmc != ''">
+				and xtjs.jsmc like '%'||#{jsmc}||'%'
+			</if>
+			<if test="zsxm !=null and zsxm != ''">
+				and yh.zsxm like '%'||#{zsxm}||'%'
+			</if>
+			<if test="gwmc !=null and gwmc != ''">
+				and yh.gwmc like '%'||#{gwmc}||'%'
+			</if>
+			<if test="yhm !=null and yhm != ''">
+				and yh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="jgmc !=null and jgmc != ''">
+				and jgxx.jgmc like '%'||#{jgmc}||'%'
+			</if>
+		</where>
+    </select>
+
+	<!-- 查询负责人列表 -->
+	<select id="getPagedKhList" parameterType="GzglDto" resultType="GzglDto">
+		select khgl.khid,khgl.khdm,khgl.khmc,khgl.khjc,khgl.fzrq,khgl.sf,khgl.lxr,khgl.dh,khgl.dqmc,khgl.zyywy,khgl.fgbm,khgl.qzkh,khgl.lrry,khgl.lrsj,khgl.xgry,khgl.xgsj,khgl.scry,khgl.scsj,khgl.scbj,sf.csmc as sfmc
+		from igams_khgl khgl
+		left join matridx_jcsj sf on sf.csid = khgl.sf
+		<where>
+			khgl.scbj!='1'
+			<if test="khmc !=null and khmc != ''">
+				and khgl.khmc like '%'||#{khmc}||'%'
+			</if>
+			<if test="khjc !=null and khjc != ''">
+				and khgl.khmc like '%'||#{khjc}||'%'
+			</if>
+			<if test="dqmc !=null and dqmc != ''">
+				and khgl.dqmc like '%'||#{dqmc}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 任务统计 -->
+	<select id="getTaskStatistics" parameterType="GzglDto" resultType="GzglDto">
+		SELECT rwmc,count(gzid) num FROM "igams_gzgl" gzgl where  gzgl.scbj !='1' and gzgl.zt = '10' and rwmc is not null GROUP BY rwmc
+	</select>
+
+	<!-- 未完成任务按部门统计 -->
+	<select id="getDepartTaskStatistics" parameterType="GzglDto" resultType="GzglDto">
+		SELECT
+			jgxx.jgmc,
+			COUNT ( gzid ) num
+		FROM
+			igams_gzgl gzgl
+			LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = gzgl.fzr
+			LEFT JOIN matridx_jgxx jgxx ON jgxx.jgid = yhssjg.jgid
+		WHERE
+			gzgl.scbj != '1'
+			AND gzgl.zt = '10'
+			AND jgxx.jgmc IS NOT NULL
+		GROUP BY
+			jgxx.jgmc
+	</select>
+    <!-- 分页查询工作管理信息列表 -->
+	<select id="getPagedConfirmList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.jgid,gzgl.fzr,gzgl.zt,gzgl.qrry,
+		gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh2.zsxm AS lrryxm,yh.zsxm,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+		,gzgl.yjgzl,gzgl.sjgzl,xmjdrw.xmjdid,rwjb.cskz1 as rwjbcskz1,rwjb.csmc as jjdmc,xmjdxx.jdmc,xmjdrw.fs
+		from igams_gzgl gzgl
+		left outer join igams_xmjdrw xmjdrw on xmjdrw.rwid = gzgl.rwid
+		LEFT OUTER JOIN igams_xmjdxx xmjdxx ON xmjdrw.xmjdid = xmjdxx.xmjdid
+		left outer join matridx_jcsj rwjb on rwjb.csid= xmjdrw.rwjb and rwjb.scbj='0'
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_xtyh yh2 on gzgl.lrry = yh2.yhid
+		<where>
+			((gzgl.qrry = #{qrry} and gzgl.zt = '10') or (gzgl.fzr = #{fzr} and gzgl.zt = '00')) and gzgl.scbj != '1'
+			<if test="rwmc !=null and rwmc != ''">
+				and gzgl.rwmc like '%'||#{rwmc}||'%'
+			</if>
+			<if test="ywmc !=null and ywmc != ''">
+				and gzgl.ywmc like '%'||#{ywmc}||'%'
+			</if>
+			<if test="lrryxm !=null and lrryxm != ''">
+				and yh2.zsxm like '%'||#{lrryxm}||'%'
+			</if>
+
+		</where>
+	</select>
+	<!-- 最终确认通过修改状态 -->
+	<update  id="updateZt" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+		<if test="dqjd!=null and dqjd !=''">
+			dqjd = #{dqjd},
+		</if>
+		<if test="gzjssj !=null and gzjssj != ''">
+			gzjssj = cast(#{gzjssj} as TIMESTAMP),
+		</if>
+		<if test="zt !=null and zt != ''">
+			zt = #{zt},
+		</if>
+		qrry = null,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="gzid !=null and gzid !=''">
+				and gzid = #{gzid}
+			</if>
+		</where>
+	</update>
+	<!-- 阶段确认通过修改确认人员 -->
+	<update  id="updateQrry" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+			qrry = #{qrry},xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="gzid !=null and gzid != ''">
+				and gzid = #{gzid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 退回申请人时修改原数据状态 -->
+	<update  id="updateInitZt" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+			<if test="zt !=null and zt != ''">
+				zt = #{zt},
+			</if>
+			qrry = null,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			gzid = #{gzid}
+		</where>
+	</update>
+	<!-- 根据负责人（用户ID）查询机构ID -->
+	<select id="getJgidByFzr" parameterType="String" resultType="GzglDto">  
+        select ssjg.jgid
+        from matridx_yhssjg ssjg
+		<where>
+			ssjg.yhid = #{fzr}
+		</where>
+    </select>
+    <!-- 批量修改任务信息 -->
+	<update id="updateByGzglDtoList"  parameterType="list">  
+		<foreach collection="list" item="item" index="index">
+	        update igams_gzgl set fzr=#{item.fzr},qwwcsj=cast(#{item.qwwcsj} as TIMESTAMP),jgid=#{item.jgid},bz=#{item.bz},xgry=#{item.xgry},xgsj = LOCALTIMESTAMP
+	        where gzid =#{item.gzid};
+	    </foreach>      
+	</update>
+	<!-- 根据业务ID删除工作任务 -->
+	<delete id="deleteByYwid"  parameterType="list">  
+		delete from  igams_gzgl
+		<where>
+			 ywid in
+				<foreach collection="list" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+		</where>
+	</delete>
+	
+	<!-- 根据gzid查询任务信息 -->
+	<select id="selectDtoBygzid" parameterType="String" resultType="GzglDto">  
+        select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,
+			gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+        from igams_gzgl gzgl
+        WHERE gzgl.gzid  = #{gzid}  
+    </select>
+    <insert id="insertDtobyfzr"  parameterType="GzglDto">
+    	insert into igams_gzgl (gzid
+    	<if test="ywid !=null and ywid !=''">
+    		,ywid
+    	</if>
+    	<if test="ywmc !=null and ywmc !=''">
+    		,ywmc
+    	</if>
+    	<if test="ywdz !=null and ywdz !=''">
+    		,ywdz
+    	</if>
+    	<if test="rwid !=null and rwid !=''">
+    		,rwid
+    	</if>
+    	<if test="rwmc !=null and rwmc !=''">
+    		,rwmc
+    	</if>
+    	<if test="gzlx !=null and gzlx !=''">
+    		,gzlx
+    	</if>
+    	<if test="rwqx !=null and rwqx !=''">
+    		,rwqx
+    	</if>
+    	<if test="qwwcsj !=null and qwwcsj !=''">
+    		,qwwcsj
+    	</if>
+    	<if test="wcsj !=null and wcsj !=''">
+    		,wcsj
+    	</if>
+    	<if test="dqjd !=null and dqjd !=''">
+    		,dqjd
+    	</if>
+    	<if test="fzr !=null and fzr !=''">
+    		,fzr
+    	</if>
+    	<if test="zt !=null and zt !=''">
+    		,zt
+    	</if>
+    	<if test="bz !=null and bz !=''">
+    		,bz
+    	</if>
+    	<if test="jgid !=null and jgid !=''">
+    		,jgid
+    	</if>
+    	<if test="qrry !=null and qrry !=''">
+    		,qrry
+    	</if>
+    	<if test="jjd !=null and jjd !=''">
+    		,jjd
+    	</if>
+    	<if test="lrry !=null and lrry !=''">
+    		,lrry
+    	</if>
+    	<if test="yjgzl !=null and yjgzl != ''">
+			,yjgzl
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			,sjgzl
+		</if>
+		<if test="urlqz !=null and urlqz != ''">
+			,urlqz
+		</if>
+		<if test="jlbh !=null and jlbh != ''">
+			,jlbh
+		</if>
+		<if test="ssgs !=null and ssgs != ''">
+			,ssgs
+		</if>
+		<if test="pxfs !=null and pxfs != ''">
+			,pxfs
+		</if>
+		<if test="ks !=null and ks != ''">
+			,ks
+		</if>
+		<if test="glbj !=null and glbj != ''">
+			,glbj
+		</if>
+		<if test="sfqd !=null and sfqd != ''">
+			,sfqd
+		</if>
+		<if test="sfnd !=null and sfnd != ''">
+			,sfnd
+		</if>
+    	,lrsj,scbj,tgbj)values(#{gzid}
+    	<if test="ywid !=null and ywid !=''">
+    		,#{ywid}
+    	</if>
+    	<if test="ywmc !=null and ywmc !=''">
+    		,#{ywmc}
+    	</if>
+    	<if test="ywdz !=null and ywdz !=''">
+    		,#{ywdz}
+    	</if>
+    	<if test="rwid !=null and rwid !=''">
+    		,#{rwid}
+    	</if>
+    	<if test="rwmc !=null and rwmc !=''">
+    		,#{rwmc}
+    	</if>
+    	<if test="gzlx !=null and gzlx !=''">
+    		,#{gzlx}
+    	</if>
+    	<if test="rwqx !=null and rwqx !=''">
+    		,cast(#{rwqx} as numeric)
+    	</if>
+    	<if test="qwwcsj !=null and qwwcsj !=''">
+    		,cast(#{qwwcsj} as  TIMESTAMP)
+    	</if>
+    	<if test="wcsj !=null and wcsj !=''">
+    		,cast(#{wcsj} as  TIMESTAMP)
+    	</if>
+    	<if test="dqjd !=null and dqjd !=''">
+    		,#{dqjd}
+    	</if>
+    	<if test="fzr !=null and fzr !=''">
+    		,#{fzr}
+    	</if>
+    	<if test="zt !=null and zt !=''">
+    		,#{zt}
+    	</if>
+    	<if test="bz !=null and bz !=''">
+    		,#{bz}
+    	</if>
+    	<if test="jgid !=null and jgid !=''">
+    		,#{jgid}
+    	</if>
+    	<if test="qrry !=null and qrry !=''">
+    		,#{qrry}
+    	</if>
+    	<if test="jjd !=null and jjd !=''">
+    		,#{jjd}
+    	</if>
+    	<if test="lrry !=null and lrry !=''">
+    		,#{lrry}
+    	</if>
+    	<if test="yjgzl !=null and yjgzl != ''">
+			,#{yjgzl}
+		</if>
+		<if test="sjgzl !=null and sjgzl != ''">
+			,#{sjgzl}
+		</if>
+		<if test="urlqz !=null and urlqz != ''">
+			,#{urlqz}
+		</if>
+		<if test="jlbh !=null and jlbh != ''">
+			,#{jlbh}
+		</if>
+		<if test="ssgs !=null and ssgs != ''">
+			,#{ssgs}
+		</if>
+		<if test="pxfs !=null and pxfs != ''">
+			,#{pxfs}
+		</if>
+		<if test="ks !=null and ks != ''">
+			,#{ks}
+		</if>
+		<if test="glbj !=null and glbj != ''">
+			,#{glbj}
+		</if>
+		<if test="sfqd !=null and sfqd != ''">
+			,#{sfqd}
+		</if>
+		<if test="sfnd !=null and sfnd != ''">
+			,#{sfnd}
+		</if>
+    		,LOCALTIMESTAMP,'0'
+		<if test="tgbj !=null and tgbj != ''">
+			,#{tgbj}
+		</if>
+		<if test="tgbj ==null or tgbj == ''">
+			,'0'
+		</if>)
+    </insert>
+
+	<insert id="insertList" parameterType="List">
+		insert into igams_gzgl(gzid, ywid, ywmc, ywdz, rwid, rwmc, gzlx, rwqx, qwwcsj, wcsj, dqjd, jgid, fzr, jjd, qrry, zt, bz, lrry, lrsj, scbj, yjgzl, sjgzl, pxjd, spwcbj, urlqz, tgbj,jlbh,glbj,sfqd)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.gzid},#{item.ywid},#{item.ywmc},#{item.ywdz},#{item.rwid},#{item.rwmc},#{item.gzlx},cast(#{item.rwqx} as numeric),cast(#{item.qwwcsj} as  TIMESTAMP),#{item.wcsj},#{item.dqjd},#{item.jgid},#{item.fzr},#{item.jjd},#{item.qrry},#{item.zt},#{item.bz},#{item.lrry},LOCALTIMESTAMP,'0',#{item.yjgzl},#{item.sjgzl},#{item.pxjd},#{item.spwcbj},#{item.urlqz},'0',#{item.jlbh},#{item.glbj},#{item.sfqd}
+				)
+			</foreach>
+		</if>
+	</insert>
+    
+    <!-- 批量最终确认通过修改状态 -->
+    <update id="updateZts"  parameterType="GzglDto">  
+        update igams_gzgl
+		<set>
+		<if test="dqjd!=null and dqjd !=''">
+			dqjd = #{dqjd},
+		</if>
+		<if test="gzjssj !=null and gzjssj != ''">
+			gzjssj = cast(#{gzjssj} as TIMESTAMP),
+		</if>
+		<if test="zt !=null and zt != ''">
+			zt = #{zt},
+		</if>
+		qrry = null,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="ids !=null and ids.size > 0">
+			or gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 批量退回时修改原数据状态 -->
+	<update  id="updateInitZts" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+			<if test="zt !=null and zt != ''">
+				zt = #{zt},
+			</if>
+			wcsj = null,qrry = null,xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test="ids !=null and ids.size > 0">
+			or gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 根据rwid删除工作任务 -->
+	<update id="deletegzrwByrwid" parameterType="GzglDto">
+		update igams_gzgl
+		<set>
+			scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			rwid=#{rwid}
+		</where>
+	</update>
+	<!-- 根据rwids删除工作任务 -->
+	<update id="deletegzrwByrwids" parameterType="GzglDto">
+		<foreach collection="ids" open="" close="" separator=";" item="item">
+			update igams_gzgl
+			<set>
+				scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+			</set>
+			<where>
+				rwid=#{item}
+			</where>
+		</foreach>
+	</update>
+	<!-- 查询出来所有任务的逾期时间 -->
+	<select id="selectGzglByzt"  resultType="GzglDto">
+		select gzgl.qwwcsj - current_date  as yqsj,
+		gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.jgid,gzgl.fzr,gzgl.zt,gzgl.qrry,
+		gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,xtyh.ddid as ddid
+		from igams_gzgl gzgl 
+		left join matridx_xtyh xtyh on xtyh.yhid=gzgl.fzr
+		where gzgl.scbj !='1' and gzgl.zt='00' and gzgl.qwwcsj is not null
+	</select>
+	<select id="getYqGzgl" resultType="map">
+		select count(gzgl.gzid),gzgl.rwmc
+			from igams_gzgl gzgl 
+			where gzgl.scbj !='1' and  (current_date - cast(gzgl.qwwcsj as date)) >0  and gzgl.zt='00' and gzgl.qwwcsj is not null group by gzgl.rwmc
+	</select>
+	
+	<select id="getGzglByfzr" parameterType="GzglDto" resultType="GzglDto"> 
+	select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,
+			gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh.ddid,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+			from igams_gzgl gzgl
+			left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+			<where>
+					gzgl.scbj !='1' 
+				<if test="fzr !=null and fzr !=''">
+					and gzgl.fzr=#{fzr}
+				</if>
+				<if test="qwwcsj !=null and qwwcsj !=''">
+					and to_char(gzgl.qwwcsj,'YYYY-MM')=#{qwwcsj}
+				</if>
+				order by gzgl.zt asc
+			</where>
+	</select>
+	
+	<!-- 查询用户列表(小程序分页) -->
+	<select id="getMiniFzrList" parameterType="GzglDto" resultType="GzglDto">  
+        select yh.zsxm,yh.yhid,yh.gwmc,yh.yhm,yh.ddid
+        from matridx_xtyh yh
+        left join matridx_ryczxg czxg on czxg.dxid = yh.yhid and czxg.qf = #{qf} and czxg.yhid = #{yhid}
+		<where>
+			yh.scbj!='1'
+			<if test="entire !=null and entire != ''">
+				and yh.zsxm like '%'||#{entire}||'%'
+			</if>
+			<if test="entire !=null and entire != ''">
+				or yh.gwmc like '%'||#{entire}||'%'
+			</if>
+		</where>
+		limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+    </select>
+
+	<select id="verification" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,
+		gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh.ddid,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,yh.yhid,jgxx.jgmc
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_jgxx jgxx on jgxx.jgid = gzgl.jgid
+		<where>
+			gzgl.scbj !='1'
+			<if test="ids !=null and ids.size > 0">
+				and fzr in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ywid !=null and ywid !=''">
+				and gzgl.ywid=#{ywid}
+			</if>
+		</where>
+	</select>
+	<select id="selectDistributedDtos" resultType="GzglDto" parameterType="GzglDto">
+		SELECT
+		gzgl.gzid,
+		gzgl.ywid,
+		gzgl.ywmc,
+		gzgl.ywdz,
+		gzgl.rwid,
+		gzgl.rwmc,
+		gzgl.gzlx,
+		gzgl.rwqx,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,
+		gzgl.wcsj,
+		gzgl.dqjd,
+		gzgl.fzr,
+		gzgl.jgid,
+		gzgl.qrry,
+		gzgl.jjd,
+		gzgl.zt,
+		gzgl.bz,
+		gzgl.lrry,
+		to_char( gzgl.lrsj, 'YYYY-MM-DD' ) as lrsj,
+		lryh.zsxm lrryxm,
+		gzgl.xgry,
+		gzgl.xgsj,
+		gzgl.scbj,
+		gzgl.scry,
+		gzgl.scsj,
+		yh.zsxm,
+		yh.ddid,
+		to_char( gzgl.qwwcsj, 'YYYY-MM-DD' ) AS fqwwcsj,
+		to_char( gzgl.wcsj, 'YYYY-MM-DD' ) AS fwcsj,
+		yh.yhid,
+		jgxx.jgmc,
+		tmp.sfcs,
+		tmp.sftg,
+		tab.zf,
+		gzgl.jlbh
+		FROM
+		igams_gzgl gzgl
+		LEFT OUTER JOIN matridx_xtyh yh ON gzgl.fzr = yh.yhid
+		LEFT OUTER JOIN matridx_jgxx jgxx ON jgxx.jgid = gzgl.jgid
+		left outer join matridx_xtyh lryh on gzgl.lrry = lryh.yhid
+		left outer join (
+		select gzid,zf,sftg,sfcs
+		from (
+		select gzgl.gzid,grksgl.zf,case when pxgl.sfcs='1' and max(cast(grksgl.zf as numeric)) &gt;=cast(pxgl.tgfs as numeric) then '通过'
+		when pxgl.sfcs='1' and (max(cast(grksgl.zf as numeric)) &lt;cast(pxgl.tgfs as numeric) or max(cast(grksgl.zf as numeric)) is null)then  '未通过' end sftg,case when (grksgl.zf is not null and grksgl.zf!='') then '是' else '否' end sfcs,row_number() over(partition by gzgl.gzid order by max(cast(grksgl.zf as numeric)) desc) index1
+		from igams_gzgl gzgl
+		left join igams_pxgl pxgl on pxgl.pxid=gzgl.ywid and pxgl.scbj='0'
+		left join igams_grksgl grksgl on grksgl.gzid=gzgl.gzid and grksgl.scbj='0'
+		where  gzgl.scbj='0' AND gzgl.ywid =#{ywid}
+		group by grksgl.zf,gzgl.gzid,pxgl.tgfs,pxgl.sfcs
+		)tt where tt.index1='1'
+		)tmp on gzgl.gzid=tmp.gzid
+		left join (
+		select zf,gzid
+		from
+		(select grksgl.zf,gzgl.gzid,row_number() over(partition by gzgl.gzid order by grksgl.lrsj desc) index2
+		from igams_gzgl gzgl
+		left join igams_grksgl grksgl on grksgl.gzid=gzgl.gzid and grksgl.scbj='0'
+		where gzgl.scbj='0' and gzgl.ywid= #{ywid}
+		)tmp
+		where index2='1'
+		)tab on tab.gzid=gzgl.gzid
+		WHERE
+		gzgl.scbj != '1'
+		AND gzgl.ywid = #{ywid}
+		and gzgl.sfqd is null
+		<if test="entire != null and entire != ''">
+			and (
+			yh.zsxm like '%'||#{entire}||'%'
+			or jgxx.jgmc like '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="sftg != null and sftg != ''">
+			and  tmp.sftg=#{sftg}
+		</if>
+		<if test="qwwcsjstart != null and qwwcsjstart != ''">
+			and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &gt;= #{qwwcsjstart}
+		</if>
+		<if test="qwwcsjend != null and qwwcsjend != ''">
+			and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &lt;= #{qwwcsjend}
+		</if>
+		<if test="lrsjstart != null and lrsjstart != ''">
+			and to_char(gzgl.lrsj,'YYYY-MM-dd') &gt;= #{lrsjstart}
+		</if>
+		<if test="lrsjend != null and lrsjend != ''">
+			and to_char(gzgl.lrsj,'YYYY-MM-dd') &lt;= #{lrsjend}
+		</if>
+		order by gzgl.lrsj desc
+	</select>
+	<select id="getGzInfoByFzrAndYwid" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.fzr,gzgl.sfqd
+		from igams_gzgl gzgl
+		<where>
+			gzgl.scbj !='1'
+			<if test="fzr !=null and fzr !=''">
+				AND gzgl.fzr = #{fzr}
+			</if>
+			<if test="ywid !=null and ywid !=''">
+				AND gzgl.ywid=#{ywid}
+			</if>
+
+			<if test="gzid !=null and gzid !=''">
+				AND gzgl.gzid=#{gzid}
+			</if>
+			<if test="sfqd !=null and sfqd !='' and sfqd=='notnull' ">
+				AND (gzgl.sfqd is not null and gzgl.sfqd !='')
+			</if>
+		</where>
+	</select>
+
+	<select id="getVerificationDto" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,
+		gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh.ddid,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,yh.yhid,jgxx.jgmc
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_jgxx jgxx on jgxx.jgid = gzgl.jgid
+		<where>
+			gzgl.scbj !='1'
+			<if test="ids !=null and ids.size > 0">
+				and fzr in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ywid !=null and ywid !=''">
+				and gzgl.ywid=#{ywid}
+			</if>
+		</where>
+	</select>
+
+	<update id="updateZf" parameterType="GzglDto">
+		update igams_grksgl
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="zf !=null and zf != ''">
+				,zf=#{zf}
+			</if>
+		</set>
+		<where>
+			grksid=#{grksid}
+		</where>
+	</update>
+
+
+	<!-- 根据工作ID工作信息 -->
+	<select id="getDtoList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,jc.csmc jjdmc,jc.csdm jjddm,
+		gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh.ddid,yh.yhid,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,
+		gzgl.yjgzl,gzgl.sjgzl,qrr.zsxm qrrymc,gzgl.urlqz,qrr.ddid qrrydd,qrr.yhm as qrryyhm,xmjdrw.xmjdid,xmjdxx.xh as jdxh,xmjdxx.jdmc,xmjdrw.fs
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_jcsj jc on gzgl.jjd = jc.csid
+		left outer join matridx_xtyh qrr on qrr.yhid = gzgl.qrry
+		left outer join igams_xmjdrw xmjdrw on xmjdrw.rwid = gzgl.rwid
+		left outer join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = xmjdrw.xmjdid
+		<where>
+			gzgl.scbj !='1'
+			<if test="gzid !=null and gzid != ''">
+			and gzgl.gzid = #{gzid}
+			</if>
+			<if test="ywid !=null and ywid != ''">
+				and gzgl.ywid = #{ywid}
+			</if>
+			<if test="zt !=null and zt != ''">
+				and gzgl.zt = #{zt}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and gzgl.gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 根据工作ID任务ids -->
+	<select id="getRwidList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.fzr,gzgl.jgid,gzgl.qrry,gzgl.jjd,
+		gzgl.zt,gzgl.bz,gzgl.lrry,gzgl.lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj
+		from igams_gzgl gzgl
+		<where>
+			gzgl.scbj !='1'
+			<if test="gzid !=null and gzid != ''">
+				and gzgl.gzid = #{gzid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				and gzgl.gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 根据工作ID工作信息 -->
+	<select id="getStatisDtoList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.jgid,gzgl.fzr,gzgl.zt,gzgl.qrry,
+		gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh.zsxm,yh2.zsxm AS lrryxm,jc.csmc jjdmc,jc.csdm jjddm,jc.cspx jjdpx,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj,gzgl.yjgzl,gzgl.sjgzl,qrr.zsxm qrrymc,jgxx.jgmc
+		from igams_gzgl gzgl
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_xtyh yh2 on gzgl.lrry = yh2.yhid
+		left outer join matridx_jcsj jc on gzgl.jjd = jc.csid
+		left outer join matridx_xtyh qrr on qrr.yhid = gzgl.qrry
+		left outer join matridx_jgxx jgxx on jgxx.jgid = gzgl.jgid
+		<where>
+			gzgl.scbj !='1' and yh.zsxm is not null and  yh.zsxm != ''
+			and gzgl.jgid = (select jgid from matridx_yhssjg where yhid = #{yhid})
+			and gzgl.zt = #{zt}
+			<if test="zsxm !=null and zsxm != '' and zt =='10'.toString()">
+				and qrr.zsxm = #{zsxm}
+			</if>
+			<if test="zsxm !=null and zsxm != '' and zt !='10'.toString()">
+				and yh.zsxm = #{zsxm}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 根据工作ID工作信息 -->
+	<select id="getTabInfo" parameterType="GzglDto" resultType="GzglDto">
+		select case when gzgl.zt='00' then '未完成' when gzgl.zt='10' then '确认中' when gzgl.zt='15' then '无需确认' when gzgl.zt='80' then '已完成' end zt,to_char(gzgl.lrsj,'YYYY-MM-dd') lrsj,
+		gzgl.ywmc,gzgl.gzid,yh.zsxm fzr,dqjdxx.jdmc dqjd,tab_2.*,CASE WHEN gzgl.zt = '80' or gzgl.zt = '15' THEN ''||date_part('day',gzgl.wcsj-gzgl.lrsj) else ''||date_part('day',now()-gzgl.lrsj) END gzhs,
+		CASE WHEN ( gzgl.zt = '00' OR gzgl.zt = '10' ) AND rwrq.sjjsrq IS NOT NULL THEN '' || date_part( 'day', now( ) - rwrq.sjjsrq )
+		WHEN ( gzgl.zt = '00' OR gzgl.zt = '10' ) AND rwrq.sjjsrq IS NULL THEN '' || date_part( 'day', now( ) - gzgl.lrsj ) ELSE '' END jdhs
+		from
+		(
+			select rwid, string_agg(clry,',') clry, string_agg(jdmc,',') jdmc,
+			string_agg(cast(jhksrq as varchar),',') jhksrq,
+			string_agg(cast(jhjsrq as varchar),',') jhjsrq,
+			string_agg(cast(sjksrq as varchar),',') sjksrq,
+			string_agg(cast(sjjsrq as varchar),',') sjjsrq
+			from
+			(
+				select gzgl.rwid, COALESCE(clry.zsxm,' ')  clry, COALESCE(xmjdxx.jdmc,' ') jdmc,COALESCE(cast(rwrq.jhksrq as varchar),' ') jhksrq,
+				 COALESCE(cast(rwrq.jhjsrq as varchar),' ') jhjsrq,COALESCE(cast(rwrq.sjksrq as varchar),' ') sjksrq,COALESCE(cast(rwrq.sjjsrq as varchar),' ') sjjsrq
+				from igams_gzgl gzgl
+				left join igams_rwrq rwrq on rwrq.rwid = gzgl.rwid
+				left join igams_xmjdxx  xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.scbj = '0'
+				left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+				left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+				left outer join matridx_xtyh lrry on gzgl.lrry = lrry.yhid
+				where gzgl.scbj !='1' and gzgl.jgid = ( select jgid  from matridx_yhssjg  where yhid = #{yhid})
+				and gzgl.rwid is not null and gzgl.rwid != ''
+				<if test="lrsjstart != null and lrsjstart != ''">
+					and to_char(gzgl.lrsj,'YYYY-MM-dd') &gt;= #{lrsjstart}
+				</if>
+				<if test="lrsjend != null and lrsjend != ''">
+					and to_char(gzgl.lrsj,'YYYY-MM-dd') &lt;= #{lrsjend}
+				</if>
+				<if test="ywmc !=null and ywmc != ''">
+					and gzgl.ywmc like '%'||#{ywmc}||'%'
+				</if>
+				<if test="fzrxm != null and fzrxm != ''">
+					and yh.zsxm like '%'|| #{fzrxm}||'%'
+				</if>
+
+				<if test="lrryxm !=null and lrryxm != ''">
+					and lrry.zsxm like '%'||#{lrryxm}||'%'
+				</if>
+				<if test = "zts != null and zts.length > 0 "  >
+					and gzgl.zt in
+					<foreach collection="zts" separator="," open="(" close=") "
+							 item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+
+				order by gzgl.rwid,xmjdxx.xh asc
+				) tab
+			group by tab.rwid
+		) tab_2
+		left join igams_gzgl gzgl on gzgl.rwid = tab_2.rwid
+		left join igams_xmjdrw xmjdrw on xmjdrw.rwid = gzgl.rwid
+		left join igams_xmjdxx dqjdxx on dqjdxx.xmjdid = xmjdrw.xmjdid
+		left join igams_xmjdxx before on cast(before.xh as numeric) = cast(dqjdxx.xh as numeric)-1 and xmjdrw.xmid=before.xmid and before.scbj='0'
+		left join igams_rwrq rwrq on before.xmjdid=rwrq.xmjdid and rwrq.rwid=gzgl.rwid and rwrq.scbj='0'
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		<where>
+			gzgl.ywmc is not null and yh.zsxm is not null
+				<if test="qrrymc != null and qrrymc != ''">
+					and exists (
+						select rwrq.rwid from igams_rwrq rwrq
+						right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '3'
+						left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+						where rwrq.rwid = gzgl.rwid and clry.zsxm like '%'|| #{qrrymc}||'%'
+					)
+				</if>
+				<if test="csrmc != null and csrmc != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '4'
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and clry.zsxm like '%'|| #{csrmc}||'%'
+					)
+				</if>
+				<if test="kfrqstart != null and kfrqstart != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and (xmjdxx.xh = '2' or xmjdxx.xh = '1')
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and (to_char(rwrq.sjksrq,'YYYY-MM-dd') &gt;= #{kfrqstart} or to_char(rwrq.sjjsrq,'YYYY-MM-dd') &gt;= #{kfrqstart})
+					)
+				</if>
+				<if test="kfrqend != null and kfrqend != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and (xmjdxx.xh = '2' or xmjdxx.xh = '1')
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and (to_char(rwrq.sjksrq,'YYYY-MM-dd') &lt;= #{kfrqend} or to_char(rwrq.sjjsrq,'YYYY-MM-dd') &lt;= #{kfrqend})
+					)
+				</if>
+
+				<if test="qrrqstart != null and qrrqstart != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '3'
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and to_char(rwrq.sjjsrq,'YYYY-MM-dd') &gt;= #{qrrqstart}
+					)
+				</if>
+				<if test="qrrqend != null and qrrqend != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '3'
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and to_char(rwrq.sjjsrq,'YYYY-MM-dd') &lt;= #{qrrqend}
+					)				</if>
+				<if test="csrqstart != null and csrqstart != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					left join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '4'
+					where rwrq.rwid = gzgl.rwid and to_char(rwrq.sjjsrq,'YYYY-MM-dd') &gt;= #{csrqstart}
+					)
+				</if>
+				<if test="csrqend != null and csrqend != ''">
+					and exists (
+					select rwrq.rwid from igams_rwrq rwrq
+					right join igams_xmjdxx xmjdxx on xmjdxx.xmjdid = rwrq.xmjdid and xmjdxx.xh = '4'
+					left outer join matridx_xtyh clry on clry.yhid = rwrq.clry
+					where rwrq.rwid = gzgl.rwid and to_char(rwrq.sjjsrq,'YYYY-MM-dd') &lt;= #{csrqend}
+					)
+				</if>
+		</where>
+		order by gzgl.fzr,gzgl.lrsj asc
+	</select>
+
+	<!-- 查询用户所属机构 -->
+	<select id="getYhssjg" parameterType="GzglDto" resultType="GzglDto">
+		select ssjg.yhid,ssjg.jgid
+		from matridx_yhssjg ssjg
+		<where>
+		<trim prefixOverrides="and">
+			<if test="yhid !=null and yhid != ''">
+				and ssjg.yhid = #{yhid}
+			</if>
+		</trim>
+		</where>
+	</select>
+
+	<select id="getYhssjgandjgxx" parameterType="GzglDto" resultType="GzglDto">
+		select yhssjg.jgid,jgxx.jgdm,jgxx.jgmc,wbcx.wbcxmc
+		from matridx_yhssjg yhssjg
+		left join matridx_jgxx jgxx on jgxx.jgid=yhssjg.jgid
+		left join matridx_xtyh xtyh on yhssjg.yhid=xtyh.yhid
+		left join matridx_wbcx wbcx on wbcx.wbcxid = jgxx.wbcxid
+		<where>
+			<trim prefixOverrides="and">
+				<if test="yhid !=null and yhid != ''">
+					and yhssjg.yhid = #{yhid}
+				</if>
+			</trim>
+		</where>
+	</select>
+	<!-- 查询用户未完成的任务 -->
+	<select id="getOverdueTasks" parameterType="gzglDto" resultType="gzglDto">
+	SELECT
+	tb.string_agg,
+	tb.ddid, tb.yhid,
+	tmp.zs
+	FROM
+		(
+		SELECT
+			string_agg ( tab.rwmc || '@' || tab.sl, ',' ),
+			tab.ddid,tab.yhid
+		FROM
+			(
+			SELECT
+				gzgl.rwmc,
+				xtyh.ddid, xtyh.yhid,
+				COALESCE ( COUNT ( rwmc ), 0 ) AS sl
+			FROM
+				igams_gzgl gzgl
+				LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = gzgl.fzr
+			WHERE
+				gzgl.zt = '00'
+				AND gzgl.scbj != '1'
+				and gzgl.rwmc is not null
+				and xtyh.ddid is not null
+			GROUP BY
+				gzgl.rwmc,
+				xtyh.ddid, xtyh.yhid
+			) tab
+		GROUP BY
+			tab.ddid,tab.yhid
+		) tb
+		LEFT JOIN (
+		SELECT COUNT
+			( gzgl.gzid ) zs,
+			xtyh.ddid, xtyh.yhid
+		FROM
+			igams_gzgl gzgl
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = gzgl.fzr
+		WHERE
+			gzgl.scbj = '0'
+			AND gzgl.zt = '00'
+				and gzgl.rwmc is not null
+				and xtyh.ddid is not null
+		GROUP BY
+		xtyh.ddid, xtyh.yhid
+		) tmp ON tmp.ddid = tb.ddid and tmp.yhid = tb.yhid
+	</select>
+	<update id="updateGzglDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_gzgl
+				<set>
+					<if test="item.zt != null and item.zt != ''">
+						,zt=#{item.zt}
+					</if>
+					<if test="item.tgbj != null and item.tgbj != ''">
+						,tgbj=#{item.tgbj}
+					</if>
+					<if test="item.qwwcsj != null and item.qwwcsj != ''">
+						,qwwcsj = cast(#{item.qwwcsj} as TIMESTAMP)
+					</if>
+					<if test="item.qrry != null and item.qrry != ''">
+						,qrry=#{item.qrry}
+					</if>
+					<if test="item.xgry != null and item.xgry != ''">
+						,xgry=#{item.xgry},xgsj = LOCALTIMESTAMP
+					</if>
+					<if test="item.bz != null and item.bz != ''">
+						,bz=#{item.bz}
+					</if>
+					<if test="item.jlbh != null and item.jlbh != ''">
+						,jlbh=#{item.jlbh}
+					</if>
+				</set>
+				<where>
+					gzid=#{item.gzid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+	<select id="getRwrq" parameterType="GzglDto" resultType="GzglDto">
+		select rwid,xmjdid,jhksrq,jhjsrq,sjksrq,sjjsrq,jzrq
+		from igams_rwrq
+		<where>
+			scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+				and rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+				and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</select>
+
+	<update id="modRwrqByRwidAndXmjdid" parameterType="GzglDto">
+		update igams_rwrq set
+		xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="jhksrq !=null and jhksrq != ''">
+			,jhksrq=cast(#{jhksrq} as date)
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+			,jhjsrq=cast(#{jhjsrq} as date)
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,sjksrq=cast(#{sjksrq} as date)
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,sjjsrq=cast(#{sjjsrq} as date)
+		</if>
+        <if test="jzrq !=null and jzrq != ''">
+            ,jzrq=cast(#{jzrq} as date)
+        </if>
+		<if test="clry !=null and clry != ''">
+			,clry=#{clry}
+		</if>
+		<where>
+			scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+				and rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+				and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</update>
+
+	<update id="updateRwrqList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			UPDATE igams_rwrq rwrq
+			SET
+			jhksrq = cast( case when tmp.jhksrq != '' then tmp.jhksrq else null end as date),
+			jhjsrq = cast( case when tmp.jhjsrq != '' then tmp.jhjsrq else null end as date),
+			xgry = tmp.xgry,
+			xgsj=LOCALTIMESTAMP
+			FROM
+			( VALUES
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.rqid},#{item.jhksrq}, #{item.jhjsrq},#{item.xgry}
+				)
+			</foreach>
+			) AS tmp ( rqid,jhksrq,jhjsrq,xgry)
+			WHERE
+			rwrq.rqid = tmp.rqid
+		</if>
+	</update>
+
+
+    <update id="updateRwrqDtos" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_rwrq set xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+            <if test="item.jhksrq !=null and item.jhksrq != ''">
+                ,jhksrq=cast(#{item.jhksrq} as date)
+            </if>
+            <if test="item.jhjsrq !=null and item.jhjsrq != ''">
+                ,jhjsrq=cast(#{item.jhjsrq} as date)
+            </if>
+            <if test="item.sjksrq !=null and item.sjksrq != ''">
+                ,sjksrq=cast(#{item.sjksrq} as date)
+            </if>
+            <if test="item.sjjsrq !=null and item.sjjsrq != ''">
+                ,sjjsrq=cast(#{item.sjjsrq} as date)
+            </if>
+            <if test="item.jzrq !=null and item.jzrq != ''">
+                ,jzrq=cast(#{item.jzrq} as date)
+            </if>
+			<if test="item.clry !=null and item.clry != ''">
+				,clry=#{item.clry}
+			</if>
+            where  rwid=#{item.rwid}
+            and xmjdid=#{item.xmjdid}
+        </foreach>
+    </update>
+
+    <update id="updateXmjdByRwid" parameterType="GzglDto">
+		update igams_xmjdrw
+		set xgry=#{xgry},xgsj=LOCALTIMESTAMP,xmjdid=#{xmjdid}
+		where
+			rwid=#{rwid}
+	</update>
+
+	<insert id="insertRwly" parameterType="GzglDto">
+		insert into igams_rwly(lyid
+		<if test="rwid !=null and rwid != ''">
+			,rwid
+		</if>
+		<if test="lyxx !=null and lyxx != ''">
+			,lyxx
+		</if>
+		,lrry,lrsj,scbj,lylx) values(#{lyid}
+		<if test="rwid !=null and rwid != ''">
+			,#{rwid}
+		</if>
+		<if test="lyxx !=null and lyxx != ''">
+			,#{lyxx}
+		</if>
+		,#{lrry},clock_timestamp(),'0',#{lylx})
+	</insert>
+
+	<select id="getXmjdxx" parameterType="String" resultType="GzglDto">
+		select xmjdid,jdmc
+		from igams_xmjdxx
+		<where>
+			scbj !='1'
+			<if test="xmjdid !=null and xmjdid!=''">
+				and xmjdid=#{xmjdid}
+			</if>
+		</where>
+	</select>
+
+	<select id="getRwlyDtos" parameterType="GzglDto" resultType="GzglDto">
+		select rwly.lyxx,to_char(rwly.lrsj,'MM-DD  HH24:MI') as lrsj,xtyh.zsxm as lrryxm,rwly.lylx
+		from igams_rwly rwly
+		left join matridx_xtyh xtyh on xtyh.yhid=rwly.lrry
+		<where>
+			rwly.scbj!='1' and rwly.rwid=#{rwid} order by rwly.lrsj desc
+		</where>
+	</select>
+
+	<select id="getRwrqDtos" parameterType="GzglDto" resultType="GzglDto">
+		select rwrq.rqid,rwrq.rwid,rwrq.xmjdid,rwrq.jhksrq,rwrq.jhjsrq,rwrq.sjksrq,rwrq.sjjsrq,rwrq.jzrq,jdxx.jdmc,rwrq.jdfs
+		from igams_rwrq rwrq
+		left join igams_xmjdxx jdxx on jdxx.xmjdid = rwrq.xmjdid
+		<where>
+			rwrq.scbj!='1'
+			<if test="rwid !=null and rwid != ''">
+				and rwrq.rwid=#{rwid}
+			</if>
+			<if test="xmjdid !=null and xmjdid != ''">
+				and rwrq.xmjdid=#{xmjdid}
+			</if>
+		</where>
+		order by jdxx.xh asc
+	</select>
+
+	<insert id="insertRwrq" parameterType="GzglDto">
+		insert into igams_rwrq(rqid
+		<if test="rwid !=null and rwid != ''">
+			,rwid
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,xmjdid
+		</if>
+		<if test="jhksrq !=null and jhksrq != ''">
+			,jhksrq
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+			,jhjsrq
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,sjksrq
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,sjjsrq
+		</if>
+		<if test="jzrq !=null and jzrq != ''">
+			,jzrq
+		</if>
+		,lrry,lrsj,scbj) values(#{rqid}
+		<if test="rwid !=null and rwid != ''">
+			,#{rwid}
+		</if>
+		<if test="xmjdid !=null and xmjdid != ''">
+			,#{xmjdid}
+		</if>
+		<if test="jhksrq !=null and jhksrq != ''">
+			,cast(#{jhksrq} as date)
+		</if>
+		<if test="jhjsrq !=null and jhjsrq != ''">
+			,cast(#{jhjsrq}as date)
+		</if>
+		<if test="sjksrq !=null and sjksrq != ''">
+			,cast(#{sjksrq}as date)
+		</if>
+		<if test="sjjsrq !=null and sjjsrq != ''">
+			,cast(#{sjjsrq}as date)
+		</if>
+		<if test="jzrq !=null and jzrq != ''">
+			,cast(#{jzrq}as date)
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<select id="getStatistics" parameterType="GzglDto" resultType="Map">
+		select count(case when (cast(rwrq.jzrq as date) &lt; current_date) then 'cs' end ) as cssl, count(case when (date_part('day',cast(rwrq.jzrq as TIMESTAMP)-cast(CURRENT_DATE as TIMESTAMP))&gt;=0 and date_part('day',cast(rwrq.jzrq as TIMESTAMP)-cast(CURRENT_DATE as TIMESTAMP))&lt;=2) then 'lj' end )as ljsl,
+		(	select count(*) FROM  igams_gzgl WHERE scbj = '0'
+		<if test="fzr !=null and fzr != ''">
+			and fzr=#{fzr}
+		</if>) as zs
+		from igams_gzgl gzgl
+		left join igams_xmjdrw xmjdrw on xmjdrw.rwid=gzgl.rwid
+		left join igams_rwrq rwrq on rwrq.rwid=gzgl.rwid and rwrq.xmjdid=xmjdrw.xmjdid
+		where gzgl.scbj='0' and gzgl.zt!='80' and rwrq.jzrq is not null and date_part('day',cast(rwrq.jzrq as TIMESTAMP)-cast(CURRENT_DATE as TIMESTAMP))&lt;=2
+		<if test="fzr !=null and fzr != ''">
+			and gzgl.fzr=#{fzr}
+		</if>
+	</select>
+	<select id="selectTaskNames" parameterType="GzglDto" resultType="GzglDto">
+		select rwmc
+		from igams_gzgl
+		<where>
+			scbj='0' and rwmc is not null
+			group by rwmc
+		</where>
+	</select>
+	<select id="selectInstitution" parameterType="GzglDto" resultType="GzglDto">
+		select jgxx.jgid,jgxx.jgmc
+		from igams_gzgl gzgl
+		left join matridx_jgxx jgxx on jgxx.jgid=gzgl.jgid and jgxx.scbj='0'
+		<where>
+			gzgl.scbj='0' and jgxx.jgid is not null
+			group by jgxx.jgid,jgxx.jgmc
+		</where>
+	</select>
+
+	<select id="getHomePageTaskStatis" parameterType="GzglDto" resultType="Map">
+		select 	COALESCE(sum(tmp.zrw),0) zrw,
+		COALESCE(sum(tmp.wwc),0) wwc,
+		COALESCE(sum(tmp.yyq),0) yyq,
+		round((1-COALESCE(sum(tmp.wwc),0)/ COALESCE(sum(tmp.zrw),1))*100,2) wcl from (select
+		count(gzgl.gzid) zrw,
+		case when gzgl.zt!='80' then count(gzgl.gzid)  else 0 end wwc,
+		case when gzgl.zt!='80' and now()>=cast(gzgl.qwwcsj as date)+1  then count(gzgl.gzid)  else 0 end yyq
+		from
+		igams_gzgl gzgl
+		where
+		gzgl.scbj = '0' and
+		gzgl.fzr = #{yhid}
+		group by gzgl.zt,gzgl.qwwcsj
+		)tmp
+	</select>
+	
+	<select id="getJlbhSerial" parameterType="String" resultType="String">
+		select
+		lpad(cast((cast(coalesce(MAX(substring(jlbh, LENGTH(jlbh)-strpos(reverse(jlbh), '-')+ 2, LENGTH(jlbh))),
+		'0') as numeric) + 1) as VARCHAR),
+		2,
+		'0') serial
+		from
+		igams_gzgl
+		where
+		scbj = '0'
+		and jlbh like #{jlbh}||'%' and ywid!=#{ywid}
+
+	</select>
+
+	<select id="getTrainInfo" parameterType="GzglDto" resultType="GzglDto">
+		select to_char(gzgl.qwwcsj,'YYYY-MM-DD') as qwwcsj,gzgl.jlbh,gzgl.ywid,gzgl.bz
+		,case when pxgl.pxid is not null then pxgl.ks else gzgl.ks end ks
+		,case when pxgl.pxid is not null then px_pxfs.csmc else gz_pxfs.csmc end pxfsmc,gzgl.ywmc,gzgl.tgbj
+		,case when pxgl.pxid is not null then px_ssgs.csmc else gz_ssgs.csmc end ssgsmc,gzgl.gzid,
+		case when pxgl.ndpxid is not null or gzgl.sfnd ='1' then '1' else '0' end sfnd
+		FROM
+		igams_gzgl gzgl
+		LEFT OUTER JOIN igams_pxgl pxgl ON pxgl.pxid = gzgl.ywid and pxgl.scbj='0'
+		LEFT OUTER JOIN matridx_jcsj gz_pxfs ON gz_pxfs.csid = gzgl.pxfs and gz_pxfs.scbj='0'
+		LEFT OUTER JOIN matridx_jcsj px_pxfs ON px_pxfs.csid = pxgl.pxfs and px_pxfs.scbj='0'
+		LEFT OUTER JOIN matridx_jcsj gz_ssgs ON gz_ssgs.csid = gzgl.ssgs and gz_ssgs.scbj='0'
+		LEFT OUTER JOIN matridx_jcsj px_ssgs ON px_ssgs.csid = pxgl.ssgs and px_ssgs.scbj='0'
+		<where>
+			gzgl.scbj='0' and gzgl.glbj ='1' and gzgl.fzr=#{fzr} and (gzgl.sfqd='1' or gzgl.sfqd is null)
+			<if test="ywmc !=null and ywmc != ''">
+				and gzgl.ywmc like '%'|| #{ywmc}||'%'
+			</if>
+			<if test = "pxlbs != null and pxlbs.length > 0 ">
+				and pxgl.pxlb in
+				<foreach collection="pxlbs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ssgss != null and ssgss.length > 0 "  >
+				and (pxgl.ssgs in
+				<foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				or
+				gzgl.ssgs in
+				<foreach collection="ssgss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>)
+			</if>
+			<if test = "pxfss != null and pxfss.length > 0 "  >
+				and (pxgl.pxfs in
+				<foreach collection="pxfss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+				or
+				gzgl.pxfs in
+				<foreach collection="pxfss" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>)
+			</if>
+			<if test="tgbj !=null and tgbj != '' and tgbj == '1'.toString()">
+				and gzgl.tgbj='1'
+			</if>
+			<if test="tgbj !=null and tgbj != '' and tgbj == '0'.toString()">
+				and (gzgl.tgbj='0' or gzgl.tgbj is null or gzgl.tgbj ='')
+			</if>
+			<if test="sfnd !=null and sfnd != '' and sfnd == '1'.toString()">
+				and (pxgl.ndpxid is not null or gzgl.sfnd ='1')
+			</if>
+			<if test="sfnd !=null and sfnd != '' and sfnd == '0'.toString()">
+				and  (pxgl.ndpxid is null and (gzgl.sfnd ='0' or gzgl.sfnd is null))
+			</if>
+			<if test="qwwcsjstart != null and qwwcsjstart != ''">
+				and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &gt;= #{qwwcsjstart}
+			</if>
+			<if test="qwwcsjend != null and qwwcsjend != ''">
+				and to_char(gzgl.qwwcsj,'YYYY-MM-dd') &lt;= #{qwwcsjend}
+			</if>
+		</where>
+		order by
+		<if test="sortName != null and sortName != ''">
+			${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select>
+	<select id="getDtoTrainSignInPeo" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.fzr,gzgl.fzr yhid,xtyh.yhm,xtyh.zsxm,gzgl.sfqd,gzgl.qwwcsj,gzgl.jlbh,gzgl.tgbj
+		from igams_gzgl gzgl
+		left join matridx_xtyh xtyh on gzgl.fzr = xtyh.yhid
+		where gzgl.scbj='0' and gzgl.ywid =#{pxid} and  gzgl.sfqd is not null and gzgl.sfqd !=''
+	</select>
+	<!-- 更改工作删除标记 -->
+	<update  id="deleteByTrainSignIn" parameterType="GzglDto">
+		update igams_gzgl set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			ywid = #{pxid}
+			and sfqd is not null and sfqd!=''
+			<if test="ids !=null and ids.size > 0">
+				and gzid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+
+	<select id="getConfirmList" parameterType="GzglDto" resultType="GzglDto">
+		select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.ywdz,gzgl.rwid,gzgl.rwmc,gzgl.gzlx,gzgl.rwqx,to_char(gzgl.qwwcsj,'YYYY-MM-dd') qwwcsj,gzgl.wcsj,gzgl.dqjd,gzgl.jgid,gzgl.fzr,gzgl.zt,gzgl.qrry,
+		gzgl.bz,gzgl.lrry,to_char(gzgl.lrsj,'YYYY-MM-DD') AS lrsj,gzgl.xgry,gzgl.xgsj,gzgl.scbj,gzgl.scry,gzgl.scsj,yh2.zsxm AS lrryxm,yh.zsxm,to_char(gzgl.qwwcsj,'YYYY-MM-DD') AS fqwwcsj,to_char(gzgl.wcsj,'YYYY-MM-DD') AS fwcsj
+		,gzgl.yjgzl,gzgl.sjgzl,xmjdrw.xmjdid,rwjb.cskz1 as rwjbcskz1,rwjb.csmc as jjdmc,xmjdxx.jdmc,xmjdrw.fs,rwjb.csdm rwjbdm,rwrq.jdfs
+		from igams_gzgl gzgl
+		left outer join igams_xmjdrw xmjdrw on xmjdrw.rwid = gzgl.rwid
+		LEFT OUTER JOIN igams_xmjdxx xmjdxx ON xmjdrw.xmjdid = xmjdxx.xmjdid
+		left outer join igams_rwrq rwrq on xmjdrw.xmjdid=rwrq.xmjdid and rwrq.rwid=gzgl.rwid and rwrq.scbj='0'
+		left outer join matridx_jcsj rwjb on rwjb.csid= xmjdrw.rwjb and rwjb.scbj='0'
+		left outer join matridx_xtyh yh on gzgl.fzr = yh.yhid
+		left outer join matridx_xtyh yh2 on gzgl.lrry = yh2.yhid
+		<where>
+			((gzgl.qrry = #{qrry} and gzgl.zt = '10') or (gzgl.fzr = #{fzr} and gzgl.zt = '00')) and gzgl.scbj != '1'
+		</where>
+	</select>
+	<select id="getRemindTrainInfo" parameterType="GzglDto" resultType="Map">
+		select xtyh.yhm,xtyh.ddid,tmp.jgid,count(xtyh.yhm) wwcts  from
+		<foreach collection="mapList" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select
+			#{item.jgid} jgid,#{item.zjgids} zjgids,#{item.bmzgs} bmzgs
+		</foreach>
+		left join matridx_yhssjg yhssjg on POSITION(yhssjg.jgid in tmp.zjgids) > 0
+		left join matridx_xtyh fzr on fzr.yhid = yhssjg.yhid and fzr.scbj ='0'
+		left join igams_gzgl gzgl on gzgl.fzr = fzr.yhid and gzgl.scbj='0' and gzgl.glbj ='1'  and gzgl.sfqd is null and gzgl.tgbj ='0'
+		left join matridx_xtyh xtyh on xtyh.ddid in (SELECT regexp_split_to_table(tmp.bmzgs,E'[\\s,]+')) and xtyh.scbj ='0'
+		left join matridx_yhqtxx yhqtxx on yhqtxx.yhid = xtyh.yhid and yhqtxx.wbcxid = #{wbcxid}
+		where gzgl.qwwcsj is not null and (cast(gzgl.qwwcsj as date) - cast(now() as date)  &lt;= cast(#{txts} as numeric) or cast(now() as date) &gt;= cast(gzgl.qwwcsj as date)) and yhqtxx.yhid is not null
+		group by xtyh.yhm,xtyh.ddid,tmp.jgid
+	</select>
+	<select id="getRemindTrainGroupPeo" parameterType="GzglDto" resultType="Map">
+		select fzr.zsxm,count(fzr.yhid) sl  from
+		<foreach collection="mapList" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select
+			#{item.jgid} jgid,#{item.zjgids} zjgids
+		</foreach>
+		left join matridx_yhssjg yhssjg on POSITION(yhssjg.jgid in tmp.zjgids) > 0
+		left join matridx_xtyh fzr on fzr.yhid = yhssjg.yhid and fzr.scbj ='0'
+		left join igams_gzgl gzgl on gzgl.fzr = fzr.yhid and gzgl.scbj='0' and gzgl.glbj ='1'  and gzgl.sfqd is null and gzgl.tgbj ='0'
+		where gzgl.qwwcsj is not null and (cast(gzgl.qwwcsj as date) - cast(now() as date)  &lt;= cast(#{txts} as numeric) or cast(now() as date) &gt;= cast(gzgl.qwwcsj as date))
+		group by fzr.zsxm
+	</select>
+	<select id="getRemindTrainList" parameterType="GzglDto" resultType="Map">
+		select fzr.zsxm,to_char(gzgl.qwwcsj,'yyyy-MM-dd') qwwcsj,pxgl.pxbt  from
+		<foreach collection="mapList" item="item" index="index" separator=" union all" open=" (" close=") tmp">
+			select
+			#{item.jgid} jgid,#{item.zjgids} zjgids
+		</foreach>
+		left join matridx_yhssjg yhssjg on POSITION(yhssjg.jgid in tmp.zjgids) > 0
+		left join matridx_xtyh fzr on fzr.yhid = yhssjg.yhid and fzr.scbj ='0'
+		left join igams_gzgl gzgl on gzgl.fzr = fzr.yhid and gzgl.scbj='0' and gzgl.glbj ='1'  and gzgl.sfqd is null and gzgl.tgbj ='0'
+		left join igams_pxgl pxgl on pxgl.pxid = gzgl.ywid and pxgl.scbj ='0'
+		where gzgl.qwwcsj is not null  and pxgl.pxid is not null and (cast(gzgl.qwwcsj as date) - cast(now() as date)  &lt;= cast(#{txts} as numeric) or cast(now() as date) &gt;= cast(gzgl.qwwcsj as date))
+		order by gzgl.qwwcsj
+	</select>
+
+	<select id="getDtoTrainXh" parameterType="GzglDto" resultType="String">
+		select tmp2.row_num as xh
+		from (
+			select tmp.gzid,tmp.ywid,tmp.pxid,ROW_NUMBER() OVER (ORDER BY lrsj desc) AS row_num
+			from (select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.rwmc,gzgl.zt,yh.zsxm fzr,
+			to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,to_char(gzgl.lrsj,'YYYY-MM-DD') lrsj,'0' sfgk,pxgl.sfcs
+			FROM
+			igams_pxgl pxgl
+			LEFT OUTER JOIN igams_gzgl gzgl ON pxgl.pxid = gzgl.ywid
+			LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = gzgl.ywid
+			LEFT OUTER JOIN matridx_xtyh yh ON gzgl.fzr = yh.yhid
+			left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+			left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+			<where>
+				gzgl.scbj!='1' and fj.ywlx='IMP_TRAIN_PICTURE' and gzgl.sfqd is null
+				<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+					and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+				</if>
+				<if test="ddid !=null and ddid != ''">
+					and  yh.ddid=#{ddid}
+				</if>
+				<if test=" zlbdm !=null and zlbdm != ''">
+					and zlb.csdm = #{zlbdm}
+				</if>
+			</where>
+			union all
+			select  'admin' gzid,pxgl.pxid,pxgl.pxbt ywmc,lb.csmc rwmc,'00' zt,
+			'admin' fzr,to_char(pxgl.gqsj,'YYYY-MM-DD') qwwcsj,
+			pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,
+			to_char(pxgl.lrsj,'YYYY-MM-DD') lrsj,'1' sfgk,'0' as sfcs
+			from igams_pxgl pxgl
+			LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = pxgl.pxid
+			left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+			left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+			where pxgl.sfgk ='1' and pxgl.scbj!='1' and fj.ywlx='IMP_TRAIN_PICTURE'
+			<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+				and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+			</if>
+			<if test=" zlbdm !=null and zlbdm != ''">
+				and zlb.csdm = #{zlbdm}
+			</if>
+			)tmp
+			order by tmp.lrsj desc)tmp2
+		where
+		<if test=" pxid !=null and pxid != ''">
+			tmp2.pxid=#{pxid}
+		</if>
+		<if test=" gzid !=null and gzid != ''">
+			tmp2.gzid=#{gzid}
+		</if>
+	</select>
+
+	<select id="getDtoTrainFjid" parameterType="GzglDto" resultType="GzglDto">
+		select tmp2.row_num as xh,tmp2.fjid
+		from (
+		select tmp.gzid,tmp.fjid,tmp.pxid,ROW_NUMBER() OVER (ORDER BY lrsj desc) AS row_num
+		from (select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.rwmc,gzgl.zt,yh.zsxm fzr,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,to_char(gzgl.lrsj,'YYYY-MM-DD') lrsj,'0' sfgk,pxgl.sfcs
+		FROM
+		igams_pxgl pxgl
+		LEFT OUTER JOIN igams_gzgl gzgl ON pxgl.pxid = gzgl.ywid
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = gzgl.ywid
+		LEFT OUTER JOIN matridx_xtyh yh ON gzgl.fzr = yh.yhid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		<where>
+			gzgl.scbj!='1' and fj.ywlx='IMP_TRAIN' and gzgl.sfqd is null
+			<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+				and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+			</if>
+			<if test="ddid !=null and ddid != ''">
+				and  yh.ddid=#{ddid}
+			</if>
+			<if test=" zlbdm !=null and zlbdm != ''">
+				and zlb.csdm = #{zlbdm}
+			</if>
+		</where>
+		union all
+		select  'admin' gzid,pxgl.pxid,pxgl.pxbt ywmc,lb.csmc rwmc,'00' zt,
+		'admin' fzr,to_char(pxgl.gqsj,'YYYY-MM-DD') qwwcsj,
+		pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,
+		to_char(pxgl.lrsj,'YYYY-MM-DD') lrsj,'1' sfgk,'0' as sfcs
+		from igams_pxgl pxgl
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = pxgl.pxid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		where pxgl.sfgk ='1' and pxgl.scbj!='1' and fj.ywlx='IMP_TRAIN'
+		<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+			and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+		</if>
+		<if test=" zlbdm !=null and zlbdm != ''">
+			and zlb.csdm = #{zlbdm}
+		</if>
+		)tmp
+		order by tmp.lrsj desc)tmp2
+		where
+		<if test="listFlag != null and listFlag != '' and listFlag=='1'.toString()">
+			cast(tmp2.row_num as decimal)=cast(#{xh} as decimal)+1
+		</if>
+		<if test="listFlag != null and listFlag != '' and listFlag=='0'.toString()">
+			cast(tmp2.row_num as decimal)=cast(#{xh} as decimal)-1
+		</if>
+	</select>
+
+	<select id="getStringTrainFjid" parameterType="GzglDto" resultType="String">
+		select count(tmp2.row_num)
+		from (
+		select tmp.gzid,tmp.fjid,tmp.pxid,ROW_NUMBER() OVER (ORDER BY lrsj desc) AS row_num
+		from (select gzgl.gzid,gzgl.ywid,gzgl.ywmc,gzgl.rwmc,gzgl.zt,yh.zsxm fzr,
+		to_char(gzgl.qwwcsj,'YYYY-MM-DD') qwwcsj,pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,to_char(gzgl.lrsj,'YYYY-MM-DD') lrsj,'0' sfgk,pxgl.sfcs
+		FROM
+		igams_pxgl pxgl
+		LEFT OUTER JOIN igams_gzgl gzgl ON pxgl.pxid = gzgl.ywid
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = gzgl.ywid
+		LEFT OUTER JOIN matridx_xtyh yh ON gzgl.fzr = yh.yhid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		<where>
+			gzgl.scbj!='1' and fj.ywlx='IMP_TRAIN' and gzgl.sfqd is null
+			<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+				and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+			</if>
+			<if test="ddid !=null and ddid != ''">
+				and  yh.ddid=#{ddid}
+			</if>
+			<if test=" zlbdm !=null and zlbdm != ''">
+				and zlb.csdm = #{zlbdm}
+			</if>
+		</where>
+		union all
+		select  'admin' gzid,pxgl.pxid,pxgl.pxbt ywmc,lb.csmc rwmc,'00' zt,
+		'admin' fzr,to_char(pxgl.gqsj,'YYYY-MM-DD') qwwcsj,
+		pxgl.pxid,fj.fjid,pxgl.gqsj,lb.csmc pxlbmc,
+		to_char(pxgl.lrsj,'YYYY-MM-DD') lrsj,'1' sfgk,'0' as sfcs
+		from igams_pxgl pxgl
+		LEFT OUTER JOIN matridx_fjcfb fj ON fj.ywid = pxgl.pxid
+		left join matridx_jcsj lb on lb.csid=pxgl.pxlb
+		left join matridx_jcsj zlb on zlb.csid=pxgl.pxzlb
+		where pxgl.sfgk ='1' and pxgl.scbj!='1' and fj.ywlx='IMP_TRAIN'
+		<if test="gqsjbj != null and gqsjbj != '' and gqsjbj=='0'.toString()">
+			and to_char(pxgl.gqsj,'YYYY-MM-dd') &gt; #{gqsj}
+		</if>
+		<if test=" zlbdm !=null and zlbdm != ''">
+			and zlb.csdm = #{zlbdm}
+		</if>
+		)tmp
+		order by tmp.lrsj desc)tmp2
+		where
+		<if test="listFlag != null and listFlag != '' and listFlag=='1'.toString()">
+			cast(tmp2.row_num as decimal)>cast(#{xh} as decimal)
+		</if>
+		<if test="listFlag != null and listFlag != '' and listFlag=='0'.toString()">
+			cast(#{xh} as decimal)>cast(tmp2.row_num as decimal)
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.web.dao.post.IXtjsDao" >
+	<select id="getAllJsAndChecked" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js,jsmc,js.jsms,js.fjsid,js.sylx
+		<if test="yhid != null and yhid != ''">
+			,yj.yhid
+		</if>
+		from matridx_xtjs js
+		<if test="yhid != null and yhid != ''">
+		left outer join matridx_yhjs yj on js.jsid = yj.jsid and yj.yhid =#{yhid}
+		</if>
+		<where>
+			js.scbj ='0'
+		</where>
+		order by jsdm
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getModelListExceptSelf" parameterType="XtjsModel" resultType="XtjsModel">
+		select jsid,jsmc
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid != #{jsid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getPagedDtoList" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,
+		  fjs.jsdm fjsdm,fjs.jsmc fjsmc,jc.csmc sylxmc 
+		from matridx_xtjs js
+		left outer join matridx_xtjs fjs on js.fjsid = fjs.jsid
+		left outer join matridx_jcsj jc on jc.csid = js.sylx
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid = #{jsid}
+			</if>
+			<if test="jsdm != null and jsdm != ''">
+				and js.jsdm like '%'||#{jsdm}||'%'
+			</if>
+			<if test="jsmc != null and jsmc != ''">
+				and js.jsmc like '%'||#{jsmc}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getDtoById" parameterType="String" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj,
+		  fjs.jsdm fjsdm,fjs.jsmc fjsmc,jc.csmc sylxmc,jc.cskz1 sylxdz
+		from matridx_xtjs js
+		left outer join matridx_xtjs fjs on js.fjsid = fjs.jsid
+		left outer join matridx_jcsj jc on jc.csid = js.sylx
+		<where>
+			js.scbj='0' and js.jsid = #{jsid}
+		</where>
+	</select>
+	
+	<!-- 查询用户列角色表 -->
+	<select id="getDto" parameterType="XtjsDto" resultType="XtjsDto">
+		select js.jsid,js.jsdm,js.jsmc,js.jsms,js.fjsid,js.sylx,js.dwxdbj,
+		  js.lrry,js.lrsj,js.xgry,js.xgsj,js.scry,js.scsj,js.scbj
+		from matridx_xtjs js
+		<where>
+			js.scbj='0'
+			<if test="jsid != null and jsid != ''">
+				and js.jsid = #{jsid}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 插入系统用户信息 -->
+	<insert id="insert" parameterType="XtjsModel">
+		insert into matridx_xtjs(jsid,jsdm,jsmc,jsms,fjsid,sylx,dwxdbj
+		,lrry,lrsj,scbj) values(#{jsid},#{jsdm},#{jsmc},#{jsms},#{fjsid},#{sylx},#{dwxdbj}
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 更新系统用户信息 -->
+	<update  id="update" parameterType="XtjsModel">
+		update matridx_xtjs set 
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="jsdm !=null and jsdm != ''">
+			,jsdm = #{jsdm}
+		</if>
+		<if test="jsmc !=null and jsmc != ''">
+			,jsmc = #{jsmc}
+		</if>
+		<if test="jsms !=null and jsms != ''">
+			,jsms = #{jsms}
+		</if>
+		<if test="fjsid !=null and fjsid != ''">
+			,fjsid = #{fjsid}
+		</if>
+		<if test="sylx !=null and sylx != ''">
+			,sylx = #{sylx}
+		</if>
+		<if test="dwxdbj !=null and dwxdbj != ''">
+			,dwxdbj = #{dwxdbj}
+		</if>
+		<where>
+			jsid = #{jsid}
+		</where>
+	</update>
+	
+	<!-- 删除系统用户信息 -->
+	<update  id="delete" parameterType="XtjsModel">
+		update matridx_xtjs set scbj ='1',
+		scry = #{scry},scsj = LOCALTIMESTAMP
+		<where>
+			<if test="ids !=null and ids.size > 0">
+	        	or jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="jsid !=null and jsid != ''">
+	        	or jsid = #{jsid}
+			</if>
+		</where>
+	</update>
+</mapper>

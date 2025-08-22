@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.common.dao.post.ISjyctzDao" >
+
+	<insert id="insertList" parameterType="List">
+		insert into igams_sjyctz(yctzid,ycid,lx,ryid)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(
+				#{item.yctzid},#{item.ycid},#{item.lx},#{item.ryid}
+				)
+			</foreach>
+		</if>
+		on conflict(ycid,ryid) DO NOTHING
+	</insert>
+	
+	<!-- 删除异常通知人员 -->
+	<delete id="delete" parameterType="SjyctzDto">
+		delete from igams_sjyctz
+		<where>
+			ycid=#{ycid}
+		</where>
+	</delete>
+	
+	<!-- 查询异常通知人员 -->
+	<select id="getDtoList" parameterType="SjyctzDto" resultType="SjyctzDto">
+		select yctz.ycid,yctz.lx,yctz.ryid id,case when js.jsmc is not null then js.jsmc else yh.zsxm end  mc,yh.ddid,yh.ddtxlj,yh.yhm,yctz.ryid
+		from igams_sjyctz yctz
+		left join matridx_xtjs js on js.jsid=yctz.ryid
+		left join matridx_xtyh yh on yh.yhid=yctz.ryid
+		<where>
+			ycid=#{ycid}
+		</where>
+	</select>
+
+	<select id="getYhjsList" parameterType="SjyctzDto" resultType="SjyctzDto">
+		select yh.zsxm,yh.ddid,yh.ddtxlj,yh.yhm,yh.yhid ryid
+		from matridx_yhjs yhjs
+		left outer join matridx_xtyh yh on yh.yhid = yhjs.yhid
+		<where>
+			yh.scbj='0'
+			<if test="ids !=null and ids.size > 0">
+				and yhjs.jsid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+</mapper>
