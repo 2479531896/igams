@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.ICnvjgDao">
+    <select id="getPagedDtoList" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select cnvjg.cnvjgid,
+        cnvjg.wkbh,
+        cnvjg.wkcxid,
+        cnvjg.sjl,
+        cnvjg.bdxls,
+        cnvjg.uniqxls,
+        cnvjg.gchl,
+        cnvjg.waviness,
+        cnvjg.karyotype,
+        cnvjg.xb,
+        cnvjg.zszl,
+        cnvjg.shjg,
+        cnvjg.aijg,
+        cnvjg.ybtz,
+        cnvjg.sfsh,
+        cnvjg.shbz,
+        cnvjg.sfyfbg,
+        cnvjg.qcfs,
+        cnvjg.pdyy,
+        shjg.csmc shjgmc,
+        aijg.csmc aijgmc,
+        zszl.csmc zszlmc,
+        pdyy.csmc pdyymc,
+        sjxx.hzxm,
+        jcsj_yblx.csmc yblxmc,
+        sjxx.sjid,
+        sjxx.nbbm,
+        case
+        when (cnvjg.wkbh like 'MDL004%' AND sjxx.nbbm like 'A%') then '是' else '否' end as sfonco
+        from igams_cnvjg cnvjg
+        left join matridx_jcsj shjg on shjg.csid = cnvjg.shjg
+        left join matridx_jcsj aijg on aijg.csid = cnvjg.aijg
+        left join matridx_jcsj zszl on zszl.csid = cnvjg.zszl
+        left join matridx_jcsj pdyy on pdyy.csid = cnvjg.pdyy
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid and sjxx.scbj='0'
+        left join matridx_jcsj jcsj_yblx on sjxx.yblx = jcsj_yblx.csid
+        left join igams_yyxx yyxx on yyxx.dwid= sjxx.sjdw
+        left join igams_sjdwxx dwxx on dwxx.dwid = sjxx.ks
+        left outer join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        <where>
+            cnvjg.scbj='0' and cnvjg.wkbh not like 'MDL002-X%' and cnvjg.wkbh not like 'MDL003-%' and cnvjg.wkbh not like 'MDL002-NC-X%'and wkcx.wkbh not like 'MDX%'
+            and ((wkcx.wkbh not like '%tNGS%' AND hb.bgfs IS NULL AND sjxx.sjid IS not NULL )
+            or (wkcx.wkbh  like '%tNGS%' AND sjxx.sjid IS not NULL))
+            <if test="wkbh != null and wkbh != ''">
+                and cnvjg.wkbh like '%'||#{wkbh}||'%'
+            </if>
+            <if test="sfsh != null and sfsh != ''">
+                and cnvjg.sfsh like '%'||#{sfsh}||'%'
+            </if>
+            <if test="shjg != null and shjg != ''">
+                and cnvjg.shjg like '%'||#{shjg}||'%'
+            </if>
+            <if test="aijg != null and aijg != ''">
+                and cnvjg.aijg like '%'||#{aijg}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm like '%'||#{hzxm}||'%'
+            </if>
+            <if test="zszl != null and zszl != ''">
+                and cnvjg.zszl like '%'||#{zszl}||'%'
+            </if>
+            <if test="pdyy != null and pdyy != ''">
+                and cnvjg.pdyy like '%'||#{pdyy}||'%'
+            </if>
+            <if test="qqzd != null and qqzd != ''">
+                and sjxx.qqzd like '%'||#{qqzd}||'%'
+            </if>
+            <if test="yblxmc != null and yblxmc != ''">
+                and jcsj_yblx.csmc like '%'||#{yblxmc}||'%'
+            </if>
+            <if test="sjdw != null and sjdw != ''">
+                and yyxx.dwmc like '%'||#{sjdw}||'%'
+            </if>
+            <if test="ks != null and ks != ''">
+                and dwxx.dwmc like '%'||#{ks}||'%'
+            </if>
+            <if test="cnvxq != null and cnvxq != ''">
+                and tmp.xq like '%'||#{cnvxq}||'%'
+            </if>
+            <if test="cnvjg != null and cnvjg != ''">
+                and tab.jg like '%'||#{cnvjg}||'%'
+            </if>
+            <if test="shbz != null and shbz != ''">
+                and cnvjg.shbz like '%'||#{shbz}||'%'
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(cnvjg.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(cnvjg.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getDtoByXpidAndWkcxId" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select cnvjg.cnvjgid
+        from igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid = cnvjg.cnvjgid
+        where wkcx.xpid=#{xpid} and cnvjg.wkcxid = #{wkcxid}
+    </select>
+    <select id="getDtoById" parameterType="String" resultType="CnvjgDto">
+        select cnvjg.cnvjgid,
+        wkcx.wkbh,
+        wkcx.sjid,
+        wkcx.xpid,
+        sjxx.nbbm,
+        cnvjg.wkcxid,
+        cnvjg.sjl,
+        cnvjg.bdxls,
+        cnvjg.uniqxls,
+        cnvjg.gchl,
+        cnvjg.waviness,
+        cnvjg.karyotype,
+        cnvjg.zszl,
+        cnvjg.shjg,
+        cnvjg.aijg,
+        cnvjg.ybtz,
+        cnvjg.sfsh,
+        cnvjg.shbz,
+        cnvjg.sfyfbg,
+        cnvjg.onresult,
+        round(cast ( cnvjg.qcfs as numeric ),2) as qcfs,
+        cnvjg.pdyy,
+        cnvjg.bdl,
+        shjg.csmc shjgmc,
+        aijg.csmc aijgmc,
+        zszl.csmc zszlmc,
+        pdyy.csmc pdyymc,
+        sjxx.hzxm,
+        dwxx.dwmc ksmc,
+        sjxx.qqzd,
+        jcsj_yblx.csmc yblxmc,
+        sjxx.nl,
+        sjxx.xb,
+        sjxx.ybbh,
+        wkcx.qxhbbg,
+        xpxx.xpm,
+        cnvjg.shry,
+        cnvjg.jyry,
+        case when wkcx.fcjc='1' then '复测'  when wkcx.fcjc='2' then '加测'  when wkcx.fcjc='3' then '去人源' end lxmc
+        from igams_cnvjg cnvjg
+        left join matridx_jcsj shjg on shjg.csid = cnvjg.shjg
+        left join matridx_jcsj aijg on aijg.csid = cnvjg.aijg
+        left join matridx_jcsj zszl on zszl.csid = cnvjg.zszl
+        left join matridx_jcsj pdyy on pdyy.csid = cnvjg.pdyy
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_xpxx xpxx on xpxx.xpid=cnvjg.xpid and xpxx.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid and sjxx.scbj='0'
+        left join matridx_jcsj jcsj_yblx on sjxx.yblx = jcsj_yblx.csid
+        left join igams_yyxx yyxx on yyxx.dwid= sjxx.sjdw
+        left join igams_sjdwxx dwxx on dwxx.dwid = sjxx.ks
+        <where>
+            cnvjg.scbj='0'
+            and cnvjg.cnvjgid=#{cnvjgid}
+        </where>
+    </select>
+
+    <select id="getDtoList" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select cnvjg.cnvjgid,
+        wkcx.wkbh,
+        wkcx.sjid,
+        wkcx.xpid,
+        sjxx.nbbm,
+        cnvjg.wkcxid,
+        cnvjg.sjl,
+        cnvjg.bdxls,
+        cnvjg.uniqxls,
+        cnvjg.gchl,
+        cnvjg.waviness,
+        cnvjg.karyotype,
+        cnvjg.zszl,
+        cnvjg.shjg,
+        cnvjg.aijg,
+        cnvjg.ybtz,
+        cnvjg.sfsh,
+        cnvjg.shbz,
+        cnvjg.sfyfbg,
+        cnvjg.qcfs,
+        cnvjg.pdyy,
+        cnvjg.onresult,
+        shjg.csmc shjgmc,
+        aijg.csmc aijgmc,
+        zszl.csmc zszlmc,
+        pdyy.csmc pdyymc,
+        sjxx.hzxm,
+        dwxx.dwmc ksmc,
+        sjxx.qqzd,
+        jcsj_yblx.csmc yblxmc,
+        sjxx.nl,
+        sjxx.xb,
+        sjxx.ybbh,
+        wkcx.qxhbbg,
+        cnvjg.bdl,
+        wkcx.zt,
+        xpxx.xpm,
+        cnvjg.shry,
+        cnvjg.jyry,
+        (select count(cnvjgid) from igams_cnvjg
+        where wkbh != cnvjg.wkbh and wkbh like '%'||sjxx.nbbm||'%' and wkbh not like '%NC%' and wkbh not like '%PC%')as othersize,
+        case
+        when (cnvjg.wkbh like 'MDL004%' AND sjxx.nbbm like 'A%') then '是' else '否' end as sfonco
+        from igams_cnvjg cnvjg
+        left join matridx_jcsj shjg on shjg.csid = cnvjg.shjg
+        left join matridx_jcsj aijg on aijg.csid = cnvjg.aijg
+        left join matridx_jcsj zszl on zszl.csid = cnvjg.zszl
+        left join matridx_jcsj pdyy on pdyy.csid = cnvjg.pdyy
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid and sjxx.scbj='0'
+        left join matridx_jcsj jcsj_yblx on sjxx.yblx = jcsj_yblx.csid
+        left join igams_yyxx yyxx on yyxx.dwid= sjxx.sjdw
+        left join igams_sjdwxx dwxx on dwxx.dwid = sjxx.ks
+        left join igams_xpxx xpxx on wkcx.xpid=xpxx.xpid
+        left outer join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+
+        <where>
+            cnvjg.scbj='0' and hb.bgfs is null
+            <if test="xpid != null and xpid !=''">
+                and wkcx.xpid=#{xpid}
+            </if>
+            <if test="sysid != null and sysid !=''">
+                and wkcx.sysid=#{sysid}
+            </if>
+            <if test="filter != null and filter != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= #{cxkssjstart})
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= #{cxkssjend})
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+
+    </select>
+
+    <update id="update" parameterType="CnvjgDto">
+        update igams_cnvjg
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="wkbh != null and wkbh !=''">
+                ,wkbh=#{wkbh}
+            </if>
+            <if test="wkcxid != null and wkcxid !=''">
+                ,wkcxid=#{wkcxid}
+            </if>
+            <if test="sjl != null and sjl !=''">
+                ,sjl=#{sjl}
+            </if>
+            <if test="bdxls != null and bdxls !=''">
+                ,bdxls=#{bdxls}
+            </if>
+            <if test="uniqxls != null and uniqxls !=''">
+                ,uniqxls=#{uniqxls}
+            </if>
+            <if test="gchl != null and gchl !=''">
+                ,gchl=#{gchl}
+            </if>
+            <if test="waviness != null and waviness !=''">
+                ,waviness=#{waviness}
+            </if>
+            <if test="karyotype != null and karyotype !=''">
+                ,karyotype=#{karyotype}
+            </if>
+            <if test="xb != null and xb !=''">
+                ,xb=#{xb}
+            </if>
+            <if test="zszl != null and zszl !=''">
+                ,zszl=#{zszl}
+            </if>
+            <if test="shjg != null and shjg !=''">
+                ,shjg=#{shjg}
+            </if>
+            <if test="aijg != null and aijg !=''">
+                ,aijg=#{aijg}
+            </if>
+            <if test="ybtz != null and ybtz !=''">
+                ,ybtz=#{ybtz}
+            </if>
+            <if test="sfsh != null and sfsh !=''">
+                ,sfsh=#{sfsh}
+            </if>
+            <if test="shbz != null and shbz !=''">
+                ,shbz=#{shbz}
+            </if>
+            <if test="sfyfbg != null and sfyfbg !=''">
+                ,sfyfbg=#{sfyfbg}
+            </if>
+            <if test="qcfs != null and qcfs !=''">
+                ,qcfs=#{qcfs}
+            </if>
+            <if test="pdyy != null and pdyy !='' and pdyy!='null'.toString">
+                ,pdyy=#{pdyy}
+            </if>
+            <if test="pdyy != null and pdyy !='' and pdyy=='null'.toString">
+                ,pdyy=null
+            </if>
+            <if test="shry != null and shry !=''">
+                ,shry=#{shry}
+            </if>
+            <if test="jyry != null and jyry !=''">
+                ,jyry=#{jyry}
+            </if>
+        </set>
+        <where>
+            cnvjgid=#{cnvjgid}
+        </where>
+    </update>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_cnvjg (
+        cnvjgid,
+        wkbh,
+        wkcxid,
+        sjl,
+        bdxls,
+        uniqxls,
+        gchl,
+        waviness,
+        karyotype,
+        xb,
+        zszl,
+        shjg,
+        aijg,
+        ybtz,
+        sfsh,
+        shbz,
+        sfyfbg,
+        qcfs,
+        lrry,
+        lrsj,
+        scbj,
+        pdyy,
+        xpid,
+        bdl
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.cnvjgid},
+                #{item.wkbh},
+                #{item.wkcxid},
+                #{item.sjl},
+                #{item.bdxls},
+                #{item.uniqxls},
+                #{item.gchl},
+                #{item.waviness},
+                #{item.karyotype},
+                #{item.xb},
+                #{item.zszl},
+                #{item.shjg},
+                #{item.aijg},
+                #{item.ybtz},
+                #{item.sfsh},
+                #{item.shbz},
+                #{item.sfyfbg},
+                #{item.qcfs},
+                #{item.lrry},
+                cast(#{item.lrsj} as TIMESTAMP),
+                '0',
+                #{item.pdyy},
+                #{item.xpid},
+                #{item.bdl}
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <insert id="insert" parameterType="CnvjgDto">
+        insert into igams_cnvjg (
+        cnvjgid,
+        wkbh,
+        wkcxid,
+        sjl,
+        bdxls,
+        uniqxls,
+        gchl,
+        waviness,
+        karyotype,
+        xb,
+        zszl,
+        shjg,
+        aijg,
+        ybtz,
+        sfsh,
+        shbz,
+        sfyfbg,
+        qcfs,
+        lrry,
+        lrsj,
+        scbj,
+        pdyy,
+        xpid,
+        bdl,
+        onresult
+        )
+        values
+        (
+            #{cnvjgid},
+            #{wkbh},
+            #{wkcxid},
+            #{sjl},
+            #{bdxls},
+            #{uniqxls},
+            #{gchl},
+            #{waviness},
+            #{karyotype},
+            #{xb},
+            #{zszl},
+            #{shjg},
+            #{aijg},
+            #{ybtz},
+            #{sfsh},
+            #{shbz},
+            #{sfyfbg},
+            #{qcfs},
+            #{lrry},
+            cast(#{lrsj} as TIMESTAMP),
+            '0',
+            #{pdyy},
+            #{xpid},
+            #{bdl},
+            #{onresult}
+            )
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item"
+                     index="index">
+                update  igams_cnvjg
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.karyotype != null and item.karyotype != ''">
+                        , karyotype=#{item.karyotype}
+                    </if>
+                    <if test="item.xb != null and item.xb != ''">
+                        , xb=#{item.xb}
+                    </if>
+                    <if test="item.aijg != null and item.aijg != ''">
+                        , aijg=#{item.aijg}
+                    </if>
+                    <if test="item.qcfs != null and item.qcfs != ''">
+                        , qcfs=#{item.qcfs}
+                    </if>
+                    <if test="item.onresult != null and item.onresult != ''">
+                        , onresult=#{item.onresult}
+                    </if>
+                </set>
+                where cnvjgid = #{item.cnvjgid}
+            </foreach>
+        </if>
+
+    </update>
+
+    <select id="getListByWkbhs" resultType="CnvjgDto" parameterType="CnvjgDto">
+        select cnvjgid,wkbh,wkcxid
+        from igams_cnvjg
+        where xpid=#{xpid} and wkbh in
+        <foreach collection="wkbhs" open="(" close=")" separator="," item="items">
+            #{items}
+        </foreach>
+    </select>
+
+
+
+    <select id="getListByTime" parameterType="String" resultType="CnvjgDto">
+        select cnvjg.cnvjgid,
+        wkcx.wkbh,
+        xpxx.xpm
+        from igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_xpxx xpxx on xpxx.xpid=wkcx.xpid and xpxx.scbj='0'
+        <where>
+            cnvjg.scbj='0'
+            and xpxx.xpm like '%'||#{time}||'%'
+        </where>
+    </select>
+
+    <select id="getTodayList" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select cnvjg.cnvjgid,
+        cnvjg.wkbh,
+        cnvjg.wkcxid,
+        cnvjg.uniqxls,
+        cnvjg.gchl,
+        jc_sys.csmc as sysmc,jc_sys.csid as sysid
+        ,sjxx.hzxm,
+        shjg.csmc shjgmc,
+        aijg.csmc aijgmc,
+        zszl.csmc zszlmc,
+        wkcx.wkcxid,
+        wkcx.zt,
+        case
+        when (cnvjg.wkbh like 'MDL004%' AND sjxx.nbbm like 'A%') then '是' else '否' end as sfonco
+        FROM igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        LEFT JOIN igams_sjxx sjxx ON wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        left join igams_xpxx xpxx on xpxx.xpid=cnvjg.xpid and xpxx.scbj='0'
+        LEFT JOIN matridx_jcsj jc_cx ON jc_cx.csid = xpxx.cxyid AND jc_cx.scbj = '0'
+        LEFT JOIN matridx_jcsj jc_sys ON jc_cx.fcsid = jc_sys.csid AND jc_sys.scbj = '0'
+        left join matridx_jcsj shjg on shjg.csid = cnvjg.shjg and shjg.scbj='0'
+        left join matridx_jcsj aijg on aijg.csid = cnvjg.aijg and aijg.scbj='0'
+        left join matridx_jcsj zszl on zszl.csid = cnvjg.zszl and zszl.scbj='0'
+        left outer join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        <where>
+            cnvjg.scbj='0'
+            <if test="cxkssjstart != null and cxkssjstart != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= #{cxkssjstart})
+            </if>
+            <if test="cxkssjend != null and cxkssjend != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= #{cxkssjend})
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        and wkcx.wkbh not like 'MDL002-X%' and wkcx.wkbh not like 'MDL003-%' and wkcx.wkbh not like 'MDL002-NC-X%' and wkcx.wkbh not like 'MDX%'
+        and ((wkcx.wkbh not like '%tNGS%' AND hb.bgfs IS NULL AND sjxx.sjid IS not NULL )
+        or (wkcx.wkbh  like '%tNGS%' AND sjxx.sjid IS not NULL))
+
+        order by jc_sys.cspx asc
+    </select>
+
+    <select id="getPagedLaboratoryList" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select sys.csmc as sysmc,sys.csid as sysid,
+        case WHEN tmp.yshs is null then '0' else tmp.yshs end yshs,
+        case WHEN tmp1.yfss is null then '0' else tmp1.yfss end yfss,
+        case WHEN tab.wkzs is null then '0' else tab.wkzs  end wkzs,
+        case WHEN tab1.oncozs is null then '0' else tab1.oncozs  end oncozs
+        from matridx_jcsj sys
+        left join
+        (
+        select count(wkcx.sysid) as yshs,wkcx.sysid
+        from igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid
+        left join igams_xpxx xpxx on xpxx.xpid=wkcx.xpid
+        left join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        where cnvjg.scbj='0' and cnvjg.sfsh='1' and hb.bgfs is null
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= to_char(CURRENT_DATE-1,'yyyy-mm-dd 16:00:00'))
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= to_char(CURRENT_DATE,'yyyy-mm-dd 16:00:00'))
+        group by wkcx.sysid)
+        tmp on tmp.sysid=sys.csid
+        left join
+        (
+        select count(wkcx.sysid) as yfss,wkcx.sysid
+
+        from igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid=cnvjg.wkcxid and wkcx.scbj='0'
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid
+        left join igams_xpxx xpxx on xpxx.xpid=wkcx.xpid
+        left join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        where cnvjg.scbj='0' and cnvjg.sfyfbg='1' and hb.bgfs is null
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= to_char(CURRENT_DATE-1,'yyyy-mm-dd 16:00:00'))
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= to_char(CURRENT_DATE,'yyyy-mm-dd 16:00:00'))
+        group by wkcx.sysid)
+        tmp1 on tmp1.sysid=sys.csid
+        left join (
+        select count(sysid) as wkzs,sysid
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid
+        left join igams_xpxx xpxx on xpxx.xpid=wkcx.xpid
+        where wkcx.scbj='0'
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= to_char(CURRENT_DATE-1,'yyyy-mm-dd 16:00:00'))
+        and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= to_char(CURRENT_DATE,'yyyy-mm-dd 16:00:00'))
+        group by wkcx.sysid) tab on tab.sysid=sys.csid
+        LEFT JOIN (
+        SELECT COUNT
+        ( SYSID ) AS oncozs,
+        SYSID
+        FROM
+        igams_cnvjg cnvjg
+        left join igams_wkcx wkcx  on wkcx.wkcxid = cnvjg.wkcxid
+        LEFT JOIN igams_sjxx sjxx ON sjxx.sjid = wkcx.sjid
+        LEFT JOIN igams_xpxx xpxx ON xpxx.xpid = wkcx.xpid
+        WHERE
+        wkcx.scbj = '0'
+        AND ( to_char( xpxx.cxkssj, 'yyyy-mm-dd hh24:MI:ss' ) &gt;= to_char( CURRENT_DATE - 1, 'yyyy-mm-dd 16:00:00' ) )
+        AND ( to_char( xpxx.cxkssj, 'yyyy-mm-dd hh24:MI:ss' ) &lt;= to_char( CURRENT_DATE, 'yyyy-mm-dd 16:00:00' ) )
+        GROUP BY
+        wkcx.SYSID
+        ) tab1 ON tab1.SYSID = sys.csid
+        <where>
+            scbj='0' and jclb=#{jclb}
+            <if test="sysmc != null and sysmc != ''">
+                and sys.csmc like '%'||#{sysmc}||'%'
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sys.csid in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getCnvjgByNbbm" parameterType="CnvjgDto" resultType="CnvjgDto">
+        select wkcx.wkbh,wkcx.sjid,wkcx.wkcxid,cnvjg.sfyfbg,wkcx.xpid,cnvjg.cnvjgid
+        from igams_cnvjg cnvjg
+        left join igams_wkcx wkcx on wkcx.wkcxid = cnvjg.wkcxid
+        left join igams_sjxx  sjxx on sjxx.sjid=wkcx.sjid
+        where sjxx.nbbm like '%'||#{nbbm}||'%'
+        and wkcx.wkbh !=#{wkbh} and wkcx.wkbh not like '%NC%' and wkcx.wkbh not like '%PC%'
+    </select>
+</mapper>

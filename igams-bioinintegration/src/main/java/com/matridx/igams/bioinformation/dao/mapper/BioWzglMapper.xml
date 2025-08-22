@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IBioWzglDao">
+
+    <update id="updateList" parameterType="BioWzglDto">
+        <if test="list != null and list.size()>0">
+            insert into igams_wzgl
+            (wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,scbj,fid,fldj,fl,bdlb,wzdl,zbx) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.wzid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.wzlx},#{item.wzzs},#{item.scbj},#{item.fid}
+                ,#{item.fldj},#{item.fl},#{item.bdlb},#{item.wzdl},#{item.zbx})
+            </foreach>
+        </if>
+        on conflict(wzid) do update set wzywm=excluded.wzywm,wzzwm=excluded.wzzwm,wzfl=excluded.wzfl,wzlx=excluded.wzlx,wzzs=excluded.wzzs
+        ,scbj=excluded.scbj,fid=excluded.fid,fldj=excluded.fldj,fl=excluded.fl,bdlb=excluded.bdlb,wzdl=excluded.wzdl,zbx=excluded.zbx
+
+    </update>
+
+    <update id="updateWzflByFid" parameterType="BioWzglDto">
+        <if test="list != null and list.size()>0">
+            <foreach collection="list" open="" close="" separator=";" item="item">
+            update igams_wzgl set wzfl = #{item.wzfl} where fid =#{item.fid}
+            </foreach>
+        </if>
+
+    </update>
+    <select id="getPagedDtoList" parameterType="BioWzglDto" resultType="BioWzglDto">
+        select
+        wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,fid,fldj,sfgl,crbjb,
+        sflj,fl,sfgz,xjlb,bdlb,wzdl,jycd,glsrs,zbx,
+        case fl WHEN '0' THEN 'core' WHEN '1' THEN 'extension' end flmc
+        from igams_wzgl
+        <where>
+            scbj='0'
+            <if test="wzid != null and wzid != ''">
+                and wzid ILIKE '%'||#{wzid}||'%'
+            </if>
+            <if test="wzywm != null and wzywm != ''">
+                and wzywm ILIKE '%'||#{wzywm}||'%'
+            </if>
+            <if test="wzzwm != null and wzzwm != ''">
+                and wzzwm ILIKE '%'||#{wzzwm}||'%'
+            </if>
+            <if test="wzfl != null and wzfl != ''">
+                and wzfl ILIKE '%'||#{wzfl}||'%'
+            </if>
+            <if test="wzlx != null and wzlx != ''">
+                and wzlx ILIKE '%'||#{wzlx}||'%'
+            </if>
+            <if test="fldj != null and fldj != ''">
+                and fldj ILIKE '%'||#{fldj}||'%'
+            </if>
+            <if test="xjlb != null and xjlb != ''">
+                and xjlb ILIKE '%'||#{xjlb}||'%'
+            </if>
+            <if test="bdlb != null and bdlb != ''">
+                and bdlb ILIKE '%'||#{bdlb}||'%'
+            </if>
+            <if test="wzdl != null and wzdl != ''">
+                and wzdl ILIKE '%'||#{wzdl}||'%'
+            </if>
+            <if test="zbx != null and zbx != ''">
+                and zbx ILIKE '%'||#{zbx}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="BioWzglDto" resultType="BioWzglDto">
+        select
+        wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,fid,fldj,sfgl,crbjb,
+        sflj,fl,sfgz,xjlb,bdlb,wzdl,jycd,glsrs,zbx,
+        case fl WHEN '0' THEN 'core' WHEN '1' THEN 'extension' end flmc
+        from igams_wzgl wzgl
+        <where>
+        <trim prefixOverrides="and" >
+            <if test="wzid != null and wzid != ''">
+                and wzid= #{wzid}
+            </if>
+        </trim>
+        </where>
+    </select>
+
+
+    <select id="getDtoList" parameterType="BioWzglDto" resultType="BioWzglDto">
+        select
+        wzid,wzywm,wzzwm,wzfl,wzlx,wzzs,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,fid,fldj,sfgl,crbjb,
+        sflj,fl,sfgz,xjlb,bdlb,wzdl,jycd,glsrs,zbx
+        from igams_wzgl wzgl
+        <where>
+            <trim prefixOverrides="and" >
+                <if test="ids !=null and ids.size >0" >
+                    and wzgl.wzid in
+                    <foreach collection="ids" open="(" close=")" separator="," item="item">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="fl !=null and fl != ''" >
+                    and wzgl.fl = #{fl}
+                </if>
+            </trim>
+        </where>
+    </select>
+
+    <select id="getWzxxByMc" resultType="BioWzglDto" parameterType="BioWzglDto">
+        select wzid, wzywm, wzzwm, wzfl, wzlx, wzzs, lrry, lrsj, xgry, xgsj, scry, scsj, scbj,
+               fid, fldj, sfgl, crbjb, sflj, fl, sfgz, xjlb, bdlb, wzdl, jycd, glsrs, zbx
+        from igams_wzgl
+        <where>
+            scbj='0'
+            <if test="wzmc != null and wzmc != ''">
+                and ( wzid =#{wzmc} or wzywm =#{wzmc} or wzzwm =#{wzmc} )
+            </if>
+        </where>
+    </select>
+
+    <select id="getWzList" parameterType="BioWzglDto" resultType="BioWzglDto">
+
+        select
+        wzgl.wzid,wzgl.wzywm,wzgl.wzzwm,wzgl.wzfl,wzgl.wzlx,wzgl.wzzs,wzgl.lrry,wzgl.lrsj,wzgl.xgry,wzgl.xgsj,wzgl.scry,wzgl.scsj,wzgl.scbj,wzgl.fid,wzgl.fldj,wzgl.sfgl,wzgl.crbjb,
+        wzgl.sflj,wzgl.fl,wzgl.sfgz,wzgl.xjlb,wzgl.bdlb,wzgl.wzdl,wzgl.jycd,wzgl.glsrs,wzgl.zbx,mngsmxjg.gzd
+        from igams_mngsmxjg_${lrsj} mngsmxjg
+        left join igams_wzgl wzgl on wzgl.wzid=mngsmxjg.taxid and wzgl.scbj = '0'
+        <where>
+            mngsmxjg.bbh=#{bbh} and  mngsmxjg.wkcxid=#{wkcxid} and mngsmxjg.gzd !='4' and mngsmxjg.gzd !='5' and mngsmxjg.gzd !='3'
+            <if test="dnaflag!=null and dnaflag!=''">
+                and ( mngsmxjg.bdlb !='RNA' or mngsmxjg.bdlb is null)
+            </if>
+            <if test="rnaflag!=null and rnaflag!=''">
+                and (mngsmxjg.bdlb ='RNA' and mngsmxjg.wzfl='Viruses')
+            </if>
+        </where>
+    </select>
+
+</mapper>

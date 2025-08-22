@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IZsxxDao">
+
+    <select id="getDtoList" parameterType="ZsxxDto" resultType="ZsxxDto">
+        select zsid,mc,zs,glsrst,taxids,knwzly,zsxx.type,vfdbfl,vfid
+        from matridx_zsxx zsxx
+        <where>
+            zsxx.scbj = '0' and zsxx.type = '0'
+            <if test="ids !=null and ids.size >0" >
+                and zsxx.zsid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="mcs !=null and mcs.size >0" >
+                and zsxx.mc in
+                <foreach collection="mcs" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" resultType="ZsxxDto" parameterType="ZsxxDto">
+        select
+        zsid,
+        mc,
+        zs,
+        glsrst,
+        taxids,
+        knwzly,
+        type,
+        vfdbfl,
+        vfid
+        from matridx_zsxx
+        <where>
+            scbj='0'
+            <if test="mc != null and mc != ''">
+                and mc ILIKE '%'||#{mc}||'%'
+            </if>
+            <if test="zs != null and zs != ''">
+                and zs ILIKE '%'||#{zs}||'%'
+            </if>
+            <if test="glsrst != null and glsrst != ''">
+                and glsrst ILIKE '%'||#{glsrst}||'%'
+            </if>
+            <if test="knwzly != null and knwzly != ''">
+                and knwzly ILIKE '%'||#{knwzly}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" resultType="ZsxxDto" parameterType="ZsxxDto">
+        select
+        zsid,
+        mc,
+        zs,
+        glsrst,
+        taxids,
+        knwzly,
+        type,
+        vfdbfl,
+        vfid
+        from matridx_zsxx
+        <where>
+            scbj='0'
+            and zsid=#{zsid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="ZsxxDto">
+        insert into matridx_zsxx(zsid
+        <if test="mc != null and mc!= ''">
+            ,mc
+        </if>
+        <if test="zs != null and zs != ''">
+            ,zs
+        </if>
+        <if test="glsrst != null and glsrst != ''">
+            ,glsrst
+        </if>
+        <if test="knwzly != null and knwzly!= ''">
+            ,knwzly
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(#{zsid}
+        <if test="mc != null and mc!= ''">
+            ,#{mc}
+        </if>
+        <if test="zs != null and zs != ''">
+            ,#{zs}
+        </if>
+        <if test="glsrst != null and glsrst != ''">
+            ,#{glsrst}
+        </if>
+        <if test="knwzly != null and knwzly!= ''">
+            ,#{knwzly}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="ZsxxDto">
+        update matridx_zsxx
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="mc != null and mc!= ''">
+                ,mc=#{mc}
+            </if>
+            <if test="zs != null and zs != ''">
+                ,zs=#{zs}
+            </if>
+            <if test="glsrst != null and glsrst != ''">
+                ,glsrst=#{glsrst}
+            </if>
+            <if test="knwzly != null and knwzly!= ''">
+                ,knwzly=#{knwzly}
+            </if>
+        </set>
+        <where>
+            zsid=#{zsid}
+        </where>
+    </update>
+
+
+    <update id="delete" parameterType="ZsxxDto">
+        update matridx_zsxx
+        <set>
+            scbj='1',
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            zsid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateList" parameterType="ZsxxDto">
+        <if test="list != null and list.size()>0">
+            insert into matridx_zsxx
+            (zsid,mc,zs,glsrst,taxids,knwzly,type,scbj) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.zsid},#{item.mc},#{item.zs},#{item.glsrst},#{item.taxids},#{item.knwzly},#{item.type},'0')
+            </foreach>
+        </if>
+        on conflict(zsid) do update set mc=excluded.mc,zs=excluded.zs,glsrst=excluded.glsrst,taxids=excluded.taxids,knwzly=excluded.knwzly
+        ,type=excluded.type
+    </update>
+</mapper>

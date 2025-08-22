@@ -1,0 +1,1304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IWkcxDao">
+    <select id="getXpmBywkhb" parameterType="WkcxDto" resultType="WkcxDto">
+        select xpxx.xpm
+            from  igams_wkcx wkcx
+            left JOIN igams_xpxx xpxx on xpxx.xpid=wkcx.xpid
+            where wkcx.wkbh = #{wkbh} and wkcx.wkcxid=#{wkcxid}
+    </select>
+    <select id="getListByNbbm" parameterType="WkcxDto" resultType="WkcxDto">
+        select shryid,jyryid from igams_wkcx
+        where wkbh like '%-'||#{nbbm}||'-%'
+        and wkbh != #{wkbh} and shryid is not null  and jyryid is not null  limit 1
+    </select>
+    <select id="getByNbbmToList" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid,wkcx.zt,wkcx.wkbh,case when jcsj.cskz1 = '1' then sjxx.yblxmc else jcsj.csmc end yblxmc
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on sjxx.sjid=wkcx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        where sjxx.nbbm = #{nbbm}
+        and wkcx.wkbh != #{wkbh}
+    </select>
+    <select id="getDto" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid,wkcx.sjid,wkcx.fxbb,wkcx.dilutionf,wkcx.xpid,to_char(wkcx.xgsj,'yyyy-mm-dd hh24:mi:ss') xgsj,to_char(wkcx.lrsj,'yyyy-mm-dd hh24:mi:ss') lrsj,wkcx.zt,wkcx.sfcxsh
+        from igams_wkcx wkcx
+        <if test="xpm != null and xpm !=''">
+        left join igams_xpxx xpxx on xpxx.xpid = wkcx.xpid and xpxx.scbj ='0'
+        </if>
+        <where>
+            wkcx.scbj='0'
+            <if test="wkbh != null and wkbh !=''">
+                and wkcx.wkbh = #{wkbh}
+            </if>
+            <if test="zxbb != null and zxbb !=''">
+                and wkcx.zxbb = #{zxbb}
+            </if>
+            <if test="wkcxid != null and wkcxid !=''">
+                and wkcx.wkcxid = #{wkcxid}
+            </if>
+            <if test="zt != null and zt !=''">
+                and wkcx.zt = #{zt}
+            </if>
+            <if test="xpid != null and xpid !=''">
+                and wkcx.xpid = #{xpid}
+            </if>
+            <if test="xpm != null and xpm !=''">
+                and xpxx.xpm = #{xpm}
+            </if>
+        </where>
+        order by wkcx.lrsj desc limit 1
+    </select>
+    <update id="update" parameterType="WkcxDto">
+        update igams_wkcx
+        <set>
+            <trim prefixOverrides=",">
+                <if test="fcjc !=null and  fcjc !=''">
+                    ,fcjc =#{fcjc}
+                </if>
+                <if test="shbz !=null and  shbz !=''">
+                    ,shbz =#{shbz}
+                </if>
+                <if test="fxbb !=null and  fxbb !=''">
+                    ,fxbb =#{fxbb}
+                </if>
+                <if test="wklx !=null and  wklx !=''">
+                    ,wklx =#{wklx}
+                </if>
+                <if test="shbbbh !=null and  shbbbh !=''">
+                    ,shbbbh =#{shbbbh},shsj = LOCALTIMESTAMP
+                </if>
+                <if test="shryid !=null and  shryid !=''">
+                    ,shryid =#{shryid}
+                </if>
+                <if test="sffsbg !=null and  sffsbg !=''">
+                    ,sffsbg =#{sffsbg}
+                </if>
+                <if test="lczn !=null and  lczn !=''">
+                    ,lczn =#{lczn}
+                </if>
+                <if test="sfxybg !=null and  sfxybg !=''">
+                    ,sfxybg =#{sfxybg}
+                </if>
+                <if test="qxhbbg !=null and  qxhbbg !=''">
+                    ,qxhbbg =#{qxhbbg}
+                </if>
+                <if test="hbwkcxid !=null and  hbwkcxid !=''">
+                    ,hbwkcxid =#{hbwkcxid}
+                </if>
+                <if test="zklx !=null and  zklx !=''">
+                    ,zklx =#{zklx}
+                </if>
+                <if test="zt !=null and  zt !=''">
+                    ,zt =#{zt}
+                </if>
+                <if test="xgry !=null and  xgry !=''">
+                    ,xgry =#{xgry},xgsj = LOCALTIMESTAMP
+                </if>
+                <if test="zxbb !=null and  zxbb !=''">
+                    ,zxbb =#{zxbb}
+                </if>
+                <if test="jyryid !=null and  jyryid !=''">
+                    ,jyryid =#{jyryid}
+                </if>
+                <if test="dqshry !=null and  dqshry !=''">
+                    ,dqshry =#{dqshry}
+                </if>
+                <if test="sfcxsh !=null and  sfcxsh !=''">
+                    ,sfcxsh =#{sfcxsh}
+                </if>
+            </trim>
+        </set>
+        <where>
+            wkcxid=#{wkcxid}
+        </where>
+    </update>
+    <insert id="insert" parameterType="WkcxDto">
+        insert into igams_wkcx(
+        <if test="wkcxid != null and wkcxid != ''">
+            wkcxid,
+        </if>
+        <if test="wkbh != null and wkbh != ''">
+            wkbh,
+        </if>
+        <if test="wklx != null and wklx != ''">
+            wklx,
+        </if>
+        <if test="zt != null and zt != ''">
+            zt,
+        </if>
+        <if test="xpid != null and xpid != ''">
+            xpid,
+        </if>
+        <if test="sffsbg != null and sffsbg != ''">
+            sffsbg,
+        </if>
+        <if test="sjid != null and sjid != ''">
+            sjid,
+        </if>
+        <if test="cxid != null and cxid != ''">
+            cxid,
+        </if>
+        <if test="sysid != null and sysid != ''">
+            sysid,
+        </if>
+        <if test="lrsj != null and lrsj != ''">
+            lrsj,
+        </if>
+        <if test="cleangc != null and cleangc != ''">
+            cleangc,
+        </if>
+        <if test="cleanq20 != null and cleanq20 != ''">
+            cleanq20,
+        </if>
+        <if test="cleanq30 != null and cleanq30 != ''">
+            cleanq30,
+        </if>
+        <if test="adapter != null and adapter != ''">
+            adapter,
+        </if>
+        <if test="barcodematch != null and barcodematch != ''">
+            barcodematch,
+        </if>
+        <if test="clean != null and clean != ''">
+            clean,
+        </if>
+        <if test="dilutionf != null and dilutionf != ''">
+            dilutionf,
+        </if>
+        <if test="libccon != null and libccon != ''">
+            libccon,
+        </if>
+        <if test="nuccon != null and nuccon != ''">
+            nuccon,
+        </if>
+        <if test="qc != null and qc != ''">
+            qc,
+        </if>
+        <if test="fxbb != null and fxbb != ''">
+            fxbb,
+        </if>
+        <if test="zxbb != null and zxbb != ''">
+            zxbb,
+        </if>
+        <if test="comment != null and comment != ''">
+            comment,
+        </if>
+	    <if test="rawreads != null and rawreads != ''">
+            rawreads,
+        </if>
+        <if test="cleanreads != null and cleanreads != ''">
+            cleanreads,
+        </if>
+        <if test="xgsj != null and xgsj != ''">
+            xgsj,
+        </if>
+        scbj)
+        values (
+        <if test="wkcxid != null and wkcxid != ''">
+            #{wkcxid},
+        </if>
+        <if test="wkbh != null and wkbh != ''">
+            #{wkbh},
+        </if>
+        <if test="wklx != null and wklx != ''">
+            #{wklx},
+        </if>
+        <if test="zt != null and zt != ''">
+            #{zt},
+        </if>
+        <if test="xpid != null and xpid != ''">
+            #{xpid},
+        </if>
+        <if test="sffsbg != null and sffsbg != ''">
+            #{sffsbg},
+        </if>
+        <if test="sjid != null and sjid != ''">
+            #{sjid},
+        </if>
+        <if test="cxid != null and cxid != ''">
+            #{cxid},
+        </if>
+        <if test="sysid != null and sysid != ''">
+            #{sysid},
+        </if>
+        <if test="lrsj != null and lrsj != ''">
+            cast(#{lrsj} as timestamp),
+        </if>
+        <if test="cleangc != null and cleangc != ''">
+            #{cleangc},
+        </if>
+        <if test="cleanq20 != null and cleanq20 != ''">
+            #{cleanq20},
+        </if>
+        <if test="cleanq30 != null and cleanq30 != ''">
+            #{cleanq30},
+        </if>
+        <if test="adapter != null and adapter != ''">
+            #{adapter},
+        </if>
+        <if test="barcodematch != null and barcodematch != ''">
+            #{barcodematch},
+        </if>
+        <if test="clean != null and clean != ''">
+            #{clean},
+        </if>
+        <if test="dilutionf != null and dilutionf != ''">
+            #{dilutionf},
+        </if>
+        <if test="libccon != null and libccon != ''">
+            #{libccon},
+        </if>
+        <if test="nuccon != null and nuccon != ''">
+            #{nuccon},
+        </if>
+        <if test="qc != null and qc != ''">
+            #{qc},
+        </if>
+        <if test="fxbb != null and fxbb != ''">
+            #{fxbb},
+        </if>
+        <if test="zxbb != null and zxbb != ''">
+            #{zxbb},
+        </if>
+        <if test="comment != null and comment != ''">
+            #{comment},
+        </if>
+	    <if test="rawreads != null and rawreads != ''">
+            #{rawreads},
+        </if>
+        <if test="cleanreads != null and cleanreads != ''">
+            #{cleanreads},
+        </if>
+        <if test="xgsj != null and xgsj != ''">
+            cast(#{xgsj} as timestamp),
+        </if>
+        '0')
+        on conflict(wkcxid) do update set cleangc=excluded.cleangc,cleanq20=excluded.cleanq20,cleanq30=excluded.cleanq30,adapter=excluded.adapter
+        ,clean=excluded.clean,dilutionf=excluded.dilutionf,libccon=excluded.libccon,nuccon=excluded.nuccon,qc=excluded.qc,comment=excluded.comment
+        ,rawreads=excluded.rawreads,cleanreads=excluded.cleanreads,barcodematch=excluded.barcodematch
+    </insert>
+    <select id="getDtoNew" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid,wkcx.wkbh,wkcx.xpid,wkcx.zt,wkcx.shbbbh,
+        wkcx.shsj,wkcx.sjid,wkcx.cxid,wkcx.wklx,wkcx.hbwkcxid,
+        wkcx.cleangc ,
+        wkcx.cleanq20 ,
+        wkcx.cleanq30 ,
+        wkcx.adapter ,
+        wkcx.barcodematch ,
+        wkcx.clean ,
+        wkcx.fxbb ,
+        wkcx.dilutionf ,
+        wkcx.libccon ,
+        wkcx.nuccon ,
+        wkcx.comment ,
+        wkcx.qc ,
+        wkcxbb.jgid ,
+        wkcx.rawreads ,
+        wkcxbb.totalreads ,
+        wkcxbb.homo ,
+        wkcxbb.bacteria ,
+        wkcxbb.fungi ,
+        wkcxbb.viruses ,
+        wkcxbb.parasite ,
+        wkcxbb.others ,
+        wkcxbb.unmapped ,
+        wkcxbb.spikein ,
+        wkcxbb.spikeinrpm ,
+        wkcxbb.bbh ,
+        wkcxbb.spike ,
+        wkcxbb.ryzs ,
+        wkcxbb.rypw ,
+        wkcxbb.lrsj,
+        wkcxbb.sfzwqckj,
+        xpxx.fm,
+	wkcxbb.sfzwqckj,
+        wkcx.qxhbbg,
+        sjxx.ybbh,
+        sjxx.yblx,
+        sjxx.hzxm,
+        sjxx.nbbm,
+        case when jcsj.cskz1 = '1' then sjxx.yblxmc else jcsj.csmc end yblxmc,
+        round(COALESCE(cast(wkcx.rnareadsrate as numeric),0),2) as rnareadsrate,
+        zszl.csmc zszlmc,
+        hbwkcx.shbbbh hbbbh,
+        xpxx.xpm,
+        wkcx.shryid,
+        wkcx.jyryid,
+        cnvjg.cnvjgid,
+        wkcx.shbz,
+        wkcx.sfcxsh
+        from igams_wkcx wkcx
+        left join igams_cnvjg cnvjg on cnvjg.wkcxid = wkcx.wkcxid
+        left join matridx_jcsj zszl on zszl.csid = cnvjg.zszl
+        left join igams_wkcxbb wkcxbb on wkcx.wkcxid = wkcxbb.wkcxid
+	    left join igams_sjxx sjxx on wkcx.sjid=sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        left join igams_xpxx xpxx on xpxx.xpid = wkcx.xpid
+        left join igams_wkcx hbwkcx on hbwkcx.wkcxid = wkcx.wkcxid
+        <where>
+            wkcx.scbj = '0'
+            <if test="wkcxid != null and wkcxid != ''">
+                and wkcx.wkcxid = #{wkcxid}
+            </if>
+            <if test="bbh != null and bbh != ''">
+                and wkcxbb.bbh = #{bbh}
+            </if>
+            <if test="jgid != null and jgid != ''">
+                and wkcxbb.jgid = #{jgid}
+            </if>
+            <if test="xpid != null and xpid != ''">
+                and wkcx.xpid = #{xpid}
+            </if>
+            <if test="wkbhlike != null and wkbhlike != ''">
+                and wkcx.wkbh like '%'||#{wkbhlike}||'%'
+            </if>
+        </where>
+        order by wkcxbb.lrsj desc limit 1
+    </select>
+
+    <select id="getCxyInfo" parameterType="WkcxDto" resultType="Map">
+        SELECT xpxx.xpm, xpxx.xpid, jc_sys.csid sysid, jc_sys.csmc sysmc
+        FROM igams_xpxx xpxx
+        LEFT JOIN matridx_jcsj jc_cx ON jc_cx.csid = xpxx.cxyid AND jc_cx.scbj = '0'
+        LEFT JOIN matridx_jcsj jc_sys ON jc_cx.fcsid = jc_sys.csid AND jc_sys.scbj = '0'
+        <where>
+            xpxx.scbj = '0'
+            <if test="cxkssjstart != null and cxkssjstart != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= #{cxkssjstart})
+            </if>
+            <if test="cxkssjend != null and cxkssjend != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= #{cxkssjend})
+            </if>
+            <if test="jcdws !=null and jcdws.size > 0">
+                and jc_sys.csid in
+                <foreach collection="jcdws" open="(" close=")" separator="," item="items">
+                    #{items}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getTableInfo" parameterType="WkcxDto" resultType="String">
+        select  to_char( wkcxbb.lrsj, 'YYYYMM' ) as lrsj
+        from igams_wkcx  wkcx
+        left join igams_wkcxbb wkcxbb on wkcxbb.wkcxid = wkcx.wkcxid
+        where wkcx.scbj = '0' and  wkcx.xpid = #{xpid} and wkcxbb.lrsj is not null GROUP BY  to_char( wkcxbb.lrsj, 'YYYYMM' );
+    </select>
+
+    <select id="getLibraryInfo" parameterType="WkcxDto" resultType="WkcxDto">
+        select jg.* from (
+        <foreach collection="lrsjs" separator="UNION ALL" item="item">
+            select  distinct wkcx.wkcxid,sjxx.hzxm,sjxx.yblxmc,mngsmxjg_${item}.readsaccum,mngsmxjg_${item}.rpq,mngsmxjg_${item}.grc as gra,wkcx.lrsj,wkcx.zt
+            from igams_wkcx  wkcx
+            left join igams_wkcxbb wkcxbb on wkcxbb.wkcxid = wkcx.wkcxid
+            left join igams_sjxx sjxx on sjxx.sjid = wkcx.sjid
+            left join igams_mngsmxjg_${item} mngsmxjg_${item} on mngsmxjg_${item}.jgid = wkcxbb.jgid
+            where wkcx.scbj = '0'  and  wkcx.xpid = #{xpid} and mngsmxjg_${item}.taxid = #{taxid}
+            and wkcx.wkbh != #{wkbh}
+            UNION ALL
+            select  distinct wkcx.wkcxid,sjxx.hzxm,sjxx.yblxmc,mngsmxjg_${item}.readsaccum,mngsmxjg_${item}.rpq,mngsmxjg_${item}.grc as gra,wkcx.lrsj,wkcx.zt
+            from igams_wkcx  wkcx
+            left join igams_wkcxbb wkcxbb on wkcxbb.wkcxid = wkcx.wkcxid
+            left join igams_sjxx sjxx on sjxx.sjid = wkcx.sjid
+            left join igams_mngsmxjg_${item} mngsmxjg_${item} on mngsmxjg_${item}.jgid = wkcxbb.jgid
+            where wkcx.scbj = '0'  and  wkcx.xpid = #{xpid} and mngsmxjg_${item}.taxid = #{taxid}
+            and wkcx.wkbh = #{wkbh} and wkcxbb.bbh=#{bbh} and wkcx.wkcxid=#{wkcxid}
+        </foreach>
+        ) jg
+        order by cast(jg.rpq as numeric) desc limit 10
+    </select>
+<!--    <select id="getLibraryInfo" parameterType="WkcxDto" resultType="WkcxDto">-->
+<!--        <foreach collection="lrsjs" separator="UNION ALL" item="item">-->
+<!--            select  wkcx.wkcxid,sjxx.hzxm,sjxx.yblxmc,mngsmxjg_${item}.readsaccum,mngsmxjg_${item}.rpq,wkcxbb.bbh,mngsmxjg_${item}.grc as gra-->
+<!--            from igams_wkcx  wkcx-->
+<!--            left join igams_wkcxbb wkcxbb on wkcxbb.wkcxid = wkcx.wkcxid-->
+<!--            left join igams_sjxx sjxx on sjxx.sjid = wkcx.sjid-->
+<!--            left join igams_mngsmxjg_${item} mngsmxjg_${item} on mngsmxjg_${item}.jgid = wkcxbb.jgid-->
+<!--            where wkcx.scbj = '0'  and  wkcx.xpid = #{xpid} and mngsmxjg_${item}.taxid = #{taxid} order by wkcx.lrsj limit 10-->
+<!--        </foreach>-->
+<!--    </select>-->
+
+<!--    根据子csid取到父基础数据，根据测序仪找出该测序仪所属省份基础数据-->
+    <select id="getCxyProvinces" parameterType="String" resultType="JcsjDto">
+        select f_jc.csid, f_jc.jclb, f_jc.csdm, f_jc.csmc
+        from matridx_jcsj z_jc
+        left join matridx_jcsj f_jc on z_jc.fcsid = f_jc.csid and f_jc.scbj='0'
+        <where>
+            z_jc.scbj='0' and z_jc.csid in
+            <foreach collection="list" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        group by f_jc.csid, f_jc.jclb, f_jc.csdm, f_jc.csmc
+    </select>
+
+<!--    根据父基础数据查找出子基础数据， 根据测序仪归属省份找到该省份下的所有测序仪-->
+    <select id="getCxyJcsjByFcsid" parameterType="JcsjDto" resultType="JcsjDto">
+        select csid, jclb, fcsid, csdm, csmc, cspx, cskz1, cskz2, cskz3, cskz4, sfmr, bz, lrry, lrsj, xgry, xgsj, scry, scsj, scbj, sfgb, ffcsid
+        from matridx_jcsj
+        <where>
+            scbj='0' and fcsid = #{fcsid}
+        </where>
+    </select>
+
+    <select id="getWkcxByXpid" parameterType="BioXpxxDto" resultType="WkcxDto">
+        SELECT
+        xpxx.xpid,
+        wkcx.wkbh,
+        xpxx.cxyid,
+        wkcx.wkcxid,
+        cxbb.totalreads totalreads,
+        to_char(wkcx.xgsj,'yyyy-mm-dd hh24:mi:ss')xgsj,
+        case when wkcx.zt='01' then '分析完成' when wkcx.zt='02' then '审核完成' when wkcx.zt='04' then '自动复测'  end zt,
+        cxbb.wkcxid,
+        sjxx.hzxm,sjxx.nl,
+        fcjc
+        FROM
+        igams_wkcx wkcx
+
+        LEFT JOIN igams_xpxx xpxx ON xpxx.xpid = wkcx.xpid
+        LEFT JOIN igams_wkcxbb cxbb ON wkcx.wkcxid = cxbb.wkcxid
+        AND wkcx.zxbb = cxbb.bbh
+        LEFT JOIN igams_sjxx sjxx ON wkcx.sjid = sjxx.sjid
+
+        <where>
+            xpxx.scbj='0' and xpxx.xpid=#{xpid}
+            and (wkcx.zt='01'or wkcx.zt='02')
+        </where>
+    </select>
+
+    <select id="getWkcxByXpids" parameterType="BioXpxxDto" resultType="WkcxDto">
+        select *
+        from(
+        SELECT
+        xpxx.xpid,
+        wkcx.wkbh,
+        xpxx.cxyid,
+        wkcx.wkcxid,
+        cxbb.totalreads totalreads,
+        to_char(wkcx.xgsj,'yyyy-mm-dd hh24:mi:ss')xgsj,
+        wkcx.zt,
+        cxbb.wkcxid,
+        sjxx.hzxm,sjxx.nl,
+        fcjc,
+        fjsq.fjid, jc_lx.csmc lxmc, fjsq.lrsj,xtyh.zsxm,
+        rank()over(partition by sjxx.sjid order by fjsq.lrsj desc) xh,sjxx.sfws
+        FROM
+        igams_wkcx wkcx
+
+        LEFT JOIN igams_xpxx xpxx ON xpxx.xpid = wkcx.xpid
+        LEFT JOIN igams_wkcxbb cxbb ON wkcx.wkcxid = cxbb.wkcxid
+        AND wkcx.zxbb = cxbb.bbh
+        LEFT JOIN igams_sjxx sjxx ON wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        left join igams_fjsq fjsq on fjsq.sjid = sjxx.sjid and fjsq.scbj='0'
+        left join matridx_jcsj jc_lx on fjsq.lx = jc_lx.csid
+        left join matridx_xtyh xtyh on wkcx.dqshry=xtyh.yhid
+        left join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        <where>
+            xpxx.scbj='0' and sjxx.sjid is not null
+            <if test="pdbj != null and pdbj != '' and pdbj=='tNGS'.toString">
+                and wkcx.wkbh like '%tNGS%'
+            </if>
+            <if test="filter != null and filter != '' ">
+                and wkcx.zt != '03'
+            </if>
+            <if test="pdbj != null and pdbj != '' and pdbj=='mNGS'.toString">
+                and wkcx.wkbh not like '%tNGS%'
+            </if>
+            <if test="ids !=null and ids.size > 0">
+                and xpxx.xpid in
+                <foreach collection="ids" open="(" close=")" separator="," item="items">
+                    #{items}
+                </foreach>
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="(sjhbs == null or sjhbs.size()==0) and pdbj=='mNGS'.toString" >
+                and hb.bgfs is null
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            and wkcx.wkbh not like 'MDL002-X%' and wkcx.wkbh not like 'MDL003-%' and wkcx.wkbh not like 'MDL002-NC-X%' and wkcx.wkbh not like 'MDX%'
+            and wkcx.wkbh not like 'MDL004%DNA%'
+        </where>
+        ) tmp where tmp.xh=1 order by tmp.nl desc
+    </select>
+
+    <select id="getPagedWkcx" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid, cxbb.jgid, sjxx.sjid, wkcx.wkbh, sjxx.hzxm, cxbb.totalreads, wkcx.zt,wkcx.xgry,xtyh.zsxm,
+                to_char(wkcx.xgsj,'yyyy-MM-dd HH24:mi:ss') as xgsj
+        ,case when wkcx.fcjc='1' then '复测'  when wkcx.fcjc='2' then '加测'  when wkcx.fcjc='3' then '去人源' end lxmc,
+        sjxx.sfws
+        from igams_wkcx wkcx
+        <if test="wzmc != null and wzmc !='' ">
+            INNER JOIN (
+            SELECT
+            split_part( sjbgsm.wkbh, '+', 1 ) wkbh
+            FROM
+            igams_sjbgsm sjbgsm
+            WHERE
+            ( sjbgsm.ggzdzb LIKE'%' || #{wzmc} || '%' OR sjbgsm.yszb LIKE'%' || #{wzmc} || '%' )
+            AND sjbgsm.wkbh IS NOT NULL
+
+            GROUP BY
+            sjbgsm.wkbh UNION
+            SELECT
+            split_part( sjbgsm.wkbh, '+', 2 ) wkbh
+            FROM
+            igams_sjbgsm sjbgsm
+            WHERE
+            ( sjbgsm.ggzdzb LIKE'%' || #{wzmc} || '%' OR sjbgsm.yszb LIKE'%' || #{wzmc} || '%' )
+            AND sjbgsm.wkbh IS NOT NULL
+
+            GROUP BY
+            sjbgsm.wkbh
+            ) AS wzxx ON wzxx.wkbh = wkcx.wkbh
+            AND wzxx.wkbh != ''
+        </if>
+        left join igams_wkcxbb cxbb on wkcx.wkcxid = cxbb.wkcxid and wkcx.zxbb=cxbb.bbh
+        left join igams_sjxx sjxx on wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        left join matridx_xtyh xtyh on wkcx.dqshry=xtyh.yhid
+        left join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        <where>
+            wkcx.scbj='0' and wkcx.wkbh not like 'MDL002-X%' and wkcx.wkbh not like 'MDL003-%' and wkcx.wkbh not like 'MDL002-NC-X%'and wkcx.wkbh not like 'MDX%' and wkcx.wkbh not like 'MDL004%DNA%'
+            and ((wkcx.wkbh not like '%tNGS%'
+            <if test="sfsearch == null or sfsearch == ''">
+            AND hb.bgfs IS NULL
+            </if> AND sjxx.sjid IS not NULL )
+            or (wkcx.wkbh  like '%tNGS%' AND sjxx.sjid IS not NULL))
+            <if test="entire != null and entire != ''">
+                and (wkcx.wkbh ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sysmc != null and sysmc !=''">
+                and wkcx.sysid = #{sysmc}
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zt != null and zt !=''">
+                and wkcx.zt = #{zt}
+            </if>
+            <if test="nbbm != null and nbbm !=''">
+                and sjxx.nbbm  ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="zts != null and zts.size >0">
+                and wkcx.zt in
+                <foreach collection="zts" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yblx != null and yblx !=''">
+                and sjxx.yblx = #{yblx}
+            </if>
+            <if test="wkbh != null and wkbh !=''">
+                and wkcx.wkbh = #{wkbh}
+            </if>
+            <if test="db != null and db !=''">
+                and sjxx.db = #{db}
+            </if>
+            <if test="dwid != null and dwid !=''">
+                and sjxx.sjdw = #{dwid}
+            </if>
+            <if test="hzxm != null and hzxm !=''">
+                and sjxx.hzxm = #{hzxm}
+            </if>
+            <if test="zt != null and zt !=''">
+                and wkcx.zt = #{zt}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and to_char(wkcx.xgsj,'yyyy-mm-dd') &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and to_char(wkcx.xgsj,'yyyy-mm-dd') &lt;= #{endTime}
+            </if>
+            <if test="xpid != null and xpid !=''">
+                and wkcx.xpid = #{xpid}
+            </if>
+            <if test="nyfxjglist != null and nyfxjglist.size()>0">
+                and wkcx.wkcxid in
+                <foreach collection="nyfxjglist" open="(" close=")" separator="," index="index" item="item">
+                    #{item.wkcxid}
+                </foreach>
+            </if>
+<!--            <if test="wkbhs != null and wkbhs.size()>0">-->
+<!--                and wkcx.wkbh in-->
+<!--                <foreach collection="wkbhs" open="(" close=")" separator="," index="index" item="item">-->
+<!--                    #{item}-->
+<!--                </foreach>-->
+<!--            </if>-->
+        </where>
+    </select>
+
+    <select id="getpageWkcx" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid, cxbb.jgid, sjxx.sjid, wkcx.wkbh, sjxx.hzxm, cxbb.totalreads, wkcx.zt,wkcx.xgry,xtyh.zsxm,
+        to_char(wkcx.xgsj,'yyyy-MM-dd HH24:mi:ss') as xgsj,sjxx.sfws
+        from igams_wkcx wkcx
+        left join igams_wkcxbb cxbb on wkcx.wkcxid = cxbb.wkcxid and wkcx.zxbb=cxbb.bbh
+        left join igams_sjxx sjxx on wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        left join matridx_xtyh xtyh on wkcx.dqshry=xtyh.yhid
+        left join igams_sjhbxx hb on sjxx.db = hb.hbmc and hb.scbj = '0'
+        <where>
+            wkcx.scbj='0' and wkcx.wkbh not like 'MDL002-X%' and wkcx.wkbh not like 'MDL003-%' and wkcx.wkbh not like 'MDL002-NC-X%'and wkcx.wkbh not like 'MDX%'and wkcx.wkbh not like 'MDL004%DNA%'
+            and ((wkcx.wkbh not like '%tNGS%' AND hb.bgfs IS NULL AND sjxx.sjid IS not NULL )
+            or (wkcx.wkbh  like '%tNGS%' AND sjxx.sjid IS not NULL))
+            <if test="entire != null and entire != ''">
+                and (wkcx.wkbh ILIKE '%'||#{entire}||'%'
+                or sjxx.hzxm ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zt != null and zt !=''">
+                and wkcx.zt = #{zt}
+            </if>
+            <if test="nbbm != null and nbbm !=''">
+                and sjxx.nbbm  ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="zts != null and zts.size >0">
+                and wkcx.zt in
+                <foreach collection="zts" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="yblx != null and yblx !=''">
+                and sjxx.yblx = #{yblx}
+            </if>
+            <if test="wkbh != null and wkbh !=''">
+                and wkcx.wkbh = #{wkbh}
+            </if>
+            <if test="db != null and db !=''">
+                and sjxx.db = #{db}
+            </if>
+            <if test="dwid != null and dwid !=''">
+                and sjxx.sjdw = #{dwid}
+            </if>
+            <if test="hzxm != null and hzxm !=''">
+                and sjxx.hzxm = #{hzxm}
+            </if>
+            <if test="zt != null and zt !=''">
+                and wkcx.zt = #{zt}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and to_char(wkcx.xgsj,'yyyy-mm-dd') &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and to_char(wkcx.xgsj,'yyyy-mm-dd') &lt;= #{endTime}
+            </if>
+            <if test="xpid != null and xpid !=''">
+                and wkcx.xpid = #{xpid}
+            </if>
+            <if test="nyfxjglist != null and nyfxjglist.size()>0">
+                and wkcx.wkcxid in
+                <foreach collection="nyfxjglist" open="(" close=")" separator="," index="index" item="item">
+                    #{item.wkcxid}
+                </foreach>
+            </if>
+            <if test="wkbhs != null and wkbhs.size()>0">
+                and wkcx.wkbh in
+                <foreach collection="wkbhs" open="(" close=")" separator="," index="index" item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <select id="getpageWkcxLeftFjsq" parameterType="list" resultType="WkcxDto">
+        select tt.*
+        from(
+                select jc_lx.csmc lxmc, tmp.lsxh, rank()over(partition by tmp.sjid order by fjsq.lrsj desc) xh
+                from(
+                    <foreach collection="list" separator="union all" item="item" index="index">
+                        select #{item.sjid} sjid, cast(#{index} as VARCHAR) lsxh
+                    </foreach>
+                )tmp
+                left join igams_fjsq fjsq on fjsq.sjid = tmp.sjid
+                left join matridx_jcsj jc_lx on fjsq.lx = jc_lx.csid
+                where fjsq.zt='80' and fjsq.scbj='0'
+        )tt
+        where tt.xh='1'
+    </select>
+
+    <select id="getDtoList" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid,wkcx.wkbh,wkcx.xpid,wkcx.zt,wkcx.shbbbh,wkcx.wklx,
+        wkcx.shsj,wkcx.sjid,wkcx.cxid,
+        wkcx.cleangc ,
+        wkcx.cleanq20 ,
+        wkcx.cleanq30 ,
+        wkcx.adapter ,
+        wkcx.barcodematch ,
+        wkcx.clean ,
+        wkcx.dilutionf ,
+        wkcx.libccon ,
+        wkcx.nuccon ,
+        wkcx.qc,
+        sjxx.yblx,
+        sjxx.nl,
+        sjxx.xb,
+        case when jc.cskz1 = '1' then sjxx.yblxmc else jc.csmc end AS yblxmc,
+        wkcxbb.jgid,
+        wkcxbb.lrsj
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        left outer join matridx_jcsj jc on sjxx.yblx = jc.csid
+        left join igams_wkcxbb wkcxbb on wkcx.wkcxid = wkcxbb.wkcxid and wkcx.shbbbh=wkcxbb.bbh
+        <where>
+            wkcx.scbj = '0'
+            <if test="lrsjstart != null and lrsjstart != '' and lrsjend != null and lrsjend != ''">
+                and wkcx.lrsj between cast(#{lrsjstart} as TIMESTAMP)  and  cast(#{lrsjend} as TIMESTAMP)
+            </if>
+            <if test="wkbh != null and wkbh !=''">
+                and wkcx.wkbh like '%'||#{wkbh}||'%'
+            </if>
+            <if test="xpid != null and xpid !=''">
+                and wkcx.xpid like '%'||#{xpid}||'%'
+            </if>
+            <if test="sjid != null and sjid !=''">
+                and wkcx.sjid = #{sjid}
+            </if>
+            <if test="sysid != null and sysid !=''">
+                and wkcx.sysid like '%'||#{sysid}||'%'
+            </if>
+            <if test="sjhbs != null and sjhbs.size()>0">
+                and sjxx.db in
+                <foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="jcdws !=null and jcdws.size()>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="zts !=null and zts.size()>0">
+                and wkcx.zt in
+                <foreach collection="zts" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getListByIds" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.wkcxid,wkcx.wkbh,wkcx.xpid,wkcx.zt,wkcx.shbbbh,wkcx.wklx,
+        wkcx.shsj,wkcx.sjid,wkcx.cxid,
+        wkcx.cleangc ,
+        wkcx.cleanq20 ,
+        wkcx.cleanq30 ,
+        wkcx.adapter ,
+        wkcx.barcodematch ,
+        wkcx.clean ,
+        wkcx.dilutionf ,
+        wkcx.libccon ,
+        wkcx.nuccon ,
+        wkcx.qc,
+        wkcx.qxhbbg,
+        sjxx.yblx,
+        sjxx.nl,
+        sjxx.xb
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        <where>
+            wkcx.scbj = '0'
+            <if test="ids !=null and ids.size > 0">
+                and wkcx.wkcxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="items">
+                    #{items}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--    临床文库数和研发文库-->
+    <select id="getSampleAndLibraryBytime" parameterType="Map" resultType="Map">
+        select  sum(case when sjid is not null then 1 else 0 end ) as lczs,
+        sum(case when sjid is not null  then 0 else 1 end) as yfzs
+        from  igams_wkcx
+        <where>
+            <if test="starttime != null and starttime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+            </if>
+        </where>
+
+    </select>
+<!--    临床标本书-->
+    <select id="getClinicalSampleBytime" parameterType="Map" resultType="Map">
+        select  count(sjid) as ybsl  from  igams_wkcx
+        <where>
+            sjid is not null
+            <if test="starttime != null and starttime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+            </if>
+        </where>
+        GROUP BY sjid
+
+    </select>
+    <!--    研发标本数-->
+    <select id="getDevelopmentSampleBytime" parameterType="Map" resultType="Map">
+        select count(1) as yfybs from igams_wkcx w left join igams_wksjmx m on w.wkbh = m.wkbm
+
+        <where>
+            sjid is  null
+            <if test="starttime != null and starttime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and to_char(lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+            </if>
+        </where>
+        GROUP BY m.ybbh;
+    </select>
+    <!--根据 月 周 天 获取 文库数目 （临床和研发）-->
+    <select id="getSampleCountByType" parameterType="Map" resultType="Map">
+         select date_part(#{statsType}, lrsj  ) week,
+            to_char(lrsj,'yyyy') weekyear,
+            sum(case when sjid is not null then 1 else 0 end ) as lczs,
+            sum(case when sjid is not null  then 0 else 1 end) as yfzs
+            from igams_wkcx
+            <where>
+                <if test="starttime != null and starttime != ''">
+                    and to_char(lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+                </if>
+                <if test="endtime != null and endtime != ''">
+                    and to_char(lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+                </if>
+            </where>
+            GROUP BY week
+
+    </select>
+    <!--根据 月 周 天 获取 临床标本数 -->
+    <select id="getClinicalSampleByType" parameterType="Map" resultType="Map">
+        select
+        <if test="bblx != null and bblx != ''">
+            count(1) totals,
+        </if>
+        to_char(sjbb.lrsj,'yyyy') weekyear,
+        date_part(#{statsType}, sjbb.lrsj  ) week,
+        sum(case jcsj.csmc when  '肺泡灌洗液' then 1 else 0 end ) as fpgxy,
+        sum(case jcsj.csmc when  '其他' then 1 else 0 end ) as qt,
+        sum(case jcsj.csmc when  '口咽拭子' then 1 else 0 end ) as kysz,
+        sum(case jcsj.csmc when  '外周血' then 1 else 0 end ) as wzx,
+        sum(case jcsj.csmc when  '尿液' then 1 else 0 end ) as ny,
+        sum(case jcsj.csmc when  '痰液' then 1 else 0 end ) as ty,
+        sum(case jcsj.csmc when  '组织' then 1 else 0 end ) as zz,
+        sum(case jcsj.csmc when  '胸水' then 1 else 0 end ) as xs,
+        sum(case jcsj.csmc when  '脑脊液' then 1 else 0 end ) as njy,
+        sum(case  when  jcsj.csmc is null then 1 else 0 end ) as none
+        from (select  sjxx.sjid,sjxx.lrsj,sjxx.yblx from  igams_wkcx wkcx
+        left join igams_sjxx sjxx on sjxx.sjid =wkcx.sjid
+        <where>
+            <if test="starttime != null and starttime != ''">
+                and to_char(sjbb.lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and to_char(sjbb.lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+            </if>
+        </where>
+        GROUP BY sjxx.sjid,sjxx.lrsj,sjxx.yblx)  sjbb
+        LEFT JOIN matridx_jcsj jcsj on sjbb.yblx = jcsj.csid
+        GROUP BY weekyear,week
+    </select>
+
+    <select id="getSequenceByTime" parameterType="WkcxDto" resultType="Map">
+        select to_char(sjxx.lrsj,'YYYY-MM-dd') lrsj, array_to_string( array_agg(cxbb.totalreads),';' ) totalreads
+        from  igams_wkcx wkcx
+        left join igams_sjxx sjxx on sjxx.sjid =wkcx.sjid
+        left join igams_wkcxbb cxbb on wkcx.wkcxid = cxbb.wkcxid and wkcx.zxbb=cxbb.bbh
+        group by to_char(sjxx.lrsj,'YYYY-MM-dd')
+    </select>
+<!--    &#45;&#45;where sjxx.scbj='0' and to_char(sjxx.lrsj,'YYYY-MM-dd') >= '2022-01-01' and to_char(sjxx.lrsj,'YYYY-MM-dd') <= '2022-08-08'-->
+
+    <select id="getRatioOfSampleType" parameterType="WkcxDto" resultType="Map">
+        select tt.yblx, tt.yblxmc, tt.total, tt.countt ,
+               CASE WHEN SUM (tt.countt) OVER ()=0 THEN '0.00%' ELSE
+               round(
+                       CAST (( 100.0*tt.countt/tt.total) AS NUMERIC),2
+                   ) || '%' END AS percentage
+        from
+        (
+            SELECT wkcx.wkcxid, sj.yblx, yb.csmc yblxmc,
+                   ( SELECT COUNT ( wkcxid ) FROM igams_wkcx ) total,
+                   COUNT ( sj.yblx ) OVER ( PARTITION BY sj.yblx ) countt
+            from igams_wkcx wkcx
+            left join igams_sjxx sj on wkcx.sjid = sj.sjid and sj.scbj='0'
+            left join matridx_jcsj yb on sj.yblx = yb.csid and yb.scbj = '0'
+            where wkcx.sffsbg='1'
+        )tt
+        GROUP BY tt.yblx, tt.yblxmc, tt.total, tt.countt
+    </select>
+<!--    &#45;&#45;where sjxx.scbj='0' and to_char(sjxx.lrsj,'YYYY-MM-dd') >= '2022-01-01' and to_char(sjxx.lrsj,'YYYY-MM-dd') <= '2022-08-08'-->
+
+    <select id="getYblxType" parameterType="WkcxDto" resultType="String">
+        select sjxx.yblx
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on wkcx.sjid = sjxx.sjid and sjxx.scbj='0'
+        <where>
+            wkcx.scbj='0'
+            <if test="starttime != null and starttime != ''">
+                and to_char(sjxx.lrsj,'YYYY-MM-dd') &gt;= #{starttime}
+            </if>
+            <if test="endtime != null and endtime != ''">
+                and to_char(sjxx.lrsj,'YYYY-MM-dd') &lt;= #{endtime}
+            </if>
+        </where>
+    </select>
+
+<!--    统计表字段不明确，先暂时空着 -->
+    <select id="getYblxGzd" parameterType="WkcxDto" resultType="Map">
+
+    </select>
+
+    <select id="getExport" parameterType="WkcxDto" resultType="WkcxDto">
+        select wkcx.qxhbbg,wkcx.wkbh,wkcx.qxhbbg,wkcx.wklx,wkcx.zklx as detection_type,wkcx.wkbh,hbwk.wkbh,
+                wkcx.cleanq20 ,wkcx.cleanq30 ,wkcx.cleangc,wkcx.hbwkcxid,hbwk.wkbh as sample_id,wkcx.xgsj
+        from igams_wkcx wkcx
+        left join  igams_wkcx hbwk on  hbwk.wkcxid=wkcx.hbwkcxid
+        <where>
+            wkcx.scbj = '0'
+            <if test="wkcxid!=null and wkcxid!='' ">
+                and   wkcx.wkcxid = #{wkcxid}
+            </if>
+        </where>
+    </select>
+
+<!--    获取某段时间内    -->
+    <select id="getYearMonthTime" parameterType="WkcxDto" resultType="String">
+        SELECT TO_CHAR(months, 'YYYYMM') AS "dateMonth"
+        FROM generate_series(
+             (#{startTime}) :: DATE,
+             (#{endTime}) :: DATE ,
+             '1 month'
+        ) AS months
+    </select>
+
+    <select id="getMngsmxjgTableName" resultType="String">
+        select SUBSTRING(tmp.tablename,16,length(tmp.tablename))
+        from
+            (
+                SELECT DISTINCT(table_name) tablename
+                from information_schema.columns
+                WHERE table_name LIKE 'igams_mngsmxjg_%'
+            )tmp
+    </select>
+
+    <select id="getTableTimeSuffix" parameterType="Map" resultType="String">
+        select '_'||tt.s
+        from
+        (
+            <if test=" tablenamelist != null and tablenamelist.size() >0">
+                <foreach collection="tablenamelist" item="tablename" separator=" union all " >
+                    select #{tablename} s
+                </foreach>
+            </if>
+        )tt
+        <where>
+            <if test="timelist != null and timelist.size() >0 ">
+                tt.s in
+                <foreach collection="timelist" item="timename" separator="," index="index" close=")" open="(">
+                    #{timename}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="syncData"  parameterType="WkcxDto" resultType="WkcxDto">
+        select
+        wk.id as wkcxid,
+        wk.uid as wkbh,
+        wk.status as zt,
+        xp.xpid,
+        wk.reviewed_result_version as shbbbh,
+        to_char(wk.review_date,'yyyy-mm-dd hh24:mi:ss') as shsj,
+        wk.report_send as sffsbg,
+        wk.report_type as bglx,
+        wk.force_merge as qxhbbg,
+        wk.analysis_version as fxbb,
+        wk.guidelines as lczn,
+        wk.recheck as fcjc,
+        wk.report as sfxybg,
+        yh.yhid as shry,
+        sjjcxm.jcxmid,
+        sj.sjid,
+        xp.cxyid as cxid,
+        sj.q20 as sjq20,
+        hb.dna_lib_id,
+        hb.rna_lib_id,
+        wk.clean_q20 as cleanq20,
+        wk.clean_q30 as cleanq30,
+        wk.clean_gc as cleangc,
+        wk.qc_data as qc,
+        wk.version_dates,
+        wk.total_reads as totalreads,
+        wk.last_result_version
+        from core_sample wk
+        left join igams_xpxx xp on xp.xpm=wk.chip
+        left join igams_sjxx sj on sj.ybbh=wk.ybbh and sj.scbj='0'
+        left join igams_sjjcxm sjjcxm on sjjcxm.sjid =sj.sjid and sjjcxm.scbj='0'
+        left join (select max(timestamp),sample_id from core_actionrecord GROUP BY sample_id) tab on tab.sample_id=wk.id
+        left join core_actionrecord  record on record.sample_id =tab.sample_id and record.timestamp=tab.max
+        left join auth_user ry on ry.id=record.user_id
+        left join matridx_xtyh yh on yh.yhm=ry.username and yh.scbj='0'
+        left join core_mergedreport hb on hb.ybbh=wk.ybbh
+        where wk.uid not like  '%DNA-RNA%'  and wk.uid not like  '%RNA-DNA%' and (wk.uid like '%RNA%' or wk.uid like '%DNA%' ) order by wk.id asc
+        LIMIT #{pageSize} OFFSET #{pageStart}
+
+    </select>
+
+
+    <select id="getAnalysisParams"  resultType="WkcxDto">
+        select
+        version,param_md5
+        from core_analysisparam
+    </select>
+
+
+    <insert id="insertList" parameterType="List">
+        insert into igams_wkcx(
+        wkcxid,
+        wkbh,
+        zt,
+        xpid,
+        shbbbh,
+        shsj,
+        shryid,
+        sffsbg,
+        bglx,
+        qxhbbg,
+        fxbb,
+        lczn,
+        fcjc,
+        sfxybg,
+        jcxmid,
+        sjid,
+        cxid,
+        sysid,
+        zklx,
+        wklx,
+        hbwkcxid,
+        cleangc,
+        cleanq20,
+        cleanq30,
+        adapter,
+        barcodematch,
+        clean,
+        dilutionf,
+        libccon,
+        nuccon,
+        qc,
+        lrry,
+        lrsj,
+        scbj,
+        zxbb,
+        comment,
+        rawreads
+        )
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.wkcxid},
+                #{item.wkbh},
+                #{item.zt},
+                #{item.xpid},
+                #{item.shbbbh},
+                cast(#{item.shsj} as timestamp ),
+                #{item.shryid},
+                #{item.sffsbg},
+                #{item.bglx},
+                #{item.qxhbbg},
+                #{item.fxbb},
+                #{item.lczn},
+                #{item.fcjc},
+                #{item.sfxybg},
+                #{item.jcxmid},
+                #{item.sjid},
+                #{item.cxid},
+                #{item.sysid},
+                #{item.zklx},
+                #{item.wklx},
+                #{item.hbwkcxid},
+                #{item.cleangc},
+                #{item.cleanq20},
+                #{item.cleanq30},
+                #{item.adapter},
+                #{item.barcodematch},
+                #{item.clean},
+                #{item.dilutionf},
+                #{item.libccon},
+                #{item.nuccon},
+                #{item.qc},
+                #{item.lrry},
+                LOCALTIMESTAMP,
+                '0',
+                #{item.zxbb},
+                #{item.comment},
+                #{item.rawreads}
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_wkcx
+                <set>
+                    xgsj=LOCALTIMESTAMP
+                    <if test="item.rnareadsrate !=null and item.rnareadsrate != ''">
+                        ,rnareadsrate = #{item.rnareadsrate}
+                    </if>
+                </set>
+                <where>
+                    wkbh=#{item.wkbh} and xpid=#{item.xpid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getListForExp" parameterType="WkcxDto" resultType="WkcxDto">
+        select sjxx.ybbh,
+        wkcx.rawreads ,
+        wkcx.qc ,
+        wkcx.cleanq30
+        from igams_wkcx wkcx
+        left join igams_sjxx sjxx on wkcx.sjid=sjxx.sjid
+        <where>
+            wkcx.scbj = '0'
+            and wkcx.wkcxid = #{wkcxid}
+        </where>
+    </select>
+
+    <select id="getLabList" resultType="WkcxDto" parameterType="WkcxDto">
+        SELECT
+        sys.csmc AS sysmc,
+        tab.sysid,
+        COALESCE ( tb.wkzs, '0' ) AS wkzs,
+        COALESCE ( t1.fbgs, '0' ) AS fbgs,
+        COALESCE ( t2.tngs, '0' ) AS tngs,
+        COALESCE ( t3.mngs, '0' ) AS mngs,
+        COALESCE ( t4.tjs, '0' ) AS tjs
+        FROM
+        (
+        SELECT sysid
+        FROM
+        igams_wkcx wkcx
+        LEFT JOIN igams_sjxx sjxx ON sjxx.sjid = wkcx.sjid
+        AND sjxx.scbj = '0'
+        <where>
+            wkcx.scbj = '0'
+            AND wkcx.sysid IS NOT NULL
+            <if test="jcdws !=null and jcdws.length>0">
+                and sjxx.jcdw in
+                <foreach collection="jcdws" open="(" close=")" index="index" item="item"  separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="wkbh != null and wkbh != ''">
+                and wkcx.wkbh ILIKE '%'||#{wkbh}||'%'
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm ILIKE '%'||#{hzxm}||'%'
+            </if>
+            <if test="sjqf != null and sjqf != ''">
+                and sjxx.sjqf = #{sjqf}
+            </if>
+            <if test="sysid != null and sysid != ''">
+                and wkcx.sysid = #{sysid}
+            </if>
+        </where>
+        GROUP BY
+        wkcx.sysid
+        ) tab
+        LEFT JOIN matridx_jcsj sys ON sys.csid = tab.
+        sysid LEFT JOIN ( SELECT COUNT ( sysid ) AS wkzs, sysid FROM igams_wkcx WHERE scbj = '0' GROUP BY sysid ) tb ON tb.sysid = tab.
+        sysid LEFT JOIN ( SELECT COUNT ( sysid ) AS fbgs, sysid FROM igams_wkcx WHERE scbj = '0' AND zt = '03' GROUP BY sysid ) t1 ON t1.sysid = tab.
+        sysid LEFT JOIN (
+        SELECT COUNT
+        ( wk.sysid ) AS tngs,
+        sysid
+        FROM
+        igams_wkcx wk
+        LEFT JOIN igams_sjxx sj ON sj.sjid = wk.sjid
+        AND sj.scbj = '0'
+        LEFT JOIN igams_sjjcxm xm ON xm.sjid = sj.sjid and xm.scbj='0'
+        LEFT JOIN matridx_jcsj jcxm ON jcxm.csid = xm.jcxmid
+        WHERE
+        wk.scbj = '0'
+        AND jcxm.csmc LIKE'%tNGS%'
+        GROUP BY
+        wk.sysid
+        ) t2 ON t2.sysid = tab.
+        sysid LEFT JOIN (
+        SELECT COUNT
+        ( wk.sysid ) AS mngs,
+        sysid
+        FROM
+        igams_wkcx wk
+        LEFT JOIN igams_sjxx sj ON sj.sjid = wk.sjid
+        AND sj.scbj = '0'
+        LEFT JOIN igams_sjjcxm xm ON xm.sjid = sj.sjid and xm.scbj='0'
+        LEFT JOIN matridx_jcsj jcxm ON jcxm.csid = xm.jcxmid
+        WHERE
+        wk.scbj = '0'
+        AND jcxm.csmc NOT LIKE'%tNGS%'
+        GROUP BY
+        wk.sysid
+        ) t3 ON t3.sysid = tab.
+        sysid LEFT JOIN (
+        SELECT COUNT
+        ( wk.sysid ) AS tjs,
+        sysid
+        FROM
+        igams_wkcx wk
+        LEFT JOIN igams_sjxx sj ON sj.sjid = wk.sjid
+        AND sj.scbj = '0'
+        LEFT JOIN matridx_jcsj sjqf ON sjqf.csid = sj.sjqf
+        WHERE
+        wk.scbj = '0'
+        AND sjqf.csmc = '特检'
+        GROUP BY
+        wk.sysid
+        ) t4 ON t4.sysid = tab.sysid
+    </select>
+</mapper>

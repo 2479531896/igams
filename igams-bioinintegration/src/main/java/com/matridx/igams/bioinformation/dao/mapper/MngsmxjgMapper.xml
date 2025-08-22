@@ -1,0 +1,1071 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IMngsmxjgDao">
+
+    <!-- 判断表是否存在 -->
+    <select id="existsTable" parameterType="string" resultType="java.lang.Integer">
+           SELECT COUNT(*) as count FROM information_schema.TABLES WHERE table_name = #{tableName}
+        </select>
+    <update id="updateWzxx" parameterType="MngsmxjgDto">
+        update igams_mngsmxjg_${lrsj} wkjgmx_ls set (fl,sfgz,ftaxid,wzfl,fldj,wzlx,zwmm,wzdl,bdlb,xjlb,zbx,wzzs)
+        = ( select wzgl.fl,wzgl.sfgz,wzgl.fid,wzgl.wzfl,wzgl.fldj,wzgl.wzlx,wzgl.wzzwm,wzgl.wzdl,wzgl.bdlb,wzgl.xjlb,wzgl.zbx,wzgl.wzzs
+        from igams_wzgl wzgl
+        where wzgl.wzid = wkjgmx_ls.taxid)
+        where wkbh = #{wkbh} and bbh = #{bbh} and wkcxid= #{wkcxid}
+    </update>
+
+    <delete id="deleteByNull" parameterType="MngsmxjgDto">
+        delete from igams_mngsmxjg_${lrsj} wkjgmx where wkjgmx.xm is null and wkbh = #{wkbh} and bbh = #{bbh};
+    </delete>
+
+    <select id="getDtoNull"  resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select sum(cast(wkjgmx.readsaccum as numeric )) as num
+        from igams_mngsmxjg_${lrsj} wkjgmx
+        where wkjgmx.xm is null and wkjgmx.wkbh = #{wkbh} and wkjgmx.bbh = #{bbh}
+    </select>
+
+    <select id="getDtoListGroupBy" resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select wkjgmx_ls.wzdl,sum(cast(wkjgmx_ls.readsaccum as numeric )) as num
+        from igams_mngsmxjg_${lrsj} wkjgmx_ls
+        where wkbh = #{wkbh} and bbh = #{bbh} and scid is not null
+        group by wkjgmx_ls.wzdl
+    </select>
+
+    <select id="getDtoListLs" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        select wkjgmx_ls.mxjgid,wkjgmx_ls.wkbh,wkjgmx_ls.taxid,wkjgmx_ls.readscount,wkjgmx_ls.readsaccum,
+        wkjgmx_ls.gzd,wkjgmx_ls.aijg,wkjgmx_ls.bbh,wkjgmx_ls.head,wkjgmx_ls.qz,wkjgmx_ls.qzpw,wkjgmx_ls.fgdxx,
+        wkjgmx_ls.jtxlxx,wkjgmx_ls.sfwswgs,wkjgmx_ls.wzlx,wkjgmx_ls.fldj,wkjgmx_ls.xm,wkjgmx_ls.zwmm,wkjgmx_ls.rpq,
+        wkjgmx_ls.abd,wkjgmx_ls.grc,wkjgmx_ls.frequency,wkjgmx_ls.fl,wkjgmx_ls.sfgz,wkjgmx_ls.wzfl,wkjgmx_ls.fid,wkjgmx_ls.xh,
+        wkjgmx_ls.ftaxid,wkjgmx_ls.wkcxid,wkjgmx_ls.jgid,wkjgmx_ls.lrsj,wkjgmx_ls.wzdl
+        from igams_mngsmxjg_${lrsj} wkjgmx_ls
+        where wkbh = #{wkbh} and bbh = #{bbh}
+        order by wkjgmx_ls.xh
+    </select>
+
+    <select id="getDtoList" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t2.mxjgid,t2.wkbh,t2.taxid,t2.readscount,t2.readsaccum,t2.gzd,t2.aijg,t2.bbh,t2.head,t2.qz,
+        t2.qzpw,t2.fgdxx,t2.jtxlxx,t2.sfwswgs,t2.wzlx,t2.fldj,t2.xm,t2.zwmm,t2.rpq,t2.abd,t2.grc,t2.frequency,
+        t2.fl,t2.sfgz,t2.wzfl,t2.fid,t2.xh,t2.ftaxid,t2.wkcxid,t2.jgid,t2.lrsj,t2.wzdl, t2.fz, t2.xpid, t2.xjlb, t2.bdlb,t2.adjusted
+        FROM igams_mngsmxjg_${lrsj} AS t2
+        WHERE
+        1=1
+        <if test="jgid != null and jgid != ''">
+            and t2.jgid = #{ jgid }
+        </if>
+        <if test="xm != null and xm != ''">
+            and t2.xm like '%'||#{xm}||'%'
+        </if>
+        ORDER BY
+        t2.xh
+    </select>
+
+    <select id="getFilterDtoList" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t2.mxjgid,t2.wkbh,t2.taxid,t2.readscount,t2.readsaccum,t2.gzd,t2.aijg,t2.bbh,t2.head,t2.qz,
+        t2.qzpw,t2.fgdxx,t2.jtxlxx,t2.sfwswgs,t2.wzlx,t2.fldj,t2.xm,t2.zwmm,t2.rpq,t2.abd,t2.grc,t2.frequency,
+        t2.fl,t2.sfgz,t2.wzfl,t2.fid,t2.xh,t2.ftaxid,t2.wkcxid,t2.jgid,t2.lrsj,t2.wzdl, t2.fz, t2.xpid, t2.xjlb, t2.bdlb
+        FROM igams_mngsmxjg_${lrsj} AS t2
+        RIGHT JOIN igams_wzgl wzgl ON t2.taxid = wzgl.wzid
+        WHERE
+        t2.jgid = #{ jgid }
+         AND (
+                CAST ( t2.readscount AS NUMERIC ) > 0
+                OR t2.zbx = 'pathogenic'
+                OR t2.gzd = '1'
+                OR t2.gzd = '2'
+                OR t2.fldj like '%'||'S'||'%'
+                OR t2.gzd = '3'
+            )
+        ORDER BY
+        t2.xh
+    </select>
+
+    <select id="getReviewInfo" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        WITH RECURSIVE r AS (
+        SELECT
+        t1.mxjgid,
+        t1.wkbh,
+        t1.taxid,
+        t1.readscount,
+        t1.readsaccum,
+        case when t1.gzd is null then '5' else t1.gzd end gzd,
+        t1.aijg,
+        t1.bbh,
+        t1.head,
+        t1.qz,
+        t1.qzpw,
+        t1.fgdxx,
+        t1.jtxlxx,
+        t1.sfwswgs,
+        t1.wzlx,
+        t1.fldj,
+        t1.xm,
+        t1.zwmm,
+        t1.rpq,
+        t1.abd,
+        t1.grc,
+        t1.frequency,
+        t1.fl,
+        t1.sfgz,
+        t1.wzfl,
+        t1.fid,
+        t1.xh,
+        t1.ftaxid,
+        t1.wkcxid,
+        t1.jgid,
+        t1.lrsj,
+        t1.wzdl,
+        t1.fz,
+        t1.xpid,
+        t1.xjlb,
+        t1.bdlb,
+        t1.scid,
+        t1.zbx,
+        t1.dep,
+        t1.gid,
+        t1.sfdc,
+        t1.wzzs,
+        t1.sfys,
+        t1.bg,
+        t1.fx,
+        CASE
+
+        WHEN ( (t1.gzd = '1' OR t1.gzd = '2'
+                <if test="noai == null or noai == ''">
+                    AND t1.wzdl !='Parasite'
+                </if>
+                <if test="noai != null and noai != ''">
+                OR (t1.zbx = 'likely pathogenic' and t1.wzdl !='Parasite')
+                    OR (t1.zbx =
+                    'pathogenic' and t1.wzdl !='Parasite')
+                </if>
+                    )
+                or (t1.gzd = '1' OR t1.gzd = '2'
+                <if test="noai == null or noai == ''">
+                    and t1.wzdl ='Parasite'
+                    <if test='yblx != null and yblx != "" and yblx == "B"'>
+                        and cast(t1.readsaccum as int) > '5'
+                    </if>
+                    <if test='yblx != null and yblx != "" and yblx != "B"'>
+                        and cast(t1.readsaccum as int) > '10'
+                    </if>
+                </if>
+                <if test="noai != null and noai != ''">
+                OR (t1.zbx = 'likely pathogenic' and t1.wzdl ='Parasite'
+                    <if test='yblx != null and yblx != "" and yblx == "B"'>
+                        and cast(t1.readsaccum as int) > '5'
+                    </if>
+                    <if test='yblx != null and yblx != "" and yblx != "B"'>
+                        and cast(t1.readsaccum as int) > '10'
+                    </if>
+                    )
+                    OR (t1.zbx =
+                    'pathogenic' and t1.wzdl ='Parasite'
+                    <if test='yblx != null and yblx != "" and yblx == "B"'>
+                        and cast(t1.readsaccum as int) > '5'
+                    </if>
+                    <if test='yblx != null and yblx != "" and yblx != "B"'>
+                        and cast(t1.readsaccum as int) > '10'
+                    </if>)
+                </if>
+        )
+                ) THEN
+                'high_Concern'
+                WHEN (
+                    (t1.fl = '0' and t1.wzdl !='Parasite'  and (t1.sfdc='1' or  (t1.sfdc != '1'  and t1.readscount >'0' and (select count(mxjgid) from igams_mngsmxjg_${lrsj} where jgid=#{jgid} and scid=t1.taxid and( gzd = '1' or gzd = '2'
+                        <if test="noai != null and noai != ''">
+                            or zbx = 'likely pathogenic' or zbx = 'pathogenic'
+                        </if>
+                        )
+                        )=0) )
+                        AND ( ( t1.gzd != '1' AND t1.gzd != '2'
+
+                        <if test="noai != null and noai != ''">
+                            AND t1.zbx != 'likely pathogenic'
+                            AND t1.zbx != 'pathogenic'
+                        </if>
+                        ) OR t1.gzd IS NULL ))
+                        or (t1.fl = '0' and t1.wzdl ='Parasite'
+                        <if test='yblx != null and yblx != "" and yblx == "B"'>
+                            and cast(t1.readsaccum as int) > '5'
+                        </if>
+                        <if test='yblx != null and yblx != "" and yblx != "B"'>
+                            and cast(t1.readsaccum as int) > '10'
+                        </if>
+                        and (t1.sfdc='1' or  (t1.sfdc != '1'  and t1.readscount >'0' and (select count(mxjgid) from igams_mngsmxjg_${lrsj} where jgid=#{jgid} and scid=t1.taxid and( gzd = '1' or gzd = '2'
+                        <if test="noai != null and noai != ''">
+                            or zbx = 'likely pathogenic' or zbx = 'pathogenic'
+                        </if>
+                        )
+                        )=0) )
+                        AND ( ( t1.gzd != '1' AND t1.gzd != '2'
+
+                        <if test="noai != null and noai != ''">
+                            AND t1.zbx != 'likely pathogenic'
+                            AND t1.zbx != 'pathogenic'
+                        </if>
+                        ) OR t1.gzd IS NULL ))
+                    )  THEN
+                    'core'
+                    WHEN (
+                        (t1.fl = '1' and t1.wzdl !='Parasite'  and (t1.sfdc='1' or  (t1.sfdc != '1'  and t1.readscount >'0' and (select count(mxjgid) from igams_mngsmxjg_${lrsj} where jgid=#{jgid} and scid=t1.taxid and( gzd = '1' or gzd = '2'
+                        <if test="noai != null and noai != ''">
+                            or zbx = 'likely pathogenic' or zbx = 'pathogenic'
+                        </if>
+                        )
+                        )=0) )
+                        AND ( ( t1.gzd != '1' AND t1.gzd != '2'
+
+                        <if test="noai != null and noai != ''">
+                            AND t1.zbx != 'likely pathogenic'
+                            AND t1.zbx != 'pathogenic'
+                        </if>
+                        ) OR t1.gzd IS NULL ))
+                        or (t1.fl = '1' and t1.wzdl ='Parasite'
+                        <if test='yblx != null and yblx != "" and yblx == "B"'>
+                            and cast(t1.readsaccum as int) > '5'
+                        </if>
+                        <if test='yblx != null and yblx != "" and yblx != "B"'>
+                            and cast(t1.readsaccum as int) > '10'
+                        </if>
+                        and (t1.sfdc='1' or  (t1.sfdc != '1'  and t1.readscount >'0' and (select count(mxjgid) from igams_mngsmxjg_${lrsj} where jgid=#{jgid} and scid=t1.taxid and( gzd = '1' or gzd = '2'
+                        <if test="noai != null and noai != ''">
+                            or zbx = 'likely pathogenic' or zbx = 'pathogenic'
+                        </if>
+                        )
+                        )=0) )
+                        AND ( ( t1.gzd != '1' AND t1.gzd != '2'
+
+                        <if test="noai != null and noai != ''">
+                            AND t1.zbx != 'likely pathogenic'
+                            AND t1.zbx != 'pathogenic'
+                        </if>
+                        ) OR t1.gzd IS NULL ))
+                    )  THEN
+                    'extension'
+                END dl
+        <if test="wkbhlike != null and wkbhlike != ''">
+            ,case when(t1.fldj like '%'||'S'||'%' and cast(t1.rpq as NUMERIC) &lt;= (cast(ncjg.rpq as NUMERIC) * 5))  then '0' else '1' end rpqflg
+        </if>
+        FROM
+            igams_mngsmxjg_${lrsj} AS t1
+            LEFT JOIN igams_wzgl wzgl ON t1.taxid = wzgl.wzid
+        <if test="wkbhlike != null and wkbhlike != ''">
+            left outer join igams_mngsmxjg_${lrsj} ncjg on ncjg.jgid = (
+            select jgid from igams_wkcx wkcx
+            left join igams_wkcxbb wkcxbb on wkcx.wkcxid = wkcxbb.wkcxid
+            where wkcx.scbj = '0' and wkcx.xpid = #{xpid}  and wkcx.wkbh like '%'||#{wkbhlike}||'%'
+            ) and ncjg.taxid = t1.taxid
+        </if>
+        WHERE
+            t1.jgid = #{jgid} and wzgl.wzid is not null
+            AND (
+                CAST ( t1.readscount AS NUMERIC ) > 0
+                OR t1.zbx = 'likely pathogenic'
+                OR t1.zbx = 'pathogenic'
+                OR t1.fldj like '%'||'S'||'%'
+                OR t1.gzd = '1'
+                OR t1.gzd = '2'
+                OR t1.gzd = '3'
+            )
+        <if test = "list != null and list.size > 0 "  >
+            and t1.mxjgid in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item.mxjgid}
+            </foreach>
+        </if>
+
+             UNION
+        SELECT
+            t2.mxjgid,
+            t2.wkbh,
+            t2.taxid,
+            t2.readscount,
+            t2.readsaccum,
+            case when t2.gzd is null then '5' else t2.gzd end gzd,
+            t2.aijg,
+            t2.bbh,
+            t2.head,
+            t2.qz,
+            t2.qzpw,
+            t2.fgdxx,
+            t2.jtxlxx,
+            t2.sfwswgs,
+            t2.wzlx,
+            t2.fldj,
+            t2.xm,
+            t2.zwmm,
+            t2.rpq,
+            t2.abd,
+            t2.grc,
+            t2.frequency,
+            t2.fl,
+            t2.sfgz,
+            t2.wzfl,
+            t2.fid,
+            t2.xh,
+            t2.ftaxid,
+            t2.wkcxid,
+            t2.jgid,
+            t2.lrsj,
+            t2.wzdl,
+            t2.fz,
+            t2.xpid,
+            t2.xjlb,
+            t2.bdlb,
+            t2.scid,
+            t2.zbx,
+            t2.dep,
+		    t2.gid,
+		    t2.sfdc,
+            t2.wzzs,
+            t2.sfys,
+            t2.bg,
+            t2.fx,
+        r.dl
+        <if test="wkbhlike != null and wkbhlike != ''">
+            ,case when r.rpqflg='1' then r.rpqflg when t2.taxid=t2.ftaxid and cast(t2.readscount as NUMERIC) > 0 then '1' else r.rpqflg end rpqflg
+        </if>
+        FROM
+            igams_mngsmxjg_${lrsj} AS t2,
+            r
+        WHERE
+            t2.taxid = r.scid
+            AND t2.jgid = #{jgid}
+
+        )
+
+         SELECT
+        r.* ,
+        ROW_NUMBER ( ) OVER ( PARTITION BY r.dl ORDER BY r.xh ) index
+        ,f.wzlx fwzlx,
+        f.xm fxm,
+        f.zwmm fzwmm,
+        f.abd fabd,
+        f.readsaccum freadsaccum,
+        f.taxid staxid,
+        f.mxjgid fmxjgid,
+        f.qz fqz,
+        f.qzpw fqzpw,
+        f.gzd fgzd,
+        f.wzfl fwzfl,
+        f.bdlb fbdlb
+    FROM
+        r
+        INNER JOIN igams_wzgl wz ON wz.wzid = r.taxid
+        left join r f on f.taxid = r.ftaxid and r.dl = f.dl
+    WHERE
+        r.jgid = #{jgid} and r.dl is not null
+        <if test="wkbhlike != null and wkbhlike != ''">
+            and r.rpqflg ='1'
+        </if>
+        ORDER BY
+        r.dl,
+        CAST (r.grc AS int) DESC,
+        CAST (r.readsaccum AS int) DESC
+
+
+    </select>
+
+
+    <select id="getDtoListLsCs" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        WITH RECURSIVE r AS (
+        SELECT t1.mxjgid, t1.wkbh, t1.taxid, t1.readscount, t1.readsaccum, (case when t1.gzd is null then '5' else t1.gzd end ), t1.aijg, t1.bbh,
+        t1.head, t1.qz, t1.qzpw, t1.fgdxx, t1.jtxlxx, t1.sfwswgs, t1.wzlx, t1.fldj, t1.xm, t1.zwmm,
+        t1.rpq, t1.abd, t1.grc, t1.frequency, t1.fl, t1.sfgz, t1.wzfl, t1.fid, t1.xh, t1.ftaxid,
+        t1.wkcxid, t1.jgid, t1.lrsj, t1.wzdl, t1.fz, t1.xpid, t1.xjlb, t1.bdlb,t1.scid,t1.zbx,t1.readscount
+        FROM
+        igams_mngsmxjg_${lrsj} AS t1
+        WHERE
+        t1.jgid = #{ jgid } 
+
+
+        <if test="aijg != null and aijg != ''">
+            and (t1.gzd = #{aijg}
+        <if test="aijg1 != null and aijg1 != ''">or
+            t1.gzd =
+            #{aijg1}
+        </if>
+        <if test="aijg2 != null and aijg2 != ''">
+            or t1.sfys = #{aijg2}
+        </if>
+        )
+        </if>
+
+        <if test="sfgz != null and sfgz != ''">
+            and t1.sfgz = #{sfgz}
+        </if>
+        <if test="noai != null and noai != ''">
+            and ((t1.gzd !=  #{noai}
+            <if test="noai1 != null and noai1 != ''">
+                and t1.gzd !='3' and t1.sfys !=  #{noai1}
+        </if>
+            ) or t1.gzd is null)
+        </if>
+        <if test="fl != null and fl != ''">
+            and t1.fl = #{fl}
+        </if>
+        <if test = "list != null and list.size > 0 "  >
+            and t1.mxjgid in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item.mxjgid}
+            </foreach>
+        </if>
+        UNION
+        SELECT t2.mxjgid,t2.wkbh,t2.taxid,t2.readscount,t2.readsaccum,(case when t2.gzd is null then '5' else t2.gzd end),t2.aijg ,t2.bbh,t2.head,t2.qz,
+        t2.qzpw,t2.fgdxx,t2.jtxlxx,t2.sfwswgs,t2.wzlx,t2.fldj,t2.xm,t2.zwmm,t2.rpq,t2.abd,t2.grc,t2.frequency,
+        t2.fl,t2.sfgz,t2.wzfl,t2.fid,t2.xh,t2.ftaxid,t2.wkcxid,t2.jgid,t2.lrsj,t2.wzdl, t2.fz, t2.xpid, t2.xjlb, t2.bdlb,t2.scid,t2.zbx,t2.readscount
+        FROM igams_mngsmxjg_${lrsj} AS t2,r
+        WHERE
+        t2.taxid = r.scid and t2.jgid = #{ jgid })
+        SELECT r.* ,row_number() over(order by r.xh ) index FROM r
+        INNER JOIN igams_wzgl wz on wz.wzid=r.taxid
+        WHERE
+        r.jgid = #{ jgid }
+        ORDER BY
+        r.xh
+    </select>
+
+    <update id="updateList" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_mngsmxjg_${item.lrsj} set gzd = #{item.gzd},sfwswgs = #{item.sfwswgs} ,xgry = #{item.xgry},xgsj = LOCALTIMESTAMP where mxjgid = #{item.mxjgid}
+        </foreach>
+    </update>
+    <update id="updateGzdSetMr" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_mngsmxjg_${item.lrsj} set gzd = '3' where mxjgid = #{item.mxjgid}
+        </foreach>
+    </update>
+
+    <update id="updateListLs" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_mngsmxjg_${item.lrsj} set abd = #{item.abd},grc = #{item.grc}
+            <if test="item.scid != null and item.scid != ''">
+                ,scid=#{item.scid}
+            </if>
+            <if test="item.cj != null and item.cj != ''">
+                ,cj=#{item.cj}
+            </if>
+            where mxjgid = #{item.mxjgid}
+        </foreach>
+    </update>
+
+    <update id="updateListLsFl" parameterType="MngsmxjgDto">
+        update igams_mngsmxjg_${lrsj} ls
+        set fl = wzgl.fl
+        from igams_wzgl wzgl
+        where ls.taxid=wzgl.wzid
+        and ls.wkbh=#{wkbh} and ls.bbh=#{bbh}
+    </update>
+
+    <insert id="batchInsertLs" parameterType="list">
+        insert into igams_mngsmxjg (mxjgid,taxid,readscount,readsaccum,bbh,head,wkcxid,xh,rpq,fid,jgid,lrsj,wkbh,qz,qzpw,xpid,cj,xm,adjusted) VALUES
+        <foreach collection="list" open="" close="" item="item" index="index" separator=",">
+            (#{item.mxjgid},#{item.taxid},#{item.readscount},#{item.readsaccum},
+            #{item.bbh},#{item.head},#{item.wkcxid},#{item.xh},#{item.rpq},#{item.fid},#{item.jgid},cast(#{item.lrsj} as timestamp),#{item.wkbh},#{item.qz},#{item.qzpw},#{item.xpid},#{item.cj},#{item.xm},#{item.adjusted})
+        </foreach>
+    </insert>
+
+    <select id="getGidAndsfdc" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+WITH RECURSIVE r AS (
+SELECT t1.mxjgid, t1.wkbh, t1.taxid, t1.readscount, t1.readsaccum, t1.gzd, t1.aijg, t1.bbh,
+        t1.head, t1.qz, t1.qzpw, t1.fgdxx, t1.jtxlxx, t1.sfwswgs, t1.wzlx, t1.fldj, t1.xm, t1.zwmm,
+        t1.rpq, t1.abd, t1.grc, t1.frequency, t1.fl, t1.sfgz, t1.wzfl, t1.fid, t1.xh, t1.ftaxid,
+        t1.wkcxid, t1.jgid, t1.lrsj, t1.wzdl, t1.fz, t1.xpid, t1.xjlb, t1.bdlb,t1.scid,t1.zbx,t1.readscount,t1.taxid gid, 1 dep
+
+        FROM
+        igams_mngsmxjg_${lrsj} AS t1
+
+        WHERE
+        t1.jgid =  #{jgid} and scid is null
+
+    UNION
+        SELECT t2.mxjgid,t2.wkbh,t2.taxid,t2.readscount,t2.readsaccum,t2.gzd,t2.aijg,t2.bbh,t2.head,t2.qz,
+        t2.qzpw,t2.fgdxx,t2.jtxlxx,t2.sfwswgs,t2.wzlx,t2.fldj,t2.xm,t2.zwmm,t2.rpq,t2.abd,t2.grc,t2.frequency,
+        t2.fl,t2.sfgz,t2.wzfl,t2.fid,t2.xh,t2.ftaxid,t2.wkcxid,t2.jgid,t2.lrsj,t2.wzdl, t2.fz, t2.xpid, t2.xjlb, t2.bdlb,t2.scid,t2.zbx,t2.readscount,r.gid,r.dep +1 dep
+        FROM igams_mngsmxjg_${lrsj} AS t2,r
+        WHERE
+        t2.scid = r.taxid and t2.jgid = #{jgid})
+
+    SELECT r.mxjgid,r.gid,case when dep = MAX(dep) OVER (partition by gid) then 1 else 0 end sfdc,r.dep FROM r
+        INNER JOIN igams_wzgl wz on wz.wzid=r.taxid
+
+    </select>
+    <update id="updateGidAndsfdc" parameterType="MngsmxjgDto">
+        <if test="list !=null and list.size > 0">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+        update igams_mngsmxjg_${item.lrsj}   set
+         gid=#{item.gid} , sfdc=#{item.sfdc}, dep=#{item.dep} where mxjgid=#{item.mxjgid}
+        </foreach>
+        </if>
+    </update>
+    <update id="updateBjtppath" parameterType="MngsmxjgDto">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+                update igams_mngsmxjg_${item.lrsj}   set
+                <if test="item.bjtppath !=null and item.bjtppath != ''">
+                    bjtppath=#{item.bjtppath}
+                </if>
+                <if test="item.fx !=null and item.fx != ''">
+                    fx=#{item.fx}
+                </if>
+                <if test="item.bg !=null and item.bg != ''">
+                    bg=#{item.bg}
+                </if>
+                where wkbh=#{item.wkbh} and bbh=#{item.bbh} and taxid=#{item.taxid} and wkcxid =#{item.wkcxid}
+            </foreach>
+        </if>
+    </update>
+    <update id="updateListFz" parameterType="MngsmxjgDto">
+        with r as(
+            <foreach collection="ids" open="(" close=")" separator="union all" item="item">
+                select #{item} as taxid
+            </foreach>
+        )
+
+        UPDATE igams_mngsmxjg_${thismonth} mngsmxjg
+        SET (fz) =(
+        SELECT COUNT ( mngsmx.wkbh ) as gs FROM (
+            select ts.wkbh,ts.xpid,ts.taxid from
+            (select wkbh,xpid,taxid from  igams_mngsmxjg_${thismonth} where xpid = #{xpid}) ts
+            inner join r  on ts.taxid=r.taxid
+            group by
+            ts.wkbh,
+            ts.xpid,
+            ts.taxid
+        <if test="lastmonth != null and lastmonth != ''">
+            union all
+            select ts.wkbh,ts.xpid,ts.taxid from
+            (select wkbh,xpid,taxid from  igams_mngsmxjg_${lastmonth} where xpid = #{xpid}) ts
+            inner join r  on ts.taxid=r.taxid
+            group by
+            ts.wkbh,
+            ts.xpid,
+            ts.taxid
+        </if>
+         )mngsmx)
+        from r
+        WHERE
+        mngsmxjg.xpid = #{xpid}
+        and r.taxid=mngsmxjg.taxid
+
+        ;
+        <if test="lastmonth != null and lastmonth != ''">
+            UPDATE igams_mngsmxjg_${lastmonth} mngsmxjg
+            SET (fz) =(
+            SELECT COUNT ( mngsmx.wkbh ) as gs FROM (
+            select ts.wkbh,ts.xpid,ts.taxid from
+            (select wkbh,xpid,taxid from  igams_mngsmxjg_${thismonth} where xpid = #{xpid}) ts
+            inner join r  on ts.taxid=r.taxid
+            group by
+            ts.wkbh,
+            ts.xpid,
+            ts.taxid
+            union all
+            select ts.wkbh,ts.xpid,ts.taxid from
+            (select wkbh,xpid,taxid from  igams_mngsmxjg_${lastmonth} where xpid = #{xpid}) ts
+            inner join r  on ts.taxid=r.taxid
+            group by
+            ts.wkbh,
+            ts.xpid,
+            ts.taxid
+            )mngsmx)
+            from r
+            WHERE
+            mngsmxjg.xpid = #{xpid}
+            and r.taxid=mngsmxjg.taxid
+        </if>
+    </update>
+<!--    <update id="updateListFz" parameterType="MngsmxjgDto">-->
+<!--        UPDATE igams_mngsmxjg_${thismonth} mngsmxjg-->
+<!--        SET (fz) = (select sum(tab.gs) from ((SELECT COUNT ( mxjgid ) as gs FROM igams_mngsmxjg_${thismonth} mngsmx WHERE mngsmxjg.taxid = mngsmx.taxid AND mngsmx.xpid = #{xpid})-->
+<!--        <if test="lastmonth != null and lastmonth != ''">-->
+<!--            union all-->
+<!--            (SELECT COUNT ( mxjgid ) as gs FROM igams_mngsmxjg_${lastmonth} lasttable WHERE mngsmxjg.taxid = lasttable.taxid AND lasttable.xpid = #{xpid})-->
+<!--        </if>-->
+<!--        ) tab)-->
+<!--        WHERE-->
+<!--        mngsmxjg.xpid = #{xpid}-->
+<!--        AND taxid IN-->
+<!--        <foreach collection="ids" open="(" close=")" separator="," item="item">-->
+<!--            #{item}-->
+<!--        </foreach>-->
+<!--        <if test="lastmonth != null and lastmonth != ''">-->
+<!--            ;-->
+<!--            UPDATE igams_mngsmxjg_${lastmonth} mngsmxjg-->
+<!--            SET (fz) = (select sum(tab.gs) from ((SELECT COUNT ( mxjgid ) as gs FROM igams_mngsmxjg_${thismonth} mngsmx WHERE mngsmxjg.taxid = mngsmx.taxid AND mngsmx.xpid = #{xpid})-->
+<!--            union all-->
+<!--            (SELECT COUNT ( mxjgid ) as gs FROM igams_mngsmxjg_${lastmonth} lasttable WHERE mngsmxjg.taxid = lasttable.taxid AND lasttable.xpid = #{xpid})-->
+<!--            ) tab)-->
+<!--            WHERE-->
+<!--            mngsmxjg.xpid = #{xpid}-->
+<!--            AND taxid IN-->
+<!--            <foreach collection="ids" open="(" close=")" separator="," item="item">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+
+<!--    </update>-->
+
+
+    <insert id="insertLsAllToWkjgmx" parameterType="list">
+        insert into igams_mngsmxjg (
+        mxjgid, wkbh, taxid, readscount, readsaccum, gzd, aijg, bbh,
+        head, qz, qzpw, fgdxx, jtxlxx, sfwswgs, wzlx, fldj,
+        xm, zwmm, rpq, abd, grc, frequency, fl, sfgz, wzfl,
+        fid, xh, ftaxid, wkcxid, jgid, lrsj, wzdl,xpid,xjlb,bdlb,zbx,cj,scid,gid,sfdc,dep
+        ) VALUES
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+
+            (
+                #{item.mxjgid},#{item.wkbh},#{item.taxid},#{item.readscount},#{item.readsaccum},#{item.gzd},#{item.aijg},#{item.bbh},
+                #{item.head},#{item.qz},#{item.qzpw} ,#{item.fgdxx},#{item.jtxlxx},#{item.sfwswgs},#{item.wzlx},#{item.fldj},
+                #{item.xm},#{item.zwmm},#{item.rpq},#{item.abd},#{item.grc},#{item.frequency},#{item.fl},#{item.sfgz},#{item.wzfl},
+                #{item.fid},#{item.xh},#{item.ftaxid},#{item.wkcxid},#{item.jgid},cast(#{item.lrsj} as timestamp),#{item.wzdl},#{item.xpid},
+                #{item.xjlb},#{item.bdlb},#{item.zbx},#{item.cj},#{item.scid},#{item.gid},#{item.sfdc},#{item.dep}
+            )
+        </foreach>
+    </insert>
+
+<!--    <insert id="batchUpdateLs" parameterType="list">-->
+<!--        <foreach collection="list" open="" close="" item="item" index="index" separator=";">-->
+<!--            update igams_mngsmxjg_${item.lrsj} set-->
+<!--            <choose>-->
+<!--                <when test="item.jtxlxx !=null and item.jtxlxx != ''">-->
+<!--                    jtxlxx = #{item.jtxlxx}-->
+<!--                </when>-->
+<!--                <otherwise></otherwise>-->
+<!--            </choose>-->
+<!--            <choose>-->
+<!--                <when test="item.aijg !=null and item.aijg != ''">-->
+<!--                    aijg = #{item.aijg}-->
+<!--                </when>-->
+<!--                <otherwise></otherwise>-->
+<!--            </choose>-->
+<!--            <choose>-->
+<!--                <when test="item.fgdxx !=null and item.fgdxx != ''">-->
+<!--                    fgdxx = #{item.fgdxx}-->
+<!--                </when>-->
+<!--                <otherwise></otherwise>-->
+<!--            </choose>-->
+<!--            <where>-->
+<!--                taxid=#{item.taxid} and bbh=#{item.bbh} and wkbh=#{item.wkbh}-->
+<!--            </where>-->
+<!--        </foreach>-->
+<!--    </insert>-->
+
+    <insert id="batchUpdateLs" parameterType="list">
+        update igams_mngsmxjg_${list[0].lrsj} set
+        <choose>
+            <when test="list[0].jtxlxx !=null and list[0].jtxlxx != ''">
+                jtxlxx = tmp.jtxlxx
+            </when>
+        </choose>
+        <choose>
+            <when test="list[0].aijg !=null and list[0].aijg != ''">
+                aijg = tmp.aijg
+            </when>
+        </choose>
+        <choose>
+            <when test="list[0].fgdxx !=null and list[0].fgdxx != ''">
+                fgdxx = tmp.fgdxx
+            </when>
+        </choose>
+        from(
+        VALUES
+            <foreach collection="list" open="" close="" item="item" index="index" separator=",">
+            (
+                <choose>
+                    <when test="item.jtxlxx !=null and item.jtxlxx != ''">
+                        #{item.jtxlxx}
+                    </when>
+                </choose>
+                <choose>
+                    <when test="item.aijg !=null and item.aijg != ''">
+                        #{item.aijg}
+                    </when>
+                </choose>
+                <choose>
+                    <when test="item.fgdxx !=null and item.fgdxx != ''">
+                        #{item.fgdxx}
+                    </when>
+                </choose>
+                , #{item.taxid} ,#{item.bbh} ,#{item.wkbh},#{item.wkcxid}
+            )
+            </foreach>
+        )as tmp(
+            <choose>
+                <when test="list[0].jtxlxx !=null and list[0].jtxlxx != ''">
+                    jtxlxx
+                </when>
+            </choose>
+            <choose>
+                <when test="list[0].aijg !=null and list[0].aijg != ''">
+                    aijg
+                </when>
+            </choose>
+            <choose>
+                <when test="list[0].fgdxx !=null and list[0].fgdxx != ''">
+                    fgdxx
+                </when>
+            </choose>
+          ,taxid,bbh,wkbh,wkcxid)
+        <where>
+            igams_mngsmxjg_${list[0].lrsj}.taxid = tmp.taxid
+            and igams_mngsmxjg_${list[0].lrsj}.bbh = tmp.bbh
+            and igams_mngsmxjg_${list[0].lrsj}.wkbh = tmp.wkbh
+            and igams_mngsmxjg_${list[0].lrsj}.wkcxid = tmp.wkcxid
+        </where>
+    </insert>
+
+    <select id="getLsAll" resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select mxjgid, wkbh, taxid, readscount, readsaccum, gzd, aijg, bbh, head, qz, qzpw, fgdxx, jtxlxx, sfwswgs,
+               wzlx, fldj, xm, zwmm, rpq, abd, grc, frequency, fl, sfgz, wzfl, fid, xh, ftaxid, wkcxid,jgid, wzdl,lrsj,xpid,xjlb,bdlb,zbx,cj,scid,gid,sfdc,dep
+        from igams_mngsmxjg_${lrsj}
+        where bbh=#{bbh} and wkbh=#{wkbh} and wkcxid =#{wkcxid}
+        order by xh
+    </select>
+
+    <delete id="delLsAll" parameterType="MngsmxjgDto">
+        delete from igams_wkjgmx_ls where bbh=#{bbh} and wkbh=#{wkbh}
+    </delete>
+    <!-- 查询是特检，不是REM文库的数据   -->
+    <select id="getMxjgByTjAndNotREM" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        select distinct mxjg.qz,mxjg.taxid,wk.wkbh,wk.ryzs
+        from igams_mngsmxjg mxjg
+        inner join (
+        SELECT wkcx.wkbh ,wkcxbb.bbh,wkcxbb.ryzs
+        from (select sjxx.sjid
+        from igams_sjxx sjxx
+        left join matridx_jcsj jcsj on jcsj.csid=sjxx.sjqf
+        where jcsj.csid = '195770A431A3445C9055D396F29783BA')sjxx
+        inner join igams_wkcx wkcx on wkcx.sjid=sjxx.sjid
+        LEFT JOIN igams_wkcxbb wkcxbb on wkcxbb.wkcxid = wkcx.wkcxid
+        where wkcx.wkbh !~ 'REM' and wkcxbb.sfzwqckj = '1') wk
+        on wk.bbh=mxjg.bbh and mxjg.wkbh = wk.wkbh
+    </select>
+
+    <select id="getListbyTaxids" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        select
+        mngsmxjg.taxid,mngsmxjg.fldj as rank_code,mngsmxjg.xm as name,mngsmxjg.zwmm as cn_name,mngsmxjg.readsaccum as reads_count,
+        case when mngsmxjg.wzlx  is  null then '' else mngsmxjg.wzlx end species_category,mngsmxjg.abd as abundance,
+        fid.taxid as genus_taxid,fid.xm as genus_name,fid.zwmm as genus_cn_name,fid.readsaccum as genus_reads_accum,
+        fid.abd as genus_abundance,mngsmxjg.qz,mngsmxjg.qzpw,wzqzfw.zdz,wzqzfw.zxz,mngsmxjg.lrsj as last_update,mngsmxjg.fgdxx,mngsmxjg.wzfl as sp_type,
+        wzgl.wzzs as comment,mngsmxjg.bjtppath,mngsmxjg.bdlb,mngsmxjg.zbx,mngsmxjg.fx as clade
+        from igams_mngsmxjg_${lrsj} mngsmxjg
+        left join igams_mngsmxjg_${lrsj} fid on fid.taxid=mngsmxjg.ftaxid
+        and fid.wkcxid=#{wkcxid} AND fid.bbh = #{bbh}
+        left join matridx_wzqzfw wzqzfw on wzqzfw.taxid=mngsmxjg.taxid  and wzqzfw.yblx=#{yblx}
+        left join igams_wzgl wzgl on wzgl.wzid=mngsmxjg.taxid
+        <where>
+            1=1
+        <if test="bbh!=null and bbh!=''">
+            and mngsmxjg.bbh=#{bbh}
+        </if>
+        <if test="wkbh!=null and wkbh!=''">
+            and mngsmxjg.wkbh=#{wkbh}
+        </if>
+        <if test="dnaflag!=null and dnaflag!=''">
+             and ( mngsmxjg.bdlb !='RNA' or mngsmxjg.bdlb is null)
+        </if>
+        <if test="rnaflag!=null and rnaflag!=''">
+             and (mngsmxjg.bdlb ='RNA' and mngsmxjg.wzfl='Viruses')
+        </if>
+        <if test="wkcxid!=null and wkcxid!=''">
+             and mngsmxjg.wkcxid=#{wkcxid}
+        </if>
+        <if test="wswTaxids != null and wswTaxids.size()>0 ">
+            and mngsmxjg.taxid in
+            <foreach collection="wswTaxids" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </select>
+
+    <select id="getWkbhByGzh" parameterType="MngsmxjgDto" resultType="string">
+        <if test = "times != null and times.size > 0 "  >
+            <foreach collection="times" separator=" union all " open="(" close=") " item="item" index="index">
+                select wkbh
+                from igams_mngsmxjg${item}
+                <where>
+                    <if test="gzd != null and gzd != ''">
+                        aijg = #{aijg}
+                    </if>
+                </where>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getWkbhByTaxid" parameterType="MngsmxjgDto" resultType="string">
+        <if test = "times != null and times.size > 0 "  >
+            <foreach collection="times" separator=" union all " open="(" close=") " item="item" index="index">
+                select wkbh
+                from igams_mngsmxjg${item}
+                <where>
+                    <if test="taxid != null and taxid != ''">
+                        taxid = #{taxid}
+                    </if>
+                </where>
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateGzdToFour" parameterType="MngsmxjgDto">
+
+        update igams_mngsmxjg_${lrsj}
+        set sfys ='0'
+        where  bbh =#{bbh} and wkbh = #{wkbh} and sfys = '4' and wkcxid =#{wkcxid};
+
+        update igams_mngsmxjg_${lrsj}
+        set sfys ='4',sfwswgs='1'
+        where fl='0' and gzd ='3' and fldj = 'S'
+        and bbh =#{bbh} and wkbh = #{wkbh} and wkcxid =#{wkcxid}
+    </update>
+
+    <update id="updateGzdToAijg" parameterType="MngsmxjgDto">
+        update igams_mngsmxjg_${lrsj}
+        set gzd = aijg
+        where bbh =#{bbh} and wkbh = #{wkbh} and wkcxid = #{wkcxid} and gzd is null
+    </update>
+
+    <update id="updateGzdToAijgList" parameterType="MngsmxjgDto">
+        <if test="list != null and list.size()>0">
+            <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+                update igams_mngsmxjg_${item.lrsj}
+                set gzd = aijg
+                where bbh =#{item.bbh} and wkbh = #{item.wkbh} and taxid =#{item.taxid} and wkcxid =#{item.wkcxid}
+            </foreach>
+        </if>
+    </update>
+    
+    <select id="getSampleTreeList" resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select t2.taxid,t1.fl,t2.gzd,t2.zwmm,t2.rpq
+        from igams_wzgl as t1
+        left join igams_mngsmxjg_${lrsj} as t2 on t2.taxid=t1.wzid
+        where t2.bbh =#{bbh} and t2.wkbh = #{wkbh} and t2.wkcxid = #{wkcxid}
+    </select>
+
+    <select id="syncData" resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select
+        wk.id as wkcxid,
+        wk.version_dates,
+        wk.analysis_version as fxbb
+        from core_sample wk
+        where wk.uid not like  '%DNA-RNA%'  and wk.uid not like  '%RNA-DNA%' and (wk.uid like '%RNA%' or wk.uid like '%DNA%' ) order by wk.id asc
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <update id="updateBbh" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_mngsmxjg
+                <set>
+                    bbh = #{item.bbh}
+                </set>
+                <where>
+                    wkcxid = #{item.wkcxid}  and  bbh=#{item.ybbbh}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateGzdByIds" parameterType="MngsmxjgDto">
+        update igams_mngsmxjg_${lrsj} set gzd=#{gzd}
+        where mxjgid in
+        <foreach collection="ids" open="(" close=")" separator="," item="items">
+            #{items}
+        </foreach>
+    </update>
+
+    <select id="getMngsInfo" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t1.mxjgid, t1.wkbh, t1.taxid,  t1.readsaccum, t1.gzd, t1.aijg, t1.bbh,
+        t1.head, t1.qz, t1.qzpw, t1.fgdxx, t1.jtxlxx, t1.sfwswgs, t1.wzlx, t1.fldj, t1.xm, t1.zwmm,
+        t1.rpq, t1.abd, t1.grc, t1.frequency, t1.fl, t1.sfgz, t1.wzfl,  t1.xh, t1.ftaxid,t1.sfys,
+        t1.wkcxid, t1.jgid, t1.lrsj, t1.wzdl, t1.fz, t1.xpid, t1.xjlb, t1.bdlb,t1.scid,t1.zbx,t1.readscount,
+        t2.wzlx as fwzlx,t2.readsaccum as freadsaccum,t2.abd as fabd, t2.xm as fxm, t2.zwmm as fzwmm,t2.taxid as fid
+        FROM
+        igams_mngsmxjg_${lrsj} AS t1
+        left join  igams_mngsmxjg_${lrsj} t2 on t2.taxid=t1.ftaxid  and  t2.jgid = #{jgid}
+        WHERE
+        t1.jgid = #{jgid}
+        <if test="aijg != null and aijg != ''">
+        and (t1.gzd = #{aijg}
+            <if test="aijg1 != null and aijg1 != ''">or
+                t1.gzd =
+                #{aijg1}
+            </if>
+            <if test="aijg2 != null and aijg2 != ''">
+                or t1.sfys = #{aijg2}
+            </if>
+        )
+        </if>
+        <if test="dnaflag!=null and dnaflag!=''">
+            and ( t1.bdlb !='RNA' or t1.bdlb is null)
+        </if>
+        <if test="rnaflag!=null and rnaflag!=''">
+            and (t1.bdlb ='RNA' and t1.wzfl='Viruses')
+        </if>
+    </select>
+
+    <select id="getListForExp" resultType="MngsmxjgDto" parameterType="MngsmxjgDto">
+        select mngsmxjg.taxid,wzgl.wzywm,wzgl.wzzwm,
+        case mngsmxjg.aijg  when '1' then 'High' when '2' then 'Background' when '3' then 'Low' end aijg,mngsmxjg.rpq
+        from igams_mngsmxjg_${lrsj} mngsmxjg
+        left join igams_wzgl wzgl on wzgl.wzid=mngsmxjg.taxid
+        where (mngsmxjg.aijg='1' or  mngsmxjg.aijg='2' or  mngsmxjg.aijg='3')
+        and mngsmxjg.jgid=#{jgid}
+    </select>
+
+
+    <select id="getListForAuditExp" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        select tmp.taxid,tmp.xm,tmp.zwmm,tmp.fldj,tmp.readsaccum,tmp.rpq,fid.xm as fxm,tmp.fgdxx,
+        fid.readsaccum as freadsaccum,
+        (tmp.fz||'/'||xpxx.fm) as fz,
+        case tmp.fl when '0' then 'Core' when '1' then 'Extension' end fl,
+        tmp.wzdl,
+        case tmp.gzd when '1' then '重点关注' when '2' then '关注' when '3' then '默认关注'  when '5' then '不关注' else '不关注' end gzd,
+        tmp.wzfl
+        from  igams_mngsmxjg_${lrsj} AS tmp
+        left join igams_mngsmxjg_${lrsj} fid on fid.taxid=tmp.ftaxid and fid.jgid=#{jgid}
+        left join igams_xpxx xpxx on xpxx.xpid=tmp.xpid
+        where tmp.jgid = #{ jgid } and tmp.fl='0'
+        order by cast(fid.readsaccum as numeric) desc,
+        cast(tmp.readsaccum as numeric) desc
+    </select>
+
+    <select id="getExportList" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        select tmp.taxid,tmp.xm,tmp.zwmm,tmp.fldj,tmp.readsaccum,tmp.rpq,fid.xm as fxm,tmp.fgdxx,
+        fid.readsaccum as freadsaccum,
+        (tmp.fz||'/'||xpxx.fm) as fz,
+        case tmp.fl when '0' then 'Core' when '1' then 'Extension' end fl,
+        tmp.wzdl,
+        case tmp.gzd when '1' then '重点关注' when '2' then '关注' when '3' then '默认关注'  when '5' then '不关注' else '不关注' end gzd,
+        tmp.wzfl,tmp.wzzs,tmp.abd||'%' as abd
+        from  igams_mngsmxjg_${lrsj} AS tmp
+        left join igams_mngsmxjg_${lrsj} fid on fid.taxid=tmp.ftaxid and fid.jgid=#{jgid}
+        left join igams_xpxx xpxx on xpxx.xpid=tmp.xpid
+        where tmp.jgid = #{ jgid } and tmp.fl='0'
+        order by cast(fid.readsaccum as numeric) desc,
+        cast(tmp.readsaccum as numeric) desc
+    </select>
+
+    <select id="getDto" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t2.mxjgid,t2.wkbh,t2.taxid,t2.readscount,t2.readsaccum,t2.gzd,t2.aijg,t2.bbh,t2.head,t2.qz,
+        t2.qzpw,t2.fgdxx,t2.jtxlxx,t2.sfwswgs,t2.wzlx,t2.fldj,t2.xm,t2.zwmm,t2.rpq,t2.abd,t2.grc,t2.frequency,
+        t2.fl,t2.sfgz,t2.wzfl,t2.fid,t2.xh,t2.ftaxid,t2.wkcxid,t2.jgid,t2.lrsj,t2.wzdl, t2.fz, t2.xpid, t2.xjlb, t2.bdlb
+        FROM igams_mngsmxjg_${lrsj} AS t2
+        WHERE
+        t2.jgid = #{ jgid }
+        and t2.taxid=#{taxid}
+        ORDER BY
+        t2.xh
+    </select>
+
+    <select id="getHighConcernList" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t1.mxjgid,t1.wzlx,t1.xm,t1.zwmm,t1.abd,t1.readsaccum,t1.taxid,t1.qz,
+        t1.qzpw,t1.gzd,t1.wzfl,t1.bdlb,t2.mxjgid as fmxjgid,t2.wzlx as fwzlx,t2.xm as fxm,t2.zwmm as fzwmm,t2.abd as fabd,t2.readsaccum as freadsaccum,t1.ftaxid,t2.qz as fqz,
+        t2.qzpw as fqzpw,t2.gzd as fgzd,t2.wzfl as fwzfl,t2.bdlb as fbdlb
+        FROM igams_mngsmxjg_${lrsj} AS t1
+        left join igams_mngsmxjg_${lrsj} t2 on t2.taxid=t1.ftaxid and t2.jgid=#{jgid}
+        WHERE
+        t1.jgid = #{ jgid }
+        and t1.wkcxid=#{wkcxid} and (t1.gzd='1' or t1.gzd='2')
+    </select>
+
+    <select id="getSuspectedList" parameterType="MngsmxjgDto" resultType="MngsmxjgDto">
+        SELECT t1.mxjgid,t1.wzlx,t1.xm,t1.zwmm,t1.abd,t1.readsaccum,t1.taxid,t1.qz,
+        t1.qzpw,t1.gzd,t1.wzfl,t1.bdlb,t2.mxjgid as fmxjgid,t2.wzlx as fwzlx,t2.xm as fxm,t2.zwmm as fzwmm,t2.abd as fabd,t2.readsaccum as freadsaccum,t2.taxid as ftaxid,t2.qz as fqz,
+        t2.qzpw as fqzpw,t2.gzd as fgzd,t2.wzfl as fwzfl,t2.bdlb as fbdlb
+        FROM igams_mngsmxjg_${lrsj} AS t1
+        left join igams_mngsmxjg_${lrsj} t2 on t2.taxid=t1.ftaxid and t2.jgid=#{jgid}
+        WHERE
+        t1.jgid = #{ jgid }
+        and t1.wkcxid=#{wkcxid} and t1.gzd='4'
+    </select>
+
+    <select id="backgroundDataBase" parameterType="MngsmxjgDto" resultType="Map">
+        SELECT
+            r.*,
+            round( r.avg - r.stddev * 3, 2 ) AS f3,
+            round( r.avg + r.stddev * 3, 2 ) AS z3,
+            wzgl.wzywm,
+            wzgl.wzzwm,
+            ls.gs,round(cast(r.gss as numeric)/cast(ls.gs as numeric),2)as bdl
+        FROM
+            (
+            SELECT MAX
+                ( CAST ( mxjg.rpq AS NUMERIC ) ),
+                MIN ( CAST ( mxjg.rpq AS NUMERIC ) ),
+                round( AVG ( CAST ( mxjg.rpq AS NUMERIC ) ), 2 ) as avg,
+                round(stddev( CAST ( mxjg.rpq AS NUMERIC ) ),2) as stddev,
+                mxjg.taxid,
+                sjxx.hzxm,count(mxjg.taxid) as gss
+            FROM
+                igams_mngsmxjg_${lrsj} mxjg
+                INNER JOIN igams_wkcx wkcx ON wkcx.wkcxid = mxjg.wkcxid
+                AND wkcx.zxbb = mxjg.bbh
+                AND (wkcx.wkbh LIKE'%NC-%' or wkcx.wkbh LIKE'%DC-%')
+                <if test="sysids !=null and sysids.size >0" >
+                    and wkcx.sysid in
+                    <foreach collection="sysids" open="(" close=")" separator="," item="item">
+                        #{item}
+                    </foreach>
+                </if>
+                 INNER JOIN igams_sjxx sjxx ON sjxx.sjid = wkcx.sjid  and sjxx.scbj='0'
+                INNER JOIN igams_wzgl wzgl ON wzgl.wzid = mxjg.taxid
+            WHERE
+                wkcx.wkcxid IS NOT NULL
+                AND sjxx.hzxm IS NOT NULL
+            GROUP BY
+                mxjg.taxid,
+                sjxx.hzxm
+            ORDER BY
+                stddev DESC
+            ) r
+            LEFT JOIN igams_wzgl wzgl ON wzgl.wzid = r.taxid
+            LEFT JOIN (
+            SELECT
+                r.hzxm,
+                COUNT ( r.wkcxid ) gs
+            FROM
+                (
+                SELECT
+                    mxjg.wkcxid,
+                    sjxx.hzxm
+                FROM
+                    igams_mngsmxjg_${lrsj} mxjg
+                    INNER JOIN igams_wkcx wkcx ON wkcx.wkcxid = mxjg.wkcxid
+                    AND wkcx.zxbb = mxjg.bbh
+                    AND (wkcx.wkbh LIKE'%NC-%' or wkcx.wkbh LIKE'%DC-%')
+                    <if test="sysids !=null and sysids.size >0" >
+                        and wkcx.sysid in
+                        <foreach collection="sysids" open="(" close=")" separator="," item="item">
+                            #{item}
+                        </foreach>
+                    </if>
+                    INNER JOIN igams_sjxx sjxx ON sjxx.sjid = wkcx.sjid  and sjxx.scbj='0'
+                WHERE
+                        wkcx.wkcxid IS NOT NULL
+                    and sjxx.hzxm IS NOT NULL
+                GROUP BY
+                    mxjg.wkcxid,
+                    sjxx.hzxm
+                ) r
+            GROUP BY
+                r.hzxm
+            ) AS ls ON ls.hzxm = r.hzxm
+            where round(cast(r.gss as numeric)/cast(ls.gs as numeric),2)&gt;=0.5
+            <if test="entire != null and entire != ''">
+                and (wzgl.wzzwm ILIKE '%'||#{entire}||'%'
+                or wzgl.wzywm ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            order by r.taxid asc
+            <if test="pageSize != null and pageSize != ''">
+                limit #{pageSize}
+                <if test="pageStart != null and pageStart != ''">
+                    offset #{pageStart}
+                </if>
+            </if>
+    </select>
+</mapper>

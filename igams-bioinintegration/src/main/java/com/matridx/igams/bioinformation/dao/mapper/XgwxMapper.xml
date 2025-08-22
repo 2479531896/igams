@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IXgwxDao">
+
+    <select id="getDtoList" parameterType="XgwxDto" resultType="XgwxDto">
+        select wxid,zz,bt,qk,taxid,yblx,mrwx,lrry,lrsj,xgry,xgsj,scry,scsj,scbj
+        from matridx_xgwx xgwx
+        <where>
+            xgwx.scbj = '0'
+            <if test="ids !=null and ids.size >0" >
+                and xgwx.taxid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+             and xgwx.mrwx='1'
+        </where>
+    </select>
+    <select id="getDtoListByIds" parameterType="XgwxDto" resultType="XgwxDto">
+        select wxid as id,zz as author,bt as title,qk as journal,taxid as species_taxid,yblx as sample_type,mrwx,lrry,lrsj,xgry,xgsj,scry,scsj,scbj
+        from matridx_xgwx xgwx
+        <where>
+            xgwx.scbj = '0' and xgwx.mrwx='1'
+            <if test="ids !=null and ids.size >0" >
+                and xgwx.taxid in
+                <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getXgwxList" parameterType="XgwxDto" resultType="XgwxDto">
+        select xgwx.wxid,xgwx.zz,xgwx.bt,xgwx.qk,xgwx.taxid,xgwx.yblx,xgwx.mrwx,xgwx.lrry,xgwx.lrsj,xgwx.xgry,xgwx.xgsj,xgwx.scry,xgwx.scsj,xgwx.scbj
+        from igams_mngsmxjg_${lrsj} mngsmxjg
+        inner join matridx_xgwx xgwx on xgwx.taxid=mngsmxjg.taxid and xgwx.scbj = '0'
+        <where>
+            mngsmxjg.bbh=#{bbh} and  mngsmxjg.wkbh=#{wkbh} and (mngsmxjg.gzd='1' or mngsmxjg.gzd='2' or mngsmxjg.sfys='4') and xgwx.mrwx='1'
+        </where>
+    </select>
+
+    <update id="updateList" parameterType="XgwxDto">
+        <if test="list != null and list.size()>0">
+            insert into matridx_xgwx
+            (wxid,zz,bt,qk,taxid,yblx,mrwx,scbj) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.wxid},#{item.zz},#{item.bt},#{item.qk},#{item.taxid},#{item.yblx},#{item.mrwx},'0')
+            </foreach>
+        </if>
+        on conflict(wxid) do update set zz=excluded.zz,bt=excluded.bt,qk=excluded.qk,taxid=excluded.taxid,yblx=excluded.yblx
+        ,mrwx=excluded.mrwx
+    </update>
+
+    <update id="updateCkwxgl" parameterType="XgwxDto">
+        <if test="list != null and list.size()>0">
+            insert into igams_ckwxgl
+            (wxid,wzzz,wzbt,qkxx,wzid,yblx,mrxz,scbj) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.wxid},#{item.zz},#{item.bt},#{item.qk},#{item.taxid},#{item.yblx},#{item.mrwx},'0')
+            </foreach>
+        </if>
+        on conflict(wxid) do update set wzzz=excluded.wzzz,wzbt=excluded.wzbt,qkxx=excluded.qkxx,wzid=excluded.wzid,yblx=excluded.yblx
+        ,mrxz=excluded.mrxz
+    </update>
+</mapper>

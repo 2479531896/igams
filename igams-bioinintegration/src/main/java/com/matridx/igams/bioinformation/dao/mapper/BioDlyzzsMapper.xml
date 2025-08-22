@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IBioDlyzzsDao">
+
+    <select id="getPagedDtoList" resultType="BioDlyzzsDto" parameterType="BioDlyzzsDto">
+        select dljyid,
+        name,
+        vfid,
+        vfcategory,
+        comment,
+        data,
+        taxid
+        from igams_dlyzzs
+        <where>
+            1=1
+            <if test="name != null and name != ''">
+                and name ILIKE '%'||#{name}||'%'
+            </if>
+            <if test="vfid != null and vfid != ''">
+                and vfid ILIKE '%'||#{vfid}||'%'
+            </if>
+            <if test="vfcategory != null and vfcategory != ''">
+                and vfcategory ILIKE '%'||#{vfcategory}||'%'
+            </if>
+            <if test="comment != null and comment != ''">
+                and comment ILIKE '%'||#{comment}||'%'
+            </if>
+            <if test="taxid != null and taxid != ''">
+                and taxid ILIKE '%'||#{taxid}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" resultType="BioDlyzzsDto" parameterType="BioDlyzzsDto">
+        select  dlyzzs.dljyid,
+                dlyzzs.name,
+                dlyzzs.vfid,
+                dlyzzs.vfcategory,
+                dlyzzs.comment,
+                dlyzzs.data,
+                dlyzzs.taxid,
+                wzgl.wzzwm
+                from igams_dlyzzs  dlyzzs
+                left join  igams_wzgl wzgl on wzgl.wzid=dlyzzs.taxid
+                <where>
+                    1=1
+                    <if test="vfid != null and vfid != ''">
+                        and vfid =#{vfid}
+                    </if>
+                    <if test="dljyid != null and dljyid != ''">
+                        and dljyid =#{dljyid}
+                    </if>
+                </where>
+    </select>
+
+    <select id="getDtoList" resultType="BioDlyzzsDto" parameterType="BioDlyzzsDto">
+        select  dlyzzs.dljyid,
+        dlyzzs.name,
+        dlyzzs.vfid,
+        dlyzzs.vfcategory,
+        dlyzzs.comment,
+        dlyzzs.data,
+        dlyzzs.taxid,
+        wzgl.wzzwm
+        from igams_dlyzzs  dlyzzs
+        left join  igams_wzgl wzgl on wzgl.wzid=dlyzzs.taxid
+        <where>
+            1=1
+            <if test="ids !=null and ids.size >0" >
+                and vfid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="BioDlyzzsDto">
+        insert into igams_dlyzzs(dljyid
+        <if test="name != null and name!= ''">
+            ,name
+        </if>
+        <if test="vfid != null and vfid != ''">
+            ,vfid
+        </if>
+        <if test="vfcategory != null and vfcategory != ''">
+            ,vfcategory
+        </if>
+        <if test="comment != null and comment!= ''">
+            ,comment
+        </if>
+        <if test="data != null and data != ''">
+            ,data
+        </if>
+        <if test="taxid != null and taxid != ''">
+            ,taxid
+        </if>
+        )
+        values(#{dljyid}
+        <if test="name != null and name!= ''">
+            ,#{name}
+        </if>
+        <if test="vfid != null and vfid != ''">
+            ,#{vfid}
+        </if>
+        <if test="vfcategory != null and vfcategory != ''">
+            ,#{vfcategory}
+        </if>
+        <if test="comment != null and comment!= ''">
+            ,#{comment}
+        </if>
+        <if test="data != null and data != ''">
+            ,#{data}
+        </if>
+        <if test="taxid != null and taxid != ''">
+            ,#{taxid}
+        </if>)
+    </insert>
+
+    <update id="update" parameterType="BioDlyzzsDto">
+        update igams_dlyzzs
+        <set>
+            dljyid=#{dljyid}
+            <if test="name != null and name!= ''">
+                ,name=#{name}
+            </if>
+            <if test="vfid != null and vfid != ''">
+                ,vfid=#{vfid}
+            </if>
+            <if test="vfcategory != null and vfcategory != ''">
+                ,vfcategory=#{vfcategory}
+            </if>
+            <if test="comment != null and comment!= ''">
+                ,comment=#{comment}
+            </if>
+            <if test="data != null and data != ''">
+                ,data=#{data}
+            </if>
+            <if test="taxid != null and taxid != ''">
+                ,taxid=#{taxid}
+            </if>
+        </set>
+        <where>
+            dljyid=#{dljyid}
+        </where>
+    </update>
+
+
+    <delete id="delete" parameterType="BioDlyzzsDto">
+        delete from igams_dlyzzs
+        <where>
+            dljyid in
+            <foreach collection="ids" separator="," item="item" open="(" close=")">
+                #{item}
+            </foreach>
+        </where>
+    </delete>
+
+    <update id="updateList" parameterType="BioDlyzzsDto">
+        <if test="list != null and list.size()>0">
+            insert into igams_dlyzzs
+            (dljyid,name,vfid,vfcategory,comment,data,taxid) values
+            <foreach collection="list" open="" close="" separator="," item="item">
+                ( #{item.dljyid},#{item.name},#{item.vfid},#{item.vfcategory},#{item.comment},#{item.data},#{item.taxid})
+            </foreach>
+        </if>
+        on conflict(dljyid) do update set name=excluded.name,vfid=excluded.vfid,vfcategory=excluded.vfcategory,comment=excluded.comment,data=excluded.data
+        ,taxid=excluded.taxid
+    </update>
+
+</mapper>

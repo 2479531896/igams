@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IBioLczzznglDao">
+
+    <select id="getDtoList" parameterType="BioLczzznglDto" resultType="BioLczzznglDto">
+        select znid ,yblx ,nlz ,xb ,glwz ,yygs ,lrry ,lrsj ,xgry ,xgsj ,scry ,scsj ,scbj ,mc ,ly ,fbsj ,url
+        from igams_lczzzngl lczzzngl
+        <where>
+            lczzzngl.scbj = '0'
+            <if test="yblx != null and yblx != ''">
+                and yblx= #{yblx}
+            </if>
+            <if test="nlz != null and nlz != ''">
+                and nlz= #{nlz}
+            </if>
+            <if test="xb != null and xb != ''">
+                and (xb= #{xb} or xb= '0')
+            </if>
+        </where>
+    </select>
+
+    <select id="getDtoListByIds" parameterType="BioLczzznglDto" resultType="BioLczzznglDto">
+        select znid as id ,yygs as detail ,glwz as species ,yblx,xgsj as last_update
+        from igams_lczzzngl lczzzngl
+        <where>
+            lczzzngl.scbj = '0'
+            <if test="ids != null and ids.size>0">
+                and lczzzngl.znid in
+                <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedDtoList" resultType="BioLczzznglDto" parameterType="BioLczzznglDto">
+        select lczzzngl.znid,
+        lczzzngl.yblx,
+        yblx.csmc yblxmc,
+        lczzzngl.nlz,
+        case lczzzngl.nlz WHEN '1' THEN '儿童(小于14)' WHEN '2' THEN '成人(不小于14)' end nlzmc,
+        lczzzngl.xb,
+        case lczzzngl.xb WHEN '0' THEN '未知' WHEN '1' THEN '男' WHEN '2' THEN '女' end xbmc,
+        lczzzngl.yygs,
+        lczzzngl.mc,
+        lczzzngl.ly,
+        lczzzngl.fbsj
+        from igams_lczzzngl lczzzngl
+        left join matridx_jcsj yblx on yblx.csid = lczzzngl.yblx
+        <where>
+            lczzzngl.scbj='0'
+            <if test="yygs != null and yygs != ''">
+                and yygs ILIKE '%'||#{yygs}||'%'
+            </if>
+            <if test="mc != null and mc != ''">
+                and mc ILIKE '%'||#{mc}||'%'
+            </if>
+            <if test="ly != null and ly != ''">
+                and ly ILIKE '%'||#{ly}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getDto" parameterType="BioLczzznglDto" resultType="BioLczzznglDto">
+        select lczzzngl.znid,
+        lczzzngl.yblx,
+        yblx.csmc yblxmc,
+        lczzzngl.nlz,
+        case lczzzngl.nlz WHEN '1' THEN '儿童(小于14)' WHEN '2' THEN '成人(不小于14)' end nlzmc,
+        lczzzngl.xb,
+        case lczzzngl.xb WHEN '0' THEN '未知' WHEN '1' THEN '男' WHEN '2' THEN '女' end xbmc,
+        lczzzngl.yygs,
+        lczzzngl.mc,
+        lczzzngl.ly,
+        lczzzngl.fbsj,
+        lczzzngl.glwz,
+        lczzzngl.url
+        from igams_lczzzngl lczzzngl
+        left join matridx_jcsj yblx on yblx.csid = lczzzngl.yblx
+        <where>
+            lczzzngl.scbj='0'
+            and lczzzngl.znid=#{znid}
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="BioLczzznglDto">
+        insert into igams_lczzzngl(znid
+        <if test="yblx != null and yblx!= ''">
+            ,yblx
+        </if>
+        <if test="nlz != null and nlz != ''">
+            ,nlz
+        </if>
+        <if test="xb != null and xb != ''">
+            ,xb
+        </if>
+        <if test="glwz != null and glwz!= ''">
+            ,glwz
+        </if>
+        <if test="yygs != null and yygs != ''">
+            ,yygs
+        </if>
+        <if test="mc != null and mc != ''">
+            ,mc
+        </if>
+        <if test="ly != null and ly != ''">
+            ,ly
+        </if>
+        <if test="fbsj != null and fbsj != ''">
+            ,fbsj
+        </if>
+        <if test="url != null and url != ''">
+            ,url
+        </if>
+        ,lrry,lrsj,scbj
+        )
+        values(#{znid}
+        <if test="yblx != null and yblx!= ''">
+            ,#{yblx}
+        </if>
+        <if test="nlz != null and nlz != ''">
+            ,#{nlz}
+        </if>
+        <if test="xb != null and xb != ''">
+            ,#{xb}
+        </if>
+        <if test="glwz != null and glwz!= ''">
+            ,#{glwz}
+        </if>
+        <if test="yygs != null and yygs != ''">
+            ,#{yygs}
+        </if>
+        <if test="mc != null and mc != ''">
+            ,#{mc}
+        </if>
+        <if test="ly != null and ly != ''">
+            ,#{ly}
+        </if>
+        <if test="fbsj != null and fbsj != ''">
+            ,cast(#{fbsj} as DATE)
+        </if>
+        <if test="url != null and url != ''">
+            ,#{url}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+
+    <update id="update" parameterType="BioLczzznglDto">
+        update igams_lczzzngl
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="yblx != null and yblx!= ''">
+                ,yblx=#{yblx}
+            </if>
+            <if test="nlz != null and nlz != ''">
+                ,nlz=#{nlz}
+            </if>
+            <if test="xb != null and xb != ''">
+                ,xb=#{xb}
+            </if>
+            <if test="glwz != null and glwz!= ''">
+                ,glwz=#{glwz}
+            </if>
+            <if test="yygs != null and yygs != ''">
+                ,yygs=#{yygs}
+            </if>
+            <if test="mc != null and mc != ''">
+                ,mc=#{mc}
+            </if>
+            <if test="ly != null and ly != ''">
+                ,ly=#{ly}
+            </if>
+            <if test="fbsj != null and fbsj != ''">
+                ,fbsj=cast(#{fbsj} as DATE)
+            </if>
+            <if test="url != null and url != ''">
+                ,url=#{url}
+            </if>
+        </set>
+        <where>
+            znid=#{znid}
+        </where>
+    </update>
+
+    <update id="delete" parameterType="BioLczzznglDto">
+        update igams_lczzzngl
+        <set>
+            scbj='1',
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            znid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

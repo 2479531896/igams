@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IBioXpxxDao">
+
+    <update id="updateWkgl" parameterType="list">
+        <foreach collection="list" separator=";" item="item"
+                 index="index">
+        update igams_wksjgl set xjsj = cast(#{item.xjsj} as timestamp),chiptype = #{item.chiptype}  where xpmc = #{item.xpbh}
+
+        </foreach>
+    </update>
+    <update id="updateSjsygl" parameterType="list">
+        with r as(
+        <foreach collection="list" separator="union all" item="item"
+                 index="index">
+            select syglid,cast(#{item.xjsj} as TIMESTAMP )as xjsj FROM igams_wkmx where wkid in(select wkid FROM igams_wksjgl where xpmc =  #{item.xpbh})  and syglid !=''
+        </foreach>
+        )
+
+        update igams_sjsygl
+        set xjsj=tmp.xjsj
+        from(
+
+        select * from r
+
+        )as
+        tmp(syglid,xjsj)
+        where
+        igams_sjsygl.syglid=tmp.syglid
+
+    </update>
+    <select id="getPagedDtoList" parameterType="BioXpxxDto" resultType="BioXpxxDto">
+        select
+        xpxx.xpid,
+        xpxx.xpm,
+        xpxx.cxkssj,
+        xpxx.cxjssj,
+        xpxx.sfsdcx,
+        xpxx.dc,
+        xpxx.czry,
+        xpxx.cxmd,
+        xpxx.fxkssj,
+        xpxx.fxjssj,
+        xpxx.sftx,
+        xpxx.ygxjs,
+        xpxx.cxyid,
+        xpxx.totalcycle,
+        xpxx.thiscycle,
+        coalesce(xpxx.wksm,'0') wksm,
+        xpxx.fxjd,
+        xpxx.zt,
+        xpxx.bz,
+        coalesce(tmp.yshs,'0') yshs
+        from igams_xpxx xpxx
+        left join (select count(xpid) as yshs,xpid from igams_wkcx where scbj='0' and zt='02' group by xpid) tmp on tmp.xpid=xpxx.xpid
+        <where>
+            xpxx.scbj='0'
+            <if test="xpm != null and xpm != ''">
+                and xpxx.xpm like '%'||#{xpm}||'%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getXpxxByCxylist" resultType="JcsjDto" parameterType="BioXpxxDto">
+        select xpxx.*
+        from igams_xpxx xpxx
+        <where>
+            xpxx.scbj ='0'
+            <if test="cxkssjstart != null and cxkssjstart != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd') &gt;= #{cxkssjstart})
+            </if>
+            <if test="cxkssjend != null and cxkssjend != ''">
+                and (to_char(xpxx.cxkssj,'yyyy-mm-dd') &lt;= #{cxkssjend})
+            </if>
+            and xpxx.cxyid in
+            <foreach collection="list" separator="," open="(" close="," item="item" index="index">
+                #{item.csid}
+            </foreach>
+        </where>
+    </select>
+    <select id="getPagedBioChipList" parameterType="BioXpxxDto" resultType="BioXpxxDto">
+        select
+        xpxx.xpm, concat(count(wkcx.sjid),'/',count(wkcx.wkcxid)) as "clinical_Total",concat(sum ( CASE WHEN wkcx.zt = '02' THEN 1 ELSE 0 END ),'/',sum ( CASE WHEN wkcx.zt = '03' THEN 1  WHEN wkcx.zt = '02' THEN 1 ELSE 0 END ) ) as "reportSent_Reviewed",cxy.csmc as sequencer,
+        concat(sum ( CASE WHEN cnvjg.sfsh = '1' THEN 1 ELSE 0 END ),'/',count(cnvjg.sfsh)) as "cny_Reviewed",xpxx.xgsj
+        from igams_xpxx xpxx
+        left  join igams_wkcx wkcx on wkcx.xpid = xpxx.xpid
+        left  join matridx_jcsj cxy on cxy.csid = xpxx.cxyid
+        left  join igams_cnvjg cnvjg on cnvjg.wkcxid = wkcx.wkcxid
+        left  join igams_sjxx sjxx on sjxx.sjid = wkcx.sjid
+        left  join matridx_jcsj sjqf on sjxx.sjqf = sjqf.csid
+        left  join matridx_jcsj sys on sys.csid = wkcx.sysid
+        <where>
+            xpxx.scbj ='0'
+            <if test="xpm != null and xpm != ''">
+                and xpxx.xpm like '%'||#{xpm}||'%'
+            </if>
+            <if test="sequencer != null and sequencer != ''">
+                and cxy.csid = #{sequencer}
+            </if>
+            <if test="hzxm != null and hzxm != ''">
+                and sjxx.hzxm like '%'||#{hzxm}||'%'
+            </if>
+            <if test="sys != null and sys != ''">
+                and sys.csid= #{sys}
+            </if>
+            <if test="sjqf != null and sjqf != ''">
+                and sjqf.csmc like '%'||#{sjqf}||'%'
+            </if>
+            <if test="kssj != null and kssj != ''">
+                and to_char(xpxx.fxkssj,'yyyy-mm-dd') &gt;= #{kssj}
+            </if>
+            <if test="jssj != null and jssj!= ''">
+                and to_char(xpxx.fxkssj,'yyyy-mm-dd') &lt;= #{jssj}
+            </if>
+
+            <if test="jssj != null and jssj!= ''">
+                and to_char(xpxx.fxkssj,'yyyy-mm-dd') &lt;= #{jssj}
+            </if>
+            <if test="sjqxsx == '1'.toString() or (wkbh !=null and wkbh != '')">
+            and xpm in(
+            select
+            xpxx.xpm
+            from igams_wkcx wkcx
+            left  join igams_xpxx xpxx on wkcx.xpid = xpxx.xpid
+            <where>
+                wkcx.scbj ='0'
+                <if test="wkbh !=null and wkbh != ''">
+                    and wkcx.wkbh like '%'||#{wkbh}||'%'
+                </if>
+                <if test="sjqxsx== '1'.toString()">
+                    <if test="sjids !=null and sjids != ''">
+                        and wkcx.sjid in
+                        <foreach collection="sjids" open="(" close=")" separator="," item="item">
+                            #{item}
+                        </foreach>
+                    </if>
+                </if>
+            </where>)
+            </if>
+        </where>
+        GROUP BY xpxx.xpm,cxy.csmc,xpxx.xgsj
+    </select>
+
+    <select id="getDtoTodayChipList" parameterType="BioXpxxDto" resultType="BioXpxxDto">
+    select
+    xpxx.xpm,concat(sum ( CASE WHEN wkcx.zt = '03' THEN 1 ELSE 0 END ),'/',sum ( CASE WHEN wkcx.zt = '02' THEN 1 WHEN wkcx.zt = '03' THEN 1 ELSE 0 END ) ) as "reportSent_Reviewed",cxy.csmc as sequencer,
+    xpxx.fxjd,case when xpxx.zt = '50' then '测序中' when xpxx.zt = '51' then '测序完成' when xpxx.zt = '52' then '数据分析中' when xpxx.zt = '53' then '分析完成' when xpxx.zt = '54' then '审核完成' end zt,
+    count(wkcx.wkcxid) as wksm,xpxx.cxkssj,xpxx.cxjssj,xpxx.fxkssj,xpxx.fxjssj
+    from igams_xpxx xpxx
+    left  join matridx_jcsj cxy on cxy.csid = xpxx.cxyid
+    left  join igams_wkcx wkcx on wkcx.xpid = xpxx.xpid
+    <where>
+        xpxx.scbj ='0'
+        <if test="kssj != null and kssj != ''">
+            and to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &gt;= #{kssj}
+        </if>
+        <if test="jssj != null and jssj!= ''">
+            and to_char(xpxx.cxkssj,'yyyy-mm-dd hh24:MI:ss') &lt;= #{jssj}
+        </if>
+        <if test="sjqxsx == '1'.toString() ">
+            and xpm in(
+            select
+            xpxx.xpm
+            from igams_wkcx wkcx
+            left  join igams_xpxx xpxx on wkcx.xpid = xpxx.xpid
+            <where>
+                wkcx.scbj ='0'
+                <if test="sjqxsx== '1'.toString()">
+                    <if test="sjids !=null and sjids != ''">
+                        and wkcx.sjid in
+                        <foreach collection="sjids" open="(" close=")" separator="," item="item">
+                            #{item}
+                        </foreach>
+                    </if>
+                </if>
+            </where>)
+        </if>
+    </where>
+    group by xpxx.xpm,cxy.csmc,xpxx.fxjd,xpxx.zt,xpxx.fxjd,xpxx.cxkssj,xpxx.cxjssj,xpxx.fxkssj,xpxx.fxjssj
+    </select>
+
+
+    <select id="getDto" parameterType="BioXpxxDto" resultType="BioXpxxDto">
+        select xpxx.xpid,xpxx.xpm,xpxx.cxyid,jcsj.fcsid
+        from igams_xpxx xpxx
+        left join matridx_jcsj jcsj on jcsj.csid = xpxx.cxyid
+        <where>
+            xpxx.scbj ='0' and jcsj.scbj ='0'
+            <if test="xpm != null and xpm != ''">
+                and xpxx.xpm = #{xpm}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="getXpxxByXpms" resultType="BioXpxxDto" parameterType="String">
+        select xpxx.xpid,xpxx.xpm
+        from igams_xpxx xpxx
+        <where>
+            xpxx.scbj ='0'
+            and xpxx.xpm in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <insert id="insertDto" parameterType="BioXpxxDto">
+        insert into igams_xpxx(
+        xpid,
+        xpm
+        <if test="cxjssj != null and cxjssj != ''">
+            ,cxjssj
+        </if>
+        <if test="cxkssj != null and cxkssj != ''">
+            ,cxkssj
+        </if>
+        <if test="sfsdcx != null and sfsdcx != ''">
+            ,sfsdcx
+        </if>
+        <if test="dc != null and dc != ''">
+            ,dc
+        </if>
+        <if test="czry != null and czry != ''">
+            ,czry
+        </if>
+        <if test="cxmd != null and cxmd != ''">
+            ,cxmd
+        </if>
+        <if test="fxkssj != null and fxkssj != ''">
+            ,fxkssj
+        </if>
+        <if test="fxjssj != null and fxjssj != ''">
+            ,fxjssj
+        </if>
+        <if test="sftx != null and sftx != ''">
+            ,sftx
+        </if>
+        <if test="ygxjs != null and ygxjs != ''">
+            ,ygxjs
+        </if>
+        <if test="cxyid != null and cxyid != ''">
+            ,cxyid
+        </if>
+        <if test="totalcycle != null and totalcycle != ''">
+            ,totalcycle
+        </if>
+        <if test="thiscycle != null and thiscycle != ''">
+            ,thiscycle
+        </if>
+        <if test="wksm != null and wksm != ''">
+            ,wksm
+        </if>
+        <if test="fxjd != null and fxjd != ''">
+            ,fxjd
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="lrry != null and lrry != ''">
+            ,lrry
+        </if>
+        <if test="lrsj != null and lrsj != ''">
+            ,lrsj
+        </if>
+        <if test="scbj != null and scbj != ''">
+            ,scbj
+        </if>
+        <if test="fm != null and fm != ''">
+            ,fm
+        </if>
+
+        )
+        values
+        (
+        #{xpid},
+        #{xpm}
+        <if test="cxjssj != null and cxjssj != ''">
+            ,#{cxjssj}
+        </if>
+        <if test="cxkssj != null and cxkssj != ''">
+            ,#{cxkssj}
+        </if>
+        <if test="sfsdcx != null and sfsdcx != ''">
+            ,#{sfsdcx}
+        </if>
+        <if test="dc != null and dc != ''">
+            ,#{dc}
+        </if>
+        <if test="czry != null and czry != ''">
+            ,#{czry}
+        </if>
+        <if test="cxmd != null and cxmd != ''">
+            ,#{cxmd}
+        </if>
+        <if test="fxkssj != null and fxkssj != ''">
+            ,#{fxkssj}
+        </if>
+        <if test="fxjssj != null and fxjssj != ''">
+            ,#{fxjssj}
+        </if>
+        <if test="sftx != null and sftx != ''">
+            ,#{sftx}
+        </if>
+        <if test="ygxjs != null and ygxjs != ''">
+            ,#{ygxjs}
+        </if>
+        <if test="cxyid != null and cxyid != ''">
+            ,#{cxyid}
+        </if>
+        <if test="totalcycle != null and totalcycle != ''">
+            ,#{totalcycle}
+        </if>
+        <if test="thiscycle != null and thiscycle != ''">
+            ,#{thiscycle}
+        </if>
+        <if test="wksm != null and wksm != ''">
+            ,#{wksm}
+        </if>
+        <if test="fxjd != null and fxjd != ''">
+            ,#{fxjd}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="lrry != null and lrry != ''">
+            ,#{lrry}
+        </if>
+        <if test="lrsj != null and lrsj != ''">
+            ,cast(#{lrsj} as timestamp)
+        </if>
+        <if test="scbj != null and scbj != ''">
+            ,#{scbj}
+        </if>
+        <if test="fm != null and fm != ''">
+            ,#{fm}
+        </if>
+        )
+    </insert>
+    <insert id="insertList" parameterType="List">
+        insert into igams_xpxx(
+        xpid,
+        xpm,
+        cxkssj,
+        cxjssj,
+        sfsdcx,
+        dc,
+        czry,
+        cxmd,
+        fxkssj,
+        fxjssj,
+        sftx,
+        ygxjs,
+        cxyid,
+        totalcycle,
+        thiscycle,
+        wksm,
+        fxjd,
+        zt,
+        bz,
+        lrry,
+        lrsj,
+        scbj,
+        fm
+
+        )
+        values
+        <if test="list !=null and list.size > 0">
+        <foreach collection="list" separator="," item="item" index="index">
+            (
+            #{item.xpid},#{item.xpm},cast(#{item.cxkssj} as TIMESTAMP),cast(#{item.cxjssj} as TIMESTAMP),#{item.sfsdcx},cast(#{item.dc} as numeric ),#{item.czry},#{item.cxmd},cast(#{item.fxkssj} as TIMESTAMP),cast(#{item.fxjssj} as TIMESTAMP),#{item.sftx},cast(#{item.ygxjs} as TIMESTAMP),#{item.cxyid},#{item.totalcycle},#{item.thiscycle},#{item.wksm},#{item.fxjd},#{item.zt},#{item.bz},#{item.lrry},
+            LOCALTIMESTAMP,'0',#{item.fm}
+            )
+        </foreach>
+        </if>
+    </insert>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_xpxx
+                <set>
+                    xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                    <if test="item.xpm != null and item.xpm != ''">
+                        ,xpm=#{item.xpm}
+                    </if>
+                    <if test="item.cxkssj != null and item.cxkssj != ''">
+                        ,cxkssj=cast(#{item.cxkssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.cxjssj != null and item.cxjssj != ''">
+                        ,cxjssj=cast(#{item.cxjssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.sfsdcx != null and item.sfsdcx != ''">
+                        ,sfsdcx=#{item.sfsdcx}
+                    </if>
+                    <if test="item.dc != null and item.dc != ''">
+                        ,dc=cast(#{item.dc} as numeric )
+                    </if>
+                    <if test="item.czry != null and item.czry != ''">
+                        ,czry=#{item.czry}
+                    </if>
+                    <if test="item.cxmd != null and item.cxmd != ''">
+                        ,cxmd=#{item.cxmd}
+                    </if>
+                    <if test="item.fxkssj != null and item.fxkssj != ''">
+                        ,fxkssj=cast(#{item.fxkssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.fxjssj != null and item.fxjssj != ''">
+                        ,fxjssj=cast(#{item.fxjssj} as TIMESTAMP)
+                    </if>
+                    <if test="item.sftx != null and item.sftx != ''">
+                        ,sftx=#{item.sftx}
+                    </if>
+                    <if test="item.ygxjs != null and item.ygxjs != ''">
+                        ,ygxjs=cast(#{item.ygxjs} as TIMESTAMP)
+                    </if>
+                    <if test="item.cxyid != null and item.cxyid != ''">
+                        ,cxyid=#{item.cxyid}
+                    </if>
+                    <if test="item.totalcycle != null and item.totalcycle != ''">
+                        ,totalcycle=#{item.totalcycle}
+                    </if>
+                    <if test="item.thiscycle != null and item.thiscycle != ''">
+                        ,thiscycle=#{item.thiscycle}
+                    </if>
+                    <if test="item.wksm != null and item.wksm != ''">
+                        ,wksm=#{item.wksm}
+                    </if>
+                    <if test="item.fxjd != null and item.fxjd != ''">
+                        ,fxjd=#{item.fxjd}
+                    </if>
+                    <if test="item.zt != null and item.zt != ''">
+                        ,zt=#{item.zt}
+                    </if>
+                    <if test="item.bz != null and item.bz != ''">
+                        ,bz=#{item.bz}
+                    </if>
+                    <if test="item.fm != null and item.fm != ''">
+                        ,fm=#{item.fm}
+                    </if>
+                </set>
+                <where>
+                    xpid=#{item.xpid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getXpidByXpm" parameterType="String" resultType="String">
+        select xpid from igams_wksjgl where xpmc=#{xpm} limit 1
+    </select>
+
+    <update id="update" parameterType="BioXpxxDto">
+        update igams_xpxx
+        <set>
+            xgry=#{xgry},
+            xgsj=LOCALTIMESTAMP
+            <if test="density != null and density !=''">
+                ,density=#{density}
+            </if>
+            <if test="intensity != null and intensity !=''">
+                ,intensity=#{intensity}
+            </if>
+            <if test="q30 != null and q30 !=''">
+                ,q30=#{q30}
+            </if>
+            <if test="fm != null and fm !=''">
+                ,fm=#{fm}
+            </if>
+        </set>
+        <where>
+            xpm=#{xpm}
+        </where>
+    </update>
+</mapper>

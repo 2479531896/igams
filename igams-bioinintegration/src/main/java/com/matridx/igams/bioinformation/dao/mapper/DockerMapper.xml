@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.IDockerDao">
+    <select id="getDtoList" parameterType="DockerDto" resultType="DockerDto">
+        select dockerid,jgid,inspect,logs,zt from igams_docker
+        <where>
+             zt = '0'
+        </where>
+    </select>
+
+    <select id="getEndDtoList" parameterType="List" resultType="DockerDto">
+        select dockerid,jgid,inspect,logs,zt from igams_docker
+        where zt = '0'
+        <if test="list !=null and list.size >0" >
+            and dockerid not in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    <update id="updateList" parameterType="List">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            update igams_docker set zt = #{item.zt}
+            <if test="item.inspect != '' and item.inspect != null">
+                ,inspect = #{item.inspect}
+            </if>
+            <if test="item.logs != '' and item.logs != null">
+                ,logs = #{item.logs}
+            </if>
+            where dockerid = #{item.dockerid}
+        </foreach>
+    </update>
+
+    <insert id="insert" parameterType="DockerDto">
+        insert into igams_docker(dockerid,jgid,zt)
+        values (#{dockerid},#{jgid},#{zt})
+    </insert>
+</mapper>

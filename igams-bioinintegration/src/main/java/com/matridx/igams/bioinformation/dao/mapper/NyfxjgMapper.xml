@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.bioinformation.dao.post.INyfxjgDao" >
+
+    <insert id="insertList" parameterType="list">
+        <foreach collection="list" open="" close="" item="item" index="index" separator=";">
+            insert into igams_nyfxjg (nyjgid, wkcxid, nyjy, bbh, nr, sfbg, lrry, lrsj) VALUES
+            (#{item.nyjgid},#{item.wkcxid},#{item.nyjy},#{item.bbh},#{item.nr},#{item.sfbg},#{item.lrry},LOCALTIMESTAMP)
+        </foreach>
+    </insert>
+
+    <select id="getDtoList" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nyfxjg.nyjgid,nyfxjg.wkcxid,nyfxjg.nyjy,nyfxjg.bbh,nyfxjg.nr,nyfxjg.sfbg,nyfxjg.lrry,nyfxjg.lrsj,nyfxjg.xgry,nyfxjg.xgsj,nyfxjg.scry,nyfxjg.scsj,nyfxjg.scbj
+        from igams_nyfxjg nyfxjg
+        <where>
+            nyfxjg.scbj = '0'
+            <if test="wkcxid!=null and wkcxid!=''">
+                and nyfxjg.wkcxid = #{wkcxid}
+            </if>
+            <if test="bbh!=null and bbh!=''">
+                and nyfxjg.bbh = #{bbh}
+            </if>
+        </where>
+    </select>
+
+    <select id="getListByWkcxid" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nyfxjg.nr,nyfxjg.nyjgid,nyfxjg.nyjy,nyfxjg.sfbg,nyfxjg.bbh,nyfxjg.wkcxid
+        from igams_nyfxjg nyfxjg
+        <where>
+            nyfxjg.scbj = '0' and nyfxjg.sfbg='1'
+            <if test="wkcxid!=null and wkcxid!=''">
+                and nyfxjg.wkcxid = #{wkcxid}
+            </if>
+            <if test="bbh!=null and bbh!=''">
+                and nyfxjg.bbh = #{bbh}
+            </if>
+        </where>
+    </select>
+
+    <select id="getZsList" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nyfxjg.nr,zsxx.zs
+        from igams_nyfxjg nyfxjg
+        left join matridx_zsxx zsxx on nyfxjg.nyjy=zsxx.mc
+        <where>
+            nyfxjg.scbj = '0' and zsxx.type='1'
+            <if test="wkcxid!=null and wkcxid!=''">
+                and nyfxjg.wkcxid = #{wkcxid}
+            </if>
+            <if test="bbh!=null and bbh!=''">
+                and nyfxjg.bbh = #{bbh}
+            </if>
+        </where>
+    </select>
+
+    <select id="getListByNyjy" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nyjgid,wkcxid,nyjy
+        from igams_nyfxjg
+        where nyjy = #{nyjy}
+    </select>
+
+    <update id="update" parameterType="NyfxjgDto">
+        update igams_nyfxjg
+        <set>
+            <trim prefixOverrides=",">
+                <if test="xgry !=null and  xgry !=''">
+                    ,xgry =#{xgry},xgsj = LOCALTIMESTAMP
+                </if>
+                <if test="sfbg !=null and  sfbg !=''">
+                    ,sfbg =#{sfbg}
+                </if>
+            </trim>
+        </set>
+        <where>
+            wkcxid=#{wkcxid} and bbh =#{bbh}
+        </where>
+    </update>
+
+    <select id="getDtoListById" parameterType="String" resultType="NyfxjgDto">
+        select nyjgid,wkcxid,nyjy,bbh,nr,sfbg,lrry,lrsj,xgry,xgsj,scry,scsj,scbj
+        from igams_nyfxjg nyfxjg
+        <where>
+            nyfxjg.scbj = '0'
+            and nyfxjg.wkcxid=#{wkcxid}
+        </where>
+    </select>
+    <select id="getDtoListByIds" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nyjgid,wkcxid,nyjy,bbh,nr,sfbg,lrry,lrsj,xgry,xgsj,scry,scsj,scbj
+        from igams_nyfxjg nyfxjg
+        <where>
+            nyfxjg.scbj = '0'
+            and nyfxjg.nyjgid in
+            <foreach collection="ids" open="(" close=")"
+                     separator="," item="items">
+                #{items}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="getListForExp" parameterType="NyfxjgDto" resultType="NyfxjgDto">
+        select nr
+        from igams_nyfxjg
+        where scbj='0' and wkcxid=#{wkcxid} and bbh=#{bbh}
+    </select>
+
+</mapper>
