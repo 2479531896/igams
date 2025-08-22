@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>选择请购明细</title>
+	<script type="text/javascript" th:src="@{${urlPrefix}+'/js/purchase/purchase/purchase_chooseInfoList.js'}" charset="utf-8"></script>
+	<style type="text/css">
+		th{
+			font-weight:bold;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+ 	<form id="chooseQgmxForm" class="form-horizontal">
+		<input type="hidden"  name="qgid" th:value="${qgglDto.qgid}"/>
+ 		<div class="body-content">
+			<div class="panel panel-default sample-formal">
+				<div class="panel-heading">
+					查询条件
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-6 col-sm-6">
+				        	<div class="form-group">
+				         		<label for="" class="col-sm-3 control-label">请购单号</label>
+				    			<div class="col-sm-9 padding_t7" th:text="${qgglDto.djh}">&nbsp;</div>
+				   			</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+				        	<div class="form-group">
+				         		<label for="" class="col-sm-3 control-label">申请部门</label>
+				    			<div class="col-sm-9 col-xs-9 col-md-9 padding_t7" th:text="${qgglDto.sqbmmc}">&nbsp;</div>
+				   			</div>
+						</div>
+						<div class="col-md-6 col-sm-6" style="height:40px;">
+							<div class="form-group">
+								<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+									关键字
+								</label>
+								<div class="col-sm-9 col-xs-9 col-md-9">
+									<div class="input-group">
+										<input type="text" id="cxnr" name="cxnr" placeholder="物料编码、物料名称、备注" class="form-control"
+											onkeydown="if(event.keyCode==13) {selectQgmx(); return false;}" />
+										<span class="input-group-btn">
+											<button type="button" onclick="selectQgmx()" class="btn btn-primary">查询</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<table border="1" cellspacing="0" cellpadding="0" class="table table-hover table-bordered table-hidden" style="text-align: center;">
+			<tr style="background-color: #63a3ff;">
+				<th style="width:30px;"><input id="checkAll" name="checkAll" onclick="checkAllClick();" type='checkbox'/></th>
+				<th style="width:30px;"><span th:text="序号" /></th>
+				<th th:if="${qgglDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}" style="width:80px;"><span th:text="物料编码" /></th>
+				<th style="width:120px;"><span th:text="物料名称" /></th>
+				<th style="width:50px;"><span th:text="规格" /></th>
+				<th th:if="${qgglDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}" style="width:100px;"><span th:text="物料类别" /></th>
+				<th th:if="${qgglDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}" style="width:100px;"><span th:text="物料子类别统称" /></th>
+				<th th:if="${lllb=='0'}" style="width:50px;"><span th:text="数量" /></th>
+				<th th:if="${lllb=='0'}" style="width:50px;"><span th:text="预订数"/></th>
+				<th th:if="${lllb=='1'}" style="width:50px;"><span th:text="库存量" /></th>
+				<th th:if="${lllb=='1'}" style="width:50px;"><span th:text="可领数量"/></th>
+				<th  style="width:150px;"><span th:text="备注"/></th>
+			</tr>
+         	<div th:if="${qgmxDtos != null && qgmxDtos.size() >0}" th:each="t_qgmxDto:${qgmxDtos}">
+         		<tr th:onclick="checkClick([[${t_qgmxDto.qgmxid}]],event);" th:id="'tr_'+${t_qgmxDto.qgmxid}" name="trQgmx" th:data-wlbm="${t_qgmxDto.wlbm}" th:data-wlmc="${t_qgmxDto.wlmc}" th:data-bz="${t_qgmxDto.bz}">
+         			<td><input th:id="'check_'+${t_qgmxDto.qgmxid}" name="checkQgmx" th:data-qgmxid="${t_qgmxDto.qgmxid}" type='checkbox'/></td>
+         			<td><span th:title="${t_qgmxDtoStat.index+1}" th:text="${t_qgmxDtoStat.index+1}"/></td>
+					<td th:if="${t_qgmxDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}"><span th:title="${t_qgmxDto.wlbm}" th:text="${t_qgmxDto.wlbm}"/></td>
+
+					<td th:if="${t_qgmxDto.qglbdm=='DEVICE'}"><span th:title="${(t_qgmxDto.wlmc=='' || t_qgmxDto.wlmc==null)?t_qgmxDto.hwmc:t_qgmxDto.wlmc}" th:text="${(t_qgmxDto.wlmc=='' || t_qgmxDto.wlmc==null)?t_qgmxDto.hwmc:t_qgmxDto.wlmc}"/></td>
+					<td th:if="${t_qgmxDto.qglbdm=='DEVICE'}"><span th:title="${(t_qgmxDto.gg=='' || t_qgmxDto.gg==null)?t_qgmxDto.hwgg:t_qgmxDto.gg}" th:text="${(t_qgmxDto.gg=='' || t_qgmxDto.gg==null)?t_qgmxDto.hwgg:t_qgmxDto.gg}"/></td>
+
+					<td th:if="${t_qgmxDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}"><span th:title="${t_qgmxDto.wlmc}" th:text="${t_qgmxDto.wlmc}"/></td>
+					<td th:if="${t_qgmxDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}"><span th:title="${t_qgmxDto.gg}" th:text="${t_qgmxDto.gg}"/></td>
+
+					<td th:if="${t_qgmxDto.qglbdm!='DEVICE' and t_qgmxDto.qglbdm!='MATERIAL' and t_qgmxDto.qglbdm!='OUTSOURCE'}"><span th:title="${t_qgmxDto.hwmc}" th:text="${t_qgmxDto.hwmc}"/></td>
+					<td th:if="${t_qgmxDto.qglbdm!='DEVICE' and t_qgmxDto.qglbdm!='MATERIAL' and t_qgmxDto.qglbdm!='OUTSOURCE'}"><span th:title="${t_qgmxDto.hwbz}" th:text="${t_qgmxDto.hwbz}"/></td>
+
+					<td th:if="${t_qgmxDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}"><span th:title="${t_qgmxDto.wllbmc}" th:text="${t_qgmxDto.wllbmc}"/></td>
+                    <td th:if="${t_qgmxDto.qglbdm=='MATERIAL'||qgglDto.qglbdm=='OUTSOURCE'}"><span th:title="${t_qgmxDto.wlzlbtcmc}" th:text="${t_qgmxDto.wlzlbtcmc}"/></td>
+					<td th:if="${lllb=='0'}"><span th:title="${t_qgmxDto.sysl}" th:text="${t_qgmxDto.sysl}"/></td>
+					<td th:if="${lllb=='0'}"><span th:title="${t_qgmxDto.ydsl}" th:text="${(t_qgmxDto.ydsl != null && t_qgmxDto.ydsl!='')?t_qgmxDto.ydsl:'0.00'}"/></td>
+					<td th:if="${lllb=='1'}"><span th:title="${t_qgmxDto.kcl}" th:text="${t_qgmxDto.kcl}"/></td>
+					<td th:if="${lllb=='1'}"><span th:title="${t_qgmxDto.klsl}" th:text="${(t_qgmxDto.klsl != null && t_qgmxDto.klsl!='')?t_qgmxDto.klsl:'0.00'}"/></td>
+					<td><span th:title="${t_qgmxDto.bz}" th:text="${t_qgmxDto.bz}"/></td>
+				</tr>
+			</div>
+		</table>
+	</form>
+</body>
+</html>

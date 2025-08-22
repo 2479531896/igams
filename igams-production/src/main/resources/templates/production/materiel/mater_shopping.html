@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/materiel/mater_shopping.js'}" charset="utf-8"></script>
+		<style type="text/css">
+			.hidden{display:none;}
+			#show:hover{
+		    	cursor: move;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+				border-radius: 3px;
+				background: #1E90FF;
+				cursor: pointer; 
+				outline: none;
+				font-family: Microsoft YaHei; 
+				color: white; 
+				font-size: 14px; 
+			}
+			.bootstrap-tagsinput {
+			    min-width:100%;
+			}
+			.jdsty{
+			padding: 6px 12px;
+			text-align: center;
+			border: 1px solid transparent;
+			border-radius: 4px;
+			text-overflow: ellipsis;
+			overflow: hidden;
+    		white-space: nowrap;
+			}
+			.pg-text-editor{
+				z-index: 10000;
+			    position: absolute;
+			    background: #fff;
+			    padding: .25rem;
+			    border: 1px solid #dde0e6!important;
+			    box-shadow: 0 0.125rem 0.5rem rgba(132,142,160,.275);
+			}
+			textarea{
+				margin: 0;
+    			font: inherit;
+    			color: #000000;
+			}
+		</style>
+	</head>
+	<body>
+	<div class="pg-text-editor" id="otherdiv" zdmc="" index="" style="display:none;">
+		<textarea id="nrdiv" name="nrdiv" rows="5'" style="width: 250px;height: 80px;border: 0;outline: 0;resize: both;"></textarea>
+		<div style="text-align: right;">
+			<button class="btn btn-sm btn-default" data-label="取消" onclick="canceldiv()">
+				<span class="fa fa-times pg-alertify-button"></span>&nbsp;取消
+			</button>
+			<button class="btn btn-sm btn-success" data-label="确定" onclick="confirmdiv()">
+			<span class="fa fa-check pg-alertify-button"></span>&nbsp;确定
+			</button>
+		</div>
+	</div>
+	
+	<ul class="nav nav-tabs sl_nav_tabs" role="tablist" th:if="${(flag == 'qxgjxg' && CCflag!='0')||(flag == 'gjxg' && CCflag =='0' && qgglDto.zt == '80')}">
+		<li  class="nav-item" >
+			<a  class="nav-link active" href="#audit_mod" role="tab" data-bs-toggle="tab">审核修改</a>
+		</li>
+		<li class="nav-item" >
+			<a  class="nav-link" href="#audit_flow" role="tab" data-bs-toggle="tab">钉钉流程</a>
+		</li>	
+	</ul>
+	
+	<form id="shoppingCarForm" th:action="${urlPrefix}+${formAction}"  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation" autocomplete="off">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="qgmx_json" id="qgmx_json"/>
+		<input type="hidden" name="addwlid" id="addwlid">
+		<input type="hidden" name="flg" th:value="${flg}" id="flg"/>
+		<input type="hidden" name="qgid" th:value="${qgglDto.qgid}" id="qgid"/>
+		<input type="hidden" name="mrsqr" th:value="${qgglDto.sqr}" id="mrsqr"/>
+		<input type="hidden" name="mrsqrmc" th:value="${qgglDto.sqrmc}" id="mrsqrmc"/>
+		<input type="hidden" name="mrsqbm" th:value="${qgglDto.sqbm}" id="mrsqbm"/>
+		<input type="hidden" name="mrsqbmmc" th:value="${qgglDto.sqbmmc}" id="mrsqbmmc"/>
+		<input type="hidden" name="mrsqbmdm" th:value="${qgglDto.sqbmdm}" id="mrsqbmdm">
+		<input type="hidden" name="auditType" th:value="${qgglDto.auditType}" id="auditType"/>
+		<input type="hidden" name="shlx" th:value="${qgglDto.auditType}" id="shlx">
+		<input type="hidden" name="bcbj" id="bcbj" th:value="${qgglDto.bcbj}"/>
+		<input type="hidden" name="fjids" id="fjids"/>
+		<input type="hidden" name="flag" th:value="${flag}" id="flag"/>
+		<input type="hidden" name="CCflag" th:value="${CCflag}" id="CCflag"/>
+		<input type="hidden" name="url" th:value="${url}" id="url"/>
+		<input type="hidden" name="shrgxbj" value="1" id="shrgxbj">
+		<input type="hidden" name="shzt" th:value="${qgglDto.zt}" id="shzt">
+		<input type="hidden" name="xzqgmx" id="xzqgmx">
+		<input type="hidden" name="qgsh" value="1" id="qgsh" th:if="${flag == 'qxgjxg'}">
+		<input type="hidden" name="ywlx" id="ywlx" th:value="${qgglDto.ywlx}">
+		<input type="hidden" name="fwbj" id="fwbj" th:value="${qgglDto.fwbj}">
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="ysfjids" id="ysfjids">
+		<input type="hidden" name="requestName" id="requestName" th:value="${requestName}">
+		<input type="hidden" name="qglbdm" id="qglbdm" th:value="${qgglDto.qglbdm}">
+		<input type="hidden" name="qglb" id="qglb" th:value="${qgglDto.qglb}">
+		<input type="hidden" name="cskz1" id="cskz1" th:value="${qgglDto.cskz1}">
+		<input type="hidden" name="ddspid" id="ddspid">
+		<input type="hidden" name="qglx" id="qglx" th:value="${qgglDto.qglx}">
+		<div class="panel-body body-content tab-content">
+			<div class="tab-pane fade active in" role="tabpanel" id="audit_mod"  aria-labelledby="profile-tab">
+		    	<div class="panel panel-default" >
+		    		<div class="panel-body">
+						<div class="row">
+					        <div class="col-md-3 col-sm-3">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;单据号:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="djh" name="djh" th:value="${qgglDto.djh}" validate="{required:true,stringMaxLength:64}" class="form-control" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-3 col-sm-3" >
+								<div class="form-group" >
+									<label for="" class="col-sm-5 control-label">
+										请购类别:
+									</label>
+									<div class="col-xs-12 col-sm-7 col-md-7 col-md-7 padding_t7">
+										<span th:text="${qgglDto.qglbmc}" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 control-label">
+										<span style="color: red;">*</span>&nbsp;&nbsp;申请人:
+									</label>
+									<div class="col-sm-7 col-md-7 col-xs-12">
+										<div class="input-group" >
+											<input id="sqrmc" name="sqrmc" type="text" th:value="${qgglDto.sqrmc}" readonly="readonly" validate="{required:true}"  class="form-control" />
+						         			<input id="sqr" name="sqr" type="hidden"  th:value="${qgglDto.sqr}" class="form-control" validate="{required:true}"/>
+											<span class="input-group-btn" th:if="${qgglDto.fwbj ==null || qgglDto.fwbj == ''}">
+												<button type="button" onclick="chooseSqr()" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 control-label">
+										<span style="color: red;">*</span>申请部门:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7"> 
+										<div class="input-group">
+											<input id="sqbmmc" name="sqbmmc" type="text" th:value="${qgglDto.sqbmmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+					        				<input id="sqbm" name="sqbm" type="hidden" th:value="${qgglDto.sqbm}" class="form-control" validate="{required:true}"/>
+					        				<input id="sqbmdm" name="sqbmdm" type="hidden"  th:value="${qgglDto.sqbmdm}"  class="form-control"/>
+											<span class="input-group-btn" th:if="${qgglDto.fwbj ==null || qgglDto.fwbj == ''}">
+												<button type="button" onclick="chooseBm()" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>&nbsp;&nbsp;申请日期:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="sqrq" name="sqrq" th:value="${qgglDto.sqrq}" validate="{required:true,stringMaxLength:64}" class="form-control" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" >
+								<div class="form-group" >
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>&nbsp;&nbsp;记录编码:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="jlbh" name="jlbh" th:value="${qgglDto.jlbh}" validate="{required:true,stringMaxLength:64}" class="form-control" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" th:if="${qgglDto.qglbdm=='DEVICE' || qgglDto.qglbdm=='MATERIAL'|| qgglDto.qglbdm=='OUTSOURCE' || qgglDto.qglbdm==null || qgglDto.qglbdm==''}">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>项目大类编码:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7" th:if="${xmdlbmlist!=null && xmdlbmlist.size() > 0}"> 
+									<input id="xmdldm" name="xmdldm" type="hidden">
+										<select id="xmdl" name="xmdl" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:each="list:${xmdlbmlist}" th:id="${list.csid}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${qgglDto.xmdl eq list.csid}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" th:if="${qgglDto.qglbdm=='DEVICE' || qgglDto.qglbdm=='MATERIAL' || qgglDto.qglbdm=='OUTSOURCE' || qgglDto.qglbdm==null || qgglDto.qglbdm==''}">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>项目编码:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7" th:if="${xmbmlist!=null && xmbmlist.size() > 0}"> 
+										<input type="hidden" id="xmbmdm" name="xmbmdm">
+										<input type="hidden" id="xmmc" name="xmmc">
+										<select id="xmbm" name="xmbm" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:each="list:${xmbmlist}" th:id="${list.csid}" th:value="${list.csid}" th:csmc="${list.csmc}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${qgglDto.xmbm eq list.csid}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12 col-sm-12" >
+								<div class="form-group" >
+									<label for="" class="col-sm-1 control-label">
+										<span style="color: red;">*</span>申请理由:
+									</label>
+									<div class="col-sm-11 col-xs-12" >
+										<textarea id="sqly" name="sqly" rows="3"  style="height:50px;" validate="{required:true,stringMaxLength:512}" class="form-control" th:text="${qgglDto.sqly}" autocomplete="off"></textarea>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-3 col-sm-3" th:if="${((flag == 'qxgjxg' && CCflag!='0')||(flag == 'gjxg' && CCflag =='0' && qgglDto.zt == '80')) && qgglDto.qglbdm!='ADMINISTRATION'}">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;" id="zffsbt">*</span>支付方式:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7" th:if="${zffslist!=null && zffslist.size() > 0}"> 
+										<select id="zffs" name="zffs" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:each="list:${zffslist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${qgglDto.zffs eq list.csid}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3"  th:if="${(flag == 'qxgjxg' && CCflag!='0' && qgglDto.qglbdm!='ADMINISTRATION')||(flag == 'gjxg' && CCflag =='0' && qgglDto.zt == '80' && qgglDto.qglbdm!='ADMINISTRATION')}" >
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;" id="fkfbt">*</span>付款方:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7" th:if="${fkflist!=null && fkflist.size() > 0}"> 
+										<select id="fkf" name="fkf" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:each="list:${fkflist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${qgglDto.fkf eq list.csid}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" th:if="${(flag == 'qxgjxg' && CCflag!='0' && qgglDto.qglbdm!='ADMINISTRATION')||(flag == 'gjxg' && CCflag =='0' && qgglDto.zt == '80' && qgglDto.qglbdm!='ADMINISTRATION')}">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;" id="jgfwbt">*</span>价格范围:
+									</label>
+									<div class="col-sm-7 col-xs-12 col-md-7" th:if="${jgfwlist!=null && jgfwlist.size() > 0}">
+										<select id="jgfw" name="jgfw" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+											<option th:each="list:${jgfwlist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:csdm="${list.csdm}" th:selected="${qgglDto.jgfw eq list.csid}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-12 col-sm-12"  th:if="${qgglDto.fwbj ==null || qgglDto.fwbj == ''}">
+					        	<div class="form-group">
+					    			<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+					    				<div th:id="${fjcfbDto.fjid}" >
+					    					<label for="" class="col-sm-1 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件："></label>
+					    					<label for="" class="col-sm-1 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+						    				<div class="col-sm-11 padding_t7">
+						    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+						    					<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+							    					<span th:text="${fjcfbDto.wjm}"></span>
+							    					<span class="glyphicon glyphicon glyphicon-save"></span>
+						    					</button>&nbsp;&nbsp;
+						    					<button title="删除" class="f_button" type="button">
+						    						<span class="glyphicon glyphicon-remove" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></span>
+						    					</button>&nbsp;&nbsp;
+						    					<button title="预览" class="f_button" type="button">
+						    						<span class="glyphicon glyphicon-eye-open" th:onclick="view([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]]);"></span>
+						    					</button>
+						    				</div>
+						    			</div>
+					    			</div>
+					   			</div>
+							</div>
+							<div class="col-md-12 col-sm-12" th:if="${qgglDto.fwbj ==null || qgglDto.fwbj == ''}">
+								<div class="form-group">
+									<label for="" class="col-sm-1 col-xs-1 col-md-1 control-label">
+										附件上传：
+									</label>
+									<div class="col-sm-11 col-xs-11 col-md-11" style="line-height:28px;">
+										<a href="javascript:void(0);" onclick="editfile()" id="file_btn" style="display:inline-block;width:100%;;border:1px solid #CCCCCC;border-radius:3px;">
+					            			<span  id="fileclick" title="点击上传"  style="display:inline-block;width:100%;color:#A6A6A6;font-size:12px;padding-left:10px;">点击展开上传文件</span>
+					            		</a>
+					            		<div id="fileDiv" style="display:none;">
+											<input id="pro_file" name="pro_file" type="file">
+											<button class="btn btn-default" type="button" style="margin-left:77%;width:23%;margin-top:10px;" onclick="cancelfile()">隐藏</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-12 col-sm-12" >
+								<div class="form-group" >
+									<label for="" class="col-sm-1 control-label">
+										备注：
+									</label>
+									<div class="col-sm-11 col-xs-12" >
+										<textarea id="bz" name="bz" rows="3"  style="height:50px;" validate="{stringMaxLength:2048}" class="form-control" th:text="${qgglDto.bz}" autocomplete="off"></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12 col-sm-12" th:if="${(qgglDto.fwbj ==null || qgglDto.fwbj == '') && flag == 'qxgjxg' && CCflag != '0'}">
+					<div class="form-group">
+						<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label"  style="color:black;">
+							抄送:
+						</label>
+						<div class="col-sm-11 col-xs-11 col-md-11">
+							<div class="input-group">
+					       		<input id="csrs" autoComplete="off" style="min-width:100%;" name="csrs" type="text" class="form-control" />
+					       		<span class="input-group-btn">
+									<button type="button" onclick="chooseCsr()" class="btn btn-primary">选择</button>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6 col-sm-6" th:if="${(qgglDto.fwbj ==null || qgglDto.fwbj == '') && flag != 'qxgjxg' && (qgglDto.qglbdm == 'DEVICE'  || 	qgglDto.qglbdm == 'MATERIAL' || qgglDto.qglbdm == 'OUTSOURCE' || qgglDto.qglbdm==null || qgglDto.qglbdm=='')}">
+					<div class="form-group" >
+						<label for="" class="col-sm-2 control-label" style="color:black;">
+							新增:
+						</label>
+						<div class="col-sm-10 col-xs-12">
+							<input type="text" id="addnr" name="addnr" placeholder="请输入物料名称,点击确定或按回车添加物料" class="form-control" data-provide="typeahead" data-items="5" style="height:30px;" autocomplete="off"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12 col-sm-12" th:if="${qgglDto.qglbdm != 'DEVICE' && qgglDto.qglbdm != 'MATERIAL' && qgglDto.qglbdm != 'OUTSOURCE' && qgglDto.qglbdm!=null && qgglDto.qglbdm!=''}">
+					<button  type="button" class="btn btn-success" onclick="addnew()" ><span id="cofirmaddwl">新增</span></button>
+				</div>
+				<div class="col-md-6 col-sm-6" th:if="${(qgglDto.fwbj ==null || qgglDto.fwbj == '') && flag != 'qxgjxg' && (qgglDto.qglbdm == 'DEVICE'  ||  qgglDto.qglbdm == 'MATERIAL' ||  qgglDto.qglbdm == 'OUTSOURCE' || qgglDto.qglbdm==null || qgglDto.qglbdm=='')}">
+					<div class="form-group" >
+						<button  type="button" class="btn btn-success" onclick="cofirmaddwl()"><span id="cofirmaddwl">确定</span></button>
+						<button  th:if="${(qgglDto.fwbj ==null || qgglDto.fwbj == '') && flag != 'qxgjxg' && (qgglDto.qglbdm == 'MATERIAL'  || qgglDto.qglbdm == 'OUTSOURCE'  || qgglDto.qglbdm==null || qgglDto.qglbdm=='')}" type="button" class="btn btn-success" onclick="drawingupload()"><span id="drawinguploadtext">图纸上传</span></button>
+					</div>
+				</div>
+				<table id="tb_list" data-classes="table" style="width:1530px;margin-left:8px;"></table>
+			</div>
+			<div role="tabpanel" class="tab-pane fade" id="audit_flow" aria-labelledby="profile-tab">
+				<div class="panel-group" id="accordion">
+				    <div class="panel panel-info" th:if="${jgsplist!=null && jgsplist.size()>0}" th:each="list:${jgsplist}">
+				        <div class="panel-heading">
+				            <h4 class="panel-title">
+				                <a data-bs-toggle="collapse" data-parent="#accordion" th:id="${'t_collapse'+listStat.index}"
+				                th:href="${'#collapse'+listStat.index}" th:text="${list.jgmc}" th:onclick="getFlow([[${list.spr}]],[[${listStat.index}]])">
+				                </a>
+				                <input type="hidden" th:if="${qgglDto.sqbm==list.jgid}" id="mrxz" th:value="${listStat.index}">
+				                <span title="点击选择钉钉审批流程" class="glyphicon glyphicon-ok logeok" style="float:right;color:grey;cursor:pointer;" th:id="${'ok'+listStat.index}" th:onclick="changeFlow([[${list.spid}]],[[${listStat.index}]])"></span>
+				            </h4>
+				        </div>
+				        <div th:id="${'collapse'+listStat.index}" class="panel-collapse collapse hide">
+				            <div class="panel-body" th:id="${'collapsebody'+listStat.index}">
+				            </div>
+				        </div>
+				    </div>
+				</div>
+			</div>
+		</div>
+		</form>
+		<!-- 统计图 -->
+		<div id="echarts_qggl" th:include="common/btn/common_statistic.html"></div>
+		<div id="box" style="display:none;width:400px;height:200px;position:absolute;top:50%;left:40%;background-color:white;border:1px solid black;z-index:98;">
+			<button id="close" type="button" style="color:black;border:0px;background-color:white;z-index:1;float:right;">×</button>
+			<div id="echarts_qggl_lead_qgzq" style="height: 280px;"></div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>行政请购列表</title>
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/purchase/purchase/purchaseAdministration_List.js'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+ 	<form id="purchaseAdministration_formSearch" class="form-horizontal form-inline">
+ 		<input type="hidden" id="auditType" name="auditType" th:value="${qgglDto.auditType}">
+ 		<input type="hidden" id="qglb" name="qglb" th:value="${qglb}">
+		<input type="hidden" id="qbqgflg" name="qbqgflg" th:value="${qbqgflg}">
+ 		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+				<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+
+		                	<option value="0">全部</option>
+		                	<option value="1">采购单号</option>
+		                	<option value="2">申请人</option>
+		                	<option value="3">申请部门</option>
+		                	<option value="4">记录编号</option>
+							<option value="5">申请理由</option>
+		         		</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" autocomplete="off"
+			       		onkeydown="if(event.keyCode==13) {searchPurchaseAdministrationResult(true); return false;}"/>
+					</div>
+					<div class="form-group padding-l30" style="margin-left:0px">
+	                    <label>申请日期</label>
+	                    <input id="sqrqstart" name="sqrqstart" class="form-control" placeholder="开始日期"  />~
+	                    <input id="sqrqend" name="sqrqend" class="form-control" placeholder="结束日期" />
+	                </div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+		   			<span class="tit">已选条件：</span>
+		  			<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+		        		<ul id="sl_add_ul"></ul>
+		     		</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;" >
+		       	 	<div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+			       	  	<div class="tab-pane active" id="tab06">
+			       	  		<div id="zffs_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="支付方式">支付方式：</label>
+			                    	<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${zffsList !=null && zffsList.size() >0}" th:each="list:${zffsList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[zffs]],[[${list.csid}]],[[purchaseAdministration_formSearch]]);" th:id="'zffs_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul>
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="fkf_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			             			<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="付款方">付&nbsp;&nbsp;款&nbsp;方：</label>
+			                    	<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+			                       		<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+			                      	 		<li th:if="${fkfList !=null && fkfList.size() >0}" th:each="list:${fkfList}">
+			                           	 		<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[fkf]],[[${list.csid}]],[[purchaseAdministration_formSearch]]);" th:id="'fkf_id_'+${list.csid}">
+			                          	  			<span th:text="${list.csmc}"></span>
+			                          	  		</a>
+			                    			</li>
+			                       		</ul> 
+			                 		</div>
+			             		</div>
+			             	</div>
+			             	<div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+		                        <div class="form-group width100">
+		                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态">审核状态：</label>
+		                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+		                            	<ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('zt','00','purchaseAdministration_formSearch');"
+		                                           id="zt_id_00"><span>未提交</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('zt','10','purchaseAdministration_formSearch');"
+		                                           id="zt_id_10"><span>审核中</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('zt','15','purchaseAdministration_formSearch');"
+		                                           id="zt_id_15"><span>审核未通过</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('zt','80','purchaseAdministration_formSearch');"
+		                                           id="zt_id_80"><span>审核通过</span></a>
+		                                    </li>
+		                            	</ul>
+		                    		</div>
+		                    	</div>
+		                    </div>
+		                    <div id="wcbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+		                        <div class="form-group width100">
+		               				<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否完成" >是否完成：</label>
+		                           	<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+			                      	 	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('wcbj','1','purchaseAdministration_formSearch');"
+		                                           id="wcbj_id_1"><span>已完成</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('wcbj','0','purchaseAdministration_formSearch');"
+		                                           id="wcbj_id_0"><span>未完成</span></a>
+		                                    </li>
+		                            	</ul>
+		                    		</div>
+		                    	</div>
+		                    </div>
+							<div id="sfbx_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否报销" >是否报销：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfbx','1','purchaseAdministration_formSearch');"
+												   id="sfbx_id_1"><span>已报销</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('sfbx','0','purchaseAdministration_formSearch');"
+												   id="sfbx_id_0"><span>未报销</span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="rkzt_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="入库状态" >入库状态：</label>
+									<div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('rkzt','01','purchaseAdministration_formSearch');"
+												   id="rkzt_id_01"><span>未入库</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('rkzt','02','purchaseAdministration_formSearch');"
+												   id="rkzt_id_02"><span>部分入库</span></a>
+											</li>
+											<li>
+												<a style='text-decoration:none;cursor:pointer;'
+												   onclick="addTj('rkzt','03','purchaseAdministration_formSearch');"
+												   id="rkzt_id_03"><span>全部入库</span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+			       	  	</div>
+		       	  	</div>
+	       	 	</div>
+			</div>
+		</div>
+		<input  type="hidden" id="zffs_id_tj" name="zffs_id_tj">
+		<input  type="hidden" id="qglb_id_tj" name="qglb_id_tj">
+		<input  type="hidden" id="fkf_id_tj" name="fkf_id_tj">
+		<input  type="hidden" id="xmbm_id_tj" name="xmbm_id_tj">
+		<input  type="hidden" id="xmdl_id_tj" name="xmdl_id_tj">
+		<input  type="hidden"  id="zt_id_tj" name="zt_id_tj">
+		<input 	type="hidden" id="wcbj_id_tj" name="wcbj_id_tj">
+		<input 	type="hidden" id="sfbx_id_tj" name="sfbx_id_tj">
+		<input  type="hidden" id="rkzt_id_tj" name="rkzt_id_tj">
+		<div th:include="common/btn/ancz.html"></div>
+		<table id="purchase_list" class="table table-hover table-bordered table-hidden"></table>
+	</form>
+</div>
+</body>
+</html>

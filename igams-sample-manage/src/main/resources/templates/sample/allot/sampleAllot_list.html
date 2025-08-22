@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>样本调拨列表</title>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+    <form id="sampleAllotList_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="auditType" id ="auditType" th:value="${auditType}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" id="cxtj" class="form-control chosen-select" style="height:34px;">
+                            <option value="0">调拨人</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {allocateResult(); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit" style="color:black;">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;">
+                    <div class="tab-content sl_sel_con row" style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;" id="sl_sel_con">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="dcccdw_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调出储存单位">调出储存单位：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${dwlist!=null && dwlist.size() >0}" th:each="dcccdw:${dwlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('dcccdw',[[${dcccdw.csid}]],'sampleAllotList_formSearch');" th:id="'dcccdw_id_'+${dcccdw.csid}">
+                                                    <span th:text="${dcccdw.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dcbx_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调出冰箱">调出冰箱：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_dcbx">
+                                            <li th:if="${dcbxlist!=null && dcbxlist.size() >0}" th:each="dcbx:${dcbxlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('dcbx',[[${dcbx.sbid}]],'sampleAllotList_formSearch');" th:id="'dcbx_id_'+${dcbx.sbid}">
+                                                    <span th:text="${dcbx.wz + '(' +dcbx.sbh + ')'}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dcct_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调出抽屉">调出抽屉：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_dcct">
+                                            <li th:if="${dcctlist!=null && dcctlist.size() >0}" th:each="dcct:${dcctlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('dcct',[[${dcct.sbid}]],'sampleAllotList_formSearch');" th:id="'dcct_id_'+${dcct.sbid}">
+                                                    <span th:text="${dcct.wz + '(' +dcct.sbh + ')'}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="drccdw_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调入储存单位">调入储存单位：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${dwlist!=null && dwlist.size() >0}" th:each="drccdw:${dwlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('drccdw',[[${drccdw.csid}]],'sampleAllotList_formSearch');" th:id="'drccdw_id_'+${drccdw.csid}">
+                                                    <span th:text="${drccdw.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="drbx_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调入冰箱">调入冰箱：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_drbx">
+                                            <li th:if="${drbxlist!=null && drbxlist.size() >0}" th:each="drbx:${drbxlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('drbx',[[${drbx.sbid}]],'sampleAllotList_formSearch');" th:id="'drbx_id_'+${drbx.sbid}">
+                                                    <span th:text="${drbx.wz + '(' +drbx.sbh + ')'}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="drct_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="调出抽屉">调出抽屉：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_drct">
+                                            <li th:if="${drctlist!=null && drctlist.size() >0}" th:each="drct:${drctlist}">
+                                                <a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('drct',[[${drct.sbid}]],'sampleAllotList_formSearch');" th:id="'drct_id_'+${drct.sbid}">
+                                                    <span th:text="${drct.wz + '(' +drct.sbh + ')'}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration: none; cursor: pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="dcccdw_id_tj" name="dcccdw_id_tj">
+        <input type="hidden" id="dcbx_id_tj" name="dcbx_id_tj">
+        <input type="hidden" id="dcct_id_tj" name="dcct_id_tj">
+        <input type="hidden" id="drccdw_id_tj" name="drccdw_id_tj">
+        <input type="hidden" id="drbx_id_tj" name="drbx_id_tj">
+        <input type="hidden" id="drct_id_tj" name="drct_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="sampleAllotList" class="table table-hover table-bordered table-hidden"></table>
+    </form>
+</div>
+</body>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/sample/allot/sampleAllot_list.js'}"></script>
+</html>

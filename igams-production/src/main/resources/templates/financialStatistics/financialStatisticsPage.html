@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
+	<meta name="wechat-enable-text-zoom-em" content="true">
+	<title>预算费用和实际使用情况</title>
+	<script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="https://res2.wx.qq.com/open/js/jweixin-1.6.0.js" charset="utf-8"></script>
+	<link rel="stylesheet" href="/js/weui/weui.css">
+	<style>
+		body, html {
+			height: 100%;
+			-webkit-tap-highlight-color: transparent;
+		}
+		.container {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			overflow: hidden;
+			color: var(--weui-FG-0);
+		}
+		.page.js_show {
+			opacity: 1;
+		}
+		.page {
+			outline: 0;
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			box-sizing: border-box;
+			opacity: 0;
+			z-index: 1;
+		}
+		.weui-btn_primary {
+			background-color: #07c160;
+			background-color: var(--weui-BRAND);
+		}
+		.weui-btn {
+			position: relative;
+			display: block;
+			width: 184px;
+			margin-left: auto;
+			margin-right: auto;
+			padding: 12px 24px;
+			box-sizing: border-box;
+			font-weight: 500;
+			font-size: 17px;
+			text-align: center;
+			text-decoration: none;
+			color: #fff;
+			line-height: 1.41176471;
+			border-radius: 8px;
+			-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+			cursor: default;
+			-webkit-user-select: none;
+			user-select: none;
+		}
+		.weui-btn_mini {
+			display: inline-block;
+			width: auto;
+			line-height: calc((32 - 12) / 14);
+			padding: 6px 12px;
+			font-size: 14px;
+			border-radius: 6px;
+		}
+		.weui-cell__desc {
+			 font-size: 12px;
+			 color: rgba(0, 0, 0, 0.3);
+			 color: var(--weui-FG-2);
+			 line-height: 1.4;
+			 padding-top: 4px;
+		 }
+		/**蓝色按钮*/
+		.weui-btn_bule,.weui-btn_primary {
+			color: white;
+			background-color: #00AFEC;
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):visited,.weui-btn_primary:not(.weui-btn_disabled):visited {
+			color: rgba(0, 208, 236, 0.98);
+		}
+		.weui-btn_bule:not(.weui-btn_disabled):active,.weui-btn_primary:not(.weui-btn_disabled):active {
+			background-color: #00e4ec;
+		}
+	</style>
+</head>
+<body>
+	<input type="hidden" name="urlprefix" id ="urlprefix" th:value="${urlprefix}">
+
+	<div id="container">
+		<div class="page article js_show" tabindex="-1">
+			<article class="weui-article">
+				<h1>预算费用和实际使用情况(单位:万元)</h1>
+				<h1 th:text="${departmentName}"></h1>
+				<a href="javascript:" onclick="location.reload()" role="button" id="refresh" class="weui-btn weui-btn_mini weui-btn_bule weui-wa-hotarea" style="float: right;">刷新</a>
+				<section style="margin-top: 55px;">
+					<section>
+						<h3 th:text="${'年度:(实际/预算:'+expensesYear+'/'+budgetYear+')(占比:' + (budgetYear!='0.00'?yearDivide:100) + '%)'}"></h3>
+						<section th:if="${colorYear != 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 80%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorYear+';width: '+yearDivide+'%;'}"></div>
+							</div>
+						</section>
+						<section th:if="${colorYear == 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 100%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorYear+';width: '+yearDivide+'%;'}"></div>
+							</div>
+						</section>
+					</section>
+					<section>
+						<h3 th:text="${'季度:(实际/预算:'+expensesSeason+'/'+budgetSeason+')(占比:' + (budgetSeason!='0.00'?seasonDivide:100) + '%)'}"></h3>
+						<section th:if="${colorSeason != 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 80%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorSeason+';width: '+seasonDivide+'%;'}"></div>
+							</div>
+						</section>
+						<section th:if="${colorSeason == 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 100%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorSeason+';width: '+seasonDivide+'%;'}"></div>
+							</div>
+						</section>
+					</section>
+					<section>
+						<h3 th:text="${'月度:(实际/预算:'+expensesMonth+'/'+budgetMonth+')(占比:' + (budgetMonth!='0.00'?monthDivide:100) + '%)'}"></h3>
+						<section th:if="${colorMonth != 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 80%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorMonth+';width: '+monthDivide+'%;'}"></div>
+							</div>
+						</section>
+						<section th:if="${colorMonth == 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 100%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+colorMonth+';width: '+monthDivide+'%;'}"></div>
+							</div>
+						</section>
+					</section>
+				</section>
+
+				<h3>科目</h3>
+				<section style="margin-top: 20px;" th:each="item:${subjectList}">
+					<section>
+						<h3 th:text="${item.subjectname + ':(实际/预算:'+item.expenses+'/'+item.budget+')(占比:' + (item.budget!='0.00'?item.divide:100) + '%)'}"></h3>
+						<section th:if="${item.color != 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 80%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+item.color+';width: '+item.divide+'%;'}"></div>
+							</div>
+						</section>
+						<section th:if="${item.color == 'red'}">
+							<div style="text-align: left;border: 1px solid black;width: 100%;height: 40px">
+								<div th:style="${'height: 100%;background-color: '+item.color+';width: '+item.divide+'%;'}"></div>
+							</div>
+						</section>
+					</section>
+				</section>
+				<section style="margin-top: 20px;">
+					<section>
+						<h3>超出预算科目</h3>
+						<div class="weui-cells">
+							<a class="weui-cell" style="padding: 10px;">
+								<span class="weui-cell__bd weui-flex__item">
+									<span style="font-size: 15px;">科目类别</span>
+									<div class="weui-cell__desc">子科目类别</div>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">预算费用</span>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">实际费用</span>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">差额</span>
+									<div class="weui-cell__desc">实际-预算</div>
+								</span>
+							</a>
+							<div th:each="item:${subjectChildList}">
+								<a th:if="${item.isOver == 'true' || item.isOver == true}" class="weui-cell" style="padding: 10px;">
+									<span class="weui-cell__bd weui-flex__item">
+										<span style="font-size: 12px" th:text="${item.subjectname}"></span>
+										<div class="weui-cell__desc" th:text="${item.subjectchildname}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<div style="max-width: 80px;font-size: 12px" th:text="${item.budget}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<div style="max-width: 80px;font-size: 12px" th:text="${item.expenses}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<span style="max-width: 80px;font-size: 12px;color:red;" th:text="${item.difference}"></span>
+										<div class="weui-cell__desc" style="color:red;" th:text="${item.divide + '%'}"></div>
+									</span>
+								</a>
+							</div>
+						</div>
+					</section>
+					<section>
+						<h3>其它科目费用使用情况</h3>
+						<div class="weui-cells">
+							<a class="weui-cell" style="padding: 10px;">
+								<span class="weui-cell__bd weui-flex__item">
+									<span style="font-size: 15px;">科目类别</span>
+									<div class="weui-cell__desc">子科目类别</div>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">预算费用</span>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">实际费用</span>
+								</span>
+								<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+									<span style="font-size: 15px;">差额</span>
+									<div class="weui-cell__desc">实际-预算</div>
+								</span>
+							</a>
+							<div th:each="item:${subjectChildList}">
+								<a th:if="${item.isOver != 'true' && item.isOver != true}" class="weui-cell" style="padding: 10px;">
+									<span class="weui-cell__bd weui-flex__item">
+										<span style="font-size: 12px" th:text="${item.subjectname}"></span>
+										<div class="weui-cell__desc" th:text="${item.subjectchildname}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<div style="max-width: 80px;font-size: 12px" th:text="${item.budget}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<div style="max-width: 80px;font-size: 12px" th:text="${item.expenses}"></div>
+									</span>
+									<span class="weui-cell__bd weui-flex__item" style="text-align: right;">
+										<span style="max-width: 80px;font-size: 12px;color:#4CAF50;" th:text="${item.difference}"></span>
+										<div class="weui-cell__desc" style="color:#4CAF50;" th:text="${item.divide + '%'}"></div>
+									</span>
+								</a>
+							</div>
+						</div>
+					</section>
+				</section>
+			</article>
+		</div>
+	</div>
+</body>
+</html>
+

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/produce/produce_demandMaterial.js'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+    <form id="produceACMaterial_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+                            <option value="0">全部</option>
+                            <option value="1">申请人</option>
+                            <option value="2">需求单</option>
+                            <option value="3">物料编码</option>
+                            <option value="4">物料名称</option>
+                            <option value="5">货号</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchProduceMaterialResult(); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>申请时间</label>
+                        <input id="sqsjstart" name="sqsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="sqsjend" name="sqsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>入库时间</label>
+                        <input id="rksjstart" name="rksjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="rksjend" name="rksjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:50px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="rkzt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="入库状态">入库状态：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','待生产','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_待生产"><span>待生产</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','待入库','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_待入库"><span>待入库</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','入库审批中','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_入库审批中"><span>入库审批中</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','已入库','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_已入库"><span>已入库</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','待质检','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_待质检"><span>待质检</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','质检中','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_质检中"><span>质检中</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','待交接','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_待交接"><span>待交接</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('rkzt','生产中','produceACMaterial_formSearch');"
+                                                   id="rkzt_id_生产中"><span>生产中</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态">审核状态：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','00','produceACMaterial_formSearch');"
+                                                   id="zt_id_00"><span>未提交</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','10','produceACMaterial_formSearch');"
+                                                   id="zt_id_10"><span>审核中</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','15','produceACMaterial_formSearch');"
+                                                   id="zt_id_15"><span>审核未通过</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','80','produceACMaterial_formSearch');"
+                                                   id="zt_id_80"><span>审核通过</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="rkzt_id_tj" name="rkzt_id_tj">
+        <input  type="hidden" id="zt_id_tj" name="zt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="produce_tb_list" class="table table-hover table-bordered table-hidden"></table>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.ISbglDao" >
+	<!-- 查询设备信息 -->
+	<select id="getDeviceList" parameterType="SbglDto" resultType="SbglDto">
+		select sb.sbid,
+			sb.fsbid,
+			sb.sbh,
+			sb.cfs,
+			sb.yblx,
+			sj.csdm yblxdm,
+			sj.csmc yblxmc,
+			sb.bz,
+			sb.px,
+			sb.sblx,
+			sb.lrry,
+			sb.lrsj,
+			sb.xgry,
+			sb.xgsj,
+			sb.scry,
+			sb.scsj,
+			sb.scbj
+		from igams_sbgl sb
+		left outer join igams_sbkxgl kx on kx.sbid=sb.sbid
+		left outer join matridx_jcsj sj on sb.yblx = sj.csid where sb.scbj = '0'
+		<if test="sbid !=null and sbid!= ''">
+			and sb.sbid =#{sbid}
+		</if>
+		<if test="fsbid !=null and fsbid != ''">
+			and sb.fsbid =#{fsbid}
+		</if>
+		<if test="sblx !=null or sblx != ''">
+			and sb.sblx =#{sblx}
+		</if>
+		<if test="sfqcp ==1">
+			and sb.cfs=kx.kxs
+		</if>
+		order by sb.sblx,sb.px
+	</select>
+	
+	<!-- 查询所有设备信息 -->
+	<select id="getAllDeviceList" parameterType="SbglDto" resultType="SbglDto">
+		with recursive d (sbid,fsbid,sbh,wz,cfs,yblx,yblxdm,yblxmc,jcdw,jcdwmc,bz,px,sblx,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,depth,path) as (
+		select sb.sbid,
+			sb.fsbid,
+			sb.sbh,
+			sb.wz,
+			sb.cfs,
+			sb.yblx,
+			sj.csdm yblxdm,
+			sj.csmc yblxmc,
+		    sb.jcdw,
+			jcdw.csmc jcdwmc,
+			sb.bz,
+			sb.px,
+			sb.sblx,
+			sb.lrry,
+			sb.lrsj,
+			sb.xgry,
+			sb.xgsj,
+			sb.scry,
+			sb.scsj,
+			sb.scbj,
+			1 as depth,
+			lpad(1::varchar,2,'0')||lpad(sb.px::varchar,4,'0') path
+		from igams_sbgl sb
+		left outer join matridx_jcsj sj on sb.yblx = sj.csid
+		left outer join matridx_jcsj jcdw on sb.jcdw = jcdw.csid
+		where sb.scbj = '0'
+		<if test="sbid !=null and sbid!= ''">
+			and sb.sbid =#{sbid}
+		</if>
+		<if test="fsbid !=null and fsbid != ''">
+			and sb.fsbid =#{fsbid}
+		</if>
+		<if test="fsbid ==null or fsbid == ''">
+			and sb.fsbid is null
+		</if>
+		union all 
+		select subsb.sbid,
+			subsb.fsbid,
+			subsb.sbh,
+			subsb.wz,
+			subsb.cfs,
+			subsb.yblx,
+			subsj.csdm yblxdm,
+			subsj.csmc yblxmc,
+			subsb.jcdw,
+			jcdw.csmc jcdwmc,
+			subsb.bz,
+			subsb.px,
+			subsb.sblx,
+			subsb.lrry,
+			subsb.lrsj,
+			subsb.xgry,
+			subsb.xgsj,
+			subsb.scry,
+			subsb.scsj,
+			subsb.scbj,
+			d.depth + 1 as depth,
+			lpad((d.depth + 1)::varchar,2,'0')||lpad(subsb.px::varchar,4,'0') path
+		from igams_sbgl subsb
+		left outer join matridx_jcsj subsj on subsb.yblx = subsj.csid
+		left outer join matridx_jcsj jcdw on subsb.jcdw = jcdw.csid
+		join d on subsb.fsbid = d.sbid where subsb.scbj = '0'
+		)
+		select sbid,fsbid,sbh,wz,cfs,yblx,yblxdm,yblxmc,jcdw,jcdwmc,bz,px,sblx,lrry,lrsj,xgry,xgsj,scry,scsj,scbj,depth,path from d order by jcdw,sbh ASC
+	</select>
+	
+	<!-- 查询设备信息 -->
+	<select id="getDto" parameterType="SbglDto" resultType="SbglDto">
+		select sb.sbid,
+			sb.fsbid,
+			sb.sbh,
+			sb.wz,
+			sb.cfs,
+			sb.yblx,
+			sj.csdm yblxdm,
+			sj.csmc yblxmc,
+			sb.bz,
+			sb.px,
+			sb.sblx,
+			sb.lrry,
+			sb.lrsj,
+			sb.xgry,
+			sb.xgsj,
+			sb.scry,
+			sb.scsj,
+			sb.scbj,
+			sb.jcdw
+		from igams_sbgl sb
+		left outer join matridx_jcsj sj on sb.yblx = sj.csid
+		left join igams_sbgl fsb on fsb.sbid=sb.fsbid and fsb.scbj='0'
+		where sb.scbj = '0'
+		<if test="sbid !=null and sbid!= ''">
+			and sb.sbid =#{sbid}
+		</if>
+		<if test="fsbid !=null and fsbid != ''">
+			and sb.fsbid =#{fsbid}
+		</if>
+		<if test="sbh !=null and sbh != ''">
+			and sb.sbh =#{sbh}
+		</if>
+		<if test="wz !=null and wz != ''">
+			and sb.wz =#{wz}
+		</if>
+		<if test="sblx !=null and sblx != ''">
+			and sb.sblx =#{sblx}
+		</if>
+		<if test="jcdw !=null and jcdw != ''">
+			and sb.jcdw =#{jcdw}
+		</if>
+		<if test="bxJcdw !=null and bxJcdw != ''">
+			and fsb.jcdw =#{bxJcdw}
+		</if>
+	</select>
+	
+	<!-- 查询设备信息 -->
+	<select id="getSbYbDto" parameterType="SbglDto" resultType="SbglDto">
+		select sb.sbid,
+			sb.fsbid,
+			sb.sbh,
+			sb.cfs,
+			chtsb.yblx,
+			sb.bz,
+			sb.px,
+			sb.sblx,
+			sb.lrry,
+			sb.lrsj,
+			sb.xgry,
+			sb.xgsj,
+			sb.scry,
+			sb.scsj,
+			sb.scbj
+		from igams_sbgl sb
+		left outer join igams_sbgl chtsb on sb.fsbid = chtsb.sbid
+		<where>
+		<if test="sbid !=null and sbid!= ''">
+			and sb.sbid =#{sbid}
+		</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="SbglDto">
+		insert into igams_sbgl(sbid,sbh,sblx,px,lrry,lrsj,scbj
+		<if test="fsbid != null and fsbid != ''">
+			,fsbid
+        </if>
+		<if test="yblx != null and yblx != ''">
+			,yblx
+        </if>
+		<if test="cfs != null and cfs != ''">
+			,cfs
+        </if>
+		<if test="bz != null and bz != ''">
+			,bz
+        </if>
+		<if test="jcdw != null and jcdw != ''">
+			,jcdw
+		</if>
+		<if test="wz != null and wz != ''">
+			,wz
+		</if>
+        )values(#{sbid},#{sbh},#{sblx},cast(#{px} as integer),#{lrry},LOCALTIMESTAMP,'0'
+	        <if test="fsbid != null and fsbid != ''">
+				,#{fsbid}
+	        </if>
+			<if test="yblx != null and yblx != ''">
+				,#{yblx}
+	        </if>
+			<if test="cfs != null and cfs != ''">
+				,cast(#{cfs} as integer)
+	        </if>
+	        <if test="bz != null and bz != ''">
+				,#{bz}
+	        </if>
+			<if test="jcdw != null and jcdw != ''">
+				,#{jcdw}
+			</if>
+			<if test="wz != null and wz != ''">
+				,#{wz}
+			</if>
+        )
+	</insert>
+	
+	<update id="update" parameterType="SbglDto">
+		update igams_sbgl set sbh = #{sbh},px=cast(#{px} as integer),cfs=cast(#{cfs} as integer),yblx=#{yblx},jcdw=#{jcdw},wz=#{wz},xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="bz != null and bz != ''">
+			,bz =#{bz}
+        </if>
+        where sbid =#{sbid}
+	</update>
+	
+	<update id="delete" parameterType="SbglDto">
+		update igams_sbgl set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        where sbid =#{sbid}
+	</update>
+	<!-- 根据设备号查询设备信息 -->
+	<select id="selectSbidsBySbh" parameterType="YbglDto" resultType="SbglDto">
+		select sb.sbid as hzid,sb.fsbid,sb.sbh,sb.cfs,sb.bz,sb.px,sb.sblx,sb.lrry,sb.lrsj,sb.xgry,sb.xgsj,sb.scry,sb.scsj,sb.scbj
+			,ct.sbid as ctid,bx.sbid as bxid
+		from igams_sbgl sb
+			left join igams_sbgl ct on sb.fsbid = ct.sbid
+			left join igams_sbgl bx on ct.fsbid = bx.sbid
+		<where>
+			sb.scbj!='1' and ct.scbj!='1' and bx.scbj!='1' and sb.sbh=#{hzh} and ct.sbh=#{chth} and bx.sbh=#{bxh}
+		</where>
+	</select>
+	<!-- 查询所有的冰箱 -->
+	<select id="getAllBxh" parameterType="SbglDto"  resultType="SbglDto">
+		select sbid,sbh,wz
+		from igams_sbgl
+		<where>
+			scbj!='1' and sblx = #{sblx}
+		</where>
+		order by sbh
+	</select>
+	<!-- 通过父设备id获取子设备 -->
+	<select id="getSbListByFsbid" parameterType="SbglDto" resultType="SbglDto">
+		select
+		sbgl.sbid,sbgl.sbh,sbgl.wz,sbgl.xgsj,sbgl.sblx,case when coalesce(tmp.dcts,0)>0 then '1' else 0 end sfczdb,COALESCE(sbgl.ycfs,0) ycfs
+		from
+		igams_sbgl sbgl
+		left join (
+		select
+		sb.sbid,count(ybdb.ybdbid) dcts
+		from
+		igams_sbgl sb
+		left join igams_ybdbmx ybdbmx on (sb.sbid = ybdbmx.dchz or sb.sbid = ybdbmx.drhz) and ybdbmx.scbj ='0'
+		left join igams_ybdb ybdb on ybdb.ybdbid = ybdbmx.ybdbid and ybdb.scbj ='0' and ybdb.zt ='10'
+		where sb.scbj ='0' and sb.sblx ='hz' and sb.fsbid in
+		<foreach collection="fids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		group by sb.sbid) tmp on sbgl.sbid = tmp.sbid
+		<if test="ybdbid != null and ybdbid != ''">
+				LEFT JOIN igams_ybdbmx dbmx ON dbmx.dchz = sbgl.sbid and dbmx.scbj = '0'
+				LEFT JOIN (SELECT kc.hzid,sum(CAST( COALESCE ( kc.ydbj ,'0')AS numeric)) AS zyds, COALESCE ( count(kc.ybkcid),0) AS zybs
+				FROM igams_ybkcxx kc where kc.scbj='0' GROUP BY kc.hzid
+				) tt ON tt.hzid = sbgl.sbid
+		</if>
+		<where>
+		sbgl.scbj != '1' and sbgl.fsbid in
+		<foreach collection="fids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		<if test="ybdbid != null and ybdbid != ''">
+			AND (dbmx.ybdbid = #{ybdbid} OR (dbmx.ybdbid IS null
+			AND COALESCE (tt.zyds,0) = 0 AND COALESCE (tt.zybs,0) >0))
+		</if>
+		</where>
+		order by
+		sbgl.sbh
+	</select>
+	<!-- 通过存储单位获取冰箱 -->
+	<select id="getSbListByJcdw" parameterType="SbglDto" resultType="SbglDto">
+		select sbid,sbh,wz
+		from igams_sbgl
+		<where>
+			scbj!='1' and jcdw in
+			<foreach collection="jcdws" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+		order by sbh
+	</select>
+	<!-- 获取存放数最少的一组 -->
+	<select id="getDefault" resultType="SbglDto">
+		SELECT sbglbx.sbid bxid,sbglbx.sbh bxh,sbglct.sbid chtid,sbglct.sbh cth,sbglhz.sbid hzid,sbglhz.sbh hh
+		from
+		igams_sbgl sbglbx
+		left join igams_sbgl sbglct on sbglct.fsbid = sbglbx.sbid
+		left join igams_sbgl sbglhz on sbglhz.fsbid = sbglct.sbid
+		where
+		COALESCE(sbglhz.ycfs,0)!=81 and sbglhz.scbj!='1' ORDER BY COALESCE(sbglhz.ycfs,0),sbglbx.px,sbglct.px,sbglhz.px
+		LIMIT 1
+	</select>
+	<select id="getDeviceInfoBySbids" resultType="SbglDto" parameterType="SbglDto">
+		select sb.sbid,sb.fsbid,sb.sbh,sb.cfs,sb.ycfs,sb.bz,sb.px,sb.sblx
+		from igams_sbgl sb
+		<where>
+			sb.scbj!='1' and sb.sbid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+
+	</select>
+
+	<update id="updateYcfs" parameterType="SbglDto">
+       update igams_sbgl set ycfs = COALESCE(ycfs,0)+CAST(#{ycfs} AS numeric)
+       where sbid = #{sbid} and scbj='0'
+	</update>
+
+	<update id="updateYcfsDtos" parameterType="list">
+		<if test="list !=null and list.size>0">
+		   	update igams_sbgl sbgl
+			set
+			ycfs  = COALESCE(ycfs,0) + CAST(tmp.addcfs AS numeric) - CAST(tmp.subcfs AS numeric)
+			from (
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+				select #{item.sbid} as sbid,COALESCE(#{item.addcfs},'0') as addcfs,COALESCE(#{item.subcfs},'0') as subcfs
+			</foreach>
+			) tmp
+		   	where sbgl.sbid = tmp.sbid and sbgl.scbj='0'
+		</if>
+	</update>
+
+	<update id="updateForXgsj" parameterType="SbglDto">
+       update igams_sbgl set xgsj = LOCALTIMESTAMP,xgry = #{xgry}
+		<if test="sbh != null and sbh != ''">
+			,sbh =  #{sbh}
+		</if>
+       where sbid = #{sbid}
+		<if test="xgsj != null and xgsj != ''">
+			and xgsj = cast(#{xgsj} as timestamp )
+		</if>
+		<if test="xgsj == null or xgsj == ''">
+			and xgsj is null
+		</if>
+	</update>
+
+	<update id="updateYcfsForCK" parameterType="SbglDto">
+       update igams_sbgl set ycfs = COALESCE(ycfs,0)-CAST(#{ycfs} AS numeric)
+       where sbid = (select sbid from igams_sbgl sbgl left join igams_ybkcxx ybkcxx on ybkcxx.hzid = sbgl.sbid where ybkcxx.ybkcid = #{ybkcid}) and scbj='0'
+	</update>
+	<update id="updateYcfsForMods" parameterType="SbglDto">
+		update igams_sbgl
+		    set ycfs = CAST(#{ycfs} AS numeric)
+		where sbid in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<update id="updateYcfsForMod" parameterType="SbglDto">
+		update igams_sbgl
+		set
+		<if test="ycfsbj =='1'.toString()">
+			ycfs = COALESCE(ycfs,0)+CAST(#{ycfs} AS numeric)
+		</if>
+		<if test="ycfsbj =='0'.toString()">
+			ycfs = COALESCE(ycfs,0)-CAST(#{ycfs} AS numeric)
+		</if>
+		<if test="ycfsbj =='2'.toString()">
+			ycfs = CAST(#{ycfs} AS numeric)
+		</if>
+		where sbid = #{sbid}
+	</update>
+	<update id="batchUpdateYcfs" parameterType="SbglDto">
+		<if test="list !=null and list.size>0">
+			update igams_sbgl sbgl
+			set
+			ycfs  = CAST(tmp.ycfs AS numeric)
+			from (
+			<foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+				select #{item.sbid} as sbid,COALESCE(#{item.ycfs},'0') as ycfs
+			</foreach>
+			) tmp
+			where sbgl.sbid = tmp.sbid and sbgl.scbj='0'
+		</if>
+	</update>
+	<update id="updateSbs" parameterType="SbglDto">
+		<if test="list !=null and list.size>0">
+			update igams_sbgl sbgl
+			set
+			sbh  = tmp.sbh
+			from (
+			<foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+				select #{item.sbid} as sbid,#{item.sbh} as sbh
+			</foreach>
+			) tmp
+			where sbgl.sbid = tmp.sbid and sbgl.scbj='0'
+		</if>
+	</update>
+	<update id="updateSb" parameterType="SbglDto">
+		update igams_sbgl set xgsj = LOCALTIMESTAMP,xgry = #{xgry}
+		<if test="sbh != null and sbh != ''">
+			,sbh = #{sbh}
+		</if>
+		where sbid = #{sbid}
+	</update>
+
+	<insert id="insetList" parameterType="list">
+		insert into igams_sbgl(sbid,fsbid,sblx,sbh,cfs,px,jcdw,wz,lrry,lrsj,scbj)
+		values
+		<if test="list!=null and list.size>0">
+			<foreach collection="list"  separator=","  index="index" item="item" >
+				(#{item.sbid},#{item.fsbid},#{item.sblx},#{item.sbh},cast (#{item.cfs} as numeric),cast (#{item.px} as numeric),#{item.jcdw},#{item.wz},#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+</mapper>

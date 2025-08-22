@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.ISbkxglDao" >
+	<!-- 查询盒子空闲信息 -->
+	<select id="getSbkxList" parameterType="SbkxglDto" resultType="SbkxglDto">
+		select kx.sbid,
+			kx.fsbid,
+			kx.xh,
+			kx.qswz,
+			kx.yblx,
+			sj.csdm yblxdm,
+			sj.csmc yblxmc,
+			kx.kxs,
+			kx.lrry,
+			kx.lrsj,
+			kx.xgry,
+			kx.xgsj,
+			kx.scry,
+			kx.scsj,
+			kx.scbj
+		from igams_sbkxgl kx
+		left outer join matridx_jcsj sj on kx.yblx = sj.csid where kx.scbj = '0'
+		<if test="sbid !=null and sbid!= ''">
+			and kx.sbid =#{sbid}
+		</if>
+		order by kx.xh
+	</select>
+	
+	<select id="getFitPos" parameterType="SbkxglDto" resultType="SbkxglDto">
+		select kx.sbid,
+			kx.fsbid,
+			bxsb.sbid bxid,
+			kx.xh,
+			kx.qswz,
+			kx.yblx,
+			kx.kxs,
+			hzsb.cfs,
+			kx.lrry,
+			kx.lrsj,
+			kx.xgry,
+			kx.xgsj,
+			kx.scry,
+			kx.scsj,
+			kx.scbj
+		from igams_sbkxgl kx
+		left outer join igams_sbgl ctsb on kx.fsbid = ctsb.sbid and ctsb.sblx ='ct'
+		left outer join igams_sbgl bxsb on ctsb.fsbid = bxsb.sbid and bxsb.sblx ='bx'
+		left outer join igams_sbgl hzsb on kx.sbid = hzsb.sbid and hzsb.sblx ='hz'
+		<where>
+			kx.scbj ='0'
+			<if test="yblx !=null and yblx!= ''">
+				and kx.yblx =#{yblx}
+			</if>
+			<if test="sl !=null and sl!= ''">
+				and kx.kxs >= cast(#{sl} as integer)
+			</if>
+		</where>
+		order by bxsb.px,ctsb.px,hzsb.px,kx.xh
+	</select>
+	
+	<select id="getModelByWz" parameterType="SbkxglDto" resultType="SbkxglModel">
+		select kx.sbid,
+			kx.fsbid,
+			kx.xh,
+			kx.qswz,
+			kx.yblx,
+			kx.kxs,
+			kx.lrry,
+			kx.lrsj,
+			kx.xgry,
+			kx.xgsj,
+			kx.scry,
+			kx.scsj,
+			kx.scbj
+		from igams_sbkxgl kx
+		<where>
+			kx.scbj ='0'
+			<if test="sbid !=null and sbid != ''">
+				and kx.sbid =#{sbid}
+			</if>
+			<if test="xh !=null and xh != ''">
+				and kx.xh =cast(#{xh} as integer)
+			</if>
+			<if test="cfjswz !=null and cfjswz != ''">
+				and (kx.qswz + kx.kxs -1) >= cast(#{cfjswz} as integer)
+			</if>
+			<if test="cfjswz !=null and cfjswz != ''">
+				and kx.qswz &lt;= cast(#{cfqswz} as integer)
+			</if>
+		</where>
+		order by kx.xh
+	</select>
+	
+	<delete id="delete" parameterType="SbkxglModel">
+		delete from igams_sbkxgl where 1=1
+		
+		<if test="sbid !=null and sbid != ''">
+			and sbid =#{sbid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			and xh =cast(#{xh} as integer)
+		</if>
+	</delete>
+	
+	<delete id="deleteById" parameterType="String">
+		delete from igams_sbkxgl where sbid =#{0}
+	</delete>
+	
+	<update id="update" parameterType="SbkxglModel">
+		update igams_sbkxgl set qswz = cast(#{qswz} as integer),kxs=cast(#{kxs} as integer),xgry=#{xgry},xgsj=LOCALTIMESTAMP where 1=1
+		
+		<if test="sbid !=null and sbid != ''">
+			and sbid =#{sbid}
+		</if>
+		<if test="xh !=null and xh != ''">
+			and xh =cast(#{xh} as integer)
+		</if>
+	</update>
+	
+	<insert id="insertNew" parameterType="SbkxglModel">
+		insert into igams_sbkxgl(sbid,xh,
+		<if test="fsbid !=null and fsbid != ''">
+			,fsbid
+		</if>
+		,qswz,kxs,
+		<if test="yblx !=null and yblx != ''">
+			,yblx
+		</if>
+		,lrry,lrsj,scbj)
+		values(
+			#{sbid},(select max(xh)+1 from igams_sbkxgl where sbid = #{sbid}),
+			<if test="fsbid !=null and fsbid != ''">
+				,#{fsbid}
+			</if>
+			,cast(#{qswz} as integer),cast(#{kxs} as integer),
+			<if test="yblx !=null and yblx != ''">
+				,#{yblx}
+			</if>
+			,#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+	
+	<insert id="insert" parameterType="SbkxglModel">
+		insert into igams_sbkxgl(sbid,xh
+		<if test="fsbid !=null and fsbid != ''">
+			,fsbid
+		</if>
+		,qswz,kxs
+		<if test="yblx !=null and yblx != ''">
+			,yblx
+		</if>
+		,lrry,lrsj,scbj)
+		values(
+			#{sbid},cast(#{xh} as integer)
+			<if test="fsbid !=null and fsbid != ''">
+				,#{fsbid}
+			</if>
+			,cast(#{qswz} as integer),cast(#{kxs} as integer)
+			<if test="yblx !=null and yblx != ''">
+				,#{yblx}
+			</if>
+			,#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+</mapper>

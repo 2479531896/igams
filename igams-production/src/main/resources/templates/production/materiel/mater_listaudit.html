@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<body>
+		<div class="panel-body body-content padding-l30 padding-r30" style="padding-bottom:0px;">
+			<form id="mater_formAudit">
+			<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+				<div class="row">
+				    <div class="pull-left">
+						<ul class="nav nav-tabs nav-tabs-ky" role="tablist" id="audit_ul">
+							<li  class="nav-item" >
+								<a  class="nav-link active" name="tabBlock[waitAuditDiv]" href="#auditing" role="tab" data-bs-toggle="tab">待审核的物料申请</a>
+							</li>
+							<li  class="nav-item" >
+								<a  class="nav-link" name="tabBlock[alreadyAuditDiv]" href="#audited" role="tab" data-bs-toggle="tab">审核记录</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</form>
+			<div class="row padding-l15 padding-r15">
+    			<div class="main_content tab-content">
+    				<div role="tabpanel" class="tab-pane active padding-10" id="auditing" style="border:1px solid #eee">
+				        <form id="mater_auditing" class="form-horizontal form-inline">
+				        	<div class="panel panel-default">
+					            <div class="panel-heading">查询条件</div>
+					            <div class="panel-body">
+					            	<div class="">
+					                    <div class="form-group padding_l10">
+					                        <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+			                            		<option value="0">物料名称</option>
+			                            		<option value="1">生产商</option>
+			                            	</select>
+				                        	<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+				                               onkeydown="if(event.keyCode==13) {searchMaterAudit(); return false;}"/>
+										</div>
+										<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+										<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+									</div>
+									<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+						                <span class="tit">已选条件：</span>
+						                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+						                    <ul id="sl_add_ul"></ul>
+						                </div>
+						            </div>
+						            <div class="width100 padding_t7" id="searchMore" action="" data-bs-toggle="validation" style="display: none;" >
+						            	<div class="tab-content sl_sel_con row" style="min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px; padding-bottom: 10px;" id="sl_sel_con">
+						                    <div class="tab-pane active" id="tab06">
+												<div id="wllb_id" class="col-xs-12 col-sm-12 col-lg-12">
+							                        <div class="form-group width100">
+							                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="物料类别">物料类别：</label>
+							                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+							                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+							                                    <li th:if="${wllblist!=null && wllblist.size() >0}" th:each="t_wllb:${wllblist}">
+							                                        <a style='text-decoration:none;cursor:pointer;'
+							                                           th:onclick="'addTj(wllb,[[${t_wllb.csid}]],mater_auditing);'" th:id="'wllb_id_'+${t_wllb.csid}"><span th:text="${t_wllb.csmc}"></span></a>
+							                                    </li>
+							                            	</ul>
+							                            	<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+							                    		</div>
+							                    	</div>
+							                    </div>
+							                    <div id="wlzlb_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+							                        <div class="form-group width100">
+							                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="物料子类别">物料子类别：</label>
+							                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+							                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_wlzlb">
+							                                    <li th:if="${wlzlblist!=null && wlzlblist.size() >0}" th:each="t_wlzlb:${wlzlblist}">
+							                                        <a style='text-decoration:none;cursor:pointer;'
+							                                           th:onclick="'addTj(wlzlb,[[${t_wlzlb.csid}]],mater_formSearch);'" th:id="'wlzlb_id_'+${t_wlzlb.csid}"><span th:text="${t_wlzlb.csmc}"></span></a>
+							                                    </li>
+							                            	</ul>
+							                            	<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+							                    		</div>
+							                    	</div>
+							                    </div>
+							                    <div id="sfwxp_id" class="col-xs-12 col-sm-12 col-lg-12">
+							                        <div class="form-group width100">
+							                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否危险品">是否危险品：</label>
+							                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+							                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+							                                    <li>
+							                                        <a style='text-decoration:none;cursor:pointer;'
+							                                           onclick="addTj('sfwxp','0','mater_auditing');"
+							                                           id="sfwxp_id_0"><span>否</span></a>
+							                                    </li>
+							                                    <li>
+							                                        <a style='text-decoration:none;cursor:pointer;'
+							                                           onclick="addTj('sfwxp','1','mater_auditing');"
+							                                           id="sfwxp_id_1"><span>是</span></a>
+							                                    </li>
+							                            	</ul>
+							                    		</div>
+							                    	</div>
+							                    </div>
+											</div>
+										</div>
+						            </div>
+					            </div>
+					        </div>
+							<input type="hidden" id="wllb_id_tj" name="wllb_id_tj">
+							<input type="hidden" id="wlzlb_id_tj" name="wlzlb_id_tj">
+							<input type="hidden" id="sfwxp_id_tj" name="sfwxp_id_tj">
+							<div th:include="common/btn/ancz.html"></div>
+							<table id="tb_list" class="table table-hover table-bordered table-hidden"></table>
+				        </form>
+					</div>
+					<div role="tabpanel" class="tab-pane padding-10" id="audited" style="border:1px solid #eee">
+						<form id="mater_audited" class="form-horizontal form-inline">
+				        	<div class="panel panel-default">
+					            <div class="panel-heading">查询条件</div>
+					            <div class="panel-body">
+					            	<div class="">
+					                    <div class="form-group padding_l10">
+					                        <select name="cxtj_audited" class="form-control chosen-select" id="cxtj_audited" style="height:34px;">
+				                            	<option value="0">物料名称</option>
+			                            		<option value="1">生产商</option>
+			                            		<option value="2">申请人员</option>
+				                            </select>
+				                        	<input id="cxnr_audited" name="cxnr_audited" class="form-control" placeholder="模糊匹配"
+				                               onkeydown="if(event.keyCode==13) {searchMaterAudited(); return false;}"/>
+										</div>
+										<div class="form-group padding-l30" style="margin-left:0px">
+						                    <label>申请时间</label>
+						                    <input id="sqsjstart" name="sqsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+						                    <input id="sqsjend" name="sqsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+						                </div>
+										<button type="button" style="margin-left:50px" id="btn_queryAudited" class="btn btn-primary">查询</button>
+									</div>
+					            </div>
+				         	</div>
+				            <div id="toolbar" class="btn-group">
+								<button class="btn btn-default" type="button" id="btn_cancelAudit"><i class="glyphicon glyphicon-remove-circle"></i>&nbsp;取消审批</button>
+							</div>
+				            <table id="tb_list" class="table table-hover table-bordered table-hidden"></table>
+					    </form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="/js/production/materiel/mater_listaudit.js" charset="utf-8"></script>
+	</body>
+</html>

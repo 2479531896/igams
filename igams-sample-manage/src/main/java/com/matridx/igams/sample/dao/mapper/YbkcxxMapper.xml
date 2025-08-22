@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbkcxxDao">
+    <!-- 查询样本库存信息 -->
+    <select id="getPagedDtoList" parameterType="YbkcxxDto" resultType="YbkcxxDto">
+        SELECT
+        ybkcxx.ybkcid,ybkcxx.sjid,sjxx.nbbm,sjxx.ybbh,sjxx.yblx,ybkcxx.tj,sbglbx.sbh bxh,sbglhz.sbh hh,ybkcxx.wz,xtyh.zsxm lrrymc,to_char(ybkcxx.lrsj,'yyyy-MM-dd') lrsj,ybkcxx.ydbj
+        ,ybkcxx.yblrlx,ybkcxx.bz,sbglbx.jcdw,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+        FROM
+        igams_ybkcxx ybkcxx
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybkcxx.lrry
+        <if test="(gzzb !=null and gzzb != '') or (yszb !=null and yszb != '') or (entire !=null and entire != '')">
+            left join igams_sjbgsm sjbgsm on sjbgsm.sjid = sjxx.sjid
+        </if>
+        <where>
+            ybkcxx.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (sjxx.nbbm like '%'||#{entire}||'%'
+                or sjxx.ybbh like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                or sjbgsm.ggzdzb like '%'||#{entire}||'%'
+                or sjbgsm.yszb like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="ybbh !=null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm !=null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="lrrymc !=null and lrrymc != ''">
+                and xtyh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="gzzb !=null and gzzb != ''">
+                and sjbgsm.ggzdzb ILIKE '%'||#{gzzb}||'%'
+            </if>
+            <if test="yszb !=null and yszb != ''">
+                and sjbgsm.yszb ILIKE '%'||#{yszb}||'%'
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+            </if>
+            <if test="volumeMin != null and volumeMin != ''">
+                and ybkcxx.tj&gt;= cast(#{volumeMin} as numeric)
+            </if>
+            <if test="volumeMax != null and volumeMax != ''">
+                 and ybkcxx.tj &lt;=cast(#{volumeMax} as numeric)
+            </if>
+            <if test="jcdwxz!=null and jcdwxz.size()>0">
+                and sbglbx.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "jcdws != null and jcdws.length > 0 "  >
+                and sbglbx.jcdw in
+                <foreach collection="jcdws" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "bxhs != null and bxhs.length > 0 "  >
+                and sbglbx.sbid in
+                <foreach collection="bxhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "cths != null and cths.length > 0 "  >
+                and sbglct.sbid in
+                <foreach collection="cths" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "hhs != null and hhs.length > 0 "  >
+                and sbglhz.sbid in
+                <foreach collection="hhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "yblxs != null and yblxs.length > 0 "  >
+                and sjxx.yblx in
+                <foreach collection="yblxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "yblrlxs != null and yblrlxs.length > 0 "  >
+                and ybkcxx.yblrlx in
+                <foreach collection="yblrlxs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "ybkczts != null and ybkczts.length > 0 ">
+                and ybkcxx.ydbj in
+                <foreach collection="ybkczts" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        <if test="(gzzb !=null and gzzb != '') or (yszb !=null and yszb != '') or (entire !=null and entire != '')">
+            group by ybkcid,ybkcxx.sjid,nbbm,ybbh,tj,bxh,hh,ybkcxx.wz,lrrymc,ybkcxx.lrsj,ydbj,yblrlx,sjxx.yblx,sbglbx.jcdw,sbglbx.wz,sbglhz.wz,ybkcxx.hzbh,sbglct.wz
+        </if>
+    </select>
+
+    <!--通过ybkcid查询-->
+    <select id="getDtoById" parameterType="java.lang.String" resultType="YbkcxxDto">
+       SELECT
+		ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglhz.sbh hh,ybkcxx.wz,xtyh.zsxm lrrymc,to_char(ybkcxx.lrsj,'yyyy-MM-dd') lrsj
+        ,sbglbx.sbid bxid,sbglct.sbid chtid,sbglhz.sbid hzid,ybkcxx.yblrlx,ybkcxx.bz,sjxx.sjid,sbglbx.jcdw,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+       FROM
+		igams_ybkcxx ybkcxx
+		left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+		LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybkcxx.lrry
+        where ybkcxx.ybkcid = #{ybkcid} and ybkcxx.scbj = '0'
+    </select>
+    <!--通过ybkcid查询-->
+    <select id="getDtoList" parameterType="java.lang.String" resultType="YbkcxxDto">
+       SELECT
+		ybkcxx.ybkcid,ybkcxx.tj,sbglbx.sbh bxh,sbglhz.sbh hh,ybkcxx.wz,to_char(ybkcxx.lrsj,'yyyy-MM-dd') lrsj,ybkcxx.sjid,
+        sbglbx.sbid bxid,sbglct.sbid chtid,sbglhz.sbid hzid,ybkcxx.yblrlx,ybkcxx.bz,sbglbx.jcdw,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+       FROM
+		igams_ybkcxx ybkcxx
+		LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        where ybkcxx.scbj = '0'
+        <if test="ids !=null and ids.size > 0">
+            and ybkcxx.ybkcid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="hzids !=null and hzids.size > 0">
+            and ybkcxx.hzid in
+            <foreach collection="hzids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="ydbj != null and ydbj != ''">
+            and ybkcxx.ydbj = #{ydbj}
+        </if>
+    </select>
+
+    <!-- 导出条数 -->
+    <select id="getCountForSearchExp" parameterType="YbkcxxDto"
+            resultType="java.lang.Integer">
+        select count(ybkcxx.ybkcid) from igams_ybkcxx ybkcxx
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybkcxx.lrry
+        <where>
+            ybkcxx.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (sjxx.nbbm like '%'||#{entire}||'%'
+                or sjxx.ybbh like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="ybbh !=null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm !=null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="lrrymc !=null and lrrymc != ''">
+                and xtyh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+            </if>
+            <if test = "bxhs != null and bxhs.length > 0 "  >
+                and sbglbx.sbid in
+                <foreach collection="bxhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "cths != null and cths.length > 0 "  >
+                and sbglct.sbid in
+                <foreach collection="cths" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "hhs != null and hhs.length > 0 "  >
+                and sbglhz.sbid in
+                <foreach collection="hhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--搜索导出-->
+    <select id="getListForSearchExp" parameterType="YbkcxxDto" resultType="YbkcxxDto">
+        select ybkcxx.ybkcid ${sqlParam}
+        from igams_ybkcxx ybkcxx
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybkcxx.lrry
+        <where>
+            ybkcxx.scbj = '0'
+            <if test="entire != null and entire != ''">
+                and (sjxx.nbbm like '%'||#{entire}||'%'
+                or sjxx.ybbh like '%'||#{entire}||'%'
+                or xtyh.zsxm like '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="ybbh !=null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm !=null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test="lrrymc !=null and lrrymc != ''">
+                and xtyh.zsxm ILIKE '%'||#{lrrymc}||'%'
+            </if>
+            <if test="lrsjstart != null and lrsjstart != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+            </if>
+            <if test="lrsjend != null and lrsjend != ''">
+                and to_char(ybkcxx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+            </if>
+            <if test = "bxhs != null and bxhs.length > 0 "  >
+                and sbglbx.sbid in
+                <foreach collection="bxhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "cths != null and cths.length > 0 "  >
+                and sbglct.sbid in
+                <foreach collection="cths" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "hhs != null and hhs.length > 0 "  >
+                and sbglhz.sbid in
+                <foreach collection="hhs" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+
+    <!--选中导出-->
+    <select id="getListForSelectExp" parameterType="YbkcxxDto" resultType="YbkcxxDto">
+        select ybkcxx.ybkcid ${sqlParam} from (
+        <foreach item="item" index="index" collection="ids"
+                 separator=" union all ">
+            select #{item,jdbcType=VARCHAR} ybkcid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_ybkcxx ybkcxx on ybkcxx.ybkcid = tmp.ybkcid
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybkcxx.lrry
+        order by tmp.ordernum
+    </select>
+
+    <select id="getWzListByHzid" parameterType="java.lang.String" resultType="YbkcxxDto" >
+        SELECT
+        wz
+        FROM
+        igams_ybkcxx
+        where hzid = #{hzid}
+         and scbj = '0'  and ydbj!='3'
+        order by wz
+	</select>
+
+    <select id="getSjxxByNbbm" parameterType="java.lang.String" resultType="YbkcxxDto" >
+       select sjxx.sjid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc
+        from
+        igams_sjxx sjxx
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        where sjxx.nbbm = #{nbbm}
+         and sjxx.scbj = '0'
+	</select>
+
+    <insert id="insertYbkcxxDtos" parameterType="List">
+        insert into igams_ybkcxx(ybkcid,sjid,bxid,chtid,hzid,wz,tj,lrry,lrsj,scbj,ydbj,yblrlx,hzbh,dbmxid)
+        values
+        <foreach collection="list" separator="," open="" close="" item="item" index="index">
+            (#{item.ybkcid}
+                ,#{item.sjid}
+                ,#{item.bxid}
+                ,#{item.chtid}
+                ,#{item.hzid}
+                ,#{item.wz}
+                ,cast(#{item.tj} AS numeric)
+                ,#{item.lrry}
+           ,LOCALTIMESTAMP,0,0 ,#{item.yblrlx},#{item.hzbh},#{item.dbmxid}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryYbmxByYbkcid" parameterType="YbkcxxDto" resultType="YbkcxxDto" >
+        SELECT
+        ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglhz.sbh hh,ybkcxx.wz,ybkcxx.ybkcid as addkcid,jcdw.csmc jcdwmc,jcdw.csdm as jcdwdm
+        from
+        igams_ybkcxx ybkcxx
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        left join matridx_jcsj jcdw on jcdw.csid = sbglbx.jcdw
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        <where>
+            ybkcxx.ydbj!='1'
+            and ybkcxx.scbj = '0'
+            and ybkcxx.ybkcid=#{ybkcid}
+            <if test="ids !=null and ids.size > 0">
+                and #{ybkcid} not in
+                <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+	</select>
+
+    <select id="getYbkcxxByNbbm" parameterType="java.lang.String" resultType="YbkcxxDto" >
+        SELECT
+        ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglhz.sbh hh,ybkcxx.wz,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+        from
+        igams_ybkcxx ybkcxx
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        <where>
+            sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            and ybkcxx.ydbj!='1' and ybkcxx.scbj!='1'
+        </where>
+        order by ybkcxx.wz
+	</select>
+    <update id="updateYdbj" parameterType="YbkcxxDto">
+       update igams_ybkcxx set ydbj = '1'
+       where
+        scbj = '0' and
+        ybkcid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+	</update>
+    <update id="updateYdbjForDelete" parameterType="YbkcxxDto">
+       update igams_ybkcxx set ydbj = '0'
+       where
+        ybkcid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+	</update>
+    <update id="deleteListForCK" parameterType="YbkcxxDto">
+        update igams_ybkcxx set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        <where>
+            ybkcid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="updateScbjForDelete" parameterType="YbkcxxDto">
+        update igams_ybkcxx set scbj='0'
+        <where>
+            ybkcid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+
+   <!-- 查询样本库存信息 -->
+    <select id="getPagedDtoYds" parameterType="YbkcxxDto" resultType="YbkcxxDto">
+        SELECT
+        sbglbx.sbh bxh,sbglhz.sbh hh,COALESCE(sbglhz.ycfs,0) as ycfs,sbglbx.wz bxwz,sbglhz.wz hzwz,sbglct.wz ctwz
+        FROM
+        igams_sbgl sbglbx
+        LEFT JOIN igams_sbgl sbglct on sbglbx.sbid = sbglct.fsbid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.fsbid = sbglct.sbid
+        <where>
+            sbglhz.scbj = '0' and cast (sbglhz.ycfs as numeric )&lt;='80'
+            <if test="ycfs !=null and ycfs != ''">
+                and COALESCE(sbglhz.ycfs,0) =cast (#{ycfs} as numeric )
+            </if>
+        </where>
+    </select>
+	<update id="update" parameterType="YbkcxxDto">
+	        update igams_ybkcxx set
+	        <if test="wz != null and wz != ''">
+	            wz = #{wz},
+	        </if>
+	        <if test="yblrlx != null and yblrlx != ''">
+	            yblrlx = #{yblrlx},
+	        </if>
+	        <if test="tj != null and tj != ''">
+	            tj = cast(#{tj} AS numeric),
+	        </if>
+	        <if test="bxid != null and bxid != ''">
+	            bxid=#{bxid},
+	        </if>
+	        <if test="chtid != null and chtid != ''">
+	            chtid = #{chtid},
+	        </if>
+	        <if test="hzid != null and hzid != ''">
+	            hzid = #{hzid},
+	        </if>
+            <if test="bz != null and bz != ''">
+                bz = #{bz},
+            </if>
+            <if test="hzbh != null and hzbh != ''">
+                hzbh = #{hzbh},
+            </if>
+	        xgry = #{xgry},
+	        xgsj = LOCALTIMESTAMP
+	        where ybkcid = #{ybkcid}
+	    </update>
+    <select id="getJsjcdwByjsid" parameterType="String" resultType="Map">
+        select xtjs.dwxdbj,jsjcdw.jcdw from matridx_xtjs  xtjs
+        left join matridx_jsjcdw  jsjcdw on jsjcdw.jsid= xtjs.jsid
+        <where>
+            xtjs.jsid=#{jsid}
+        </where>
+    </select>
+
+
+
+    <update id="updateYdbjByHzids" parameterType="YbkcxxDto">
+        update igams_ybkcxx set
+        ydbj = #{ydbj},
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where
+        scbj='0' and hzid in
+        <foreach collection="hzids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </update>
+    <update id="restoreYdbjByHzids" parameterType="YbkcxxDto">
+        update igams_ybkcxx set
+        ydbj = #{ydbj},
+        xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+        where ydbj = '2'
+        <if test="hzids !=null and hzids.size > 0">
+            and hzid in
+            <foreach collection="hzids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="hzid !=null and hzid != ''">
+            and hzid = #{hzid}
+        </if>
+    </update>
+
+    <select id="getSampleInfoByHzid" parameterType="YbkcxxDto" resultType="YbkcxxDto">
+        SELECT sj.sjid,sj.ybbh,sj.nbbm,jc_yb.csmc yblxmc,jc_yblr.csmc yblrlxmc,kc.tj,sb.wz dcwz,sb.sbh dcsbh,sb_dr.wz drwz,sb_dr.sbh drshb
+        FROM igams_ybkcxx kc
+        LEFT JOIN igams_sbgl sb ON kc.hzid = sb.sbid
+        LEFT JOIN igams_sjxx sj ON sj.sjid = kc.sjid
+        LEFT JOIN matridx_jcsj jc_yb ON jc_yb.csid = sj.yblx
+        LEFT JOIN matridx_jcsj jc_yblr ON jc_yblr.csid = kc.yblrlx
+        LEFT JOIN igams_ybdbmx dbmx ON dbmx.dchz = sb.sbid AND dbmx.scbj = '0'
+        LEFT JOIN igams_sbgl sb_dr ON sb_dr.sbid = dbmx.drhz
+        WHERE
+        sb.sbid = #{hzid};
+
+    </select>
+    <select id="checkHzCanAllot" parameterType="YbkcxxDto" resultType="map">
+        SELECT sum(CAST( COALESCE ( kc.ydbj ,'0')AS numeric)) AS zyds, COALESCE ( count(kc.ybkcid),0) AS zybs
+        FROM igams_sbgl sb
+        LEFT JOIN igams_ybkcxx kc ON kc.hzid = sb.sbid
+        WHERE
+        sb.sbid in
+        <foreach collection="hzids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+    </select>
+    <update id="updateBox" parameterType="YbkcxxDto">
+        update igams_ybkcxx set
+        bxid = #{drbxid},
+        chtid = #{drchtid},
+        hzid = #{drhzid},
+        xgsj = LOCALTIMESTAMP
+        where scbj='0' and  bxid = #{dcbxid} and chtid=#{dcchtid} and hzid =#{dchzid}
+    </update>
+
+    <update id="updateByDbmx" parameterType="YbkcxxDto">
+        with recursive t (dbmxid,dchz) as (
+        select ybdbmx.dbmxid,ybdbmx.dchz
+        from igams_ybdbmx ybdbmx
+        where ybdbmx.scbj!='1' and ybdbmx.ybdbid =#{ybdbid}
+        )
+        update igams_ybkcxx ybkcxx set dbmxid=(select dbmxid from t where dchz=ybkcxx.hzid),xgsj=LOCALTIMESTAMP,ydbj=#{ydbj}
+        where ybkcxx.hzid in (select dchz from t)
+    </update>
+
+    <update id="deleteBydbmx" parameterType="YbdbDto">
+        with recursive t (dbmxid,dchz) as (
+        select ybdbmx.dbmxid,ybdbmx.dchz
+        from igams_ybdbmx ybdbmx
+        left join igams_ybdb ybdb on ybdb.ybdbid=ybdbmx.ybdbid
+        where ybdbmx.scbj!='1' and ybdb.zt='80' and ybdb.ybdbid in
+        <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+        )
+        update igams_ybkcxx ybkcxx set ydbj=#{ydbj},xgsj=LOCALTIMESTAMP,xgry=#{xgry}
+        where ybkcxx.hzid in (select dchz from t) and ybkcxx.dbmxid in (select dbmxid from t);
+
+        with recursive s (dbmxid,drhz) as (
+        select ybdbmx.dbmxid,ybdbmx.drhz
+        from igams_ybdbmx ybdbmx
+        left join igams_ybdb ybdb on ybdb.ybdbid=ybdbmx.ybdbid
+        where ybdbmx.scbj!='1' and ybdb.zt='80' and ybdb.ybdbid in
+        <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+        )
+        update igams_ybkcxx ybkcxx set scbj=#{scbj},scsj=LOCALTIMESTAMP,scry=#{xgry}
+        where ybkcxx.hzid in (select drhz from s) and ybkcxx.dbmxid in (select dbmxid from s);
+
+        with recursive a (dbmxid,dchz,ybs) as (
+        select ybdbmx.dbmxid,ybdbmx.dchz,ybdbmx.ybs
+        from igams_ybdbmx ybdbmx
+        left join igams_ybdb ybdb on ybdb.ybdbid=ybdbmx.ybdbid
+        where ybdbmx.scbj!='1' and ybdb.zt='80' and ybdb.ybdbid in
+        <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+        )
+        update igams_sbgl sbgl set
+        ycfs=(cast(COALESCE(sbgl.ycfs,0) as decimal) +(select cast(ybs as decimal) from a where dchz=sbgl.sbid))
+        where sbgl.sbid in (select dchz from a);
+
+        with recursive b (dbmxid,drhz,ybs) as (
+        select ybdbmx.dbmxid,ybdbmx.drhz,ybdbmx.ybs
+        from igams_ybdbmx ybdbmx
+        left join igams_ybdb ybdb on ybdb.ybdbid=ybdbmx.ybdbid
+        where ybdbmx.scbj!='1' and ybdb.zt='80' and ybdb.ybdbid in
+        <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+        )
+        update igams_sbgl sbgl set
+        ycfs=(cast(COALESCE(sbgl.ycfs,0) as decimal) -(select cast(ybs as decimal) from b where drhz=sbgl.sbid))
+        where sbgl.sbid in (select drhz from b);
+    </update>
+
+    <update id="updateYbkcxx" parameterType="YbdbDto">
+        with recursive t (dbmxid,dchz) as (
+        select ybdbmx.dbmxid,ybdbmx.dchz
+        from igams_ybdbmx ybdbmx
+        left join igams_ybdb ybdb on ybdb.ybdbid=ybdbmx.ybdbid
+        where ybdbmx.scbj!='1' and ybdb.zt !='80' and ybdb.ybdbid in
+        <foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+            #{item}
+        </foreach>
+        )
+        update igams_ybkcxx ybkcxx set ydbj=#{ydbj},xgsj=LOCALTIMESTAMP,xgry=#{xgry}
+        where ybkcxx.hzid in (select dchz from t) and ybkcxx.ydbj='2'
+    </update>
+</mapper>

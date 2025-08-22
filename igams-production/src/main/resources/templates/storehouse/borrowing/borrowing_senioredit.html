@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/borrowing/borrowing_senioredit.js'}" charset="utf-8"></script>
+		<style type="text/css">
+		</style>
+	</head>
+	<body>
+	<form id="seniorEditBorrowingForm" th:action="${urlPrefix}+${jcjygl.formAction}"  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="formAction" id ="formAction" th:value="${jcjygl.formAction}">
+		<input type="hidden" name="jcjyid" id ="jcjyid" th:value="${jcjygl.jcjyid}">
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="url" id="url" th:value="${url}">
+		<input type="hidden" name="addwlid" id="addwlid">
+		<input type="hidden" name="xsbj" id ="xsbj" th:value="${jcjygl.xsbj}">
+		<input type="hidden" name="auditType" id="auditType"  th:value="${auditType}">
+		<input type="hidden" name="jymx_json" id="jymx_json" th:value="${jymx_json}">
+		<div class="panel-body body-content">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-3 col-sm-3" style="height:30px">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>&nbsp;&nbsp;&nbsp;借用单号:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<div class="input-group">
+										<input type="text" id="jydh" style="min-width: 100%;height:28px;" name="jydh" th:value="${jcjygl.jydh}" validate="{required:true,stringMaxLength:64}" class="form-control"  autocomplete="off"/>
+										<span class="input-group-btn">
+											<button type="button" onclick="sesxjydh()" class="btn btn-primary"  style="height:32px !important;">刷新</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3" style="height:30px">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>部门:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<div class="input-group">
+										<input id="bmmc" name="bmmc" type="text" th:value="${jcjygl.bmmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+										<input id="bm" name="bm" type="hidden" th:value="${jcjygl.bm}" class="form-control" validate="{required:true}"/>
+										<input id="bmdm" name="bmdm" type="hidden" th:value="${jcjygl.bmdm}" class="form-control" validate="{required:true}"/>
+										<span class="input-group-btn">
+												<button type="button" onclick="chooseSqbm()" class="btn btn-primary">选择</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>借用日期:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="jyrq" name="jyrq" th:value="${jcjygl.jyrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:28px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>单位类别:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8" th:if="${dwlblist!=null && dwlblist.size() > 0}">
+									<select id="dwlx" name="dwlx" th:value="${jcjygl.dwlx}"
+											class="form-control chosen-select" validate="{required:true}" onchange="choseDwlx()"
+											style="height: 34px;">
+										<option value="">--请选择--</option>
+										<option th:each="list:${dwlblist}" th:value="${list.csid}"
+												th:text="${list.csmc}" th:csdm="${list.csdm}" th:selected="${list.csid eq jcjygl.dwlx}">
+										</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3" style="height:30px">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>单位:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<div class="input-group">
+										<input id="dwmc" name="dwmc" type="text" th:value="${jcjygl.dwmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+										<input id="dwid" name="dwid" type="hidden" th:value="${jcjygl.dwid}" class="form-control" validate="{required:true}"/>
+										<input id="dwdm" name="dwdm" type="hidden" th:value="${jcjygl.dwdm}" class="form-control" validate="{required:true}"/>
+										<span class="input-group-btn">
+												<button type="button" onclick="choosedw()" class="btn btn-primary">选择</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>支付运费:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<select id="sfzfyf" name="sfzfyf" th:value="${jcjygl.sfzfyf}"
+											class="form-control chosen-select" validate="{required:true}"
+											style="height: 34px;">
+										<option value="">--请选择--</option>
+										<option value="1"  th:selected="${'是' eq jcjygl.sfzfyf}">是</option>
+										<option value="0"  th:selected="${'否' eq jcjygl.sfzfyf}">否</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>联系人:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="lxr" name="lxr" th:value="${jcjygl.lxr}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									<span style="color: red;">*</span>联系方式:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="lxfs" name="lxfs" th:value="${jcjygl.lxfs}" validate="{required:true,stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									业务员:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<div class="input-group">
+										<input type="text" id="ywymc" name="ywymc" th:value="${jcjygl.ywymc}" readonly="readonly" validate="{stringMaxLength:128}" class="form-control" style="height:30px;width: 100%" autocomplete="off"/>
+										<input id="ywy" name="ywy" type="hidden"  th:value="${jcjygl.ywy}" class="form-control"/>
+										<span class="input-group-btn">
+												<button type="button" onclick="selectywy()" class="btn btn-primary"  style="height:28px !important;">选择</button>
+											</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									收货地址:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="shdz" name="shdz" th:value="${jcjygl.shdz}" validate="{stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									合同编号:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="htbh" name="htbh" th:value="${jcjygl.htbh}" validate="{stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									负责大区:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="fzdq" name="fzdq" th:value="${jcjygl.fzdq}" validate="{stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3" style="height:36px">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">
+									运输方式</label>
+								<div class="col-md-8 col-sm-8 col-xs-12" >
+									<select  id="ysfs" name="ysfs" th:value="${jcjygl.ysfs}" class="form-control chosen-select" style="height:34px;" >
+										<option value="">--请选择--</option>
+										<option  th:each="list:${ysfslist}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${jcjygl.ysfs eq list.csid}" ></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									终端:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="zd" name="zd" th:value="${jcjygl.zd}" validate="{stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3" style="height:36px">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">
+									终端区域</label>
+								<div class="col-md-8 col-sm-8 col-xs-12" >
+									<select  id="zdqy" name="zdqy" th:value="${jcjygl.zdqy}" class="form-control chosen-select" style="height:34px;" >
+										<option value="">--请选择--</option>
+										<option  th:each="list:${sflist}" th:value="${list.csid}" th:text="${list.csmc}" th:selected="${jcjygl.zdqy eq list.csid}" ></option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-3">
+							<div class="form-group">
+								<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+									收货联系方式:
+								</label>
+								<div class="col-sm-8 col-xs-8 col-md-8">
+									<input type="text" id="shlxfs" name="shlxfs" th:value="${jcjygl.shlxfs}" validate="{stringMaxLength:128}" class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-12" >
+							<div class="form-group" >
+								<label for="" class="col-sm-1 control-label">
+									备注:
+								</label>
+								<div class="col-sm-11 col-xs-11" >
+									<textarea id="bz" name="bz" rows="3"  style="height:50px;" validate="{stringMaxLength:512}" class="form-control" th:text="${jcjygl.bz}" autocomplete="off"></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div style="padding-left: 10px;padding-right: 10px;" th:if="${jcjyxxDtos != null && jcjyxxDtos.size() >0}" th:each="jcjyxxDto:${jcjyxxDtos}">
+				<table border="1" cellspacing="0" cellpadding="0" class="table table-hover table-bordered table-hidden" style="width: 80%;">
+					<tr>
+						<td hidden="hidden"><span th:text="${jcjyxxDto.jyxxid}"/></td>
+		       			<td style="width:50px;"><span th:title="${jcjyxxDto.wlbm}" th:text="${jcjyxxDto.wlbm}"/></td>
+		       			<td style="width:80px;"><span th:title="${jcjyxxDto.wlmc}" th:text="${jcjyxxDto.wlmc}"/></td>
+						<td style="width:50px;"><span th:title="${jcjyxxDto.ckqxmc}" th:text="${jcjyxxDto.ckqxmc}"/></td>
+		       			<td style="width:30px;"><span th:title="${jcjyxxDto.jldw}" th:text="${jcjyxxDto.jldw}"/></td>
+		       			<td style="width:50px;"><span th:title="${jcjyxxDto.gg}" th:text="${jcjyxxDto.gg}"/></td>
+		       			<td style="width:70px;"><span th:title="${jcjyxxDto.kcl}" th:text="${jcjyxxDto.kcl}"/></td>
+						<td style="width:70px;"><span th:title="${jcjyxxDto.yjghrq}" th:text="${jcjyxxDto.yjghrq}"/></td>
+						<td style="width:70px;">借用数量：<span th:title="${jcjyxxDto.jcsl}" th:text="${jcjyxxDto.jcsl}" th:id="'jcsl_'+${jcjyxxDto.jyxxid}"/></td>
+						<td style="width:70px;">产品类型：<span th:title="${jcjyxxDto.cplxmc}" th:text="${jcjyxxDto.cplxmc}"/></td>
+						<td style="width:70px;">备注：<span th:title="${jcjyxxDto.bz}" th:text="${jcjyxxDto.bz}"/></td>
+						<td hidden="hidden" style="width:70px;">
+							<input th:if="${jcjyxxDto.zyxsl != null}" th:id="'zyxsl_'+${jcjyxxDto.jyxxid}" autocomplete="off" name="zyxsl" th:value="${jcjyxxDto.zyxsl}" validate="{zyxslNumber:true}"/>
+							<input th:if="${jcjyxxDto.zyxsl == null}" th:id="'zyxsl_'+${jcjyxxDto.jyxxid}" autocomplete="off" name="zyxsl" value="0" validate="{zyxslNumber:true}"/>
+						</td>
+		       		</tr>
+         		</table>
+       			<table border="1" cellspacing="0" cellpadding="0" class="table table-hover table-bordered table-hidden">
+					<tr style="background-color: #63a3ff;">
+						<th hidden="hidden"><span th:text="物料id"/></th>
+						<th style="width:40px;"><span th:text="物料编码" /></th>
+						<th style="width:150px;"><span th:text="物料名称" /></th>
+						<th style="width:100px;"><span th:text="规格" /></th>
+						<th style="width:30px;"><span th:text="单位" /></th>
+						<th style="width:100px;"><span th:text="生产批号" /></th>
+						<th style="width:50px;"><span th:text="追溯号" /></th>
+						<th style="width:50px;"><span th:text="仓库名称" /></th>
+						<th style="width:50px;"><span th:text="库位名称" /></th>
+						<th style="width:50px;"><span th:text="货号" /></th>
+						<th style="width:40px;"><span id="klsl" th:text="可借数量" /></th>
+						<th style="width:40px;"><span th:text="借用数量"/></th>
+						<th hidden="hidden" style="width:30px;"><span th:text="前允许借用数量"/></th>
+					</tr>
+		        	<div th:if="${jcjyxxDto.hwxxDtos != null && jcjyxxDto.hwxxDtos.size() >0}" th:each="hwxxDto:${jcjyxxDto.hwxxDtos}">
+		        		<tr>
+			        		<td hidden="hidden"><span th:title="${hwxxDto.hwid}" th:text="${hwxxDto.hwid}"/></td>
+							<td><span th:title="${hwxxDto.wlbm}" th:text="${hwxxDto.wlbm}" th:id="'wlbm_'+${hwxxDto.hwid}"/></td>
+							<td><span th:title="${hwxxDto.wlmc}" th:text="${hwxxDto.wlmc}"/></td>
+							<td><span th:title="${hwxxDto.gg}" th:text="${hwxxDto.gg}"/></td>
+							<td><span th:title="${hwxxDto.jldw}" th:text="${hwxxDto.jldw}"/></td>
+							<td><span th:title="${hwxxDto.scph}" th:text="${hwxxDto.scph}"/></td>
+							<td><span th:title="${hwxxDto.zsh}" th:text="${hwxxDto.zsh}"/></td>
+							<td><span th:title="${hwxxDto.ckmc}" th:text="${hwxxDto.ckmc}"/></td>
+							<td><span th:title="${hwxxDto.kwmc}" th:text="${hwxxDto.kwmc}"/></td>
+			                <td><span th:title="${hwxxDto.ychh}" th:text="${hwxxDto.ychh}"/></td>
+							<td><span th:id="'klsl_'+${jcjyxxDto.jyxxid}+'_'+${hwxxDto.hwid}" th:title="${hwxxDto.klsl}" th:text="${hwxxDto.klsl}"/></td>
+							<td><input th:if="${hwxxDto.yxsl != null}"  style="width:100%;" th:id="'yxsl_'+${jcjyxxDto.jyxxid}+'_'+${hwxxDto.hwid}"   type="number" min="0"
+									   th:onchange="changeYxsl([[${jcjyxxDto.jyxxid}]],[[${hwxxDto.hwid}]],event)"
+									   th:max="${hwxxDto.klsl}" autocomplete="off" name="yxsl" th:value="${hwxxDto.yxsl}"/>
+								<input th:if="${hwxxDto.yxsl == null}" style="width:100%;" th:id="'yxsl_'+${jcjyxxDto.jyxxid}+'_'+${hwxxDto.hwid}"   type="number" min="0"
+									   th:onchange="changeYxsl([[${jcjyxxDto.jyxxid}]],[[${hwxxDto.hwid}]],event)"
+									   th:max="${hwxxDto.klsl}" autocomplete="off" name="yxsl" value="0"/>
+							</td>
+							<td  hidden="hidden">
+								<input  th:if="${hwxxDto.yxsl != null}" style="width:100%;" th:id="'qyxsl_'+${jcjyxxDto.jyxxid}+'_'+${hwxxDto.hwid}"
+									    autocomplete="off" name="qyxsl" th:value="${hwxxDto.qyxsl}"/>
+								<input  th:if="${hwxxDto.qyxsl == null}" style="width:100%;" th:id="'qyxsl_'+${jcjyxxDto.jyxxid}+'_'+${hwxxDto.hwid}"
+									   autocomplete="off" name="qyxsl" value="0"/>
+							</td>
+						</tr>
+					</div>
+				</table>
+			</div>
+		</div>
+	</form>
+	</body>
+</html>

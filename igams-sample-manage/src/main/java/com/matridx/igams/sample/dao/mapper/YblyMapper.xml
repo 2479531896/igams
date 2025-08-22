@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYblyDao" >
+	<!-- 查询标本信息 -->
+	<select id="getDtoById" parameterType="java.lang.String" resultType="YblyDto">
+		select lyid,rklx,yblx,sj.csmc yblxmc,wbbh,jyjg,lyd,cysj,xb,yz,tz,ly.xm,ly.bz,ly.lybh,ly.zt
+		,ly.lrry,ly.lrsj,ly.xgry,ly.xgsj,ly.scry,ly.scsj,ly.scbj from igams_ybly ly
+		left outer join matridx_jcsj sj on ly.yblx = sj.csid
+		where lyid =#{lyid}
+	</select>
+	
+	<!-- 分页查询标本来源清单 -->
+	<select id="getPagedDtoList" parameterType="YblyDto" resultType="YblyDto">
+		select lyid,rklx,yblx,sj.csmc yblxmc,wbbh,jyjg,lyd,cysj,xb,yz,tz,ly.xm,ly.bz,ly.lybh,ly.zt
+		,ly.lrry,ly.lrsj,ly.xgry,ly.xgsj,ly.scry,ly.scsj,ly.scbj,dd.csmc lydmc
+		from igams_ybly ly
+		left outer join matridx_jcsj sj on ly.yblx = sj.csid
+		left outer join matridx_jcsj dd on ly.lyd = dd.csid
+		<where>
+			ly.scbj ='0'
+			<if test="lybh !=null and lybh != ''">
+				and lybh like '%'||#{lybh}||'%'
+			</if>
+			<if test="wbbh !=null and wbbh != ''">
+				and wbbh like '%'||#{wbbh}||'%'
+			</if>
+			<if test="yz !=null and yz != ''">
+				and yz = cast(#{yz} as numeric)
+			</if>
+			<if test="tz !=null and tz != ''">
+				and tz = cast(#{tz} as numeric)
+			</if>
+			<if test="bz !=null and bz != ''">
+				and ly.bz like '%'||#{bz}||'%'
+			</if>
+			<if test="jyjg !=null and jyjg != ''">
+				and jyjg like '%'||#{jyjg}||'%'
+			</if>
+			<if test="cykssj != null and cykssj != ''">
+				and to_char(ly.cysj,'YYYY-MM-dd') &gt;= #{cykssj}
+			</if>
+			<if test="cyjssj != null and cyjssj != ''">
+				and to_char(ly.cysj,'YYYY-MM-dd') &lt;= #{cyjssj}
+			</if>
+			<if test = "lyds != null and lyds.length > 0 "  >
+			and dd.csid in 
+			<foreach collection="lyds" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+			</if> 
+			<if test="notzts !=null and notzts.size > 0" >
+	        	and zt not in
+				<foreach collection="notzts" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据列表查询信息 -->
+	<select id="selectByDtos" parameterType="list" resultType="YblyDto">
+		select lyid,rklx,yblx,sj.csmc yblxmc,wbbh,jyjg,lyd,cysj,xb,yz,tz,ly.xm,ly.bz,ly.lybh,ly.zt
+		,ly.lrry,ly.lrsj,ly.xgry,ly.xgsj,ly.scry,ly.scsj,ly.scbj,dd.csmc lydmc, 
+		(select array_to_string(ARRAY(SELECT unnest(array_agg(gl.ybbh))),',') from igams_ybgl gl where gl.lyid = ly.lyid and gl.scbj !='1') ybbh
+		from igams_ybly ly
+		left outer join matridx_jcsj sj on ly.yblx = sj.csid
+		left outer join matridx_jcsj dd on ly.lyd = dd.csid
+		<where>
+			1=2
+			<if test = "list != null and list.size > 0 "  >
+				or(ly.lyid in 
+				<foreach collection="list" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item.lyid}
+				</foreach>
+				)
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="SbglDto">
+		insert into igams_ybly(lyid,yblx,lrry,lrsj,scbj
+		<if test="rklx != null and rklx != ''">
+			,rklx
+        </if>
+		<if test="wbbh != null and wbbh != ''">
+			,wbbh
+        </if>
+		<if test="jyjg != null and jyjg != ''">
+			,jyjg
+        </if>
+		<if test="lyd != null and lyd != ''">
+			,lyd
+        </if>
+        <if test="cysj != null and cysj != ''">
+			,cysj
+        </if>
+        <if test="xb != null and xb != ''">
+			,xb
+        </if>
+        <if test="yz != null and yz != ''">
+			,yz
+        </if>
+        <if test="tz != null and tz != ''">
+			,tz
+        </if>
+        <if test="xm != null and xm != ''">
+			,xm
+        </if>
+         <if test="lybh != null and lybh != ''">
+			,lybh
+        </if>
+		<if test="bz != null and bz != ''">
+			,bz
+        </if>
+        <if test="zt != null and zt != ''">
+			,zt
+        </if>
+        )values(#{lyid},#{yblx},#{lrry},LOCALTIMESTAMP,'0'
+	        <if test="rklx != null and rklx != ''">
+				,#{rklx}
+	        </if>
+	        <if test="wbbh != null and wbbh != ''">
+				,#{wbbh}
+	        </if>
+			<if test="jyjg != null and jyjg != ''">
+				,#{jyjg}
+	        </if>
+			<if test="lyd != null and lyd != ''">
+				,#{lyd}
+	        </if>
+	        <if test="cysj != null and cysj != ''">
+				,to_date(#{cysj},'YYYY-MM-DD')
+	        </if>
+	        <if test="xb != null and xb != ''">
+				,#{xb}
+	        </if>
+	        <if test="yz != null and yz != ''">
+				,cast(#{yz} as numeric)
+	        </if>
+	        <if test="tz != null and tz != ''">
+				,cast(#{tz} as numeric)
+	        </if>
+	        <if test="xm != null and xm != ''">
+				,#{xm}
+	        </if>
+	         <if test="lybh != null and lybh != ''">
+				,#{lybh}
+	        </if>
+			<if test="bz != null and bz != ''">
+				,#{bz}
+	        </if>
+	        <if test="zt != null and zt != ''">
+				,#{zt}
+	        </if>
+        )
+	</insert>
+	
+	<update id="update" parameterType="YblyDto">
+		update igams_ybly set xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="rklx != null and rklx != ''">
+			,rklx =#{rklx}
+        </if>
+		<if test="yblx != null and yblx != ''">
+			,yblx =#{yblx}
+        </if>
+        <if test="wbbh != null and wbbh != ''">
+			,wbbh = #{wbbh}
+        </if>
+        <if test="jyjg != null and jyjg != ''">
+			,jyjg = #{jyjg}
+        </if>
+        <if test="lyd != null and lyd != ''">
+			,lyd = #{lyd}
+        </if>
+        <if test="cysj != null and cysj != ''">
+			,cysj = to_date(#{cysj},'YYYY-MM-DD')
+        </if>
+        <if test="xb != null and xb != ''">
+			,xb = #{xb}
+        </if>
+        <if test="yz !=null and yz != ''">
+	 		,yz = cast(#{yz} as numeric)
+	 	</if>
+	 	<if test="tz !=null and tz != ''">
+	 		,tz = cast(#{tz} as numeric)
+	 	</if>
+        <if test="xm != null and xm != ''">
+			,xm = #{xm}
+        </if>
+		<if test="bz != null and bz != ''">
+			,bz =#{bz}
+        </if>
+        <if test="lybh != null and lybh != ''">
+			,lybh =#{lybh}
+        </if>
+        <if test="zt != null and zt != ''">
+			,zt =#{zt}
+        </if>
+        where lyid =#{lyid}
+	</update>
+	
+	<update id="delete" parameterType="hashMap">
+		update igams_ybly set scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        where 
+	        	lyid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+	</update>
+	
+	<update id="updateZtByIds" parameterType="YblyDto">
+		update igams_ybly set zt=#{zt},xgry=#{xgry},xgsj=LOCALTIMESTAMP
+        where 
+        	<if test="ids !=null and ids.size > 0">
+	        	lyid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+	</update>
+</mapper>

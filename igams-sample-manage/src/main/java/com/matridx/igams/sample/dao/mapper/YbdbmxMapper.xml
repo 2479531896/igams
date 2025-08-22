@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbdbmxDao">
+
+	<!--样本调拨明细批量插入-->
+	<insert id="batchInsert" parameterType="list">
+		insert into igams_ybdbmx(dbmxid,ybdbid,xh,dchz,drhz,ybs,lrry,lrsj,scbj)
+		values
+		<if test="list!=null and list.size>0">
+			<foreach collection="list"  separator=","  index="index" item="item" >
+				(#{item.dbmxid},#{item.ybdbid},cast (#{item.xh} as numeric),#{item.dchz},#{item.drhz},cast (#{item.ybs} as numeric),#{item.lrry},LOCALTIMESTAMP,'0')
+			</foreach>
+		</if>
+	</insert>
+	<update id="delete" parameterType="YbdbmxDto">
+		update igams_ybdbmx set scbj = '1',scry= #{scry},scsj=LOCALTIMESTAMP
+		<where>
+			<if test="ybdbid != null and ybdbid != ''">
+				and ybdbid  = #{ybdbid}
+			</if>
+			<if test = "ybdbids != null and ybdbids.size > 0 "  >
+				and ybdbid in
+				<foreach collection="ybdbids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="dbmxid != null and dbmxid != ''">
+				and dbmxid  = #{dbmxid}
+			</if>
+			<if test = "ids != null and ids.size > 0 "  >
+				and dbmxid in
+				<foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "hzs != null and hzs.size > 0 "  >
+				and dchz in
+				<foreach collection="hzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!--获取样本调拨明细List-->
+	<select id="getDbmxDtos" resultType="YbdbmxDto" parameterType="YbdbmxDto">
+		select ybdbmx.dbmxid,ybdbmx.ybdbid,ybdbmx.xh,ybdbmx.dchz,ybdbmx.drhz,ybdbmx.ybs,dc_sb.wz dchzmc,dc_sb.sbh dchzsbh,dr_sb.wz drhzmc,dc_sb.cfs,dc_sb.px as hzpx,
+		ybdb.dcct,ybdb.dcbx,ybdb.dcccdw,ybdb.drccdw,ybdb.drbx,ybdb.drct,dr_sb.sbh drhzbh,dc_sb.ycfs
+		from igams_ybdbmx ybdbmx
+		LEFT JOIN igams_ybdb ybdb ON ybdb.ybdbid = ybdbmx.ybdbid
+		left join igams_sbgl dc_sb on dc_sb.sbid = ybdbmx.dchz
+		left join igams_sbgl dr_sb on dr_sb.sbid = ybdbmx.drhz
+		<where>
+			ybdbmx.scbj = '0'
+			<if test="dchz != null and dchz != ''">
+				and ybdbmx.dchz  = #{dchz}
+			</if>
+			<if test = "hzs != null and hzs.size > 0 "  >
+				and ybdbmx.dchz in
+				<foreach collection="hzs" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ybdbid != null and ybdbid != ''">
+				and ybdbmx.ybdbid  = #{ybdbid}
+			</if>
+			<if test = "ybdbids != null and ybdbids.size > 0 "  >
+				and ybdbmx.ybdbid in
+				<foreach collection="ybdbids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="dbmxid != null and dbmxid != ''">
+				and ybdbmx.dbmxid  = #{dbmxid}
+			</if>
+		</where>
+		order by xh
+	</select>
+
+	<select id="checkCanDelete" parameterType="YbdbmxDto" resultType="String">
+		SELECT CASE WHEN COALESCE (dc_sb.ycfs,0) > 0 THEN ybdb.dbrq || ' ' || xtyh.zsxm || '调出盒子' || dc_sb.wz || '已存在样本，请修改样本盒子再进行删除！'
+		WHEN dr_ybkc.ydbj != '0' THEN ybdb.dbrq || ' ' || xtyh.zsxm || '调入盒子' || dr_sb.wz || '的样本在' || jc_drccdw.csmc || '已被销毁，不允许删除！' ELSE '' END
+		FROM  igams_ybdbmx ybdbmx
+		LEFT JOIN igams_ybdb ybdb ON ybdb.ybdbid = ybdbmx.ybdbid
+		LEFT JOIN igams_sbgl dc_sb ON dc_sb.sbid = ybdbmx.dchz
+		LEFT JOIN igams_sbgl dr_sb ON dr_sb.sbid = ybdbmx.drhz
+		LEFT JOIN igams_ybkcxx dr_ybkc ON dr_ybkc.hzid = ybdbmx.drhz AND dr_ybkc.scbj = '0'
+		LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = ybdb.dbr and xtyh.scbj = '0'
+		LEFT JOIN matridx_jcsj jc_dcccdw ON jc_dcccdw.csid = ybdb.dcccdw
+		LEFT JOIN matridx_jcsj jc_drccdw ON jc_drccdw.csid = ybdb.drccdw
+		WHERE
+		ybdbmx.scbj = '0'
+		<if test = "ybdbids != null and ybdbids.size > 0 "  >
+			and ybdbmx.ybdbid in
+			<foreach collection="ybdbids" separator="," open="(" close=") " item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		AND ybdb.zt = '80'
+		AND  (COALESCE (dc_sb.ycfs,0) > 0 OR dr_ybkc.ydbj != '0')
+		GROUP BY ybdbmx.ybdbid,dc_sb.ycfs,ybdb.dbrq,xtyh.zsxm,dc_sb.wz,dr_sb.wz,dr_ybkc.ydbj,jc_dcccdw.csmc,jc_drccdw.csmc
+	</select>
+	<update id="updateYbdbmxDtos" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			update igams_ybdbmx ybdbmx
+			set drhz = tmp.drhz
+			from(
+			<foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+				select #{item.dbmxid} dbmxid,#{item.drhz} drhz
+			</foreach>
+			)
+			tmp
+			where
+			ybdbmx.dbmxid = tmp.dbmxid
+		</if>
+	</update>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_ybdbmx set
+				xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+				<if test="item.drhz !=null and  item.drhz !=''">
+					,drhz=#{item.drhz}
+				</if>
+				<where>
+					dbmxid=#{item.dbmxid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+
+</mapper>

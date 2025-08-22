@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/dhxx/arrival_goods_view.js?v=2023112301'}" charset="utf-8"></script>
+<style type="text/css">
+	table{
+		table-layout: fixed;
+	}
+	td{
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+</style>
+</head>
+<body>
+<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+	<li class="nav-item" >
+		<a  class="nav-link active" href="#dhTab" role="tab" data-bs-toggle="tab">到货信息</a>
+	</li>
+	<li class="nav-item" >
+		<a class="nav-link"  href="#qtTab" role="tab" data-bs-toggle="tab">其他信息</a>
+	</li>	
+</ul>
+	<form id="ajaxForm" class="form-horizontal sl_all_form" method="post" theme="simple">
+		<input type="hidden" name="access_token" />
+		<input type="hidden" name="dhid" id="dhid" th:value="${dhxxDto.dhid}"/>
+		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="hwxx_json" id ="hwxx_json" th:value="${hwxx_json}">
+		<div class="body-content tab-content">
+			<div role="tabpanel" class="tab-pane fade active in" id="dhTab"  aria-labelledby="profile-tab">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-sm-3 col-xs-3 col-md-3 control-label">
+										货物单号 </label>
+									<div class="col-sm-9 col-xs-9 col-md-9 padding_t7">
+										<span th:text="${dhxxDto.dhdh}" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-sm-3 col-xs-3 col-md-3 control-label">
+										仓库名称 </label>
+									<div class="col-sm-9 col-xs-9 col-md-9 padding_t7">
+										<span th:text="${dhxxDto.ckmc}" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-sm-3 col-xs-3 col-md-3 control-label">
+										到货日期 </label>
+									<div class="col-sm-9 col-xs-9 col-md-9 padding_t7">
+										<span th:text="${dhxxDto.dhrq}" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-4">
+								<div class="form-group">
+									<label for="" class="col-sm-3 col-xs-3 col-md-3 control-label">
+										供应商 </label>
+									<div class="col-sm-9 col-xs-9 col-md-9 padding_t7">
+										<span th:text="${dhxxDto.gysmc}" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+								<div class="form-group">
+									<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+										<div th:id="${fjcfbDto.fjid}" >
+											<label for="" class="col-sm-1 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件："></label>
+											<label for="" class="col-sm-1 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+											<div class="col-md-11 col-sm-11 padding_t7">
+												<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+												<a title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+													<span th:text="${fjcfbDto.wjm}"></span>&nbsp;
+													<span class="glyphicon glyphicon glyphicon-save"></span>
+												</a>&nbsp;&nbsp;
+												<a title="预览" class="f_button" type="button">
+													<span class="glyphicon glyphicon-eye-open" th:onclick="view([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]]);"></span>
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12 col-sm-12">
+								<div class="form-group">
+									<label for="" class="col-sm-1 col-xs-1 col-md-1 control-label">
+										备&nbsp;&nbsp;&nbsp;&nbsp;注 </label>
+									<div class="col-sm-11 col-xs-11 col-md-11 padding_t7">
+										<span th:text="${dhxxDto.bz}" />
+									</div>
+								</div>
+							</div>	
+						</div>
+						<table class="table table-hover table-bordered table-striped">							
+								<tr>
+									<th style="width:11%">合同单号</th>
+									<th style="width:11%">指令单号</th>
+									<th style="width:11%">请购单号</th>
+									<th style="width:8%">物料编码</th>
+									<th style="width:8%">物料名称/规格</th>
+									<th style="width:8%">单位/货号</th>
+									<th style="width:6%">到货数量</th>
+<!--									<th style="width:6%">仓库名称</th>-->
+									<th style="width:10%">追溯号</th>
+									<th style="width:5%">退回数量</th>
+									<th style="width:8%">生产日期</th>
+									<th style="width:8%">失效日期</th>
+									<th style="width:8%">备注</th>
+									<th style="width:8%">操作</th>
+								</tr>
+								<tr th:if="${hwxxDtos != null && hwxxDtos.size() >0}" th:each="hwxxDto: ${hwxxDtos}" th:id="'t'+${hwxxDto.hwid}">
+									<td style="width:11%;vertical-align:middle;" th:text="${hwxxDto.htnbbh}" th:title="${hwxxDto.htnbbh}"></td>
+									<td style="width:11%;vertical-align:middle;" th:text="${hwxxDto.zldh}" th:title="${hwxxDto.zldh}"></td>
+									<td style="width:11%;vertical-align:middle;"><a href="javascript:void(0);" th:onclick="queryByqgid([[${hwxxDto.qgid}]])" th:text="${hwxxDto.qgdh}" th:title="${hwxxDto.qgdh}"></a></td>
+									<td style="width:8%;vertical-align:middle;" ><a href="javascript:void(0);" th:onclick="queryBywlid([[${hwxxDto.wlid}]])" th:text="${hwxxDto.wlbm}" th:title="${hwxxDto.wlbm}"></a></td>
+									<td style="width:11%;vertical-align:middle;">
+										<span class="col-md-12 col-sm-12" style="padding:0px;" th:text="${hwxxDto.wlmc}" th:title="${hwxxDto.wlmc}"></span>
+										<span class="col-md-12 col-sm-12" style="padding:0px;" th:text="${hwxxDto.gg}" th:title="${hwxxDto.gg}"></span>
+									</td>
+									<td style="width:8%;vertical-align:middle;">
+										<span class="col-md-12 col-sm-12" style="padding:0px;" th:text="${hwxxDto.jldw}" th:title="${hwxxDto.jldw}"></span>
+										<span class="col-md-12 col-sm-12" style="padding:0px;" th:text="${hwxxDto.ychh}" th:title="${hwxxDto.ychh}"></span>
+									</td>
+									<td style="width:6%;vertical-align:middle;" th:text="${hwxxDto.dhsl}" th:title="${hwxxDto.dhsl}"/>
+<!--									<td style="width:6%;vertical-align:middle;" th:text="${hwxxDto.kwbhmc}" th:title="${hwxxDto.kwbhmc}"/>-->
+									<td style="width:10%;vertical-align:middle;" th:text="${hwxxDto.zsh}" th:title="${hwxxDto.zsh}"/>
+									<td style="width:6%;vertical-align:middle;" th:text="${hwxxDto.cythsl}" th:title="${hwxxDto.cythsl}"/>
+									<td style="width:10%;vertical-align:middle;" th:text="${hwxxDto.scrq}" th:title="${hwxxDto.scrq}"/>
+									<td style="width:10%;vertical-align:middle;" th:text="${hwxxDto.yxq}" th:title="${hwxxDto.yxq}"/>
+									<td style="width:10%;vertical-align:middle;" th:text="${hwxxDto.dhbz}" th:title="${hwxxDto.dhbz}"/>
+									<td style="width:8%;vertical-align:middle;" th:id="'td'+${hwxxDto.hwid}"></td>
+								</tr>
+							</table>	
+					</div>
+				</div>
+			</div>
+		<div role="tabpanel" class="tab-pane fade" id="qtTab" aria-labelledby="profile-tab">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<table class="table table-hover table-bordered table-striped" >				
+						<tr>
+							<th style="width:8%">物料编码</th>
+							<th style="width:6%">关联设备</th>
+							<th style="width:6%">物料名称</th>
+							<th style="width:4%">规格</th>
+							<th style="width:10%">货号</th>
+							<th style="width:6%">数量</th>
+							<th style="width:10%">检验单号</th>
+							<th style="width:10%">生产批号</th>
+							<th style="width:10%">库位</th>
+							<th style="width:6%">到货库位</th>
+							<th style="width:10%">入库单号</th>
+							<th style="width:7%">入库数量</th>
+							<th style="width:7%">入库日期</th>
+							<th style="width:6%">仓库</th>
+							<th style="width:8%">产品注册号</th>
+							<th style="width:7%">U8入库单号</th>
+						</tr>
+						<tr th:if="${hwxxDtos != null && hwxxDtos.size() >0}" th:each="hwxxDto_h:${hwxxDtos}">
+							<td th:text="${hwxxDto_h.wlbm}" th:title="${hwxxDto_h.wlbm}"></td>
+							<td>
+								<a href="javascript:void(0);" th:onclick="viewSb([[${hwxxDto_h.sbysid}]])">
+									<span th:text="${hwxxDto_h.sbbh}" th:title="${hwxxDto_h.sbbh}"/>
+								</a>
+							</td>
+							<td th:text="${hwxxDto_h.wlmc}" th:title="${hwxxDto_h.wlmc}"/>
+							<td th:text="${hwxxDto_h.gg}" th:title="${hwxxDto_h.gg}"/>
+							<td th:text="${hwxxDto_h.ychh}" th:title="${hwxxDto_h.ychh}"/>
+							<td th:text="${hwxxDto_h.sl}" th:title="${hwxxDto_h.sl}"/>
+							<td>
+								<a href="javascript:void(0);" th:onclick="queryByDhjyid([[${hwxxDto_h.dhjyid}]])">
+								<span th:text="${hwxxDto_h.jydh}" th:title="${hwxxDto_h.jydh}"/>
+								</a>
+							</td>
+							<td th:text="${hwxxDto_h.scph}" th:title="${hwxxDto_h.scph}"/>
+							<td th:text="${hwxxDto_h.kwmc}" th:title="${hwxxDto_h.kwmc}"/>
+							<td th:text="${hwxxDto_h.cskwmc}" th:title="${hwxxDto_h.cskwmc}"/>
+							<td>
+								<a href="javascript:void(0);" th:onclick="queryByRkid([[${hwxxDto_h.rkid}]])">
+								<span th:text="${hwxxDto_h.rkdh}" th:title="${hwxxDto_h.rkdh}"/>
+								</a>
+							</td>
+							<td th:text="${hwxxDto_h.sl}" th:title="${hwxxDto_h.sl}"/>
+							<td th:text="${hwxxDto_h.rkrq}" th:title="${hwxxDto_h.rkrq}"/>
+							<td th:text="${hwxxDto_h.ckmc}" th:title="${hwxxDto_h.ckmc}"/>
+							<td th:text="${hwxxDto_h.cpzch}" th:title="${hwxxDto_h.cpzch}"/>
+							<td th:text="${hwxxDto_h.u8rkdh}" th:title="${hwxxDto_h.u8rkdh}"/>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	</form>
+</body>
+</html>

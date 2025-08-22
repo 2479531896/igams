@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/document/document_bulkimports.js?v=20230427'}" charset="utf-8"></script>
+		<style type="text/css">
+			#t_sel_unlist,#t_sel_list,#d_sel_unlist,#d_sel_list,#sel_unlist,#sel_list{
+				height:300px;
+				width: 100%;
+				overflow: auto;
+				border:none;
+			}
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+		</style>
+	</head>
+	<body>
+		<form id="bulkimportsForm" th:action ="${urlPrefix}+'/production/document/bulkimportsSaveDocument'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation" enctype="multipart/form-data">
+			<input type="hidden" name="access_token"/>
+			<input type="hidden" name="ywlx" id ="ywlx" th:value="${wjglDto.ywlx}">
+			<input type="hidden" name="fjids" id ="fjids">
+			<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+			<input type="hidden" name="wjlbcskz2" id ="wjlbcskz2">
+			<div class="body-content tab-content">
+				<div role="tabpanel" class="tab-pane fade active in" id="doceditInfoTab" aria-labelledby="profile-tab">
+					<div class="panel panel-default sample-formal">
+						<div class="panel-body">
+							<div class="row" >
+								<div class="col-md-12 col-sm-12">
+									<div class="form-group">
+										<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+											<div th:id="${fjcfbDto.fjid}" >
+												<label for="" class="col-sm-2 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件"></label>
+												<label for="" class="col-sm-2 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+												<div class="col-sm-10 padding_t7">
+													<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+													<a title="下载" th:@click.prevent="'xz(\''+${fjcfbDto.fjid}+'\');'" >
+														<span th:text="${fjcfbDto.wjm}"></span>
+														<span class="glyphicon glyphicon glyphicon-save"></span>
+													</a>&nbsp;&nbsp;
+													<a title="删除" class="f_button" type="button">
+														<span class="glyphicon glyphicon-remove" th:@click.prevent="'del(\''+${fjcfbDto.fjid}+'\',\''+${fjcfbDto.wjlj}+'\');'"></span>
+													</a>&nbsp;&nbsp;
+													<a title="预览" class="f_button" type="button">
+														<span th:if="${fjcfbDto.wjmhz =='pdf'}" class="glyphicon glyphicon-eye-open" th:@click.prevent="'view(\''+${fjcfbDto.fjid}+'\');'"></span>
+														<span th:if="${fjcfbDto.wjmhz =='doc' or fjcfbDto.wjmhz =='docx'}" class="glyphicon glyphicon-eye-open" th:@click.prevent="'viewdoc(\''+${fjcfbDto.fjid}+'\');'"></span>
+													</a>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 col-sm-12">
+									<div class="form-group">
+										<label for="" class="col-sm-2 col-xs-2 col-md-2 control-label">
+											资料上传
+										</label>
+										<div class="col-sm-9 col-xs-9 col-md-9">
+											<input id="doc_file" name="doc_file" type="file">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-md-4 control-label">
+											文件分类<span style="color: red;">*</span>
+										</label>
+										<div class="col-sm-7 col-xs-12 col-md-7" th:if="${wjfllist!=null && wjfllist.size() > 0}">
+											<select id="wjfl" name="wjfl" th:value="${wjglDto.wjfl}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+												<option value="">--请选择--</option>
+												<option th:each="list:${wjfllist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:cskz2="${list.cskz2}" th:csdm="${list.csdm}" th:selected="${list.csid eq wjglDto.wjfl}"></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-md-4 control-label">
+											文件类别<span style="color: red;">*</span>
+										</label>
+										<div class="col-sm-7 col-xs-12 col-md-7">
+											<select id="wjlb" name="wjlb" th:value="${wjglDto.wjlb}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+												<option  value="">--请选择--</option>
+												<option  th:if="${wjlblist!=null && wjlblist.size() > 0}" th:each="list:${wjlblist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:cskz2="${list.cskz2}" th:cskz3="${list.cskz3}" th:csdm="${list.csdm}" th:selected="${list.csid eq wjglDto.wjlb}"></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6" style="height:36px;">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-md-4 control-label">
+											所属单位<span style="color: red;">*</span>
+										</label>
+										<div class="col-sm-7 col-xs-12 col-md-7">
+											<div class="input-group">
+												<input id="sqbmmc" name="jgmc" type="text" th:value="${departmentDto.jgmc}" readonly="readonly" class="form-control" />
+												<input id="sqbm" name="jgid" type="hidden" th:value="${departmentDto.jgid}" class="form-control" />
+												<span class="input-group-btn">
+													<button type="button" onclick="chooseBm()" class="btn btn-primary">选择</button>
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-md-4 control-label">
+											生效日期
+										</label>
+										<div class="col-sm-7 col-xs-12 col-md-7">
+											<input type="text" id="sxrq" name="sxrq" th:value="${wjglDto.sxrq}"validate="{stringMaxLength:256}"
+											 class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 col-md-4 control-label">
+											编制人员
+										</label>
+										<div class="col-sm-7 col-xs-12 col-md-7">
+											<select id="bzry" name="bzry"  th:value="${wjglDto.bzry}"  class="form-control chosen-select" validate="{required:true}">
+												<option  value="">--请选择--</option>
+												<option  th:each="xtyhs:${xtyhlist}"   th:value="${xtyhs.yhid}"  th:text="${xtyhs.zsxm}" th:selected="${xtyhs.yhid eq wjglDto.bzry}"></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 col-sm-12">
+									<div class="form-group">
+										<label for="" class="col-sm-2 col-md-2 control-label">
+											备注
+										</label>
+										<div class="col-sm-9 col-xs-12 col-md-9">
+											<textarea id="bz" name="bz" rows="3" th:text="${wjglDto.bz}"
+													  validate="{stringMaxLength:1024}" class="form-control" style="height:100px;"></textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</body>
+</html>

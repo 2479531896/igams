@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<style type="text/css">
+			.bootstrap-tagsinput {
+			    min-width:100%;
+			}
+			.label-info {
+				cursor: pointer;
+			}
+			th{
+				font-weight:bold;
+				text-align: center;
+			}
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+			.jdsty{
+			padding: 6px 12px;
+			text-align: center;
+			border: 1px solid transparent;
+			border-radius: 4px;
+			text-overflow: ellipsis;
+			overflow: hidden;
+    		white-space: nowrap;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="editContractForm" th:action ="${urlPrefix}+'/contract/contract/'+${htglDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+			<div class="body-content">
+				<div class="row">
+					<input type="hidden" id="htmx_json" name="htmx_json"/>
+					<input type="hidden" id="kjht_json" name="kjht_json"/>
+					<input type="hidden" name="fjids" id ="fjids">
+					<input type="hidden" id="htmxJson" name="htmxJson"/>
+					<input type="hidden" name="htid" id="htid" th:value="${htglDto.htid}"/>
+					<input type="hidden" name="ywlx" id="ywlx" th:value="${ywlx}">
+					<input type="hidden" name="qgids" id="qgids" th:value="${htglDto.qgid}"/>
+					<input type="hidden" name="auditType" id ="auditType" th:value="${htglDto.auditType}">
+					<input type="hidden" name="access_token"/>
+					<input type="hidden" id="checkqdl" name="checkqdl"/>
+					<input type="hidden" name="fwbj" id="fwbj" th:value="${htglDto.fwbj}">
+					<input type="hidden" name="url" th:value="${url}" id="url"/>
+					<input type="hidden" name="flag" id="flag" th:value="${flag}"/>
+					<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+					<input type="hidden" name="qgmxids" id="qgmxids" th:value="${htglDto.ids}">
+					<input type="hidden" name="bcbj" id="bcbj">
+					<input type="hidden" name="fktxJson" id="fktxJson">
+					<input type="hidden" name="htlx" id="htlx" th:value="${htglDto.htlx}">
+					<input type="hidden" name="qglbdm" id="qglbdm" th:value="${htglDto.qglbdm}">
+					<input type="hidden" name="htaddflag" id="htaddflag" th:value="${htglDto.htaddflag}">
+					<input type="hidden" name="bchtid" id="bchtid" th:value="${htglDto.bchtid}">
+					<input type="hidden" name="yyhtnbbh" id="yyhtnbbh" th:value="${htglDto.yyhtnbbh}">
+					<input type="hidden" name="kjhtid" id="kjhtid" th:value="${htglDto.kjhtid}">
+					<input type="hidden" name="yfJson" id ="yfJson" th:value="${yfJson}">
+					<input type="hidden" name="wlfls" id ="wlfls" th:value="${wlfls}">
+					<!--是否为普通合同的补充合同-->
+					<input type="hidden" name="yhtbchtFlag" id ="yhtbchtFlag" th:value="${yhtbchtFlag}">
+					<input type="hidden" name="sfddsp" id ="sfddsp" th:value="0">
+					<div class="col-md-12 col-sm-12" th:if="${htlx!='3' && yhtbchtFlag!='1'}">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label"> 
+								<span style="color: red;">*</span>请购单号
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11">
+								<div class="input-group">
+									<input id="djhs" autoComplete="off" style="min-width: 100%;height:32px;" name="djhs" type="text" class="form-control" />
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseQgxx()" class="btn btn-primary"  style="height:32px !important;">新增</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div class="form-group">
+							<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+			    				<div th:id="${fjcfbDto.fjid}" >
+			    					<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件"></label>
+			    					<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+				    				<div class="col-sm-11 col-xs-11 col-md-11">
+				    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+				    					<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+					    					<span th:text="${fjcfbDto.wjm}"></span>
+					    					<span class="glyphicon glyphicon glyphicon-save"></span>
+				    					</button>&nbsp;&nbsp;
+				    					<a title="预览" th:onclick="view([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]])">
+											<span class="glyphicon glyphicon-eye-open"></span>
+										</a>&nbsp;&nbsp;
+				    					<a title="删除"  th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);">
+				    						<span class="glyphicon glyphicon-remove"></span>
+				    					</a>			    					
+				    				</div>
+				    			</div>
+			    			</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+								附件上传
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11">
+								<a href="javascript:void(0);" id="C_Btn" onclick='editfile("C_Div","C_Btn")' style="display:inline-block;width:100%;border:1px solid #CCCCCC;border-radius:3px;">
+									<span title="点击上传"  style="display:inline-block;width:100%;height:28px;color:#A6A6A6;font-size:12px;padding-left:10px;line-height:28px;">点击展开上传文件</span>
+								</a>
+								<div id="C_Div" style="display: none;">
+									<input  id="sign_file" name="sign_file" type="file">
+									<button class="btn btn-default" type="button" style="position:relative;margin-top:-5%;margin-left:77%; width:23%;" onclick='cancelfile("C_Div","C_Btn")'>隐藏</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>合同类型
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${contractlist !=null && contractlist.size() > 0}">
+								<select id="htywlx" name="htywlx" th:value="${htglDto.ywlxmc}" class="form-control chosen-select" onchange="checkGys()" validate="{required:true,stringMaxLength:32}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:each="list:${contractlist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.ywlx}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx=='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>框架类型:
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" >
+								<select id="kjlx" name="kjlx" th:value="${htglDto.kjlx}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+									<option th:id="0" th:value="0" th:text="主框架合同"  th:selected="${'0' eq htglDto.kjlx}"></option>
+									<option th:id="1" th:value="1" th:text="补充框架合同"  th:selected="${'1' eq htglDto.kjlx}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>内部编号
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" validate="{required:true}" id="htnbbh" name="htnbbh" th:value="${htglDto.htnbbh}" class="form-control" />
+									<span class="input-group-btn">
+										<button type="button" onclick="refreshNbbh()" class="btn btn-primary" style="height:28px !important;">刷新</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								外部编号
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="htwbbh" name="htwbbh" th:value="${htglDto.htwbbh}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>供应商
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="gysmc" name="gysmc" th:value="${htglDto.gysmc}" readonly="true" validate="{required:true}" class="form-control" />
+		         					<input id="gys" name="gys" type="hidden" th:value="${htglDto.gys}" class="form-control" />
+									<input id="gysdm" name="gysdm" type="hidden" th:value="${htglDto.gysdm}" class="form-control" />
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseGys()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>创建日期
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="cjrq" name="cjrq" th:value="${htglDto.cjrq}" validate="{required:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx=='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>开始日期
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="ksrq" name="ksrq" th:value="${htglDto.ksrq}" validate="{required:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx=='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>到期日期
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="dqrq" name="dqrq" th:value="${htglDto.dqrq}" validate="{required:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx!='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>交货日期
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="jhrq" name="jhrq" th:value="${htglDto.jhrq}" validate="{required:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>税率
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group" >
+									<input type="text" id="sl" name="sl" onclick="checkGys()" th:value="${htglDto.sl}"  validate="{required:true,number:true}" class="form-control" />
+									<span class="input-group-addon"> % </span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>申请部门
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="sqbmmc" name="sqbmmc" th:value="${htglDto.sqbmmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="sqbm" name="sqbm" th:value="${htglDto.sqbm}"  class="form-control"/>
+									<input type="hidden" id="jqdm" name="jqdm" th:value="${htglDto.jqdm}"  class="form-control"/>
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseSqbm()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>负责人
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="fzrmc" name="fzrmc" th:value="${htglDto.fzrmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="fzr" name="fzr" th:value="${htglDto.fzr}" class="form-control"/>
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseFzr()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>币种
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${currencylist !=null && currencylist.size() > 0}">
+								<input type="hidden" id="bizmc" name="bizmc" th:value="${htglDto.bizmc}">
+								<select id="biz" name="biz" th:value="${htglDto.bizmc}" onchange="checkGys()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:each="list:${currencylist}" th:csmc="${list.csmc}" th:id="${list.csid}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.biz}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>汇率
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="hl" name="hl" th:value="${htglDto.hl}"  onclick="checkGys()" validate="{required:true,number:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>发票
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${invoicelist !=null && invoicelist.size() > 0}"> 
+								<select id="fpfs" name="fpfs" th:value="${htglDto.fpfsmc}" onchange="checkGys()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:each="list:${invoicelist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.fpfs}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>付款方式
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${paymentlist !=null && paymentlist.size() > 0}"> 
+								<select id="fkfs" name="fkfs" th:value="${htglDto.fkfsmc}" onchange="checkGys()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:id="${list.csid}" th:each="list:${paymentlist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.fkfs}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								付款备注
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="fkbz" name="fkbz" th:value="${htglDto.fkbz}"  validate="{stringMaxLength:512}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>付款方
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${contractpaysylist !=null && contractpaysylist.size() > 0}"> 
+								<select id="fkf" name="fkf" th:value="${htglDto.fkfmc}" onchange="checkGys()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:each="list:${contractpaysylist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.fkf}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>合同风险
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${risklist !=null && risklist.size() > 0}">
+								<select id="htfxcd" name="htfxcd" th:value="${htglDto.htfxmc}" onchange="checkGys()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+									<option th:each="list:${risklist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq htglDto.htfxcd}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" id="yfjediv" style="display: none">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-12 control-label">
+								<span style="color: red;">*</span>预付金额
+							</label>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfje">
+								<input type="text" id="yfje0" name="yfje0" index="0" class="form-control yfjesz"/>
+							</div>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfje">
+								<input type="text" id="yfje1" name="yfje1" index="1" class="form-control yfjesz"/>
+							</div>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfje">
+								<input type="text" id="yfje2" name="yfje2" index="2" class="form-control yfjesz"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" id="yfrqdiv" style="display: none">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-12 control-label">
+								<span style="color: red;">*</span>预付日期
+							</label>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfrq">
+								<input type="text" id="yfrq0" name="yfrq0" index="0" class="form-control yfrqsz" />
+							</div>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfrq">
+								<input type="text" id="yfrq1" name="yfrq1" index="1" class="form-control yfrqsz" />
+							</div>
+							<div class="col-sm-3 col-xs-3 col-md-3 yfrq">
+								<input type="text" id="yfrq2" name="yfrq2" index="2" class="form-control yfrqsz" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx!='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>是否框架:
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" >
+								<select id="sfkj" name="sfkj" th:value="${htglDto.sfkj}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+									<option th:id="0" th:value="0" th:text="否"  th:selected="${'0' eq htglDto.sfkj}"></option>
+									<option th:id="1" th:value="1" th:text="是"  th:selected="${'1' eq htglDto.sfkj}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${htlx!='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								框架合同编号
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="kjhtbh" name="kjhtbh" readonly th:value="${htglDto.kjhtbh}"  class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>是否经过法务
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" >
+								<select id="sfjgfw" name="sfjgfw" th:value="${htglDto.sfjgfw}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+									<option th:id="0" th:value="0" th:text="否"  th:selected="${'0' eq htglDto.sfjgfw}"></option>
+									<option th:id="1" th:value="1" th:text="是"  th:selected="${'1' eq htglDto.sfjgfw}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" >
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+								备注
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11">
+								<textarea id="bz" name="bz" rows="3" th:text="${htglDto.bz}" validate="{stringMaxLength:1024}" style="height: auto;" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" th:if="${htlx=='3'}">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+								历史合同:
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11" id="htDiv">
+
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12" th:if="${yhtbchtFlag=='1'}">
+						<div class="form-group">
+							<div id="fjcfbDto_yht" th:if="${fjcfbDtos_yht != null && fjcfbDtos_yht.size() >0}" th:each="fjcfbDto_yht:${fjcfbDtos_yht}">
+								<div th:id="${fjcfbDto_yht.fjid}" >
+									<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label" th:if="${fjcfbDto_yhtStat.index == 0}" th:text="原合同"></label>
+									<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label" th:if="${fjcfbDto_yhtStat.index > 0}"></label>
+									<div class="col-sm-11 col-xs-11 col-md-11">
+										<label for="" th:text="${fjcfbDto_yhtStat.index+1}+."></label>
+										<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto_yht.fjid}]]);" >
+											<span th:text="${fjcfbDto_yht.wjm}"></span>
+											<span class="glyphicon glyphicon glyphicon-save"></span>
+										</button>&nbsp;&nbsp;
+										<a title="预览" th:onclick="view([[${fjcfbDto_yht.fjid}]],[[${fjcfbDto_yht.wjm}]])">
+											<span class="glyphicon glyphicon-eye-open"></span>
+										</a>&nbsp;&nbsp;
+										<a title="删除"  th:onclick="del([[${fjcfbDto_yht.fjid}]],[[${fjcfbDto_yht.wjlj}]]);">
+											<span class="glyphicon glyphicon-remove"></span>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+					<div id="checkwlgl" style="display:none;" class="col-md-12 col-sm-12"></div>
+					<div id="checkqgmx" style="display:none;" class="col-md-12 col-sm-12"></div>
+				</div> 
+			</div>
+
+			<div class="panel panel-default" th:if="${htlx=='3'}">
+				<div class="panel-body">
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label style="color: #0a0a0a"  for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								是否过期:
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" >
+								<select id="sfgq" name="sfgq"  class="form-control chosen-select"  style="height:34px;">
+									<option id="all" value="" >全部</option>
+									<option id="0" value="0" >未过期</option>
+									<option id="1" value="1" >已过期</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<table id="viewkjht_list" data-classes="table table-hover table-bordered table-hidden" style="width: 1500px"></table>
+				</div>
+			</div>
+			<div class="col-md-12 col-sm-12" th:if="${htlx=='3'}">
+				<button  type="button" class="btn btn-success" onclick="addWl_ht()" ><span>新增物料</span></button>
+				<button  type="button" class="btn btn-success" onclick="addFw_ht()" ><span>新增服务</span></button>
+			</div>
+			<div class="panel panel-default" th:if="${yhtbchtFlag=='1'}">
+				<table id="viewyht_list" data-classes="table table-hover table-bordered table-hidden" style="width: 1500px"></table>
+			</div>
+			<table id="kjht_list" data-classes="table" style="width:1530px;" th:if="${htlx=='3'}"></table>
+			<!-- 合同明细table -->
+			<table id="tb_list" data-classes="table table-hover table-bordered table-hidden" style="width:1650px;margin-left:8px;" th:if="${htlx!='3'}"></table>
+		</form>
+		<!-- 统计图 -->
+		<div id="echarts_qggl" th:include="common/btn/common_statistic.html"></div>
+	</body>
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_edit.js?v=20240313001'}" charset="utf-8"></script>
+</html>

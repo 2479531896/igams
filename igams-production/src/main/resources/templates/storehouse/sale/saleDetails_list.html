@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>销售明细列表</title>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/sale/saleDetails_list.js'}" charset="utf-8"></script>
+    <style>
+        .saleDetailsClass{
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom: 0px;">
+    <form id="saleDetails_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                style="height: 34px;">
+                            <option value="18">全&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;部</option>
+                            <option value="0">单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号</option>
+                            <option value="19">原单号</option>
+                            <option value="1">部&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;门</option>
+                            <option value="2">客户名称</option>
+                            <option value="3">客户简称</option>
+                            <option value="4">合同单号</option>
+                            <option value="5">终&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;端</option>
+                            <option value="6">终端区域</option>
+                            <option value="7">负责大区</option>
+                            <option value="8">业务员</option>
+                            <option value="9">物料编码</option>
+                            <option value="10">物料名称</option>
+                            <option value="11">规&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;格</option>
+                            <option value="12">生产批号</option>
+                            <option value="13">客户联系人</option>
+                            <option value="14">客户联系方式</option>
+                            <option value="15">收货地址</option>
+                            <option value="16">快递信息</option>
+                            <option value="17">收货联系方式</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {saleResult(true); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>订单日期:</label>
+                        <input id="ddrqstart" name="ddrqstart" class="form-control" placeholder="开始日期"  />~
+                        <input id="ddrqend" name="ddrqend" class="form-control" placeholder="结束日期" />
+                    </div>
+                    <button type="button" style="margin-left: 50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="khlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="客户类别">客户类别：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${khlblist !=null && khlblist.size() >0}" th:each="list:${khlblist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[khlb]],[[${list.csid}]],[[saleDetails_formSearch]]);" th:id="'khlb_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="djlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="单据类型">单据类型：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','销售单','saleDetails_formSearch');"
+                                                   id="djlx_id_销售单">
+                                                    <span>销售单</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','借出转销售单','saleDetails_formSearch');"
+                                                   id="djlx_id_借出转销售单">
+                                                <span>借出转销售单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','销售换货单','saleDetails_formSearch');"
+                                                   id="djlx_id_销售换货单">
+                                                <span>销售换货单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','借出换货单','saleDetails_formSearch');"
+                                                   id="djlx_id_借出换货单">
+                                                <span>借出换货单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','领料单','saleDetails_formSearch');"
+                                                   id="djlx_id_领料单">
+                                                <span>领料单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','归还单','saleDetails_formSearch');"
+                                                   id="djlx_id_归还单">
+                                                <span>归还单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','退货单','saleDetails_formSearch');"
+                                                   id="djlx_id_退货单">
+                                                <span>退货单</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('djlx','借出单','saleDetails_formSearch');"
+                                                   id="djlx_id_借出单">
+                                                <span>借出单</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xslx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="销售类型">销售类型：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${xslxlist !=null && xslxlist.size() >0}" th:each="list:${xslxlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[xslx]],[[${list.csid}]],[[saleDetails_formSearch]]);" th:id="'xslx_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="cplx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="产品类型">产品类型：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${cplxlist !=null && cplxlist.size() >0}" th:each="list:${cplxlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[cplx]],[[${list.csid}]],[[saleDetails_formSearch]]);" th:id="'cplx_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yxq_id" class="col-md-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="有效期">有效期：</label>
+                                        <input id="yxqstart" name="yxqstart" class="form-control" placeholder="开始日期"  />~
+                                        <input id="yxqend" name="yxqend" class="form-control" placeholder="结束日期" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="khlb_id_tj" name="khlb_id_tj">
+        <input  type="hidden" id="cplx_id_tj" name="cplx_id_tj">
+        <input  type="hidden" id="xslx_id_tj" name="xslx_id_tj">
+        <input  type="hidden" id="djlx_id_tj" name="djlx_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="saleDetails_list" class="table table-hover table-bordered table-hidden saleDetailsClass" data-reorderable-columns="true"></table>
+    </form>
+</div>
+</body>
+</html>

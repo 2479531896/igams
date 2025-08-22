@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cn">
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/borrowing/borrowing_list.js'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+ 	<form id="borrowing_formSearch" class="form-horizontal form-inline">
+ 		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="auditType" id ="auditType" th:value="${auditType}">
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+			 	<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj">
+							<option value="0">全 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;部</option>
+		            		<option value="1">借&nbsp;&nbsp;用&nbsp;&nbsp;单&nbsp;&nbsp;号</option>
+		                	<option value="2">联&nbsp;&nbsp;&nbsp;&nbsp;系&nbsp;&nbsp;&nbsp;&nbsp;人</option>
+							<option value="3">部 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;门</option>
+							<option value="4">单 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;位</option>
+							<option value="5">客&nbsp;户&nbsp;名&nbsp;称</option>
+							<option value="6">合&nbsp;同&nbsp;编&nbsp;号</option>
+							<option value="7">负&nbsp;责&nbsp;大&nbsp;区</option>
+							<option value="8">终&nbsp;端&nbsp;区&nbsp;域</option>
+							<option value="9">终 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;端</option>
+							<option value="10">收&nbsp;货&nbsp;地&nbsp;址</option>
+							<option value="11">收货联系方式</option>
+						</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+			       		onkeydown="if(event.keyCode==13) {searchBorrowingResult(); return false;}"/>
+					</div>
+					<div class="form-group padding-l30" style="margin-left:0px">
+						<label>借出日期</label>
+						<input id="jysjstart" name="jysjstart" class="form-control" placeholder="开始日期"  />~
+						<input id="jysjend" name="jysjend" class="form-control" placeholder="结束日期" />
+					</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+					<span class="tit">已选条件：</span>
+					<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+						<ul id="sl_add_ul"></ul>
+					</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore" style="display: none;" >
+					<div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+						<div class="tab-pane active" id="tab06">
+							<div id="khlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="客户类别">客户类别：</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${khlblist !=null && khlblist.size() >0}" th:each="list:${khlblist}">
+												<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[khlb]],[[${list.csid}]],[[borrowing_formSearch]]);" th:id="'khlb_id_'+${list.csid}">
+													<span th:text="${list.csmc}"></span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="sfqs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否签收">是否签收：
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('sfqs','1','borrowing_formSearch');"
+												   id="sfqs_id_1">
+													<span>是</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('sfqs','0','borrowing_formSearch');"
+												   id="sfqs_id_0">
+												<span>否</span>
+											</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="sfqr_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否确认">是否确认：
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('sfqr','1','borrowing_formSearch');"
+												   id="sfqr_id_1">
+													<span>是</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('sfqr','0','borrowing_formSearch');"
+												   id="sfqr_id_0">
+												<span>否</span>
+											</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="djlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="单据类型">单据类型：
+									</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li><a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('djlx','0','borrowing_formSearch');"
+												   id="djlx_id_0">
+												<span>普通单</span>
+											</a>
+											</li>
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+												   onclick="addTj('djlx','1','borrowing_formSearch');"
+												   id="djlx_id_1">
+													<span>换货单</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<input  type="hidden" id="khlb_id_tj" name="khlb_id_tj">
+		<input  type="hidden" id="sfqs_id_tj" name="sfqs_id_tj">
+		<input  type="hidden" id="sfqr_id_tj" name="sfqr_id_tj">
+		<input  type="hidden" id="djlx_id_tj" name="djlx_id_tj">
+		<div th:include="common/btn/ancz.html"></div>
+ 		<table id="borrowing_list" class="table table-hover table-bordered table-hidden"
+			   data-reorderable-columns="true"></table>
+ 	</form>
+</div> 
+</body>
+</html>

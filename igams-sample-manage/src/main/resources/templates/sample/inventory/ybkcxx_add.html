@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head lang="zh-cn">
+        <script type="text/javascript" th:src="@{${urlPrefix} + '/js/sample/inventory/ybkcxx_add.js?v=20231205001'}" charset="utf-8"></script>
+    </head>
+    <style>
+        #yblrForm .bootstrap-table{
+            height: 100%;
+        }
+    </style>
+    <body>
+        <form id="yblrForm" th:action="${urlPrefix}+'/sample/inventory/'+${ybkcxxDto.formAction}" class="form-horizontal sl_all_form"  method="post" theme="simple" data-bs-toggle="validation">
+            <input type="hidden" name="access_token"/>
+            <input type="hidden" id="ybmx_json" name="ybmx_json"/>
+            <input type="hidden" id="wzList" name="wzList" th:value="${wzList}"/>
+            <input type="hidden" id="yblrlxlist" name="yblrlxlist" th:value="${yblrlxlist}"/>
+            <input type="hidden" id="ybbh" name="ybbh">
+            <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+            <input type="hidden" name="ybkcid" id ="ybkcid" th:value="${ybkcxxDto.ybkcid}">
+            <input type="hidden" name="formAction" id ="formAction" th:value="${ybkcxxDto.formAction}">
+            <input type="hidden" name="xgqhzid" id ="xgqhzid" th:value="${ybkcxxDto.xgqhzid}">
+            <input type="hidden" name="xgqwz" id ="xgqwz" th:value="${ybkcxxDto.xgqwz}">
+            <input type="hidden" name="hzxgsj" id ="hzxgsj">
+            <span style="color:chocolate;font-size:12px" th:if="${ybkcxxDto.formAction eq 'ybaddSaveYbkcxx'}">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;温馨提醒一：样本一旦开始录入就<span style="color:red;">不要更改存储单位、冰箱、抽屉、盒子信息</span>，如果更改请不要点击【<span style="color:red;">确定</span>】,点击【
+                <span style="color:red;">关闭</span>】重新录入！！！
+            </span>
+            <br>
+            <span style="color:chocolate;font-size:12px" th:if="${ybkcxxDto.formAction eq 'ybaddSaveYbkcxx'}">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;温馨提醒二：请先选择存储单位再录入！！！
+            </span>
+            <div class="body-content">
+                <div class="row">
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>存储单位:
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9" >
+                                <select id="jcdw" name="jcdw" th:value="${ybkcxxDto.jcdw}" oninput="getBxList()" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+                                    <option value="">--请选择--</option>
+                                    <option class="jcdw" th:each="jcdw:${jcdwlist}" th:id="${jcdw.csid}" th:value="${jcdw.csid}" th:text="${jcdw.csmc}" th:selected="${jcdw.csid eq ybkcxxDto.jcdw}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-4 control-label"></label>
+                            <div class="col-sm-8 col-xs-8" style="height:34px;">
+                                <label class="radio-inline">&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                <label class="radio-inline">&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 col-xs-4 control-label"></label>
+                            <div class="col-sm-8 col-xs-8" style="height:34px;">
+                                <label class="radio-inline">&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                <label class="radio-inline">&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            </div>
+                        </div>
+                    </div>
+                   <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>冰箱
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9">
+                                <select id="bxid" name="bxid"  th:value="${ybkcxxDto.bxid}" oninput="getCtList()" class="form-control chosen-select" validate="{required:true,stringMaxLength:32}" style="height:34px;">
+                                    <option th:each="list:${bxList}" th:value="${list.sbid}" th:text="${(list.wz==null?'':list.wz)+(list.sbh==null?'':'('+list.sbh+')')}"th:selected="${list.sbid eq ybkcxxDto.bxid}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>抽屉
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9">
+                                <select id="chtid" name="chtid" th:value="${ybkcxxDto.chtid}" oninput="getHzList()" class="form-control chosen-select" validate="{required:true,stringMaxLength:32}" style="height:34px;">
+                                    <option th:each="list:${ctList}" th:value="${list.sbid}" th:text="${list.wz}" th:selected="${list.sbid eq ybkcxxDto.chtid}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>盒子
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9">
+                                <select id="hzid" name="hzid" th:value="${ybkcxxDto.hzid}" oninput="getwzList()" class="form-control chosen-select" validate="{required:true,stringMaxLength:32}" style="height:34px;">
+                                    <option th:each="list:${hzList}" th:sfczdb="${list.sfczdb}" th:value="${list.sbid}" th:text="${(list.wz==null?'':list.wz)+(list.sbh==null?'':'('+list.sbh+')')}"  th:selected="${list.sbid eq ybkcxxDto.hzid}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>盒子编号
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9">
+                                <input type="text" id="hh" name="hh" th:value="${ybkcxxDto.hh}"  validate="{required:true}" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4"  th:if="${ybkcxxDto.formAction eq 'ybaddSaveYbkcxx'}">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                默认类型
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9" >
+                                <select id="yblrlx" name="yblrlx" class="form-control chosen-select" style="height:34px;">
+                                    <option value="">--请选择--</option>
+                                    <option th:each="yblrlx:${yblrlxList}" th:id="${yblrlx.csid}" th:value="${yblrlx.csid}" th:text="${yblrlx.csmc}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-12" th:if="${ybkcxxDto.formAction eq 'ybaddSaveYbkcxx'}">
+                        <div class="form-group">
+                            <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">内部编码</label>
+                            <div class="col-sm-11 col-md-11 col-xs-11">
+                                <input type="text" id="lrnbbm" name="lrnbbm" placeholder="请输入内部编码" onkeydown="if(event.keyCode==13) {getYbbhAndYbbmAndWz(); return false;}" class="form-control" data-provide="typeahead" data-items="5" style="height:30px;" autocomplete="off"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 样本明细table -->
+            <table id="ybmx_list" data-classes="table table-hover table-bordered table-hidden" style="width:1100px; margin-left: 50px;"></table>
+        </form>
+    </body>
+</html>

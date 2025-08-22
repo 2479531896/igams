@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+    <style type="text/css">
+        .hidden{display:none;}
+        #show:hover{
+            cursor: move;
+        }
+        .f_button{
+            background: white;
+            border: 0;
+        }
+        .f_button:hover{
+            border-width: 0px;
+            border-radius: 3px;
+            background: #1E90FF;
+            cursor: pointer;
+            outline: none;
+            font-family: Microsoft YaHei;
+            color: white;
+            font-size: 14px;
+        }
+        .bootstrap-tagsinput {
+            min-width:100%;
+        }
+        .jdsty{
+            padding: 6px 12px;
+            text-align: center;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .pg-text-editor{
+            z-index: 10000;
+            position: absolute;
+            background: #fff;
+            padding: .25rem;
+            border: 1px solid #dde0e6!important;
+            box-shadow: 0 0.125rem 0.5rem rgba(132,142,160,.275);
+        }
+        textarea{
+            margin: 0;
+            font: inherit;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+<div class="pg-text-editor" id="otherdiv" zdmc="" index="" style="display:none;">
+    <textarea id="nrdiv" name="nrdiv" rows="5'" style="width: 250px;height: 80px;border: 0;outline: 0;resize: both;"></textarea>
+    <div style="text-align: right;">
+        <button class="btn btn-sm btn-default" data-label="取消" onclick="canceldiv()">
+            <span class="fa fa-times pg-alertify-button"></span>&nbsp;取消
+        </button>
+        <button class="btn btn-sm btn-success" data-label="确定" onclick="confirmdiv_t()">
+            <span class="fa fa-check pg-alertify-button"></span>&nbsp;确定
+        </button>
+    </div>
+</div>
+<form id="editQualityForm" th:action ="${urlPrefix}+'/agreement/agreement/'+${formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+    <input type="hidden" name="access_token"/>
+    <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+    <input type="hidden" name="fjids" id ="fjids">
+    <input type="hidden" name="ywlx" id="ywlx" th:value="${ywlx}">
+    <input type="hidden" name="zlxyid" id ="zlxyid" th:value="${zlxyDto.zlxyid}">
+    <input type="hidden" name="ygysid" id ="ygysid" th:value="${zlxyDto.gysid}">
+    <input type="hidden" name="bchtid" id ="bchtid" th:value="${zlxyDto.bchtid}">
+    <input type="hidden" name="yyxybh" id ="yyxybh" th:value="${zlxyDto.yyxybh}">
+    <input type="hidden" name="formAction" id ="formAction" th:value="${formAction}">
+    <input type="hidden" name="zlxymx_json" id ="zlxymx_json">
+    <div class="body-content">
+        <div class="row">
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>供应商:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <div class="input-group">
+                            <input id="gysmc" name="gysmc" type="text" th:value="${zlxyDto.gysmc}" validate="{required:true}" readonly="true" class="form-control" autoComplete="off" />
+                            <input id="gysid" name="gysid" type="hidden" th:value="${zlxyDto.gysid}" validate="{required:true}" class="form-control"  />
+                            <span class="input-group-btn">
+                                <button type="button" onclick="chooseGys()" class="btn btn-primary"  style="height: 28px !important;">选择</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>供方编号:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="gfbh" name="gfbh"  th:value="${zlxyDto.gfbh}" readonly class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>管理类型:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="gfgllbmc" name="gfgllbmc" th:value="${zlxyDto.gfgllbmc}" readonly class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>负责人:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <div class="input-group">
+                            <input type="text" id="fzrmc" name="fzrmc" th:value="${zlxyDto.fzrmc}"  validate="{required:true}" readonly="true" class="form-control" />
+                            <input type="hidden" id="fzr" name="fzr" th:value="${zlxyDto.fzr}"  class="form-control"/>
+                            <span class="input-group-btn">
+                                <button type="button" onclick="chooseFzr()" class="btn btn-primary"  style="height: 24px !important;">选择</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>合同类型
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <select id="htlx" name="htlx" th:value="${zlxyDto.htlx}" class="form-control chosen-select"  validate="{required:true,stringMaxLength:32}" style="height:34px;">
+                            <option value="">--请选择--</option>
+                            <option th:each="list:${htlxlist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq zlxyDto.htlx}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>协议编号:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <div class="input-group">
+                            <input type="text" validate="{required:true}" id="zlxybh" name="zlxybh" th:value="${zlxyDto.zlxybh}" class="form-control" />
+                            <span class="input-group-btn">
+										<button type="button" onclick="refreshZlxybh()" class="btn btn-primary" style="height:28px !important;">刷新</button>
+									</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>创建时间:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="cjsj" name="cjsj" th:value="${zlxyDto.cjsj}" validate="{required:true}" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>开始时间:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="kssj" name="kssj" th:value="${zlxyDto.kssj}" validate="{required:true}" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>到期时间:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="dqsj" name="dqsj" th:value="${zlxyDto.dqsj}" validate="{required:true}" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4" >
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>外部协议编号:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="wbxybh" name="wbxybh" th:value="${zlxyDto.wbxybh}" validate="{required:true}" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12" >
+                <div class="form-group" >
+                    <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                        备注:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11">
+                        <textarea id="bz" name="bz" rows="3"  th:text="${zlxyDto.bz}" validate="{stringMaxLength:512}" class="form-control"  autocomplete="off"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12">
+                <div class="form-group">
+                    <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                        已传附件:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11" >
+                        <div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+                            <div th:id="${fjcfbDto.fjid}" >
+                                <div class="col-sm-9 padding_t7">
+                                    <label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+                                    <a title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);"  >
+                                        <span th:text="${fjcfbDto.wjm}"></span>
+                                        <span class="glyphicon glyphicon glyphicon-save"></span>
+                                    </a>&nbsp;&nbsp;
+                                    <a title="删除" class="f_button" type="button">
+                                        <span class="glyphicon glyphicon-remove" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></span>
+                                    </a>&nbsp;&nbsp;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12" >
+                <div class="form-group">
+                    <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                        附件上传:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11">
+                        <a href="javascript:void(0);" id="C_Btn" onclick='editfile("C_Div","C_Btn")' style="display:inline-block;width:100%;border:1px solid #CCCCCC;border-radius:3px;">
+                            <span title="点击上传"  style="display:inline-block;width:100%;height:28px;color:#A6A6A6;font-size:12px;padding-left:10px;line-height:28px;">点击展开上传文件</span>
+                        </a>
+                        <div id="C_Div" style="display: none;">
+                            <input  id="sign_file" name="sign_file" type="file">
+                            <button class="btn btn-default" type="button" style="position:relative;margin-top:-5%;margin-left:77%; width:23%;" onclick='cancelfile("C_Div","C_Btn")'>隐藏</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12">
+                <div class="form-group">
+                    <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                        历史合同:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11" id="htDiv">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table id="view_list" data-classes="table table-hover table-bordered table-hidden" style="width: 1500px"></table>
+        <div class="col-md-12 col-sm-12">
+            <button  type="button" class="btn btn-success" onclick="addWl()" ><span>新增物料</span></button>
+            <button  type="button" class="btn btn-success" onclick="addFw()" ><span>新增服务</span></button>
+        </div>
+        <table id="edit_list" data-classes="table" style="width:1530px;"></table>
+    </div>
+</form>
+</body>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/quality/quality_add.js'}" charset="utf-8"></script>
+</html>

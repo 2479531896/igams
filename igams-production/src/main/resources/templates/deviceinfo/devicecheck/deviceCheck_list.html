@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>请购列表</title>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/deviceinfo/devicecheck/deviceCheck_list.js?v=20230524001'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+    <form id="deviceCheck_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" id="auditType" name="auditType" th:value="${sbysDto.auditType}">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+                            <option value="0">设备编码</option>
+                            <option value="1">设备名称</option>
+                            <option value="2">申请人</option>
+                            <option value="3">申请部门</option>
+                            <option value="4">订单编号</option>
+                            <option value="5">请购单号</option>
+                            <option value="6">固定资产编号</option>
+                            <option value="7">出厂编号</option>
+                            <option value="8">使用地点</option>
+                            <option value="9">生产厂家</option>
+                            <option value="10">供应商</option>
+                            <option value="11">到货单号</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchDeviceCheckResult(true); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="ssyfxm_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="所属项目">所属项目：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${ssxmlist !=null && ssxmlist.size() >0}" th:each="list:${ssxmlist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[ssyfxm]],[[${list.csid}]],[[deviceCheck_formSearch]]);" th:id="'ssyfxm_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态">审核状态：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','00','deviceCheck_formSearch');"
+                                                   id="zt_id_00"><span>未提交</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','10','deviceCheck_formSearch');"
+                                                   id="zt_id_10"><span>审核中</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','15','deviceCheck_formSearch');"
+                                                   id="zt_id_15"><span>审核未通过</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','80','deviceCheck_formSearch');"
+                                                   id="zt_id_80"><span>审核通过</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ysjg_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="验收结果">验收结果：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ysjg','0','deviceCheck_formSearch');"
+                                                   id="ysjg_id_0"><span>不合格</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ysjg','1','deviceCheck_formSearch');"
+                                                   id="ysjg_id_1"><span>合格</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="zxdnr_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="装箱单内容">装箱单内容：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zxdnr','0','deviceCheck_formSearch');"
+                                                   id="zxdnr_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zxdnr','1','deviceCheck_formSearch');"
+                                                   id="zxdnr_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sbcs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="设备参数">设备参数：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sbcs','0','deviceCheck_formSearch');"
+                                                   id="sbcs_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sbcs','1','deviceCheck_formSearch');"
+                                                   id="sbcs_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yqgnyz_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="仪器功能运转">仪器功能运转：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('yqgnyz','0','deviceCheck_formSearch');"
+                                                   id="yqgnyz_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('yqgnyz','1','deviceCheck_formSearch');"
+                                                   id="yqgnyz_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sjcs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="数据传输">数据传输：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjcs','0','deviceCheck_formSearch');"
+                                                   id="sjcs_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjcs','1','deviceCheck_formSearch');"
+                                                   id="sjcs_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sjcc_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="数据存储">数据存储：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjcc','0','deviceCheck_formSearch');"
+                                                   id="sjcc_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjcc','1','deviceCheck_formSearch');"
+                                                   id="sjcc_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sjwzxhbmx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" style="padding: 0" title="数据完整性和保密性">数据完整性和保密性：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjwzxhbmx','0','deviceCheck_formSearch');"
+                                                   id="sjwzxhbmx_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjwzxhbmx','1','deviceCheck_formSearch');"
+                                                   id="sjwzxhbmx_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sjclhjs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="数据处理和检索">数据处理和检索：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjclhjs','0','deviceCheck_formSearch');"
+                                                   id="sjclhjs_id_0"><span>不符合</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sjclhjs','1','deviceCheck_formSearch');"
+                                                   id="sjclhjs_id_1"><span>符合</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xnyz_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="性能验证">性能验证：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('xnyz','0','deviceCheck_formSearch');"
+                                                   id="xnyz_id_0"><span>否</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('xnyz','1','deviceCheck_formSearch');"
+                                                   id="xnyz_id_1"><span>是</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ysjl_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="验收结论">验收结论：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ysjl','0','deviceCheck_formSearch');"
+                                                   id="ysjl_id_0"><span>否</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ysjl','1','deviceCheck_formSearch');"
+                                                   id="ysjl_id_1"><span>是</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfyz_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否验证">是否验证：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfyz','0','deviceCheck_formSearch');"
+                                                   id="sfyz_id_0"><span>否</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfyz','1','deviceCheck_formSearch');"
+                                                   id="sfyz_id_1"><span>是</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfjl_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否计量">是否计量：</label>
+                                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfjl','0','deviceCheck_formSearch');"
+                                                   id="sfjl_id_0"><span>否</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfjl','1','deviceCheck_formSearch');"
+                                                   id="sfjl_id_1"><span>是</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jlzq" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="计量周期" >计量周期：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="jlzqstart" name="jlzqstart" class="form-control" type="number" min="0" max="99" placeholder="0" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="jlzqend" name="jlzqend" class="form-control" type="number" min="0" max="99" placeholder="99" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yzzq" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="验证周期" >验证周期：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="yzzqstart" name="yzzqstart" class="form-control" type="number" min="0" max="99" placeholder="0" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="yzzqend" name="yzzqend" class="form-control" type="number" min="0" max="99" placeholder="99" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="byzq" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="保养周期" >保养周期：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="byzqstart" name="byzqstart" class="form-control" type="number" min="0" max="99" placeholder="0" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="byzqend" name="byzqend" class="form-control" type="number" min="0" max="99" placeholder="99" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xcbysj" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="下次保养时间" >下次保养时间：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="xcbysjstart" name="xcbysjstart" class="form-control" placeholder="开始时间" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="xcbysjend" name="xcbysjend" class="form-control" placeholder="结束结束" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xcjlsj" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="下次计量时间" >下次计量时间：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="xcjlsjstart" name="xcjlsjstart" class="form-control" placeholder="开始时间" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="xcjlsjend" name="xcjlsjend" class="form-control" placeholder="结束结束" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xcyzsj" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="下次验证时间" >下次验证时间：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="xcyzsjstart" name="xcyzsjstart" class="form-control" placeholder="开始时间" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="xcyzsjend" name="xcyzsjend" class="form-control" placeholder="结束结束" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dhrq" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="到货日期" >到货日期：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="dhrqstart" name="dhrqstart" class="form-control" placeholder="开始时间" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="dhrqend" name="dhrqend" class="form-control" placeholder="结束时间" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ysrq" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-sm-1 col-md-1 col-lg-1 control-label" title="验收日期" >验收日期：</label>
+                                    <div class="col-sm-11  col-md-11 col-lg-11 sl_sel_list" style="margin-top:5px">
+                                        <input id="ysrqstart" name="ysrqstart" class="form-control" placeholder="开始时间" validate="{required:true}" style="height:28px;"/>~
+                                        <input id="ysrqend" name="ysrqend" class="form-control" placeholder="结束时间" validate="{required:true}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="zxdnr_id_tj" name="zxdnr_id_tj">
+        <input  type="hidden" id="sbcs_id_tj" name="sbcs_id_tj">
+        <input  type="hidden" id="yqgnyz_id_tj" name="yqgnyz_id_tj">
+        <input  type="hidden" id="sjcs_id_tj" name="sjcs_id_tj">
+        <input  type="hidden" id="sjcc_id_tj" name="sjcc_id_tj">
+        <input  type="hidden" id="sjwzxhbmx_id_tj" name="sjwzxhbmx_id_tj">
+        <input  type="hidden" id="sjclhjs_id_tj" name="sjclhjs_id_tj">
+        <input  type="hidden" id="xnyz_id_tj" name="xnyz_id_tj">
+        <input  type="hidden" id="ysjl_id_tj" name="sfyz_id_tj">
+        <input  type="hidden" id="sfyz_id_tj" name="sfyz_id_tj">
+        <input  type="hidden" id="sfjl_id_tj" name="sfjl_id_tj">
+        <input  type="hidden" id="ssyfxm_id_tj" name="ssyfxm_id_tj">
+        <input  type="hidden" id="ysjg_id_tj" name="ysjg_id_tj">
+        <input  type="hidden" id="zt_id_tj" name="zt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="deviceCheck_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true" ></table>
+    </form>
+</div>
+</body>
+</html>

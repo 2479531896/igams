@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbdbDao">
+
+	<!-- 分页查询 -->
+	<select id="getPagedDtoList" parameterType="YbdbDto" resultType="YbdbDto">
+		select ybdb.ybdbid,to_char(ybdb.dbrq,'YYYY-MM-DD') as dbrq,yh_dbr.zsxm as dbrmc,
+		jc_dcccdw.csmc as dcccdwmc,sb_dcbx.sbh as dcbxsbh,sb_dcbx.wz as dcbxmc,sb_dcct.sbh as dcctsbh,sb_dcct.wz as dcctmc,
+		jc_drccdw.csmc as drccdwmc,sb_drbx.sbh as drbxsbh,sb_drbx.wz as drbxmc,sb_drct.sbh as drctsbh,sb_drct.wz as drctmc,
+		ybdb.bz,ybdb.zt
+		from igams_ybdb ybdb
+		left join matridx_xtyh yh_dbr on yh_dbr.yhid = ybdb.dbr and yh_dbr.scbj='0'
+		left join matridx_jcsj jc_dcccdw on jc_dcccdw.csid = ybdb.dcccdw
+		left join matridx_jcsj jc_drccdw on jc_drccdw.csid = ybdb.drccdw
+		left join igams_sbgl sb_dcbx on sb_dcbx.sbid = ybdb.dcbx
+		left join igams_sbgl sb_drbx on sb_drbx.sbid = ybdb.drbx
+		left join igams_sbgl sb_dcct on sb_dcct.sbid = ybdb.dcct
+		left join igams_sbgl sb_drct on sb_drct.sbid = ybdb.drct
+		<where>
+			ybdb.scbj != '1'
+			<if test="dbrmc!=null and dbrmc!=''">
+				and yh_dbr.zsxm like '%'||#{dbrmc}||'%'
+			</if>
+			<if test = "dcccdws != null and dcccdws.length > 0 "  >
+				and ybdb.dcccdw in
+				<foreach collection="dcccdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "dcbxs != null and dcbxs.length > 0 "  >
+				and ybdb.dcbx in
+				<foreach collection="dcbxs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "dccts != null and dccts.length > 0 "  >
+				and ybdb.dcct in
+				<foreach collection="dccts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "drccdws != null and drccdws.length > 0 "  >
+				and ybdb.drccdw in
+				<foreach collection="drccdws" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "drbxs != null and drbxs.length > 0 "  >
+				and ybdb.drbx in
+				<foreach collection="drbxs" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "drcts != null and drcts.length > 0 "  >
+				and ybdb.drct in
+				<foreach collection="drcts" separator="," open="(" close=") "
+						 item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="dbrqstart != null and dbrqstart != ''">
+				and to_char(ybdb.dbrq,'yyyy-mm-dd') &gt;= #{dbrqstart}
+			</if>
+			<if test="dbrqend !=null and dbrqend !=''">
+				and to_char(ybdb.dbrq,'yyyy-mm-dd') &lt;= #{dbrqend}
+			</if>
+		</where>
+	</select>
+
+	<!--新增调拨信息-->
+	<insert id="insert" parameterType="YbdbDto">
+		insert into igams_ybdb(ybdbid
+		<if test="dbr !=null and dbr != ''">
+			,dbr
+		</if>
+		<if test="dbrq !=null and dbrq != ''">
+			,dbrq
+		</if>
+		<if test="drccdw !=null and drccdw != ''">
+			,drccdw
+		</if>
+		<if test="dcccdw !=null and dcccdw != ''">
+			,dcccdw
+		</if>
+		<if test="dcbx !=null and dcbx != ''">
+			,dcbx
+		</if>
+		<if test="dcct !=null and dcct != ''">
+			,dcct
+		</if>
+		<if test="wlxx !=null and wlxx != ''">
+			,wlxx
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		,zt,lrry,lrsj,scbj) values(#{ybdbid}
+		<if test="dbr !=null and dbr != ''">
+			,#{dbr}
+		</if>
+		<if test="dbrq !=null and dbrq != ''">
+			,cast(#{dbrq} as timestamp)
+		</if>
+		<if test="drccdw !=null and drccdw != ''">
+			,#{drccdw}
+		</if>
+		<if test="dcccdw !=null and dcccdw != ''">
+			,#{dcccdw}
+		</if>
+		<if test="dcbx !=null and dcbx != ''">
+			,#{dcbx}
+		</if>
+		<if test="dcct !=null and dcct != ''">
+			,#{dcct}
+		</if>
+		<if test="wlxx !=null and wlxx != ''">
+			,#{wlxx}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		,'00',#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+
+	<!--更新调拨信息-->
+	<update id="update" parameterType="YbdbDto">
+		update igams_ybdb
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="dbr !=null and dbr != ''">
+				,dbr = #{dbr}
+			</if>
+			<if test="dbrq !=null and dbrq != ''">
+				,dbrq = cast(#{dbrq} as timestamp)
+			</if>
+			<if test="drccdw !=null and drccdw != ''">
+				,drccdw = #{drccdw}
+			</if>
+			<if test="dcccdw !=null and dcccdw != ''">
+				,dcccdw = #{dcccdw}
+			</if>
+			<if test="dcbx !=null and dcbx != ''">
+				,dcbx = #{dcbx}
+			</if>
+			<if test="dcct !=null and dcct != ''">
+				,dcct = #{dcct}
+			</if>
+			<if test="wlxx !=null and wlxx != ''">
+				,wlxx = #{wlxx}
+			</if>
+			<if test="bz !=null and bz != ''">
+				,bz = #{bz}
+			</if>
+			<if test="drbx !=null and drbx != ''">
+				,drbx = #{drbx}
+			</if>
+			<if test="drct !=null and drct != ''">
+				,drct = #{drct}
+			</if>
+		</set>
+		<where>
+			ybdbid=#{ybdbid}
+		</where>
+	</update>
+
+	<select id="getDto" resultType="YbdbDto" parameterType="YbdbDto">
+		select ybdb.ybdbid,ybdb.dbr,xtyh.zsxm dbrmc,ybdb.dbrq,ybdb.drccdw,ybdb.drbx,ybdb.drct,ybdb.dcccdw,ybdb.dcbx,ybdb.dcct,ybdb.wlxx,ybdb.bz
+		,sb_dcbx.wz dcbxmc,sb_dcbx.sbh dcbxsbh,sb_dcbx.px as bxpx,sb_drbx.sbh drbxmc,sb_drbx.wz drbxwz,sb_dcct.sbh dcctmc,sb_dcct.wz dcctwz,sb_drct.sbh drctmc,sb_drct.wz drctwz,jc_dcccdw.csmc dcccdwmc,jc_drccdw.csmc drccdwmc
+		from igams_ybdb ybdb
+		left join matridx_xtyh xtyh on xtyh.yhid = ybdb.dbr and xtyh.scbj = '0'
+		left join igams_sbgl sb_dcbx on sb_dcbx.sbid = ybdb.dcbx
+		left join igams_sbgl sb_drbx on sb_drbx.sbid = ybdb.drbx
+		left join igams_sbgl sb_dcct on sb_dcct.sbid = ybdb.dcct
+		left join igams_sbgl sb_drct on sb_drct.sbid = ybdb.drct
+		left join matridx_jcsj jc_dcccdw on jc_dcccdw.csid = ybdb.dcccdw
+		left join matridx_jcsj jc_drccdw on jc_drccdw.csid = ybdb.drccdw
+		where ybdb.ybdbid =#{ybdbid} and ybdb.scbj = '0'
+	</select>
+
+	<select id="getDtoList" resultType="YbdbDto" parameterType="YbdbDto">
+		select ybdb.ybdbid,ybdb.dbr,xtyh.zsxm dbrmc,ybdb.dbrq,ybdb.drccdw,ybdb.drbx,ybdb.drct,ybdb.dcccdw,ybdb.dcbx,ybdb.dcct,ybdb.wlxx,ybdb.bz,jc_dcccdw.csmc dcccdwmc
+		from igams_ybdb ybdb
+		left join matridx_xtyh xtyh on xtyh.yhid = ybdb.dbr and xtyh.scbj = '0'
+		left join matridx_jcsj jc_dcccdw on jc_dcccdw.csid = ybdb.dcccdw
+		<where> ybdb.scbj = '0'
+			<if test = "ids != null and ids.size > 0 "  >
+				and ybdb.ybdbid in
+				<foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+
+	<!--更新调拨信息-->
+	<update id="delByYbdbid" parameterType="YbdbDto">
+		update igams_ybdb
+		<set>
+			scbj = '1',scry=#{scry} ,scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			<if test = "ids != null and ids.size > 0 "  >
+				and ybdbid in
+				<foreach collection="ids" separator="," open="(" close=") " item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test = "ybdbid != null and ybdbid !='' "  >
+				and ybdbid=#{ybdbid}
+			</if>
+		</where>
+	</update>
+	<update id="updateZt" parameterType="YbdbDto">
+		update igams_ybdb set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="zt !=null and zt !=''">
+			,zt = #{zt}
+		</if>
+		where ybdbid=#{ybdbid}
+	</update>
+	<select id="getPagedAuditSampleAllot" parameterType="YbdbDto" resultType="YbdbDto">
+		select ybdb.ybdbid,ybdb.dbrq
+		from igams_ybdb ybdb
+		left join matridx_xtyh yh_dbr on yh_dbr.yhid = ybdb.dbr and yh_dbr.scbj='0'
+		<where>
+			ybdb.scbj != '1'
+			<if test="dbrmc!=null and dbrmc!=''">
+				and yh_dbr.zsxm like '%'||#{dbrmc}||'%'
+			</if>
+			<if test="jcdwxz !=null and jcdwxz.size()>0">
+				and ybdb.drccdw in
+				<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="getAuditListSampleAllot" parameterType="List" resultType="YbdbDto">
+		select ybdb.ybdbid,to_char(ybdb.dbrq,'YYYY-MM-DD') as dbrq,yh_dbr.zsxm as dbrmc,
+		jc_dcccdw.csmc as dcccdwmc,sb_dcbx.sbh as dcbxsbh,sb_dcbx.wz as dcbxmc,sb_dcct.sbh as dcctsbh,sb_dcct.wz as dcctmc,
+		jc_drccdw.csmc as drccdwmc,sb_drbx.sbh as drbxsbh,sb_drbx.wz as drbxmc,sb_drct.sbh as drctsbh,sb_drct.wz as drctmc,
+		ybdb.bz,ybdb.zt,shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid
+		from
+		<foreach collection="list" separator="union" open="(" close=")"
+				 item="item" index="index">
+			select #{item.ybdbid} ybdbid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,
+			#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+			#{item.shxx_sftg} shxx_sftg,#{index} rownum
+		</foreach>
+		tmp
+		left join igams_ybdb ybdb on tmp.ybdbid=ybdb.ybdbid
+		left join matridx_xtyh yh_dbr on yh_dbr.yhid = ybdb.dbr and yh_dbr.scbj='0'
+		left join matridx_jcsj jc_dcccdw on jc_dcccdw.csid = ybdb.dcccdw
+		left join matridx_jcsj jc_drccdw on jc_drccdw.csid = ybdb.drccdw
+		left join igams_sbgl sb_dcbx on sb_dcbx.sbid = ybdb.dcbx
+		left join igams_sbgl sb_drbx on sb_drbx.sbid = ybdb.drbx
+		left join igams_sbgl sb_dcct on sb_dcct.sbid = ybdb.dcct
+		left join igams_sbgl sb_drct on sb_drct.sbid = ybdb.drct
+		order by tmp.rownum
+	</select>
+</mapper>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<style type="text/css">
+			.bootstrap-tagsinput {
+			    min-width:100%;
+			}
+			.label-info {
+				cursor: pointer;
+			}
+			th{
+				font-weight:bold;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="editPutInStorageForm"  th:action ="${urlPrefix}+'/warehouse'+${rkglDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+			<div class="body-content">
+				<div class="row">
+					<input type="hidden" name="access_token"/>
+					<input type="hidden" name="rkid" id="rkid" th:value="${rkglDto.rkid}"/>
+					<input th:if="${rklbbj =='0'}" type="hidden" name="rklb" id="rklb" th:value="${rkglDto.rklb}"/>
+					<input type="hidden" name="cglx" id="cglx" th:value="${rkglDto.cglx}"/>
+					<input type="hidden" name="hwxxids" id="hwxxids" th:value="${rkglDto.ids}">
+					<input type="hidden" name="bs" id="bs" th:value="${rkglDto.bs}">
+					<input type="hidden" name="xsbj" id="xsbj" th:value="${xsbj}"/>
+					<input type="hidden" name="url" id="url" th:value="${url}"/>
+					<input type="hidden" id="hwxx_json" name="hwxx_json">
+					<input type="hidden" id="hwids" name="hwids">
+					<input type="hidden" id="gyscfbj" name="gyscfbj">
+					<input type="hidden" name="formAction" id ="formAction" th:value="${rkglDto.formAction}">
+					<input type="hidden" name="auditType" id ="auditType" th:value="${rkglDto.auditType}">
+					<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+					<input type="hidden" name="rklbbj" id ="rklbbj" th:value="${rklbbj}">
+<!--					<div th:if="${rkcbj !='0'}"><input type="hidden" name="rklb" id ="rklb" th:value="${rkglDto.rklb}">-->
+<!--					</div>-->
+					<div class="col-md-12 col-sm-12" id="addDhd" style="display:none;" th:if="${rkglDto.formAction != 'advancedModSavePutInStorage' && rkglDto.bs != '1' && rkglDto.bs != '2'}">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+								<span style="color: red;">*</span>到货信息
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11">
+								<div class="input-group">
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseDhxx()" class="btn btn-primary"  style="height:28px !important;">新增</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>入库单号
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="rkdh" name="rkdh" th:value="${rkglDto.rkdh}" class="form-control" />
+									<span class="input-group-btn">
+										<button type="button" onclick="refreshRkdh()" class="btn btn-primary" style="height:28px !important;">刷新</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="rk" class="col-md-4 col-sm-4" th:if="${rkcbj !='0'&& rkglDto.dhlxdm !='TH'}" >
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                                <span style="color: red;">*</span>入库类别
+                            </label>
+                            <div class="col-sm-9 col-xs-9 col-md-9" th:if="${rklblist !=null && rklblist.size() > 0}"> 
+                                <select id="rklb" name="rklb" th:value="${rkglDto.rklxmc}" class="form-control chosen-select" validate="{required:true}" style="height:34px;" onchange="addcheckrklx()">
+                                    <option value="">--请选择--</option>
+                                    <option th:each="list:${rklblist}" th:id="${list.csid}" th:cskz2="${list.cskz2}" th:value="${list.csid}" th:text="${list.csmc}"  th:csdm="${list.csdm}" th:selected="${list.csid eq rkglDto.rklb}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>入库日期
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<input type="text" id="rkrq" name="rkrq" th:value="${rkglDto.rkrq}" validate="{required:true}" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>部门
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="sqbmmc" name="sqbmmc" th:value="${rkglDto.sqbmmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="bm" name="bm" th:value="${rkglDto.bm}"  class="form-control"/>
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseSqbm()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" th:if="${rkglDto.dhlxdm !='TH'}">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>供应商
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9">
+								<div class="input-group">
+									<input type="text" id="gysmc" name="gysmc" th:value="${rkglDto.gysmc}" readonly="true" validate="{required:true}" class="form-control" />
+		         					<input id="gysid" name="gysid" type="hidden" th:value="${rkglDto.gysid}" class="form-control" />
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseGys()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div id="ck" class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+								<span style="color: red;">*</span>仓库
+							</label>
+							<div class="col-sm-9 col-xs-9 col-md-9" th:if="${cklist !=null && cklist.size() > 0}"> 
+								<select id="ckid" name="ckid" th:value="${rkglDto.ckmc}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+									<option value="">--请选择--</option>
+                        			<option th:each="list:${cklist}" th:value="${list.ckid}" th:text="${list.ckmc}" th:selected="${list.ckid eq rkglDto.ckid}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+								备注
+							</label>
+							<div class="col-sm-11 col-xs-11 col-md-11">
+								<textarea id="bz" name="bz" rows="3" th:text="${rkglDto.bz}" validate="{stringMaxLength:1024}" style="height: auto;" class="form-control" ></textarea>
+							</div>
+						</div>
+					</div>		
+				</div> 
+			</div>
+			<!-- 货物table -->
+			<table id="tb_list" data-classes="table table-hover table-bordered table-hidden" style="width:1600px;margin-left:8px;"></table>
+		</form>
+	</body>
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/putInStorage/putInStorage_edit.js'}" charset="utf-8"></script>
+</html>

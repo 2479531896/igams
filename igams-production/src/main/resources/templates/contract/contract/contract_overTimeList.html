@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>合同审核超时列表</title>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_overTimeList.js'}" charset="utf-8"></script>
+    <style type="text/css">
+        .spanClass{
+            position: absolute;
+        }
+        .titletop{
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+    <form id="conOverTime_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" name="unit" id ="unit" th:value="${unit}">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="titleString" id ="titleString" th:value="${titleString}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+                            <option value="0">&nbsp;&nbsp;&nbsp;&nbsp;全&nbsp;&nbsp;部&nbsp;&nbsp;&nbsp;</option>
+                            <option value="1">&nbsp;&nbsp;采购单号&nbsp;&nbsp;</option>
+                            <option value="2">&nbsp;&nbsp;申&nbsp;&nbsp;请&nbsp;&nbsp;人</option>
+                            <option value="3">&nbsp;&nbsp;申请部门&nbsp;&nbsp;</option>
+                            <option value="4">合同内部编号</option>
+                            <option value="5">&nbsp;&nbsp;请购负责人&nbsp;&nbsp;</option>
+                            <option value="6">&nbsp;&nbsp;合同负责人&nbsp;&nbsp;</option>
+                            <option value="7">&nbsp;&nbsp;供应商&nbsp;&nbsp;</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchPurchaseResult(true); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>创建日期</label>
+                        <input id="shsjstart" name="shsjstart" th:value="${shsjstart}" class="form-control" placeholder="开始日期"  />~
+                        <input id="shsjend" name="shsjend" th:value="${shsjend}" class="form-control" placeholder="结束日期" />
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="cszt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="状态" >状态：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('cszt','1','conOverTime_formSearch');"
+                                                   id="cszt_id_1"><span>超时</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('cszt','0','conOverTime_formSearch');"
+                                                   id="cszt_id_0"><span>处理正常</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="table" class="col-md-6 col-sm-6 col-xs-12 padding_t7">
+                    <span class="spanClass">超时单据占比</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png">
+                    <div class="col-md-10 col-sm-12" style="margin-top: 5px;">
+                        <span id="shsjTime" th:text="${shsjstart}+'~'+${shsjend}"></span>
+                        <span id="timeliness"></span>
+                    </div>
+                    <div class="col-md-10 col-sm-12 col-xs-12 padding_t7 ">
+                        <div id="echarts_htOverTime_Table" style="height: 300px;"></div>
+                    </div>
+                </div>
+                <div id="month" class="col-md-6 col-sm-6 col-xs-12 padding_t7">
+                    <span class="spanClass">按月统计超时单据</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png">
+                    <div class="col-md-10 col-sm-12" style="margin-top: 5px;">
+                        <span id="shsjYear" th:text="${year}+'年'"></span>
+                    </div>
+                    <div class="col-md-10 col-sm-12 col-xs-12 padding_t7 ">
+                        <div id="echarts_htOverTime_month" style="height: 300px;"></div>
+                    </div>
+                </div>
+                <div id="time" class="col-md-6 col-sm-6 col-xs-12 padding_t7">
+                    <span class="spanClass">按时间段统计超时单据</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png">
+                    <div class="col-md-10 col-sm-12" style="margin-top: 5px;">
+                        <span id="shsjTime2" th:text="${shsjstart}+'~'+${shsjend}"></span>
+                    </div>
+                    <div class="col-md-10 col-sm-12 col-xs-12 padding_t7 ">
+                        <div id="echarts_htOverTime_time" style="height: 300px;"></div>
+                    </div>
+                </div>
+                <div id="percentage" class="col-md-6 col-sm-6 col-xs-12 padding_t7">
+                    <span class="spanClass">按月统计超时百分比</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png">
+                    <div class="col-md-10 col-sm-12" style="margin-top: 5px;">
+                        <span id="shsjYear2" th:text="${year}+'年'"></span>
+                    </div>
+                    <div class="col-md-10 col-sm-12 col-xs-12 padding_t7 ">
+                        <div id="echarts_htOverTime_percentage" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="cszt_id_tj" name="cszt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="conOverTime_list" class="table table-hover table-bordered table-hidden"
+               data-reorderable-columns="true" ></table>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <title>物料库存查看</title>
+        <script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+        <script type="text/javascript" th:src="@{${urlPrefix} +'/js/production/materiel/mater_viewkcInfo.js?v=1'}"></script>
+        <style type="text/css">
+            .f_button{
+                background: white;
+                border: 0;
+            }
+            .f_button:hover{
+                border-width: 0px;
+                border-radius: 3px;
+                background: #1E90FF;
+                cursor: pointer;
+                outline: none;
+                font-family: Microsoft YaHei;
+                color: white;
+                font-size: 14px;
+            }
+            td {
+                text-align: left;
+            }
+            th {
+                text-align: left;
+            }
+        </style>
+    </head>
+    <body>
+    <ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+        <li  class="nav-item" >
+            <a  class="nav-link active" href="#hwxxTab" role="tab" data-bs-toggle="tab">货物信息</a>
+        </li>
+        <li class="nav-item" >
+            <a  class="nav-link" th:if="${sign eq '1'}" href="#lcslTab" role="tab" data-bs-toggle="tab">领出数量</a>
+        </li>
+        <li class="nav-item" >
+            <a  class="nav-link" href="#ztslTab" role="tab" data-bs-toggle="tab">在途数量</a>
+        </li>
+    </ul>
+        <form id="mater_viewkcInfoForm" class="form-horizontal sl_all_form" theme="simple" data-bs-toggle="validation">
+            <input type="hidden" name="access_token" />
+            <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+            <input type="hidden" name="wlid" id ="wlid" th:value="${wlid}">
+            <div class="body-content tab-content">
+                <div role="tabpanel" class="tab-pane fade active in" id="hwxxTab"  aria-labelledby="profile-tab">
+                <div class="panel-body">
+                    <div id="hqxx" class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="" class="col-sm-5 col-xs-5 col-md-5 control-label">
+                                货期（货期=实际到货时间-请购审批通过时间）: </label>
+                            <div id="mater_viewkcInfo_hqxxType" style="height:400px"></div>
+                        </div>
+                    </div>
+                    <table class="table table-hover table-bordered table-hidden" style="text-align: center;">
+                        <tr style="background-color: #63a3ff;">
+                            <th style="width:5%"><span th:text="序" /></th>
+                            <th style="width:25%"><span th:text="仓库" /></th>
+                            <th style="width:25%"><span th:text="生产批号" /></th>
+                            <th style="width:15%"><span th:text="生产日期" /></th>
+                            <th style="width:15%"><span th:text="失效日期" /></th>
+                            <th style="width:15%"><span th:text="库存量" /></th>
+                        </tr>
+                        <div th:if="${hwxxDtos != null && hwxxDtos.size() >0}" th:each="hwxxDto:${hwxxDtos}">
+                            <tr>
+                                <td><span th:title="${hwxxDtoStat.index+1}" th:text="${hwxxDtoStat.index+1}"/></td><!-- 序号 -->
+                                <td><span th:title="${hwxxDto.ckmc}" th:text="${hwxxDto.ckmc}"/></td><!-- 仓库 -->
+                                <td><span th:title="${hwxxDto.scph}" th:text="${hwxxDto.scph}"/></td><!-- 生产批号 -->
+                                <td><span th:title="${hwxxDto.scrq}" th:text="${hwxxDto.scrq}"/></td><!-- 生产日期 -->
+                                <td><span th:title="${hwxxDto.yxq}" th:text="${hwxxDto.yxq}"/></td><!-- 失效日期 -->
+                                <td><span th:title="${hwxxDto.kcl}" th:text="${hwxxDto.kcl}"/></td><!-- 库存量 -->
+                            </tr>
+                        </div>
+                    </table>
+                </div>
+            </div>
+            <div th:if="${sign eq '1'}" role="tabpanel" class="tab-pane fade" id="lcslTab"  aria-labelledby="profile-tab">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table table-hover table-bordered table-hidden" style="text-align: center;">
+                            <tr style="background-color: #63a3ff;">
+                                <th style="width:3%"><span th:text="序" /></th>
+                                <th style="width:25%"><span th:text="月份" /></th>
+                                <th style="width:25%"><span th:text="出库数量" /></th>
+                            </tr>
+                            <div th:if="${llhwxxDtos != null && llhwxxDtos.size() >0}" th:each="hwxxDto_t:${llhwxxDtos}">
+                                <tr>
+                                    <td><span th:title="${hwxxDto_tStat.index+1}" th:text="${hwxxDto_tStat.index+1}"/></td><!-- 序号 -->
+                                    <td><span th:title="${hwxxDto_t.yf}" th:text="${hwxxDto_t.yf}"/></td><!-- 月份 -->
+                                    <td><span th:title="${hwxxDto_t.lcsl}" th:text="${hwxxDto_t.lcsl}"/></td><!-- 出库数量 -->
+                                </tr>
+                            </div>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="ztslTab"  aria-labelledby="profile-tab">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table table-hover table-bordered table-hidden" style="text-align: center;">
+                            <tr style="background-color: #63a3ff;">
+                                <th style="width:5%"><span th:text="序" /></th>
+                                <th style="width:25%"><span th:text="合同单号" /></th>
+                                <th style="width:25%"><span th:text="申请部门" /></th>
+                                <th style="width:15%"><span th:text="在途数量" /></th>
+                                <th style="width:25%"><span th:text="预计到货日期" /></th>
+                            </tr>
+                            <div th:if="${ztslHwxxDtos != null && ztslHwxxDtos.size() >0}" th:each="hwxxDto:${ztslHwxxDtos}">
+                                <tr>
+                                    <td><span th:title="${hwxxDtoStat.index+1}" th:text="${hwxxDtoStat.index+1}"/></td><!-- 序号 -->
+                                    <td><span th:title="${hwxxDto.htnbbh}" th:text="${hwxxDto.htnbbh}"/></td><!-- 合同单号 -->
+                                    <td><span th:title="${hwxxDto.sqbmmc}" th:text="${hwxxDto.sqbmmc}"/></td><!-- 申请部门 -->
+                                    <td><span th:title="${hwxxDto.ztsl}" th:text="${hwxxDto.ztsl}"/></td><!-- 在途数量 -->
+                                    <td><span th:title="${hwxxDto.jhdhrq}" th:text="${hwxxDto.jhdhrq}"/></td><!-- 预计到货日期 -->
+                                </tr>
+                            </div>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </form>
+    </body>
+</html>

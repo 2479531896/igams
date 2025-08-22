@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>合同列表</title>
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_chooseList.js'}" charset="utf-8"></script>
+	<style type="text/css">
+		.bootstrap-tagsinput {
+		    min-width:100%;
+		}
+		.label-info {
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+ 	<form id="chooseHtxxForm" class="form-horizontal form-inline">
+ 		<input type="hidden" id="htmx_json" name="htmx_json"/>
+ 		<input type="hidden" name="urlPrefix" th:value="${urlPrefix}"/>
+ 		<input type="hidden" id="htlx" name="htlx" th:value="${htglDto.htlx}"/>
+ 		<input type="hidden" id="cghzbj" name="cghzbj" th:value="${htglDto.cghzbj}"/>
+		<div class="panel panel-default">
+			<div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+			<div class="panel-body">
+				<div class="">
+					<div class="form-group padding_l10">
+		            	<select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+		            		<option value="0">全部</option>
+		                	<option value="1">合同内部编号</option>
+		                	<option value="2">合同外部编号</option>
+		                	<option value="3">供货商</option>
+		                	<option value="4">负责人</option>
+		                	<option value="5">申请部门</option>
+		                	<option value="6">物料编码</option>
+		                	<option value="7">物料名称</option>
+		         		</select>
+			      		<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+			       		onkeydown="if(event.keyCode==13) {searchChooseContractResult(true); return false;}"/>
+					</div>
+					<div class="form-group padding-l30" style="margin-left:0px">
+		            	<label>创建时间</label>
+		            	<input id="shsjstart" name="shsjstart" class="form-control" placeholder="创建日期" />~
+		        		<input id="shsjend" name="shsjend" class="form-control" placeholder="结束日期" />
+		        	</div>
+					<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+					<!-- <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span> -->
+				</div>
+				<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+		   			<span class="tit">已选条件：</span>
+		  			<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
+		        		<ul id="sl_add_ul"></ul>
+		     		</div>
+				</div>
+				<div class="padding_t7 width100" id="searchMore"
+						style="display: none;">
+						<div class="tab-content sl_sel_con row"
+							style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+							id="sl_sel_con">
+							<div class="tab-pane active" id="tab06">
+						<div id="szbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+							<div class="form-group width100">
+								<label 
+									class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="双章标记">双章标记：								
+								</label>
+									<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+											<li>
+												<a style='text-decoration: none; cursor: pointer;'
+													onclick="addTj('szbj','0','contract_formSearch');"
+													id="szbj_id_0">
+													<span>否</span>
+												</a>
+											</li>
+											<li><a style='text-decoration: none; cursor: pointer;'
+													onclick="addTj('szbj','1','contract_formSearch');"
+													id="szbj_id_1">
+													<span>是</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+							</div>
+						</div>
+							<div id="fpfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+										title="发票">发票：</label>
+									<div
+										class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+											class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${fpfslist!=null && fpfslist.size() >0}"
+												th:each="t_fpfs:${fpfslist}"><a
+												style='text-decoration: none; cursor: pointer;'
+												th:onclick="addTj('fpfs',[[${t_fpfs.csid}]],'contract_formSearch');"
+												th:id="'fpfs_id_'+${t_fpfs.csid}"><span
+													th:style="${t_fpfs.scbj eq '2'?'color:red':''}"
+													th:text="${t_fpfs.csmc}+ ${t_fpfs.scbj eq '2'?'(停用)':''}"></span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							
+							<div id="fkfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+								<div class="form-group width100">
+									<label
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+										title="付款方式">付款方式：</label>
+									<div
+										class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+										<ul
+											class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+											<li th:if="${fkfslist!=null && fkfslist.size() >0}"
+												th:each="t_fkfs:${fkfslist}"><a
+												style='text-decoration: none; cursor: pointer;'
+												th:onclick="addTj('fkfs',[[${t_fkfs.csid}]],'contract_formSearch');"
+												th:id="'fkfs_id_'+${t_fkfs.csid}"><span
+													th:style="${t_fkfs.scbj eq '2'?'color:red':''}"
+													th:text="${t_fkfs.csmc}+ ${t_fkfs.scbj eq '2'?'(停用)':''}"></span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div id="scbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+		                        <div class="form-group width100">
+		                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否废弃">是否废弃：</label>
+		                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+		                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('scbj','0','contract_formSearch');"
+		                                           id="scbj_id_0"><span>正常</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('scbj','2','contract_formSearch');"
+		                                           id="scbj_id_2"><span>废弃</span></a>
+		                                    </li>
+		                            	</ul>
+		                    		</div>
+		                    	</div>
+		                    </div>
+		                    <div id="wcbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+		                        <div class="form-group width100">
+		                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否完成">是否完成：</label>
+		                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+		                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('wcbj','0','contract_formSearch');"
+		                                           id="wcbj_id_0"><span>未完成</span></a>
+		                                    </li>
+		                                    <li>
+		                                        <a style='text-decoration:none;cursor:pointer;'
+		                                           onclick="addTj('wcbj','1','contract_formSearch');"
+		                                           id="wcbj_id_1"><span>已完成</span></a>
+		                                    </li>
+		                            	</ul>
+		                    		</div>
+		                    	</div>
+		                    </div>
+							<div id="zje_id" class="col-md-12 col-sm-12 col-lg-12">
+			                    <div class="form-group width100">
+			                    <label
+										class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+										title="总金额">总金额：</label>
+
+			                    	<div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+										<input id="zjemin" type="number" name="zjemin" class="form-control" placeholder="最小金额"  validate="{required:true,}" />~
+										<input id="zjemax" type="number" name="zjemax" class="form-control" placeholder="最大金额"   validate="{required:true,}" />
+			                 		</div>
+			             		</div>
+			             	</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<input type="hidden" id="szbj_id_tj" name="szbj_id_tj"> 
+		 <input type="hidden" id="fpfs_id_tj" name="fpfs_id_tj">
+		 <input type="hidden" id="fkfs_id_tj" name="fkfs_id_tj">
+		 <input type="hidden" id="scbj_id_tj" name="scbj_id_tj">
+		 <input type="hidden" id="wcbj_id_tj" name="wcbj_id_tj">
+		<div class="row">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+		        <div class="form-group" style="width:100%;margin-bottom:10px;">
+		            <label for="" class="col-sm-2 col-md-2 col-xs-2 control-label">新增合同单号</label>     	
+		          	<div class="col-sm-10 col-md-10 col-xs-10" >
+		          		<input autoComplete="off" type="text" class="form-control" id="yxdjh" name="yxdjh" style="min-width:100%;"/>
+		          	</div>
+		        </div>
+			</div>
+        </div>
+		<table id="contract_list" class="table table-hover table-bordered table-hidden"></table>
+	</form>
+</div>
+</body>
+</html>

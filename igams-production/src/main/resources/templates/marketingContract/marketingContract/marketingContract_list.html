@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/marketingContract/marketingContract/marketingContract_list.js'}"
+            charset="utf-8"></script>
+    <style>
+        .marketClass{
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom: 0px;">
+    <form id="marketingContract_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+        <input type="hidden" name="auditType" id ="auditType" th:value="${yxhtDto.auditType}">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                style="height: 34px;">
+                            <option value="0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;全&nbsp;&nbsp;&nbsp;部&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                            <option value="1">&nbsp;&nbsp;&nbsp;合同编号&nbsp;&nbsp;</option>
+                            <option value="2">&nbsp;&nbsp;&nbsp;&nbsp;终&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;端</option>
+                            <option value="3">&nbsp;&nbsp;所属业务员&nbsp;&nbsp;</option>
+                            <option value="4">&nbsp;&nbsp;&nbsp;客户名称&nbsp;&nbsp;</option>
+                            <option value="6">&nbsp;&nbsp;&nbsp;合同折扣&nbsp;&nbsp;</option>
+                            <option value="7">&nbsp;&nbsp;&nbsp;销售单号&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                            <option value="8">&nbsp;&nbsp;U8销售单号</option>
+                            <option value="9">&nbsp;&nbsp;&nbsp;领料单号</option>
+                            <option value="10">&nbsp;&nbsp;&nbsp;U8领料单号</option>
+                            <option value="11">&nbsp;借出借用单号</option>
+                            <option value="12">&nbsp;&nbsp;U8借出单号</option>
+                            <option value="13">&nbsp;&nbsp;&nbsp;归还单号</option>
+                            <option value="14">&nbsp;&nbsp;U8归还单号</option>
+                            <option value="15">&nbsp;&nbsp;&nbsp;合同主体</option>
+                            <option value="16">&nbsp;&nbsp;合同经办人</option>
+                            <option value="17">&nbsp;&nbsp;合同经办部门</option>
+                            <option value="18">&nbsp;&nbsp;合同归属部门</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {marketingContractResult(); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>合同日期</label>
+                        <input id="htrqstart" name="htrqstart" class="form-control" placeholder="创建日期" validate="{required:true}" />~
+                        <input id="htrqend" name="htrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left: 50px" id="btn_query"
+                            class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore"
+                     style="display: none;">
+                    <div class="tab-content sl_sel_con row"
+                         style="min-height: 100px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+                         id="sl_sel_con">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="khlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="客户类型">客户类型：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${khlxList!=null && khlxList.size() >0}"
+                                                th:each="t_khlx:${khlxList}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('khlx',[[${t_khlx.csid}]],'marketingContract_formSearch');"
+                                                    th:id="'khlx_id_'+${t_khlx.csid}"><span
+                                                    th:style="${t_khlx.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_khlx.csmc}+ ${t_khlx.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="合同类型">合同类型：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${htlxList!=null && htlxList.size() >0}"
+                                                th:each="t_htlx:${htlxList}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('htlx',[[${t_htlx.csid}]],'marketingContract_formSearch');"
+                                                    th:id="'htlx_id_'+${t_htlx.csid}"><span
+                                                    th:style="${t_htlx.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_htlx.csmc}+ ${t_htlx.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htqx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="到期日期">到期日期：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${htqxList!=null && htqxList.size() >0}"
+                                                th:each="t_htqx:${htqxList}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('htqx',[[${t_htqx.htqx}]],'marketingContract_formSearch');"
+                                                    th:id="'htqx_id_'+${t_htqx.htqx}"><span
+                                                    th:text="${t_htqx.htqx}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="szbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="双章标记">双章合同：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('szbj','0','marketingContract_formSearch');"
+                                                   id="szbj_id_0">
+                                                    <span>否</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('szbj','1','marketingContract_formSearch');"
+                                                   id="szbj_id_1">
+                                                <span>是</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfjh_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="原件寄回">原件寄回：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjh','0','marketingContract_formSearch');"
+                                                   id="sfjh_id_0">
+                                                    <span>否</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('sfjh','1','marketingContract_formSearch');"
+                                                   id="sfjh_id_1">
+                                                <span>是</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htzt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="合同状态">合同状态：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('htzt','0','marketingContract_formSearch');"
+                                                   id="htzt_id_0">
+                                                    <span>即将逾期</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('htzt','1','marketingContract_formSearch');"
+                                                   id="htzt_id_1">
+                                                <span>已逾期</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htqdzt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="合同签订状态">合同签订状态：
+                                    </label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('htqdzt','0','marketingContract_formSearch');"
+                                                   id="htqdzt_id_0">
+                                                    <span>签订中</span>
+                                                </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('htqdzt','1','marketingContract_formSearch');"
+                                                   id="htqdzt_id_1">
+                                                <span>签订完成</span>
+                                            </a>
+                                            </li>
+                                            <li><a style='text-decoration: none; cursor: pointer;'
+                                                   onclick="addTj('htqdzt','2','marketingContract_formSearch');"
+                                                   id="htqdzt_id_2">
+                                                <span>已终止</span>
+                                            </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="xslx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="销售类型">销售类型：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${xslxList!=null && xslxList.size() >0}"
+                                                th:each="t_xslx:${xslxList}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('xslx',[[${t_xslx.csid}]],'marketingContract_formSearch');"
+                                                    th:id="'xslx_id_'+${t_xslx.csid}"><span
+                                                    th:style="${t_xslx.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_xslx.csmc}+ ${t_xslx.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yzlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="用章类型">用章类型：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${yzlxList!=null && yzlxList.size() >0}"
+                                                th:each="t_yzlb:${yzlxList}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('yzlb',[[${t_yzlb.csid}]],'marketingContract_formSearch');"
+                                                    th:id="'yzlb_id_'+${t_yzlb.csid}"><span
+                                                    th:style="${t_yzlb.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_yzlb.csmc}+ ${t_yzlb.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="yxhtlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="营销合同类型">营销合同类型：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${yxhtlxlist!=null && yxhtlxlist.size() >0}"
+                                                th:each="t_risk:${yxhtlxlist}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('yxhtlx',[[${t_risk.csid}]],'marketingContract_formSearch');"
+                                                    th:id="'yxhtlx_id_'+${t_risk.csid}"><span
+                                                    th:style="${t_risk.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_risk.csmc}+ ${t_risk.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htje_id" class="col-md-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="合同金额">合同金额：</label>
+
+                                    <div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+                                        <input id="htjemin" type="number" name="htjemin" class="form-control" placeholder="最小金额"  validate="{required:true,}" />~
+                                        <input id="htjemax" type="number" name="htjemax" class="form-control" placeholder="最大金额"   validate="{required:true,}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="szbj_id_tj" name="szbj_id_tj">
+        <input type="hidden" id="xslx_id_tj" name="xslx_id_tj">
+        <input type="hidden" id="htqx_id_tj" name="htqx_id_tj">
+        <input type="hidden" id="khlx_id_tj" name="khlx_id_tj">
+        <input type="hidden" id="htlx_id_tj" name="htlx_id_tj">
+        <input type="hidden" id="htfxcd_id_tj" name="htfxcd_id_tj">
+        <input type="hidden" id="yzlb_id_tj" name="yzlb_id_tj">
+        <input type="hidden" id="htqdzt_id_tj" name="htqdzt_id_tj">
+        <input type="hidden" id="yxhtlx_id_tj" name="yxhtlx_id_tj">
+        <input type="hidden" id="sfjh_id_tj" name="sfjh_id_tj">
+        <input type="hidden" id="htzt_id_tj" name="htzt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="marketingContract_list"
+               class="table table-hover table-bordered table-hidden marketClass"
+               data-reorderable-columns="true" ></table>
+    </form>
+</div>
+</body>
+</html>

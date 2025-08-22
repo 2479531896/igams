@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/inspection/pending_allocation.js'}" charset="utf-8"></script>
+		<style type="text/css">
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.bootstrap-tagsinput {
+				min-width:100%;
+			}
+			.label-info {
+				cursor: pointer;
+			}
+	</style>
+	</head>
+	<body>
+
+	<form id="pendingAllocationForm" th:action="${urlPrefix}+${dbglDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="message" id="message"/>
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="url" id="url" th:value="${url}">
+		<input type="hidden" name="hwxxids" id="hwxxids" th:value="${dbglDto.hwxxids}">
+		<input type="hidden" name="addwlid" id="addwlid"/>
+		<input type="hidden" name="ckxxList" id="ckxxList" th:value="${ckxxList}"/>
+		<input type="hidden" name="dbmx_json" id="dbmx_json"/>
+		<div class="panel-body body-content">
+		    	<div class="panel panel-default">
+		    		<div class="panel-body">
+						<div class="row">
+					        <div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>调拨单号:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="dbdh" name="dbdh" th:value="${dbglDto.dbdh}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:28px;" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>调拨日期:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="dbrq" name="dbrq" th:value="${dbglDto.dbrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:28px;" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>经手人:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<div class="input-group" >
+											<input id="jsrmc" name="jsrmc" type="text" th:value="${dbglDto.jsrmc}" readonly="readonly" validate="{required:true}"  class="form-control" style="height:30px;" autocomplete="off"/>
+						         			<input id="jsr" name="jsr" type="hidden"  th:value="${dbglDto.jsr}" class="form-control" validate="{required:true}"/>											
+											<span class="input-group-btn">
+												<button type="button" onclick="chooseJsr()" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 col-xs-5 control-label">
+										<span style="color: red;">*</span>转出仓库:
+									</label>
+									<div class="col-sm-7 col-xs-7 col-md-7">
+										<select id="zcck" name="zcck" disabled="disabled"  class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkzcck()">
+											<option value="">--请选择--</option>
+											<option th:each="list:${ckxxList}" th:value="${list.ckid}"
+													th:text="${list.ckmc}" th:csdm="${list.ckdm}" th:selected="${list.ckid  eq dbglDto.zcck}">
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 col-xs-5 control-label">
+										<span style="color: red;">*</span>转入仓库:
+									</label>
+									<div class="col-sm-7 col-xs-7 col-md-7">
+										<select id="zrck" name="zrck" class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkzrck()">
+											<option value="">--请选择--</option>
+											<option th:each="list:${ckxxList}" th:value="${list.ckid}"
+													th:text="${list.ckmc}" th:csdm="${list.ckdm}" th:selected="${list.ckid  eq dbglDto.zrck}">
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 col-xs-5 control-label">
+										<span style="color: red;">*</span>出库类别:
+									</label>
+									<div class="col-sm-7 col-xs-7 col-md-7">
+										<select id="cklb" name="cklb" disabled="disabled"
+											class="form-control chosen-select" validate="{required:true}" 
+											style="height: 34px;">
+											<option value="">--请选择--</option>
+											<option th:each="cklist:${cklblist}" th:value="${cklist.csid}"
+													th:text="${cklist.csmc}" th:csdm="${cklist.csdm}" th:selected="${'1' eq cklist.sfmr}">
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="margin-top:5px">
+								<div class="form-group">
+									<label for="" class="col-sm-5 col-md-5 col-xs-5 control-label">
+										<span style="color: red;">*</span>入库类别:
+									</label>
+									<div class="col-sm-7 col-xs-7 col-md-7">
+										<select id="rklb" name="rklb" disabled="disabled"
+												class="form-control chosen-select" validate="{required:true}"
+												style="height: 34px;">
+											<option value="">--请选择--</option>
+											<option th:each="rklist:${rklblist}" th:value="${rklist.csid}"
+													th:text="${rklist.csmc}" th:csdm="${rklist.csdm}" th:selected="${'1' eq rklist.sfmr}">
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-12 col-sm-12" >
+								<div class="form-group" >
+									<label for="" class="col-sm-1 control-label">
+										备注：
+									</label>
+									<div class="col-sm-11 col-xs-11" >
+										<textarea id="bz" name="bz" rows="3" th:value="${dbglDto.bz}" style="height:50px;" validate="{stringMaxLength:512}" class="form-control"autocomplete="off"></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<table id="pendingTb_list" data-classes="table" style="width:1500px;"></table>
+		</form>
+	</body>
+</html>

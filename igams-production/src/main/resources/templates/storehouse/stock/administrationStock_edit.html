@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+		<title>行政库存修改</title>
+
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/stock/administrationStock_edit.js'}" charset="utf-8"></script>
+<style type="text/css">
+	.f_button{
+			background: white;
+			border: 0;
+		}
+		.f_button:hover{
+			border-width: 0px; 
+			border-radius: 3px;
+			background: #1E90FF;
+			cursor: pointer; 
+			outline: none;
+			font-family: Microsoft YaHei; 
+			color: white; 
+			font-size: 14px; 
+		}
+		td {
+   			 text-align: left;
+		}
+		th {
+   			 text-align: left;
+		}
+</style>
+</head>
+<body>
+	<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+		<li  class="nav-item" >
+			<a  class="nav-link active" href="#jbxxTab" role="tab" data-bs-toggle="tab">基本信息</a>
+		</li>
+	</ul>
+	<form id="modAdministrationStockForm" th:action ="${urlPrefix} + '/storehouse/stock/modSaveAdministrationStock'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="xzrkmxid" id="xzrkmxid" th:value="${xzrkmxDto.xzrkmxid}">
+		<input type="hidden" name="kw" id="kw" th:value="${xzrkmxDto.kwid}">
+		<input type="hidden" name="kwlbid" id="kwlbid" th:value="${kwlb}">
+		<div class="body-content">
+			<div class="panel panel-default sample-formal">
+				<div class="panel-heading">
+					行政入库信息
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">货物名称<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="hwmc" disabled name="hwmc" th:value="${xzrkmxDto.hwmc}" class="form-control" validate="{required:true}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">货物规格<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="hwgg" disabled name="hwgg" th:value="${xzrkmxDto.hwgg}" class="form-control" validate="{required:true}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">货物计量单位<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="hwjldw" disabled name="hwjldw" th:value="${xzrkmxDto.hwjldw}" class="form-control" validate="{required:true}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">入库单号<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="rkdh" disabled name="rkdh" th:value="${xzrkmxDto.rkdh}" class="form-control" validate="{required:true}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">入库日期<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="rkrq" disabled name="rkrq" th:value="${xzrkmxDto.rkrq}" class="form-control" validate="{required:true}" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">库存量<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<input type="text" id="kcl" name="kcl" th:value="${xzrkmxDto.kcl}" class="form-control" validate="{required:true}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6" th:if="${cklist !=null && cklist.size() > 0}">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">仓库<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<select id="ckid" name="ckid" th:value="${xzrkmxDto.ckmc}" class="form-control chosen-select" validate="{required:true}" onchange="getKwList()">
+										<option th:each="list:${cklist}" th:value="${list.ckid}" th:text="${list.ckmc}" th:selected="${list.ckid eq xzrkmxDto.ckid}"></option>
+									</select>
+<!--									<input type="text" id="ckmc" name="ckmc" th:value="${xzrkmxDto.ckmc}" class="form-control" readonly validate="{required:true}"/>-->
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-6" >
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">库位<span style="color: red;">*</span></label>
+								<div class="col-sm-8 padding_t7">
+									<select id="kwid" name="kwid" th:if="${kwlist !=null && kwlist.size() > 0}" th:value="${xzrkmxDto.kwmc}" class="form-control chosen-select" validate="{required:true}">
+<!--										<option th:if="${list.fckid eq  ${'#ckid'}.val()}" th:each="list:${kwlist}" th:value="${list.ckid}" th:text="${list.ckmc}" th:selected="${list.ckid eq xzrkmxDto.kwid}"></option>-->
+									</select>
+<!--									<input type="text" id="kwmc" name="kwmc" th:value="${xzrkmxDto.kwmc}" class="form-control" readonly validate="{required:true}"/>-->
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 col-sm-12">
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">备注</label>
+								<div class="col-sm-10 padding_t7">
+									<textarea id="bz" name="bz" th:value="${xzrkmxDto.bz}" rows="5" th:text="${xzrkmxDto.bz}" validate="{stringMaxLength:2048}" class="form-control" ></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>
+</html>

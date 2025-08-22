@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>样本库存列表</title>
+        <script type="text/javascript" th:src="@{${urlPrefix} + '/js/sample/inventory/ybkcxx_list.js'}" charset="utf-8"></script>
+    </head>
+    <body>
+        <div class="panel-body body-content" style="padding-bottom:0px;">
+            <form id="ybkcxx_formSearch" class="form-horizontal form-inline">
+                <input type="hidden" name="access_token" />
+                <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+                <input type="hidden" name="idsyb" id="idsyb" th:value="${idsyb}">
+                <input type="hidden" name="ybllzsl" id="ybllzsl" th:value="${ybllzsl}">
+                <div class="panel panel-default">
+                    <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+                    <div class="panel-body">
+                        <div class="">
+                            <div class="form-group padding_l10">
+                                <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+                                    <option value="0">全部</option>
+                                    <option value="1">内部编码</option>
+                                    <option value="2">样本编号</option>
+                                    <option value="3">录入人员</option>
+                                    <option value="4">关注指标</option>
+                                    <option value="5">疑似指标</option>
+                                </select>
+                                <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊查询"
+                                        onkeydown="if(event.keyCode==13) {searchYbkcxxResult(true); return false;}"/>
+                            </div>
+                            <div class="form-group padding-hidden-md-l30" style="margin-left:0px;color:#000">
+                                <label>录入时间</label>
+                                <input id="lrsjstart" name="lrsjstart" class="form-control" placeholder="录入开始日期" validate="{required:true}" />~
+                                <input id="lrsjend" name="lrsjend" class="form-control" placeholder="录入结束日期" validate="{required:true}" />
+                            </div>
+                            <div class="form-group padding-hidden-md-l30" style="margin-left:0px;color:#000">
+                                <label>体积区间</label>
+                                <input id="volumeMin" name="volumeMin" class="form-control" placeholder="设置体积区间" validate="{required:true}" />~
+                                <input id="volumeMax" name="volumeMax" class="form-control" placeholder="设置体积区间" validate="{required:true}" />
+                            </div>
+                            <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                            <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                        </div>
+                        <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                            <span class="tit">已选条件：</span>
+                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                                <ul id="sl_add_ul"></ul>
+                            </div>
+                        </div>
+                        <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                            <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                                <div class="tab-pane active" id="tab06">
+                                    <div id="jcdw_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label
+                                                    class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                                    title="存储单位">存储单位：</label>
+                                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${jcdwlist !=null && jcdwlist.size() >0}" th:each="list:${jcdwlist}">
+                                                        <a style='text-decoration:none;cursor:pointer;' th:onclick="addTj([[jcdw]],[[${list.csid}]],[[ybkcxx_formSearch]]);" th:id="'jcdw_id_'+${list.csid}">
+                                                            <span th:text="${list.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="bx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="冰箱">冰箱：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_bx">
+                                                    <li th:if="${bxList !=null && bxList.size() >0}" th:each="list:${bxList}">
+                                                        <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[bx]],[[${list.sbid}]],[[ybkcxx_formSearch]]);" th:id="'bx_id_'+${list.sbid}">
+                                                            <span th:text="${list.sbh}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="ct_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="抽屉">抽屉：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_ct">
+                                                    <li th:if="${ctList !=null && ctList.size() >0}" th:each="list:${ctList}">
+                                                        <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[ct]],[[${list.sbid}]],[[ybkcxx_formSearch]]);" th:id="'ct_id_'+${list.sbid}">
+                                                            <span th:text="${list.sbh}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="hz_id" class="col-xs-12 col-sm-12 col-lg-12 ">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="盒子">盒子：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_hz">
+                                                    <li th:if="${hzList !=null && hzList.size() >0}" th:each="list:${hzList}">
+                                                        <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[hz]],[[${list.sbid}]],[[ybkcxx_formSearch]]);" th:id="'hz_id_'+${list.sbid}">
+                                                            <span th:text="${list.sbh}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yblx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label
+                                                    class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                                    title="样本类型">样本类型：</label>
+                                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${bblxlist !=null && bblxlist.size() >0}" th:each="list:${bblxlist}">
+                                                        <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yblx]],[[${list.csid}]],[[ybkcxx_formSearch]]);" th:id="'yblx_id_'+${list.csid}">
+                                                            <span th:text="${list.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yblrlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label
+                                                    class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                                    title="样本录入类型">样本录入类型：</label>
+                                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${yblrlxs !=null && yblrlxs.size() >0}" th:each="list:${yblrlxs}">
+                                                        <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[yblrlx]],[[${list.csid}]],[[ybkcxx_formSearch]]);" th:id="'yblrlx_id_'+${list.csid}">
+                                                            <span th:text="${list.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="ybkczt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="库存状态">库存状态：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('ybkczt','0','ybkcxx_formSearch');"
+                                                           id="ybkczt_id_0"><span>正常</span></a>
+                                                    </li>
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('ybkczt','1','ybkcxx_formSearch');"
+                                                           id="ybkczt_id_1"><span>领料中</span></a>
+                                                    </li>
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('ybkczt','2','ybkcxx_formSearch');"
+                                                           id="ybkczt_id_2"><span>处理中</span></a>
+                                                    </li>
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('ybkczt','3','ybkcxx_formSearch');"
+                                                           id="ybkczt_id_3"><span>销毁</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input  type="hidden" id="jcdw_id_tj" name="jcdw_id_tj">
+                <input  type="hidden" id="bx_id_tj" name="bx_id_tj">
+                <input  type="hidden" id="ct_id_tj" name="ct_id_tj">
+                <input  type="hidden" id="hz_id_tj" name="hz_id_tj">
+                <input  type="hidden" id="ybkczt_id_tj" name="ybkczt_id_tj">
+                <div th:include="common/btn/ancz.html"></div>
+                <table id="ybkcxx_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true" ></table>
+                <input type="hidden" id="yblx_id_tj" name="yblx_id_tj">
+                <input type="hidden" id="yblrlx_id_tj" name="yblrlx_id_tj">
+            </form>
+        </div>
+    </body>
+</html>

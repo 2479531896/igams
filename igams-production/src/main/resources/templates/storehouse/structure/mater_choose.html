@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/structure/mater_choose.js'}" charset="utf-8"></script>
+	</head>
+	<body>
+		<div class="panel-body body-content" style="padding-bottom:0px;">
+	        <form id="mater_choose_formSearch" class="form-horizontal form-inline">
+	        	<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+	        	<div class="panel panel-default">
+		            <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+		            <div class="panel-body">
+		            	<div class="">
+		                    <div class="form-group padding_l10">
+		                        <select name="cxtj" class="form-control chosen-select" id="cxtj" style="height:34px;">
+		                        	<option value="6">全部</option>
+                            		<option value="0">物料编号</option>
+                            		<option value="1">物料名称</option>
+                            		<option value="2">生产商</option>
+                            		<option value="3">货号</option>
+                            		<option value="4">录入人</option>
+                            		<option value="5">旧物料编码</option>
+                            		<option value="7">规格</option>
+                            	</select>
+	                        	<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+	                               onkeydown="if(event.keyCode==13) {searchMaterResult(); return false;}"/>
+							</div>
+							<div class="form-group padding-l30" style="margin-left:0px">
+			                    <label>通过时间</label>
+			                    <input id="shsjstart" name="shsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+			                    <input id="shsjend" name="shsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+			                </div>
+							<button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+							<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+						</div>
+						<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+			                <span class="tit">已选条件：</span>
+			                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+			                    <ul id="sl_add_ul"></ul>
+			                </div>
+			            </div>
+			            <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+			            	<div class="tab-content sl_sel_con row" style="min-height:180px;padding-left:5px;margin-left: 0px;margin-right: 0px; padding-bottom: 10px;" id="sl_sel_con">
+			                    <div class="tab-pane active" id="tab06">
+									<div id="wllb_id" class="col-xs-12 col-sm-12 col-lg-12">
+				                        <div class="form-group width100">
+				                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="物料类别">物料类别：</label>
+				                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+				                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+				                                    <li th:if="${wllblist!=null && wllblist.size() >0}" th:each="t_wllb:${wllblist}">
+				                                        <a style='text-decoration:none;cursor:pointer;'
+				                                           th:onclick="addTj('wllb',[[${t_wllb.csid}]],'mater_choose_formSearch');" th:id="'wllb_id_'+${t_wllb.csid}"><span th:style="${t_wllb.scbj eq '2'?'color:red':''}" th:text="${t_wllb.csmc}+ ${t_wllb.scbj eq '2'?'(停用)':''}"></span></a>
+				                                    </li>
+				                            	</ul>
+				                            	<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+				                    		</div>
+				                    	</div>
+				                    </div>
+				                    <div id="wlzlb_id" class="col-xs-12 col-sm-12 col-lg-12 hidden">
+				                        <div class="form-group width100">
+				                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="物料子类别">物料子类别：</label>
+				                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+				                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_wlzlb">
+				                                    <li th:if="${wlzlblist!=null && wlzlblist.size() >0}" th:each="t_wlzlb:${wlzlblist}">
+				                                        <a style='text-decoration:none;cursor:pointer;'
+				                                           th:onclick="addTj('wlzlb',[[${t_wlzlb.csid}]],'mater_choose_formSearch');" th:id="'wlzlb_id_'+${t_wlzlb.csid}"><span th:style="${t_wlzlb.scbj eq '2'?'color:red':''}" th:text="${t_wlzlb.csmc}+ ${t_wlzlb.scbj eq '2'?'(停用)':''}"></span></a>
+				                                    </li>
+				                            	</ul>
+				                            	<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+				                    		</div>
+				                    	</div>
+				                    </div>
+				                    <div id="wlzlbtc_id" class="col-xs-12 col-sm-12 col-lg-12">
+				                        <div class="form-group width100">
+				                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="子类别统称">子类别统称：</label>
+				                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+				                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_wlzlbtc">
+				                                    <li th:if="${wlzlbtclist!=null && wlzlbtclist.size() >0}" th:each="t_wlzlbtc:${wlzlbtclist}">
+				                                        <a style='text-decoration:none;cursor:pointer;'
+				                                           th:onclick="addTj('wlzlbtc',[[${t_wlzlbtc.csid}]],'mater_choose_formSearch');" th:id="'wlzlbtc_id_'+${t_wlzlbtc.csid}"><span th:style="${t_wlzlbtc.scbj eq '2'?'color:red':''}" th:text="${t_wlzlbtc.csmc}+ ${t_wlzlbtc.scbj eq '2'?'(停用)':''}"></span></a>
+				                                    </li>
+				                            	</ul>
+				                            	<span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+				                    		</div>
+				                    	</div>
+				                    </div>
+				                    <div id="fpfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+										<div class="form-group width100">
+											<label
+												class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+												title="库存类别">类别：</label>
+											<div
+												class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+												<ul
+													class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+													<li th:if="${lblist!=null && lblist.size() >0}"
+														th:each="t_lb:${lblist}"><a
+														style='text-decoration: none; cursor: pointer;'
+														th:onclick="addTj('lb',[[${t_lb.csid}]],'mater_choose_formSearch');"
+														th:id="'lb_id_'+${t_lb.csid}"><span
+															th:style="${t_lb.scbj eq '2'?'color:red':''}"
+															th:text="${t_lb.csmc}+ ${t_lb.scbj eq '2'?'(停用)':''}"></span></a>
+													</li>
+												</ul>
+											</div>
+										</div>
+									</div>
+				                    <div id="sfwxp_id" class="col-xs-12 col-sm-12 col-lg-12">
+				                        <div class="form-group width100">
+				                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否危险品">是否危险品：</label>
+				                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+				                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+				                                    <li th:each="list,local:${wlaqlblist}">
+				                                        <a style='text-decoration:none;cursor:pointer;'
+														   th:onclick="addTj('sfwxp',[[${list.csid}]],'mater_choose_formSearch');"
+				                                           th:id="'sfwxp_id_'+${list.csid}"><span th:text="${list.csmc}"></span></a>
+				                                    </li>
+
+				                            	</ul>
+				                    		</div>
+				                    	</div>
+				                    </div>
+								</div>
+							</div>
+			            </div>
+		            </div>
+		        </div>
+				<input type="hidden" id="wllb_id_tj" name="wllb_id_tj">
+				<input type="hidden" id="wlzlb_id_tj" name="wlzlb_id_tj">
+				<input type="hidden" id="lb_id_tj" name="lb_id_tj">
+            	<input type="hidden" id="sfwxp_id_tj" name="sfwxp_id_tj">
+            	<input type="hidden" id="wlzlbtc_id_tj" name="wlzlbtc_id_tj">
+		        <table id="tb_list" class="table table-hover table-bordered table-hidden"></table>
+	        </form>
+	    </div>
+	</body>
+</html>

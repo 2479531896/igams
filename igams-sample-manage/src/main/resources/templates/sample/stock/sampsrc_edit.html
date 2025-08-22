@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/sample/stock/sampsrc_edit.js" charset="utf-8"></script>
+	</head>
+	<body>
+		<form th:id="${yblyDto.formAction} + 'SampSrc_ajaxForm'" th:action ="'/sample/stock/'+${yblyDto.formAction}+'SaveSampSrc'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+			<div class="body-content">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						标本来源信息
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<input type="hidden" name="lyid" id="ss_lyid" th:value="${yblyDto.lyid}"/>
+							<input type="hidden" name="ybid" id="ss_ybid" th:value="${ybglDto.ybid}"/>
+							<input type="hidden" name="formAction" id="ss_formAction" th:value="${yblyDto.formAction}"/>
+							<input type="hidden" name="access_token"/>
+							<input type="hidden" name="ids" id="ids" />
+							<input type="hidden" name="sfqcp" id="sfqcp" />
+							<input type="hidden" id="ss_yblxdm" name="yblxdm" th:value="${yblyDto.yblxdm}"/>
+							<div class="col-md-4 col-sm-6" th:if="${yblyDto.formAction =='add'}">
+								<div class="form-group">
+									<label for="" class="col-sm-4  control-label">
+										<span style="color: red;">*</span>入库类型
+									</label>
+									<div class="col-sm-8 col-xs-12">
+										<label class="radio-inline"><input type="radio" value="00" name="rklx" th:checked="${'00' eq yblyDto.rklx}" validate="{required:true}">正式</label>
+										<label class="radio-inline"><input type="radio" value="01" name="rklx" th:checked="${'01' eq yblyDto.rklx}" validate="{required:true}">临时</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6" th:if="${yblyDto.formAction =='mod'}">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										<span style="color: red;">*</span>入库类型
+									</label>
+									<div class="col-sm-8 col-xs-12 padding_t7"> 
+										<input type="hidden" name="rklx" id="rklx" th:value="${yblyDto.rklx}"></input>
+										<span th:text="${yblyDto.rklxmc}"></span>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6" th:if="${yblyDto.formAction =='add'}">
+								<div class="form-group">
+									<label for="" class="col-sm-4  control-label">
+										编号日期
+									</label>
+									<div class="col-sm-8 col-xs-12"> 
+										<input type="text" id="ss_ybbhrq" name="ybbhrq" placeholder="请选择日期" 
+												class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6" id="yblxdiv">
+								<div class="form-group">
+									<label for="" class="col-sm-4  control-label">
+										<span style="color: red;">*</span>标本类型
+									</label>
+									<div class="col-sm-8 col-xs-12" th:if="${yblxlist!=null && yblxlist.size() > 0}"> 
+										<select id="ss_yblx" name="yblx" th:value="${yblyDto.yblx}" validate="{required:true}" class="form-control chosen-select {required:true}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:each="list:${yblxlist}" th:value="${list.csid}" th:text="${list.csmc }" th:cskz1="${list.cskz1}" th:cskz2="${list.cskz2}" th:csdm="${list.csdm}" th:selected="${list.csid eq yblyDto.yblx}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4  control-label">
+										外部编号
+									</label>
+									<div class="col-sm-8 col-xs-12"> 
+										<input type="text" id="ss_wbbh" name="wbbh" th:value="${yblyDto.wbbh}"
+												validate="{stringMaxLength:32}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4  control-label">
+										采样时间
+									</label>
+									<div class="col-sm-8 col-xs-12"> 
+										<input type="text" id="ss_cysj" name="cysj" th:value="${yblyDto.cysj}" placeholder="请选择日期" 
+												class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										检验结果
+									</label>
+									<div class="col-sm-8 col-xs-12">
+										<input type="text" id="ss_jyjg" name="jyjg" th:value="${yblyDto.jyjg}"
+												validate="{stringMaxLength:256}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										<span style="color: red;">*</span>来样单位
+									</label>
+									<div class="col-sm-8 col-xs-12">
+										<select id="ss_lyd" name="lyd" class="form-control chosen-select" validate="{required:true}"  th:value="${yblyDto.lyd}" style="height:34px;">
+											<option value="">--请选择--</option>
+		                        			<option th:if="${dwlist}" th:each="list:${dwlist}" th:value="${list.csid}" th:text="${list.csmc }" th:cskz1="${list.cskz1}" th:selected="${list.csid eq yblyDto.lyd}"></option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										性别
+									</label>
+									<div class="col-sm-8 col-xs-12">
+										<label class="radio-inline"><input type="radio" value="1" name="xb" th:checked="${'1' eq yblyDto.xb}" >男</label>
+										<label class="radio-inline"><input type="radio" value="2" name="xb" th:checked="${'2' eq yblyDto.xb}" >女</label>
+										<label class="radio-inline"><input type="radio" value="0" name="xb" th:checked="${'0' eq yblyDto.xb}" >未知</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										孕周
+									</label>
+									<div class="col-sm-8 col-xs-12 form-input-height">
+										<div class="input-group">
+											<input type="text" id="yz" name="yz" th:value="${yblyDto.yz}"
+												validate="{number:true}" class="form-control" />
+											<span class="input-group-addon">周</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										体重
+									</label>
+									<div class="col-sm-8 col-xs-12 form-input-height">
+										<div class="input-group">
+											<input type="text" id="tz" name="tz" th:value="${yblyDto.tz}"
+												validate="{number:true}" class="form-control" />
+											<span class="input-group-addon">千克</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4 col-sm-6">
+								<div class="form-group">
+									<label for="" class="col-sm-4 control-label">
+										姓名
+									</label>
+									<div class="col-sm-8 col-xs-12">
+										<input type="text" id="ss_xm" name="xm" th:value="${yblyDto.xm}"
+												validate="{stringMaxLength:128}" class="form-control" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-8 col-sm-12">
+								<div class="form-group">
+									<label for="" class="col-sm-2 control-label">
+										备注
+									</label>
+									<div class="col-sm-10 col-xs-12"> 
+										<textarea id="ss_bz" name="bz" rows="5" th:text="${yblyDto.bz}"
+												  validate="{stringMaxLength:512}" class="form-control" ></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default hidden sample-formal">
+					<div class="panel-heading">
+						标本信息  <span style="background-color:#c2ff68;float:right">&nbsp;空闲&nbsp;</span><span style="background-color:#c48888;float:right">&nbsp;已占&nbsp;</span>
+						<span style="background-color:#DC143C;float:right">&nbsp;重叠&nbsp;</span><span style="background-color:#BFEFFF;float:right">&nbsp;可用&nbsp;</span>
+						<span style="background-color:#666633;float:right">&nbsp;历史&nbsp;</span>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-md-8 col-sm-12 padding_r0" style="padding-left:0px;">
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>数量
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="ss_sl" name="sl" th:value="${ybglDto.sl}"
+													validate="{UnNegativeInteger:true}" class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>入库时间
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="ss_hqsj" name="hqsj" th:value="${ybglDto.hqsj}" placeholder="请选择日期" 
+												class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>冰箱号
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<select id="ss_bxid" name="bxid" class="form-control chosen-select" th:value="${ybglDto.bxid}" style="height:34px;">
+												<option value="">--请先填写数量--</option>
+												<option th:if="${bxlist}"  th:each="list:${bxlist}" th:value="${list.sbid}" th:text="${list.sbh }" th:selected="${list.sbid eq ybglDto.bxid}"></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>抽屉号
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<select id="ss_chtid" name="chtid" class="form-control chosen-select" th:value="${ybglDto.chtid}" style="height:34px;">
+												<option value="">--请先选择冰箱号--</option>
+												<option th:if="${ctlist}" th:each="list:${ctlist}" th:value="${list.sbid}" th:text="${list.sbh }" th:selected="${list.sbid eq ybglDto.chtid}"></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>盒号
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<div id="xlhz">
+												<select id="ss_hzid" name="hzid" class="form-control chosen-select" th:value="${ybglDto.hzid}" style="height:34px;">
+													<option value="">--请先选择抽屉号--</option>
+													<option th:if="${hzlist}" th:each="list:${hzlist}" th:value="${list.sbid}" th:text="${list.sbh }" th:selected="${list.sbid eq ybglDto.hzid}" th:cskz1="${list.cfs}"></option>
+												</select>
+											</div>
+											<div id="hqhz"></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>单位
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="ss_dw" name="dw" th:value="${ybglDto.dw}" class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6" style="height:40px;">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											<span style="color: red;">*</span>位置
+										</label>
+										<div class="col-sm-4 col-xs-12" style="padding-right:5px;">
+											<div class="input-group" style="width:100%;">
+												<select id="ss_qswz" name="qswz" th:value="${ybglDto.qswz}" validate="{required:true}" class="form-control chosen-select" style="height:34px;">
+													<option value="">-起始-</option>
+				                        			<option th:if="${wzlist}" th:each="list:${wzlist}"  th:value="${list.csid}" th:text="${list.csmc }" th:selected="${list.csid eq ybglDto.qswz}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" class="tab-sel"></option>
+				                        		</select>
+				                        	</div>
+				                        </div>
+				                        <div class="col-sm-4 col-xs-12" style="padding-left:5px;">
+				                        		<select id="ss_jswz" name="jswz" th:value="${ybglDto.jswz}" validate="{required:true}" class="form-control chosen-select" style="height:34px;">
+				                        			<option value="">-结束-</option>
+				                        			<option th:if="${wzlist}" th:each="list:${wzlist}" th:value="${list.csid}" th:text="${list.csmc }" th:selected="${list.csid eq ybglDto.jswz}"></option>
+												</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="form-group">
+										<label for="" class="col-sm-4 control-label">
+											浓度
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="ss_nd" name="nd" th:value="${ybglDto.nd}"
+													validate="{number:true}" class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6" id="ybgg" style="display:none;">
+									<div class="form-group">
+										<label for="" class="col-sm-4  control-label">
+											标本规格
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="sp_ybgg" name="ybgg" class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6" id="cpbh" style="display:none;">
+									<div class="form-group">
+										<label for="" class="col-sm-4  control-label">
+											产品编号
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="sp_cpbh" name="cpbh"  class="form-control" />
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6" id="ybph" style="display:none;">
+									<div class="form-group">
+										<label for="" class="col-sm-4  control-label">
+											标本批号
+										</label>
+										<div class="col-sm-8 col-xs-12">
+											<input type="text" id="sp_ybph" name="ybph"  class="form-control" />
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-md-4 col-sm-6 padding_l0">
+								<table id ="kxtp" class="width100 table-bordered">
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+									<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="text-center" th:if="${yblyDto.formAction eq 'add'}">
+					<button id="btn-sampsrc-save" type="button"
+						class="btn btn-primary margin_r15" >
+						确定
+					</button>
+			</div>
+			</div>
+		</form>
+	</body>
+</html>

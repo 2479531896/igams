@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>提交合同</title>
+<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_submit.js'}" charset="utf-8"></script>
+<style type="text/css">
+			.bootstrap-tagsinput {
+	   			min-width:100%;
+			}
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+		.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+			.jdsty{
+			padding: 6px 12px;
+			text-align: center;
+			border: 1px solid transparent;
+			border-radius: 4px;
+			text-overflow: ellipsis;
+			overflow: hidden;
+    		white-space: nowrap;
+			}
+		</style>
+</head>
+<body>
+	<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+		<li  class="nav-item" >
+			<a  class="nav-link active" href="#audit_mod" role="tab" data-bs-toggle="tab">审核修改</a>
+		</li>
+		<li class="nav-item" >
+			<a  class="nav-link" href="#audit_flow" role="tab" data-bs-toggle="tab">钉钉流程</a>
+		</li>	
+	</ul>
+	<form id="submitContractForm" class="form-horizontal sl_all_form" method="post" th:action ="${urlPrefix}+'/contract/contract/'+${htglDto.formAction}" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="fjid" id ="fjid">
+		<input type="hidden" name="fjids" id="fjids"/>
+		<input type="hidden" name="htid" id="htid" th:value="${htglDto.htid}"/>
+		<input type="hidden" name="ywlx" id="ywlx" th:value="${ywlx}">
+		<input type="hidden" name="htywlx" id="htywlx" th:value="${htglDto.htywlx}"/>
+		<input type="hidden" name="auditType" id ="auditType" th:value="${htglDto.auditType}">
+		<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="htlx" id ="htlx" th:value="${htglDto.htlx}">
+		<input type="hidden" name="bchtid" id ="bchtid" th:value="${htglDto.bchtid}">
+		<input type="hidden" name="ddspid" id="ddspid">
+			<div class="body-content tab-content">
+				<div class="tab-pane fade active in" role="tabpanel" id="audit_mod"  aria-labelledby="profile-tab">
+					<div class="row">
+						<div class="col-md-11 col-sm-11"  th:if="${htglDto.fwbj ==null || htglDto.fwbj == ''}">
+				        	<div class="form-group">
+				    			<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+				    				<div th:id="${fjcfbDto.fjid}" >
+				    					<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件"></label>
+				    					<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+					    				<div class="col-sm-9 col-xs-9 col-md-9">
+					    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+					    					<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:onclick="xz([[${fjcfbDto.fjid}]]);" >
+						    					<span th:text="${fjcfbDto.wjm}"></span>
+						    					<span class="glyphicon glyphicon glyphicon-save"></span>
+					    					</button>&nbsp;&nbsp;
+					    					<button title="预览" class="f_button" type="button">
+					    						<span class="glyphicon glyphicon-eye-open" th:onclick="view([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjm}]]);"></span>
+					    					</button>&nbsp;&nbsp;
+					    					<button title="删除" class="f_button" type="button">
+					    						<span class="glyphicon glyphicon-remove" th:onclick="del([[${fjcfbDto.fjid}]],[[${fjcfbDto.wjlj}]]);"></span>
+					    					</button>			    					
+					    				</div>
+					    			</div>
+				    			</div>
+				   			</div>
+						</div>
+						<div class="col-md-11 col-sm-11" th:if="${htglDto.fwbj ==null || htglDto.fwbj == ''}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+									<span></span>单章合同
+								</label>
+								<div class="col-sm-9 col-xs-9 col-md-9" style="line-height:28px;">
+									<a href="javascript:void(0);" onclick="editfile()" id="file_btn" style="display:inline-block;width:100%;;border:1px solid #CCCCCC;border-radius:3px;">
+				            			<span  id="fileclick" title="点击上传"  style="display:inline-block;width:100%;color:#A6A6A6;font-size:12px;padding-left:10px;">点击展开上传文件</span>
+				            		</a>
+				            		<div id="fileDiv" style="display:none;">
+										<input id="pro_file" name="pro_file" type="file" onclick="onFile()" accept=".pdf">
+										<button class="btn btn-default" type="button" style="margin-left:77%;width:23%;margin-top:10px;" onclick="cancelfile()">隐藏</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-11 col-sm-11">
+							<div class="form-group">
+								<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label"  style="color:black;">
+									抄送
+								</label>
+								<div class="col-sm-9 col-xs-9 col-md-9">
+									<div class="input-group">
+							       		<input id="csrs" autoComplete="off" style="min-width:100%;" name="csrs" type="text" class="form-control" />
+							       		<span class="input-group-btn">
+											<button type="button" onclick="chooseCsr()" class="btn btn-primary">选择</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-11 col-sm-11">
+							<div class="form-group">
+								<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+									<span style="color: red;">*</span>交货日期
+								</label>
+								<div class="col-sm-9 col-xs-9 col-md-9">
+									<input type="text" id="jhrq" name="jhrq" th:value="${htglDto.jhrq}"  validate="{required:true}" class="form-control" />
+								</div>
+							</div>
+						</div>	
+						<div class="col-md-11 col-sm-11">
+							<div class="form-group">
+								<label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+									<span></span>外部编码
+								</label>
+								<div class="col-sm-9 col-xs-9 col-md-9">
+									<input type="text" id="htwbbh" name="htwbbh"  th:value="${htglDto.htwbbh}" class="form-control" />
+								</div>
+							</div>
+						</div>					
+					</div>
+				</div>
+				<div role="tabpanel" class="tab-pane fade" id="audit_flow" aria-labelledby="profile-tab">
+					<div class="panel-group" id="accordion">
+					    <div class="panel panel-info" th:if="${jgsplist!=null && jgsplist.size()>0}" th:each="list:${jgsplist}">
+					        <div class="panel-heading">
+					            <h4 class="panel-title">
+					                <a data-bs-toggle="collapse" data-parent="#accordion" th:id="${'t_collapse'+listStat.index}"
+					                th:href="${'#collapse'+listStat.index}" th:text="${list.jgmc}" th:onclick="getFlow([[${list.spr}]],[[${listStat.index}]])">
+					                </a>
+					                <input type="hidden" th:if="${htglDto.sqbm==list.jgid}" id="mrxz" th:value="${listStat.index}">
+					                <span title="点击选择钉钉审批流程" class="glyphicon glyphicon-ok logeok" style="float:right;color:grey;cursor:pointer;" th:id="${'ok'+listStat.index}" th:onclick="changeFlow([[${list.spid}]],[[${listStat.index}]])"></span>
+					            </h4>
+					        </div>
+					        <div th:id="${'collapse'+listStat.index}" class="panel-collapse collapse hide">
+					            <div class="panel-body" th:id="${'collapsebody'+listStat.index}">
+					            </div>
+					        </div>
+					    </div>
+					</div>
+				</div>
+			</div>	
+		</form>
+	</body>
+</html>

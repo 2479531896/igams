@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbllglDao">
+    <sql id="SEARCH_TERMS">
+        <if test="bmmc != null and bmmc!= ''">
+            and jgxx.jgmc ILIKE '%'||#{bmmc}||'%'
+        </if>
+        <if test="flrmc != null and flrmc != ''">
+            and xtyh2.zsxm ILIKE '%'||#{flrmc}||'%'
+        </if>
+        <if test="llrmc != null and llrmc != ''">
+            and  xtyh.zsxm ILIKE '%'||#{llrmc}||'%'
+        </if>
+        <if test="lldh != null and lldh != ''">
+            and ybllgl.lldh ILIKE '%'||#{lldh}||'%'
+        </if>
+        <if test="sqrqstart != null and sqrqstart != ''">
+            and to_char(ybllgl.sqrq,'YYYY-MM-dd') &gt;= #{sqrqstart}
+        </if>
+        <if test="sqrqend != null and sqrqend != ''">
+            and to_char(ybllgl.sqrq,'YYYY-MM-dd') &lt;= #{sqrqend}
+        </if>
+    </sql>
+    <select id="getPagedDtoList" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,xtyh2.zsxm as flrmc,jgxx.jgmc as bmmc,ybllgl.lldh,ybllgl.zt,ybllgl.scbj
+        from igams_ybllgl ybllgl
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+        <where>
+            ybllgl.scbj!='1' and ybllgl.llid in (select ybllgl.llid
+            from igams_ybllgl ybllgl
+            left join igams_ybllmx ybllmx on ybllgl.llid=ybllmx.llid and ybllmx.scbj!='1'
+            left join igams_ybkcxx ybkcxx on ybllmx.ybkcid=ybkcxx.ybkcid
+            LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+            left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+            left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+            left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+            left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+            left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+            where ybllgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                ybllgl.lldh ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or xtyh2.zsxm ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                or sjxx.nbbm ILIKE '%'||#{entire}||'%'
+                or sjxx.ybbh ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="jcdwxz!=null and jcdwxz.size()>0">
+                and sbglbx.jcdw in
+                <foreach collection="jcdwxz" open="(" close=")" item="item" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="ybbh != null and ybbh != ''">
+                and sjxx.ybbh ILIKE '%'||#{ybbh}||'%'
+            </if>
+            <if test="nbbm != null and nbbm != ''">
+                and sjxx.nbbm ILIKE '%'||#{nbbm}||'%'
+            </if>
+            <if test = "yblxs != null and yblxs.length > 0 "  >
+                and jcsj.csid in
+                <foreach collection="yblxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>)
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+    </select>
+    <select id="getPagedAuditPick" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,xtyh2.zsxm as flrmc,jgxx.jgmc as bmmc,ybllgl.lldh,ybllgl.zt
+        from igams_ybllgl ybllgl
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+        <where>
+            ybllgl.scbj!='1'
+            <if test="entire != null and entire != ''">
+                and (
+                ybllgl.lldh ILIKE '%'||#{entire}||'%'
+                or xtyh.zsxm ILIKE '%'||#{entire}||'%'
+                or jgxx.jgmc ILIKE '%'||#{entire}||'%'
+                )
+            </if>
+            <if test="bmmc != null and bmmc!= ''">
+                and jgxx.jgmc ILIKE '%'||#{bmmc}||'%'
+            </if>
+            <if test="llrmc != null and llrmc != ''">
+                and  xtyh.zsxm ILIKE '%'||#{llrmc}||'%'
+            </if>
+            <if test="lldh != null and lldh != ''">
+                and ybllgl.lldh ILIKE '%'||#{lldh}||'%'
+            </if>
+        </where>
+    </select>
+    <select id="getAuditListPick" parameterType="List" resultType="YbllglDto">
+        select ybllgl.llid,ybllgl.llr,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,xtyh2.zsxm as flrmc,jgxx.jgmc as bmmc,ybllgl.lldh,ybllgl.zt
+        shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.llid} llid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,#{index} rownum
+        </foreach>
+        tmp
+        left join igams_ybllgl ybllgl on tmp.llid=ybllgl.llid
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+        order by tmp.rownum
+    </select>
+    <select id="getDto" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,xtyh2.zsxm as flrmc,jgxx.jgmc as bmmc,ybllgl.lldh
+        from igams_ybllgl ybllgl
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+        <where>
+            ybllgl.scbj!='1' and ybllgl.llid=#{llid}
+        </where>
+    </select>
+    <select id="getDtoById" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,xtyhf.zsxm flrmc,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,jgxx.jgmc as bmmc,ybllgl.lldh,ybllgl.zt
+        from igams_ybllgl ybllgl
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyhf on ybllgl.flr=xtyhf.yhid
+        <where>
+            ybllgl.llid=#{llid}
+            and ybllgl.scbj = '0'
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,xtyh2.zsxm as flrmc,jgxx.jgmc as bmmc,ybllgl.lldh,sjxx.nbbm,sjxx.ybbh
+        ,ybkcxx.tj,sbglbx.sbh bxh,sbglct.sbh cth,sbglhz.sbh hh,jcsj.csmc yblxmc,ybkcxx.wz,sjxx.sjid,jcdw.csmc jcdwmc,jcdw.csdm as jcdwdm,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+        from igams_ybllgl ybllgl
+        left join igams_ybllmx ybllmx on ybllgl.llid=ybllmx.llid and ybllmx.scbj!='1'
+        left join igams_ybkcxx ybkcxx on ybllmx.ybkcid=ybkcxx.ybkcid
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyh2 on ybllgl.flr=xtyh2.yhid
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        left join matridx_jcsj jcdw on jcdw.csid = sbglbx.jcdw
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        <where>
+            ybllgl.scbj!='1' and ybllgl.llid=#{llid}
+        </where>
+        order by sbglbx.sbh,sbglct.sbh,sbglhz.sbh,ybkcxx.wz
+    </select>
+    <!-- 校验领料单号是否重复 -->
+    <select id="getDtoByLldh" parameterType="YbllglDto" resultType="YbllglDto">
+        select ybllgl.lldh
+        from igams_ybllgl ybllgl
+        <where>
+            ybllgl.scbj='0'
+                and ybllgl.lldh=#{lldh}
+        </where>
+    </select>
+
+    <select id="getLldhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(lldh,LENGTH(lldh)-strpos(reverse(lldh),'-')+2,LENGTH(lldh))),'0') AS numeric) + 1) as VARCHAR), 2, '0') serial
+        FROM igams_ybllgl
+        <where>
+            scbj = '0' AND lldh like #{prefix}||'%'
+        </where>
+    </select>
+    <insert id="insert" parameterType="YbllglDto">
+		insert into igams_ybllgl(
+		llid,
+		llr,
+		bm,
+		sqrq,
+		bz,
+		zt,
+		lrry,
+		lrsj,
+		scbj,
+		lldh)
+		values(
+		#{llid},
+		#{llr},
+		#{bm},
+		cast(#{sqrq} as date),
+		#{bz},
+		#{zt},
+		#{lrry},
+		LOCALTIMESTAMP,
+		0,
+		#{lldh})
+	</insert>
+    <update id="update" parameterType="YbllglDto">
+		update igams_ybllgl set
+        <if test="lldh != null and lldh != ''">
+            lldh = #{lldh},
+        </if>
+        <if test="llr != null and llr != ''">
+            llr = #{llr},
+        </if>
+        <if test="flr != null and flr != ''">
+            flr = #{flr},
+        </if>
+        <if test="bm != null and bm != ''">
+            bm=#{bm},
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            sqrq = cast(#{sqrq} as date),
+        </if>
+        <if test="zt != null and zt != ''">
+            zt = #{zt},
+        </if>
+        <if test="bz != null and bz != ''">
+            bz=#{bz},
+        </if>
+		xgry = #{xgry},
+        xgsj = LOCALTIMESTAMP
+		where llid = #{llid}
+	</update>
+    <select id="getZtById" parameterType="YbllglDto" resultType="YbllglDto">
+        select zt form igams_ybllgl where llid = #{llid}
+    </select>
+
+    <update id="updateFlr" parameterType="YbllglDto">
+        update igams_ybllgl set
+        <if test="bz != null and bz != ''">
+            bz=#{bz},
+        </if>
+        flr = #{flr}
+        where llid = #{llid} and scbj = '0'
+    </update>
+    <select id="getYbkcidByLlids" parameterType="YbllglDto" resultType="YbllglDto">
+        select ybllmx.ybkcid,ybllgl.flr from
+        igams_ybllmx ybllmx
+        left join igams_ybllgl ybllgl on ybllgl.llid=ybllmx.llid
+        where ybllmx.scbj = '0' and ybllmx.llid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <update id="deleteByLlids" parameterType="YbllglDto">
+        update igams_ybllgl set scbj = '1'
+        where llid in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getDtoByIds" parameterType="YbllglDto" resultType="YbllglDto">
+        select  ybllgl.llid,ybllgl.llr,xtyhf.zsxm flrmc,ybllgl.bm,ybllgl.sqrq,ybllgl.bz,xtyh.zsxm as llrmc,jgxx.jgmc as bmmc,ybllgl.lldh,ybllgl.zt
+        from igams_ybllgl ybllgl
+        left join matridx_jgxx jgxx on ybllgl.bm=jgxx.jgid
+        left join matridx_xtyh xtyh on ybllgl.llr=xtyh.yhid
+        left join matridx_xtyh xtyhf on ybllgl.flr=xtyhf.yhid
+        <where>
+            ybllgl.scbj = '0' and
+            ybllgl.llid in
+            <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

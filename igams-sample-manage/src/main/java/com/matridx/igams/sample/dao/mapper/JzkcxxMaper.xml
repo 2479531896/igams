@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IJzkcxxDao" >
+	<sql id="SEARCH_TERMS">
+		<if test="entire != null and entire != ''">
+			and (jzkcxx.mc like '%'||#{entire}||'%'
+			or jzkcxx.wz like '%'||#{entire}||'%'
+			or jzkcxx.ph like '%'||#{entire}||'%'
+			or jzkcxx.ly like '%'||#{entire}||'%'
+			or jzkcxx.gg like '%'||#{entire}||'%'
+			or jzkcxx.bh like '%'||#{entire}||'%'
+			or jzkcxx.kbs like '%'||#{entire}||'%'
+			)
+		</if>
+		<if test="mc !=null and mc != ''">
+			and jzkcxx.mc like '%'||#{mc}||'%'
+		</if>
+		<if test="wz !=null and wz != ''">
+			and jzkcxx.wz like '%'||#{wz}||'%'
+		</if>
+		<if test="ph !=null and ph != ''">
+			and jzkcxx.ph like '%'||#{ph}||'%'
+		</if>
+		<if test="ly !=null and ly != ''">
+			and jzkcxx.ly like '%'||#{ly}||'%'
+		</if>
+		<if test="bh !=null and bh != ''">
+			and jzkcxx.bh like '%'||#{bh}||'%'
+		</if>
+		<if test="gg !=null and gg != ''">
+			and jzkcxx.gg like '%'||#{gg}||'%'
+		</if>
+		<if test="kbs !=null and kbs != ''">
+			and jzkcxx.kbs like '%'||#{kbs}||'%'
+		</if>
+		<if test="lrsjstart != null and lrsjstart != ''">
+			and to_char(jzkcxx.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+		</if>
+		<if test="lrsjend != null and lrsjend != ''">
+			and to_char(jzkcxx.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+		</if>
+		<if test="jzlxs != null and jzlxs.length > 0 ">
+			and jzkcxx.lx in
+			<foreach collection="jzlxs" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jzfls != null and jzfls.length > 0 ">
+			and jzkcxx.fl in
+			<foreach collection="jzfls" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+    <select id="getPagedDtoList" resultType="JzkcxxDto" parameterType="JzkcxxDto">
+        SELECT
+    jzkcxx.jzkcid,
+	jzkcxx.wz,
+	jzkcxx.bh,
+	jzkcxx.mc,
+	jzkcxx.ph,
+	jzkcxx.ly,
+	jzkcxx.rksl,
+	jzkcxx.kcl,
+	jzkcxx.yds,
+	jzkcxx.gg,
+	jzkcxx.fl,
+	jzkcxx.lx,
+	jzkcxx.lrry,
+	jzfl.csmc flmc,
+	jzlx.csmc lxmc,
+	lrry.zsxm lrrymc,
+	to_char(jzkcxx.lrsj,'yyyy-mm-dd hh24:mi') lrsj,
+	jzkcxx.bz,
+	jzkcxx.kbs
+FROM
+	igams_jzkcxx jzkcxx
+	LEFT JOIN matridx_jcsj jzfl ON jzfl.csid = jzkcxx.fl and jzfl.scbj='0'
+	LEFT JOIN matridx_jcsj jzlx ON jzlx.csid = jzkcxx.lx and jzlx.scbj='0'
+	LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzkcxx.lrry and lrry.scbj='0'
+	<where>
+        jzkcxx.scbj='0'
+        <include refid="SEARCH_TERMS"></include>
+    </where>
+    </select>
+	<select id="getDtoById" resultType="JzkcxxDto" parameterType="String">
+		SELECT
+		jzkcxx.jzkcid,
+		jzkcxx.wz,
+		jzkcxx.bh,
+		jzkcxx.mc,
+		jzkcxx.ph,
+		jzkcxx.ly,
+		jzkcxx.rksl,
+		jzkcxx.kcl,
+		jzkcxx.yds,
+		jzkcxx.yds,
+		jzkcxx.gg,
+		jzkcxx.fl,
+		jzkcxx.lx,
+		jzkcxx.lrry,
+		jzfl.csmc flmc,
+		jzlx.csmc lxmc,
+		lrry.zsxm lrrymc,
+		to_char(jzkcxx.lrsj,'yyyy-mm-dd hh24:mi') lrsj,
+		jzkcxx.bz,
+		(coalesce(jzkcxx.kcl,0) - coalesce(jzkcxx.yds,0)) klsl,
+		jzkcxx.kbs
+		FROM
+		igams_jzkcxx jzkcxx
+		LEFT JOIN matridx_jcsj jzfl ON jzfl.csid = jzkcxx.fl and jzfl.scbj='0'
+		LEFT JOIN matridx_jcsj jzlx ON jzlx.csid = jzkcxx.lx and jzlx.scbj='0'
+		LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzkcxx.lrry and lrry.scbj='0'
+		<where>
+			jzkcxx.scbj='0'
+			and jzkcxx.jzkcid=#{jzkcid}
+		</where>
+	</select>
+	<update id="update" parameterType="JzkcxxDto">
+		update igams_jzkcxx
+		<set>
+			xgry=#{xgry}
+			,xgsj=LOCALTIMESTAMP
+			<if test="wz != null and wz != ''">
+				,wz=#{wz}
+			</if>
+			<if test="bh != null and bh != ''">
+				,bh=#{bh}
+			</if>
+			<if test="mc != null and mc != ''">
+				,mc=#{mc}
+			</if>
+			<if test="ph != null and ph != ''">
+				,ph=#{ph}
+			</if>
+			<if test="ly != null and ly != ''">
+				,ly=#{ly}
+			</if>
+			<if test="rksl != null and rksl != '' and flag!='1'.toString()">
+				,rksl=cast(#{rksl} as numeric )
+			</if>
+			<if test="kcl != null and kcl != '' and flag!='1'.toString()">
+				,kcl=cast(#{kcl} as numeric )
+			</if>
+			<if test="yds != null and yds != ''">
+				,yds=cast(#{yds} as numeric )
+			</if>
+			<if test="gg != null and gg != ''">
+				,gg=#{gg}
+			</if>
+			<if test="fl != null and fl != ''">
+				,fl=#{fl}
+			</if>
+			<if test="lx != null and lx != ''">
+				,lx=#{lx}
+			</if>
+			<if test="bz != null and bz != ''">
+				,bz=#{bz}
+			</if>
+			<if test="kbs != null and kbs != ''">
+				,kbs=#{kbs}
+			</if>
+		</set>
+		<where>
+			jzkcid=#{jzkcid}
+		</where>
+	</update>
+	<insert id="insert" parameterType="JzkcxxDto">
+		insert into igams_jzkcxx(jzkcid
+		<if test="wz !=null and wz != ''">
+			,wz
+		</if>
+		<if test="bh !=null and bh != ''">
+			,bh
+		</if>
+		<if test="mc !=null and mc != ''">
+			,mc
+		</if>
+		<if test="ph !=null and ph != ''">
+			,ph
+		</if>
+		<if test="ly !=null and ly != ''">
+			,ly
+		</if>
+		<if test="rksl !=null and rksl != ''">
+			,rksl
+		</if>
+		<if test="kcl !=null and kcl != ''">
+			,kcl
+		</if>
+		<if test="yds !=null and yds != ''">
+			,yds
+		</if>
+		<if test="gg !=null and gg != ''">
+			,gg
+		</if>
+		<if test="fl !=null and fl != ''">
+			,fl
+		</if>
+		<if test="lx !=null and lx != ''">
+			,lx
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		<if test="kbs !=null and kbs != ''">
+			,kbs
+		</if>
+		,lrry,lrsj,scbj) values(#{jzkcid}
+		<if test="wz !=null and wz != ''">
+			,#{wz}
+		</if>
+		<if test="bh !=null and bh != ''">
+			,#{bh}
+		</if>
+		<if test="mc !=null and mc != ''">
+			,#{mc}
+		</if>
+		<if test="ph !=null and ph != ''">
+			,#{ph}
+		</if>
+		<if test="ly !=null and ly != ''">
+			,#{ly}
+		</if>
+		<if test="rksl !=null and rksl != ''">
+			,cast (#{rksl} as numeric )
+		</if>
+		<if test="kcl !=null and kcl != ''">
+			,cast (#{kcl} as numeric )
+		</if>
+		<if test="yds !=null and yds != ''">
+			,cast (#{yds} as numeric )
+		</if>
+		<if test="gg !=null and gg != ''">
+			,#{gg}
+		</if>
+		<if test="fl !=null and fl != ''">
+			,#{fl}
+		</if>
+		<if test="lx !=null and lx != ''">
+			,#{lx}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		<if test="kbs !=null and kbs != ''">
+			,#{kbs}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<update id="delete" parameterType="JzkcxxDto">
+		update igams_jzkcxx set
+		scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			jzkcid in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getDtoList" resultType="JzkcxxDto" parameterType="JzkcxxDto">
+		SELECT
+		jzkcxx.jzkcid,
+		jzkcxx.wz,
+		jzkcxx.bh,
+		jzkcxx.mc,
+		jzkcxx.ph,
+		jzkcxx.ly,
+		jzkcxx.rksl,
+		jzkcxx.kcl,
+		jzkcxx.yds,
+		jzkcxx.gg,
+		jzkcxx.fl,
+		jzkcxx.lx,
+		jzkcxx.lrry,
+		jzfl.csmc flmc,
+		jzlx.csmc lxmc,
+		lrry.zsxm lrrymc,
+		to_char(jzkcxx.lrsj,'yyyy-mm-dd hh24:mi') lrsj,
+		jzkcxx.bz,
+		jzkcxx.kbs
+		FROM
+		igams_jzkcxx jzkcxx
+		LEFT JOIN matridx_jcsj jzfl ON jzfl.csid = jzkcxx.fl and jzfl.scbj='0'
+		LEFT JOIN matridx_jcsj jzlx ON jzlx.csid = jzkcxx.lx and jzlx.scbj='0'
+		LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzkcxx.lrry and lrry.scbj='0'
+		<where>
+			jzkcxx.scbj='0'
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_jzkcxx
+				<set>
+					<trim prefixOverrides=",">
+						xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+						<if test="item.yds !=null and item.yds !=''">
+							,yds=cast(#{item.yds} as numeric)
+						</if>
+						<if test="item.kcl !=null and item.kcl !=''">
+							,kcl=cast(#{item.kcl} as numeric)
+						</if>
+					</trim>
+				</set>
+				<where>
+					jzkcid=#{item.jzkcid}
+				</where>
+			</foreach>
+		</if>
+	</update>
+</mapper>

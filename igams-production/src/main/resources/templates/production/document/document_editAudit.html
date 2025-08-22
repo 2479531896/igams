@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/document/document_editAudit.js'}" charset="utf-8"></script>
+		<style type="text/css">
+			#t_sel_unlist,#t_sel_list,#d_sel_unlist,#d_sel_list,#sel_unlist,#sel_list{
+				height:300px;
+				width: 100%;
+				overflow: auto;
+				border:none;
+			}
+			#fjcfbDto span:hover{
+				cursor:pointer;
+			}
+			.f_button{
+				background: white;
+				border: 0;
+			}
+			.f_button:hover{
+				border-width: 0px; 
+ 				border-radius: 3px;
+ 				background: #1E90FF;
+ 				cursor: pointer; 
+ 				outline: none;
+ 				font-family: Microsoft YaHei; 
+ 				color: white; 
+ 				font-size: 14px; 
+			}
+		</style>
+	</head>
+	<body>
+		<div id="document_edit">
+			<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+			    <li  class="nav-item" >
+			        <a  class="nav-link active" href="#doceditInfoTab" role="tab" data-bs-toggle="tab">文件信息</a>
+			    </li>
+			    <li class="nav-item" >
+			        <a  class="nav-link" href="#docqxInfoTab" role="tab" data-bs-toggle="tab">人员权限</a>
+			    </li>
+			</ul>
+			<form id="ajaxForm" th:action ="${urlPrefix}+'/production/document/'+${wjglDto.formAction}+'SaveDocument'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation" enctype="multipart/form-data">
+				<input type="hidden" name="access_token"/>
+				<input type="hidden" name="formAction" id="formAction" th:value="${wjglDto.formAction}" />
+				<input type="hidden" name="jsids" id="jsids"/>
+				<input type="hidden" name="wjsh" value="1"/>
+				<input type="hidden" name="t_jsids" id="t_jsids"/>
+				<input type="hidden" name="d_jsids" id="d_jsids"/>
+				<input type="hidden" name="ywlx" id ="ywlx" th:value="${wjglDto.ywlx}">
+				<input type="hidden" name="fwbj" id ="fwbj" th:value="${wjglDto.fwbj}">
+				<input type="hidden" name="fjids" id ="fjids">
+				<input type="hidden" name="auditType" id ="auditType" th:value="${wjglDto.auditType}">
+	        	<input type="hidden" name="auditModType" id ="auditModType" th:value="${wjglDto.auditModType}">
+				<input type="hidden" name="gwjid" id ="gwjid" th:value="${wjglDto.gwjid}">
+				<input type="hidden" name="wjid" id="wjid" th:value="${wjglDto.wjid}"/>
+				<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+				<div class="body-content tab-content">
+					<div role="tabpanel" class="tab-pane fade active in" id="doceditInfoTab" aria-labelledby="profile-tab">
+						<div class="panel panel-default sample-formal">
+							<div class="panel-body">
+								<div class="row">
+									<div class="col-md-12 col-sm-12">
+							        	<div class="form-group">
+							    			<div id="fjcfbDto" th:if="${fjcfbDtos != null && fjcfbDtos.size() >0}" th:each="fjcfbDto:${fjcfbDtos}">
+							    				<div th:id="${fjcfbDto.fjid}" >
+							    					<label for="" class="col-sm-2 control-label" th:if="${fjcfbDtoStat.index == 0}" th:text="附件"></label>
+							    					<label for="" class="col-sm-2 control-label" th:if="${fjcfbDtoStat.index > 0}"></label>
+								    				<div class="col-sm-10 padding_t7">
+								    					<label for="" th:text="${fjcfbDtoStat.index+1}+."></label>
+								    					<button style="outline:none;margin-bottom:5px;padding:0px;" class="btn btn-link" type="button" title="下载" th:@click.prevent="'xz(\''+${fjcfbDto.fjid}+'\');'" >
+									    					<span th:text="${fjcfbDto.wjm}"></span>
+									    					<span class="glyphicon glyphicon glyphicon-save"></span>
+								    					</button>&nbsp;&nbsp;
+								    					<button title="删除" class="f_button" type="button">
+								    						<span class="glyphicon glyphicon-remove" th:@click.prevent="'del(\''+${fjcfbDto.fjid}+'\',\''+${fjcfbDto.wjlj}+'\');'"></span>
+								    					</button>&nbsp;&nbsp;
+								    					<button title="预览" class="f_button" type="button">
+								    						<span th:if="${fjcfbDto.wjmhz =='pdf'}" class="glyphicon glyphicon-eye-open" th:@click.prevent="'view(\''+${fjcfbDto.fjid}+'\');'"></span>
+								    					</button>
+								    				</div>
+								    			</div>
+							    			</div>
+							   			</div>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="form-group">
+											<label for="" class="col-sm-2 col-xs-2 col-md-2 control-label">
+												资料上传
+											</label>
+											<div class="col-sm-9 col-xs-9 col-md-9">
+												<input id="doc_file" name="doc_file" type="file">
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												文件分类<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7" th:if="${wjfllist!=null && wjfllist.size() > 0}"> 
+												<select id="wjfl" name="wjfl" th:value="${wjglDto.wjfl}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+													<option value="">--请选择--</option>
+				                        			<option th:each="list:${wjfllist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq wjglDto.wjfl}"></option>
+												</select>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												文件类别<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7"> 
+												<select id="wjlb" name="wjlb" th:value="${wjglDto.wjlb}" class="form-control chosen-select" validate="{required:true}" style="height:34px;">
+													<option value="">--请选择--</option>
+				                        			<option  th:if="${wjlblist!=null && wjlblist.size() > 0}" th:each="list:${wjlblist}" th:value="${list.csid}" th:text="${list.csdm}+'--'+${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" th:selected="${list.csid eq wjglDto.wjlb}"></option>
+												</select>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="form-group">
+											<label for="" class="col-sm-2 col-md-2 control-label">
+												文件名称<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-9 col-xs-12 col-md-9">
+												<input type="text" id="wjmc" name="wjmc" th:value="${wjglDto.wjmc}"
+														validate="{required:true,stringMaxLength:256}" class="form-control" />
+											</div>
+										</div>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="form-group">
+											<label for="" class="col-sm-2 col-md-2 control-label">
+												受影响文件<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-9 col-xs-12 col-md-9">
+												<input type="text" id="syxwj" name="syxwj" th:value="${wjglDto.syxwj}"validate="{required:true,stringMaxLength:512}" 
+												 class="form-control" />
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												生效日期
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7">
+												<input type="text" id="sxrq" name="sxrq" th:value="${wjglDto.sxrq}"validate="{stringMaxLength:256}" 
+												 class="form-control" />
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6" style="height:45px;">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												所属单位<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7"> 
+												<div class="input-group">
+													<input id="sqbmmc" name="jgmc" type="text" th:value="${departmentDto.jgmc}" readonly="readonly" class="form-control" />
+						         					<input id="sqbm" name="jgid" type="hidden" th:value="${departmentDto.jgid}" class="form-control" />
+													<span class="input-group-btn">
+														<button type="button" onclick="chooseBm()" class="btn btn-primary">选择</button>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												文件编号<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7">
+												<input type="text" id="wjbh" name="wjbh" th:value="${wjglDto.wjbh}"validate="{required:true,stringMaxLength:32}" 
+												 class="form-control" />
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												版本号
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7">
+												<input type="text" id="bbh" name="bbh" th:value="${wjglDto.bbh}"validate="{stringMaxLength:32}" 
+												 class="form-control" />
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												更改来源<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7">
+												 <textarea id="ggly" name="ggly" rows="3" th:text="${wjglDto.ggly}"
+														   validate="{required:true,stringMaxLength:1024}" class="form-control" style="height:100px;"></textarea>
+											</div>
+										</div>
+									</div>
+									<div th:if="${wjglDto.formAction == 'mod'}" class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label for="" class="col-sm-4 col-md-4 control-label">
+												状态<span style="color: red;">*</span>
+											</label>
+											<div class="col-sm-7 col-xs-12 col-md-7 h30">
+												<label class="radio-inline"><input type="radio" value="0" name="scbj" class="phonesyzt1" th:checked="${'0' eq wjglDto.scbj}" validate="{required:true}">正常</label>
+												<label class="radio-inline"><input type="radio" value="3" name="scbj" class="phonesyzt2" th:checked="${'3' eq wjglDto.scbj}" validate="{required:true}">作废</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="form-group">
+											<label for="" class="col-sm-2 col-md-2 control-label">
+												备注
+											</label>
+											<div class="col-sm-9 col-xs-12 col-md-9"> 
+												<textarea id="bz" name="bz" rows="3" th:text="${wjglDto.bz}"
+														  validate="{stringMaxLength:1024}" class="form-control" style="height:100px;"></textarea>
+											</div>
+										</div>
+									</div>
+									<div class="clearfix"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="docqxInfoTab" aria-labelledby="profile-tab">
+					    <div id="wjqxb" class="panel-body">
+					    	<div class="row">
+					    		<div id="wj_wcsj" class="col-md-12 col-sm-12">
+									<div class="form-group">
+										<label style="color:black;" for="" class="col-sm-2 col-xs-12 control-label">
+											期望完成日期<span style="color: red;">*</span>
+										</label>
+										<div class="col-sm-4 col-xs-12" style="padding:0;">
+											<input type="text" id="wj_qwwcsj" name="wj_qwwcsj" validate="{stringMaxLength:32}" class="form-control" placeholder="期望完成时间" >
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="col-md-12 col-sm-12">
+										<label style="color:black;" for="" class="col-sm-12 col-xs-12">
+											学习文件
+										</label>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="pull-left export-left">
+					          				<div>
+									         	<select id="sel_unlist" name="sel_unlist" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="t_wjglDto:${t_wjgllist}" th:value="${t_wjglDto.jsid}" th:text="${t_wjglDto.jsmc}" v-on:dblclick="addOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>
+										<div class="pull-left export-mid">
+											<dl>
+												<dd id="right-all" v-on:click="addOption()"></dd>
+												<dd id="left-all" class="export-leftico" v-on:click="moveOption()"></dd>
+											</dl>
+										</div>
+										<div class="pull-right export-right">
+											<div>
+									         	<select id="sel_list" name="sel_list" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="s_wjglDto:${studyList}" th:value="${s_wjglDto.jsid}" th:text="${s_wjglDto.jsmc}" v-on:dblclick="moveOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>	
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="col-md-12 col-sm-12">
+										<label style="color:black;" for="" class="col-sm-12 col-xs-12">
+											查看文件
+										</label>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="pull-left export-left">
+					          				<div>
+									         	<select id="t_sel_unlist" name="t_sel_unlist" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="t_wjglDto:${t_wjgllist}" th:value="${t_wjglDto.jsid}" th:text="${t_wjglDto.jsmc}" v-on:dblclick="t_addOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>
+										<div class="pull-left export-mid">
+											<dl>
+												<dd id="right-all" v-on:click="t_addOption()"></dd>
+												<dd id="left-all" class="export-leftico" v-on:click="t_moveOption()"></dd>
+											</dl>
+										</div>
+										<div class="pull-right export-right">
+											<div>
+									         	<select id="t_sel_list" name="t_sel_list" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="v_wjglDto:${viewList}" th:value="${v_wjglDto.jsid}" th:text="${v_wjglDto.jsmc}" v-on:dblclick="t_moveOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6">
+									<div class="col-md-12 col-sm-12">
+										<label style="color:black;" for="" class="col-sm-12 col-xs-12">
+											下载文件
+										</label>
+									</div>
+									<div class="col-md-12 col-sm-12">
+										<div class="pull-left export-left">
+					          				<div>
+									         	<select id="d_sel_unlist" name="d_sel_unlist" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="u_wjglDto:${undownloadList}" th:value="${u_wjglDto.jsid}" th:text="${u_wjglDto.jsmc}" v-on:dblclick="d_addOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>
+										<div class="pull-left export-mid">
+											<dl>
+												<dd id="right-all" v-on:click="d_addOption()"></dd>
+												<dd id="left-all" class="export-leftico" v-on:click="d_moveOption()"></dd>
+											</dl>
+										</div>
+										<div class="pull-right export-right">
+											<div>
+									         	<select id="d_sel_list" name="d_sel_list" multiple="multiple" >
+									         		<optgroup label="角色名称">
+				                        				<option th:each="d_wjglDto:${downloadList}" th:value="${d_wjglDto.jsid}" th:text="${d_wjglDto.jsmc}" v-on:dblclick="d_moveOption()"></option>
+				                        			</optgroup>
+												</select>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+				    </div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

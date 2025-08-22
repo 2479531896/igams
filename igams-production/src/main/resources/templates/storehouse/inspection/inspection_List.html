@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/inspection/inspection_List.js?v=20240123v3'}"
+	charset="utf-8"></script>
+	<style>
+		.inspectionGoodsClass{
+			width: 100% !important;
+		}
+	</style>
+</head>
+<body>
+	<div class="panel-body body-content" style="padding-bottom: 0px;">
+		<form id="inspectionGoods_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+				<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+				<input type="hidden" name="lbbj" id ="lbbj" th:value="${dhjyDto.lbbj}">
+				<input type="hidden" name="lbcskz2" id ="lbcskz2" th:value="${dhjyDto.lbcskz2}">
+				<div class="panel panel-default">
+				<div class="panel-heading">查询条件</div>
+				<div class="panel-body">
+					<div class="">
+						<div class="form-group padding_l10">
+							<select name="cxtj" class="form-control chosen-select" id="cxtj"
+								style="height: 34px;">
+								<option value="0">全部</option>
+								<option value="1">检验单号</option>
+								<option value="2">负责人</option>
+								<option value="3">物料编码</option>
+								<option value="4">物料名称</option>
+								<option value="5">报告单号</option>
+								<option value="6">生产批号</option>
+							</select>
+							<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+	                               onkeydown="if(event.keyCode==13) {inspectionResult(); return false;}"/>
+						</div>
+						<button type="button" style="margin-left: 50px" id="btn_query"
+							class="btn btn-primary">查询</button>
+						<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+					</div>          
+					<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+						<span class="tit">已选条件：</span>
+						<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+							<ul id="sl_add_ul"></ul>
+						</div>
+					</div>
+
+					<div class="padding_t7 width100" id="searchMore"
+						style="display: none;">
+						<div class="tab-content sl_sel_con row"
+							style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+							id="sl_sel_con">
+							<div class="tab-pane active" id="tab06">
+								<div id="jyjg_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="检验结果">检验结果：</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${jyjglist!=null && jyjglist.size() >0}" th:each="t_jyjg:${jyjglist}">
+													<a style='text-decoration: none; cursor: pointer;' th:onclick="addTj('jyjg',[[${t_jyjg.csid}]],'inspectionGoods_formSearch');" th:id="'jyjg_id_'+${t_jyjg.csid}">
+														<span th:style="${t_jyjg.scbj eq '2'?'color:red':''}" th:text="${t_jyjg.csmc}+ ${t_jyjg.scbj eq '2'?'(废弃)':''}"></span>
+													</a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="审核状态">审核状态：</label>
+										<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="ccol-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('zt','00','inspectionGoods_formSearch');"
+													   id="zt_id_00"><span>未提交</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('zt','10','inspectionGoods_formSearch');"
+													   id="zt_id_10"><span>审核中</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('zt','15','inspectionGoods_formSearch');"
+													   id="zt_id_15"><span>审核未通过</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('zt','80','inspectionGoods_formSearch');"
+													   id="zt_id_80"><span>审核通过</span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="sflyck_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否留样出库">是否留样出库：</label>
+										<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden" id="ul_sflyck">
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('sflyck','0','inspectionGoods_formSearch');"
+													   id="sflyck_id_0"><span>否</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('sflyck','1','inspectionGoods_formSearch');"
+													   id="sflyck_id_1"><span>是</span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="jyrq_id" class="col-md-12 col-sm-12 col-lg-12">
+				                    <div class="form-group width100">
+				                    <label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="检验日期">检验日期：</label>
+
+				                    	<div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+											<input id="shsjstart" name="shsjstart" class="form-control" placeholder="开始日期"  validate="{required:true,}" />~
+											<input id="shsjend"  name="shsjend" class="form-control" placeholder="结束日期"   validate="{required:true,}" />
+				                 		</div>
+				             		</div>
+				             	</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input  type="hidden" id="jyjg_id_tj" name="jyjg_id_tj">
+			<input  type="hidden" id="zt_id_tj" name="zt_id_tj">
+			<input  type="hidden" id="sflyck_id_tj" name="sflyck_id_tj">
+			<div th:include="common/btn/ancz.html"></div>
+			<table id="inspectionGoods_list"
+				class="table table-hover table-bordered table-hidden inspectionGoodsClass"
+				data-reorderable-columns="true"></table>
+		</form>
+	</div>
+</body>
+</html>

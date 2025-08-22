@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IJzllglDao" >
+    <sql id="SEARCH_TERMS">
+        <if test="entire != null and entire != ''">
+            and (jzkcxx.mc like '%'||#{entire}||'%'
+            or jzkcxx.wz like '%'||#{entire}||'%'
+            or jzkcxx.ph like '%'||#{entire}||'%'
+            or jzkcxx.ly like '%'||#{entire}||'%'
+            or jzkcxx.gg like '%'||#{entire}||'%'
+            or jzkcxx.bh like '%'||#{entire}||'%'
+            or jzllgl.lldh like '%'||#{entire}||'%'
+            or llr.zsxm like '%'||#{entire}||'%'
+            or flr.zsxm like '%'||#{entire}||'%'
+            or bm.jgmc like '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="mc !=null and mc != ''">
+            and jzkcxx.mc like '%'||#{mc}||'%'
+        </if>
+        <if test="wz !=null and wz != ''">
+            and jzkcxx.wz like '%'||#{wz}||'%'
+        </if>
+        <if test="ph !=null and ph != ''">
+            and jzkcxx.ph like '%'||#{ph}||'%'
+        </if>
+        <if test="ly !=null and ly != ''">
+            and jzkcxx.ly like '%'||#{ly}||'%'
+        </if>
+        <if test="bh !=null and bh != ''">
+            and jzkcxx.bh like '%'||#{bh}||'%'
+        </if>
+        <if test="gg !=null and gg != ''">
+            and jzkcxx.gg like '%'||#{gg}||'%'
+        </if>
+        <if test="sqsjstart != null and sqsjstart != ''">
+            and to_char(jzllgl.sqrq,'yyyy-mm-dd') &gt;= #{sqsjstart}
+        </if>
+        <if test="sqsjend != null and sqsjend != ''">
+            and to_char(jzllgl.sqrq,'yyyy-mm-dd') &lt;= #{sqsjend}
+        </if>
+        <if test="jzlxs != null and jzlxs.length > 0 ">
+            and jzkcxx.lx in
+            <foreach collection="jzlxs" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+        <if test="jzfls != null and jzfls.length > 0 ">
+            and jzkcxx.fl in
+            <foreach collection="jzfls" separator="," open="(" close=") "
+                     item="item" index="index">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+    <select id="getPagedDtoList" resultType="JzllglDto" parameterType="JzkcxxDto">
+        SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.zt,
+        jzllgl.scbj
+        FROM
+        igams_jzllgl jzllgl
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        <if test="(mc !=null and mc !='')or(bh!=null and bh!='')or(wz!=null and wz!='')or(ly!=null and ly!='')or(ph!=null and ph!='')or(gg!=null and gg!='')or(entire !=null and entire !='')
+        or(jzlxs!=null and jzlxs.length>0)or(jzfls!=null and jzfls.length>0)">
+        LEFT JOIN igams_jzllmx jzllmx ON jzllmx.llid = jzllgl.llid
+        LEFT JOIN igams_jzkcxx jzkcxx ON jzkcxx.jzkcid = jzllmx.jzkcid
+        LEFT JOIN matridx_jcsj jzfl ON jzfl.csid = jzkcxx.fl
+        LEFT JOIN matridx_jcsj jzlx ON jzlx.csid = jzkcxx.lx
+        </if>
+        <where>
+            jzllgl.scbj='0'
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+        <if test="(mc !=null and mc !='')or(bh!=null and bh!='')or(wz!=null and wz!='')or(ly!=null and ly!='')or(ph!=null and ph!='')or(gg!=null and gg!='')or(entire !=null and entire !='')
+        or(jzlxs!=null and jzlxs.length>0)or(jzfls!=null and jzfls.length>0)">
+        group by
+            jzllgl.llid,
+            jzllgl.lldh,
+            llr.zsxm,
+            flr.zsxm,
+            lrry.zsxm,
+            bm.jgmc,
+            jzllgl.llr,
+            jzllgl.flr,
+            jzllgl.sqrq,
+            jzllgl.bz,
+            jzllgl.ckzt,
+            jzllgl.zt
+        </if>
+    </select>
+    <select id="getDtoById" resultType="JzllglDto" parameterType="String">
+                SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.bm,
+        to_char(jzllgl.lrsj,'yyyy-yy-dd hh24:mi') lrsj,
+        jzllgl.zt
+        FROM
+        igams_jzllgl jzllgl
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        where jzllgl.llid=#{llid}
+    </select>
+
+
+    <select id="getDto" resultType="JzllglDto" parameterType="JzllglDto">
+                SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.bm,
+        to_char(jzllgl.lrsj,'yyyy-yy-dd hh24:mi') lrsj,
+        jzllgl.zt
+        FROM
+        igams_jzllgl jzllgl
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        <where>
+            jzllgl.scbj='0'
+            <if test="llid !=null and llid != ''">
+                and jzllgl.llid =#{llid}
+            </if>
+            <if test="lldh !=null and lldh != ''">
+                and jzllgl.lldh =#{lldh}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPagedAuditPick" parameterType="JzllglDto" resultType="JzllglDto">
+        SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.zt
+        FROM
+        igams_jzllgl jzllgl
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        <if test="(mc !=null and mc !='')or(bh!=null and bh!='')or(wz!=null and wz!='')or(ly!=null and ly!='')or(ph!=null and ph!='')or(gg!=null and gg!='')or(entire !=null and entire !='')">
+            LEFT JOIN igams_jzllmx jzllmx ON jzllmx.llid = jzllgl.llid
+            LEFT JOIN igams_jzkcxx jzkcxx ON jzkcxx.jzkcid = jzllmx.jzkcid
+            LEFT JOIN matridx_jcsj jzfl ON jzfl.csid = jzkcxx.fl
+            LEFT JOIN matridx_jcsj jzlx ON jzlx.csid = jzkcxx.lx
+        </if>
+        <where>
+            jzllgl.scbj='0'
+            <include refid="SEARCH_TERMS"></include>
+        </where>
+        <if test="(mc !=null and mc !='')or(bh!=null and bh!='')or(wz!=null and wz!='')or(ly!=null and ly!='')or(ph!=null and ph!='')or(gg!=null and gg!='')or(entire !=null and entire !='')">
+            group by
+            jzllgl.llid,
+            jzllgl.lldh,
+            llr.zsxm,
+            flr.zsxm,
+            lrry.zsxm,
+            bm.jgmc,
+            jzllgl.llr,
+            jzllgl.flr,
+            jzllgl.sqrq,
+            jzllgl.bz,
+            jzllgl.ckzt,
+            jzllgl.zt
+        </if>
+    </select>
+    <select id="getAuditListPick" parameterType="List" resultType="JzllglDto">
+      SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.zt,
+        shxx_sqsj,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid
+        from
+        <foreach collection="list" separator="union" open="(" close=") "
+                 item="item" index="index">
+            select #{item.llid} llid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,
+            #{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,
+            #{item.shxx_sftg} shxx_sftg,${index} rownum
+        </foreach>
+        tmp
+        left join igams_jzllgl jzllgl on tmp.llid=jzllgl.llid
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        order by tmp.rownum
+    </select>
+    <select id="getDtoByIds" parameterType="JzllglDto" resultType="JzllglDto">
+        SELECT
+        jzllgl.llid,
+        jzllgl.lldh,
+        llr.zsxm llrmc,
+        flr.zsxm flrmc,
+        lrry.zsxm lrrymc,
+        bm.jgmc bmmc,
+        jzllgl.llr,
+        jzllgl.flr,
+        jzllgl.sqrq,
+        jzllgl.bz,
+        jzllgl.ckzt,
+        jzllgl.zt
+        FROM
+        igams_jzllgl jzllgl
+        LEFT JOIN matridx_xtyh llr ON llr.yhid = jzllgl.llr
+        LEFT JOIN matridx_xtyh flr ON flr.yhid = jzllgl.flr
+        LEFT JOIN matridx_xtyh lrry ON lrry.yhid = jzllgl.lrry
+        LEFT JOIN matridx_jgxx bm ON bm.jgid = jzllgl.bm
+        <where>
+            jzllgl.scbj = '0' and
+            jzllgl.llid in
+            <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+                #{item}
+            </foreach>
+        </where>
+        ORDER BY jzllgl.lldh DESC
+    </select>
+
+    <select id="getDjhSerial" parameterType="String" resultType="String">
+        SELECT  lpad(cast((CAST(coalesce(MAX(substring(lldh,LENGTH(lldh)-strpos(reverse(lldh),'-')+2,LENGTH(lldh))),'0') AS numeric) + 1) as VARCHAR), 3, '0') serial
+        FROM igams_jzllgl
+        <where>
+            scbj = '0' AND lldh like #{prefix}||'%'
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="JzllglDto">
+        insert into igams_jzllgl(llid
+        <if test="lldh != null and lldh!= ''">
+            ,lldh
+        </if>
+        <if test="llr != null and llr != ''">
+            ,llr
+        </if>
+        <if test="flr != null and flr != ''">
+            ,flr
+        </if>
+        <if test="bm != null and bm!= ''">
+            ,bm
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,sqrq
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="zt != null and zt != ''">
+            ,zt
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{llid}
+        <if test="lldh != null and lldh!= ''">
+            ,#{lldh}
+        </if>
+        <if test="llr != null and llr != ''">
+            ,#{llr}
+        </if>
+        <if test="flr != null and flr != ''">
+            ,#{flr}
+        </if>
+        <if test="bm != null and bm!= ''">
+            ,#{bm}
+        </if>
+        <if test="sqrq != null and sqrq != ''">
+            ,cast(#{sqrq} as date)
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="zt != null and zt != ''">
+            ,#{zt}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+
+    <update id="update" parameterType="JzllglDto">
+        update igams_jzllgl
+        <set>
+            xgry=#{xgry}
+            ,xgsj=LOCALTIMESTAMP
+            <if test="lldh != null and lldh!= ''">
+                ,lldh=#{lldh}
+            </if>
+            <if test="llr != null and llr != ''">
+                ,llr=#{llr}
+            </if>
+            <if test="flr != null and flr != ''">
+                ,flr=#{flr}
+            </if>
+            <if test="bm != null and bm!= ''">
+                ,bm=#{bm}
+            </if>
+            <if test="sqrq != null and sqrq != ''">
+                ,sqrq=cast(#{sqrq} as date)
+            </if>
+            <if test="bz != null and bz != ''">
+                ,bz=#{bz}
+            </if>
+            <if test="zt != null and zt != ''">
+                ,zt=#{zt}
+            </if>
+            <if test="ckzt != null and ckzt != ''">
+                ,ckzt=#{ckzt}
+            </if>
+        </set>
+        where llid=#{llid}
+    </update>
+
+    <update id="delete" parameterType="JzllglDto">
+        update igams_jzllgl
+        <set>
+            scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            llid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

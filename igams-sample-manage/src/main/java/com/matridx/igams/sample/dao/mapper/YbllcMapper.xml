@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbllcDao">
+    <insert id="insert" parameterType="YbllcDto">
+		insert into igams_ybllc(ryid,ybkcid,lrsj)
+		values(#{ryid},#{ybkcid},LOCALTIMESTAMP)
+	</insert>
+
+    <select id="getDtoList" parameterType="YbllcDto" resultType="YbllcDto">
+        select ryid,ybkcid
+        from igams_ybllc
+        <where>
+          ryid=#{ryid}
+        </where>
+    </select>
+    <!--点击取消-->
+    <delete id="delete" parameterType="YbllcDto">
+        delete from igams_ybllc
+        <where>
+            ryid=#{ryid}
+            and ybkcid=#{ybkcid}
+        </where>
+    </delete>
+    <!--根据人员id清空领料车-->
+    <delete id="deleteById" parameterType="YbllcDto">
+        delete from igams_ybllc
+        <where>
+            ryid=#{ryid}
+        </where>
+    </delete>
+
+    <select id="getYbLlcDtoList" parameterType="YbllcDto" resultType="YbllcDto">
+        <if test="llid !=null and llid!=''">
+            select ybllmx.llmxid,ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglct.sbh cth,sbglhz.sbh hh,ybkcxx.wz,ybllgl.zt,sjxx.sjid,jcdw.csmc jcdwmc,
+            jcdw.csdm as jcdwdm,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+            from igams_ybllmx ybllmx
+            left join igams_ybllgl ybllgl on ybllgl.llid = ybllmx.llid
+            left join igams_ybkcxx ybkcxx on ybkcxx.ybkcid = ybllmx.ybkcid
+            left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+            left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+            LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+            left join matridx_jcsj jcdw on jcdw.csid = sbglbx.jcdw
+            LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+            LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+            where ybllmx.llid = #{llid} and ybllmx.scbj = '0'
+        </if>
+        <if test="llid ==null or llid==''">
+            SELECT
+           ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglct.sbh cth,sbglhz.sbh hh,ybkcxx.wz,sjxx.sjid,jcdw.csmc jcdwmc,
+            jcdw.csdm as jcdwdm,sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+            from
+            igams_ybllc ybllc
+            left join igams_ybkcxx ybkcxx on ybkcxx.ybkcid = ybllc.ybkcid
+            left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+            left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+            LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+            left join matridx_jcsj jcdw on jcdw.csid = sbglbx.jcdw
+            LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+            LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+            <where>
+                ybllc.ryid=#{ryid}
+            </where>
+        </if>
+    </select>
+
+
+</mapper>

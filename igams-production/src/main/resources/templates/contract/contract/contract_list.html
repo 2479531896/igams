@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_list.js'}"
+	charset="utf-8"></script>
+	<style type="text/css">
+		.divText{
+		margin-left: 10px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+		font-size:25px;
+		cursor: pointer;
+		font-weight: bold;
+		}
+		.csSpan{
+		color: #FFFFFF;
+		}
+		.div1{
+		margin-right: 10px;
+		border:0;
+		height:100% !important;
+		background-color:#F59A23;
+		cursor: pointer;
+		width: 200px;
+		}
+		.div2{
+		margin-right: 10px;
+		border:0;
+		height:100% !important;
+		background-color:#F2001D;
+		cursor: pointer;
+		width: 230px;
+		}
+		.zhushi{
+		margin-top: 50px;
+		font-size:20px;
+		color: #D9001B;
+		}
+	</style>
+</head>
+<body>
+	<div class="panel-body body-content" style="padding-bottom:0px;" id="contractHead">
+		<div class="panel panel-default">
+			<div class="panel-body" >
+				<div id = "div5" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div1" onclick="contractQueryCs('jj')">
+					<div id="divText1" class="divText"><span class="csSpan">即将超时&nbsp;&nbsp;</span><span class="csSpan" id= "contractjjNum" th:text="${overString}"></span></div>
+				</div>
+				<div id = "div2" class="col-xs-4 col-sm-3 col-md-1 col-lg-1 div2" onclick="contractQueryCs('cs')">
+					<div id="divText2" class="divText"><span class="csSpan">已超时&nbsp;&nbsp;</span><span class="csSpan" id= "contractcsNum" th:text="${overdueString}"></span></div>
+				</div>
+				<div class="zhushi">
+					<span th:text="'注:从请购审核通过到合同'+${postEnd}+'审核通过的时间超过'+${overdueTime}+'小时未达到'+${overTime}+'小时之间的为即将超时,超过'+${overTime}+'小时的为已超时。'"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="panel-body body-content" style="padding-bottom: 0px;">
+		<form id="contract_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+			<input type="hidden" name="auditType" id ="auditType" th:value="${htglDto.auditType}">	
+				<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+				<input type="hidden" name="htlx" id ="htlx" th:value="${htlx}">
+				<div class="panel panel-default">
+				<div class="panel-heading">查询条件</div>
+				<div class="panel-body">
+					<div class="">
+						<div class="form-group padding_l10">
+							<select name="cxtj" class="form-control chosen-select" id="cxtj"
+								style="height: 34px;">
+								<option value="0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;全&nbsp;&nbsp;&nbsp;部&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+								<option value="1">合同内部编号</option>
+								<option value="2">合同外部编号</option>
+								<option value="3">&nbsp;&nbsp;&nbsp;供&nbsp;&nbsp;货&nbsp;&nbsp;商&nbsp;&nbsp;&nbsp;</option>
+								<option value="4">&nbsp;&nbsp;&nbsp;负&nbsp;&nbsp;责&nbsp;&nbsp;人&nbsp;&nbsp;&nbsp;</option>
+								<option value="5">&nbsp;&nbsp;申&nbsp;请&nbsp;部&nbsp;门&nbsp;&nbsp;</option>
+								<option value="6">&nbsp;&nbsp;物&nbsp;料&nbsp;编&nbsp;码&nbsp;&nbsp;</option>
+								<option value="7">&nbsp;&nbsp;物&nbsp;料&nbsp;名&nbsp;称&nbsp;&nbsp;</option>
+								<option value="8">框架合同编号</option>
+							</select>
+							<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+	                               onkeydown="if(event.keyCode==13) {contractResult(); return false;}"/>
+						</div>
+						<div class="form-group padding-l30" style="margin-left:0px">
+			            	<label>创建时间</label>
+			            	<input id="shsjstart" name="shsjstart" class="form-control" placeholder="创建日期" validate="{required:true}" />~
+			        		<input id="shsjend" name="shsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+			        	</div>
+						<button type="button" style="margin-left: 50px" id="btn_query"
+							class="btn btn-primary">查询</button>
+						<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+					</div>          
+					<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+						<span class="tit">已选条件：</span>
+						<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+							<ul id="sl_add_ul"></ul>
+						</div>
+					</div>
+					<div class="padding_t7 width100" id="searchMore"
+						style="display: none;">
+						<div class="tab-content sl_sel_con row"
+							style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+							id="sl_sel_con">
+							<div class="tab-pane active" id="tab06">
+								<div id="htlx_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${htlx!='3'}">
+									<div class="form-group width100">
+										<label 
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="合同类型">合同类型：								
+										</label>
+											<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+												<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+													<li>
+														<a style='text-decoration: none; cursor: pointer;'
+															onclick="addTj('htlx','1','contract_formSearch');"
+															id="htlx_id_1">
+															<span>OA采购</span>
+														</a>
+													</li>
+													<li><a style='text-decoration: none; cursor: pointer;'
+															onclick="addTj('htlx','0','contract_formSearch');"
+															id="htlx_id_0">
+															<span>普通采购</span>
+														</a>
+													</li>
+													<li><a style='text-decoration: none; cursor: pointer;'
+														   onclick="addTj('htlx','2','contract_formSearch');"
+														   id="htlx_id_2">
+														<span>委外采购</span>
+													</a>
+													</li>
+												</ul>
+											</div>
+									</div>
+								</div>
+								<div id="sfkj_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label
+												class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否框架">是否框架：
+										</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+												<li>
+													<a style='text-decoration: none; cursor: pointer;'
+													   onclick="addTj('sfkj','0','contract_formSearch');"
+													   id="sfkj_id_0">
+														<span>否</span>
+													</a>
+												</li>
+												<li><a style='text-decoration: none; cursor: pointer;'
+													   onclick="addTj('sfkj','1','contract_formSearch');"
+													   id="sfkj_id_1">
+													<span>是</span>
+												</a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="szbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label 
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="双章标记">双章标记：								
+										</label>
+											<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+												<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+													<li>
+														<a style='text-decoration: none; cursor: pointer;'
+															onclick="addTj('szbj','0','contract_formSearch');"
+															id="szbj_id_0">
+															<span>否</span>
+														</a>
+													</li>
+													<li><a style='text-decoration: none; cursor: pointer;'
+															onclick="addTj('szbj','1','contract_formSearch');"
+															id="szbj_id_1">
+															<span>是</span>
+														</a>
+													</li>
+												</ul>
+											</div>
+									</div>
+								</div>
+								<div id="fpfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="发票">发票：</label>
+										<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${fpfslist!=null && fpfslist.size() >0}"
+													th:each="t_fpfs:${fpfslist}"><a
+													style='text-decoration: none; cursor: pointer;'
+													th:onclick="addTj('fpfs',[[${t_fpfs.csid}]],'contract_formSearch');"
+													th:id="'fpfs_id_'+${t_fpfs.csid}"><span
+														th:style="${t_fpfs.scbj eq '2'?'color:red':''}"
+														th:text="${t_fpfs.csmc}+ ${t_fpfs.scbj eq '2'?'(停用)':''}"></span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="htfxcd_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label
+												class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+												title="合同风险程度">合同风险程度：</label>
+										<div
+												class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul
+													class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${risklist!=null && risklist.size() >0}"
+													th:each="t_risk:${risklist}"><a
+														style='text-decoration: none; cursor: pointer;'
+														th:onclick="addTj('htfxcd',[[${t_risk.csid}]],'contract_formSearch');"
+														th:id="'htfxcd_id_'+${t_risk.csid}"><span
+														th:style="${t_risk.scbj eq '2'?'color:red':''}"
+														th:text="${t_risk.csmc}+ ${t_risk.scbj eq '2'?'(停用)':''}"></span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								
+								<div id="fkfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="付款方式">付款方式：</label>
+										<div
+											class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul
+												class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${fkfslist!=null && fkfslist.size() >0}"
+													th:each="t_fkfs:${fkfslist}"><a
+													style='text-decoration: none; cursor: pointer;'
+													th:onclick="addTj('fkfs',[[${t_fkfs.csid}]],'contract_formSearch');"
+													th:id="'fkfs_id_'+${t_fkfs.csid}"><span
+														th:style="${t_fkfs.scbj eq '2'?'color:red':''}"
+														th:text="${t_fkfs.csmc}+ ${t_fkfs.scbj eq '2'?'(停用)':''}"></span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="scbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                        <div class="form-group width100">
+			                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否废弃">是否废弃：</label>
+			                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+			                                    <li>
+			                                        <a style='text-decoration:none;cursor:pointer;'
+			                                           onclick="addTj('scbj','0','contract_formSearch');"
+			                                           id="scbj_id_0"><span>正常</span></a>
+			                                    </li>
+			                                    <li>
+			                                        <a style='text-decoration:none;cursor:pointer;'
+			                                           onclick="addTj('scbj','2','contract_formSearch');"
+			                                           id="scbj_id_2"><span>废弃</span></a>
+			                                    </li>
+			                            	</ul>
+			                    		</div>
+			                    	</div>
+			                    </div>
+			                    <div id="wcbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+			                        <div class="form-group width100">
+			                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否完成">是否完成：</label>
+			                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+			                            	<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+			                                    <li>
+			                                        <a style='text-decoration:none;cursor:pointer;'
+			                                           onclick="addTj('wcbj','0','contract_formSearch');"
+			                                           id="wcbj_id_0"><span>未完成</span></a>
+			                                    </li>
+			                                    <li>
+			                                        <a style='text-decoration:none;cursor:pointer;'
+			                                           onclick="addTj('wcbj','1','contract_formSearch');"
+			                                           id="wcbj_id_1"><span>已完成</span></a>
+			                                    </li>
+			                            	</ul>
+			                    		</div>
+			                    	</div>
+			                    </div>
+								<div id="sfgq_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否过期">是否过期：</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('sfgq','0','contract_formSearch');"
+													   id="sfgq_id_0"><span>未过期</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('sfgq','1','contract_formSearch');"
+													   id="sfgq_id_1"><span>已过期</span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="htywlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label
+												class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+												title="业务类型">业务类型：</label>
+										<div
+												class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+											<ul
+													class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${contractlist!=null && contractlist.size() >0}"
+													th:each="t_htywlx:${contractlist}"><a
+														style='text-decoration: none; cursor: pointer;'
+														th:onclick="addTj('htywlx',[[${t_htywlx.csid}]],'contract_formSearch');"
+														th:id="'htywlx_id_'+${t_htywlx.csid}"><span
+														th:style="${t_htywlx.scbj eq '2'?'color:red':''}"
+														th:text="${t_htywlx.csmc}+ ${t_htywlx.scbj eq '2'?'(停用)':''}"></span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="zje_id" class="col-md-12 col-sm-12 col-lg-12">
+				                    <div class="form-group width100">
+				                    <label
+											class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+											title="总金额">总金额：</label>
+
+				                    	<div class="col-xs-9 col-sm-9  col-md-9 col-lg-9 sl_sel_list" >
+											<input id="zjemin" type="number" name="zjemin" class="form-control" placeholder="最小金额"  validate="{required:true,}" />~
+											<input id="zjemax" type="number" name="zjemax" class="form-control" placeholder="最大金额"   validate="{required:true,}" />
+				                 		</div>
+				             		</div>
+				             	</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" id="szbj_id_tj" name="szbj_id_tj"> 
+			 <input type="hidden" id="fpfs_id_tj" name="fpfs_id_tj">
+			 <input type="hidden" id="fkfs_id_tj" name="fkfs_id_tj">
+			 <input type="hidden" id="scbj_id_tj" name="scbj_id_tj">
+			 <input type="hidden" id="wcbj_id_tj" name="wcbj_id_tj">
+			 <input type="hidden" id="htlx_id_tj" name="htlx_id_tj">
+			<input type="hidden" id="htfxcd_id_tj" name="htfxcd_id_tj">
+			<input type="hidden" id="htywlx_id_tj" name="htywlx_id_tj">
+			<input type="hidden" id="sfgq_id_tj" name="sfgq_id_tj">
+			<input type="hidden" id="sfkj_id_tj" name="sfkj_id_tj">
+			<div th:include="common/btn/ancz.html"></div>
+			<table id="contract_list"
+				class="table table-hover table-bordered table-hidden"
+				data-reorderable-columns="true"></table>
+		</form>
+	</div>
+</body>
+</html>

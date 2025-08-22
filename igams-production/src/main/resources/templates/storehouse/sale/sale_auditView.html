@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="referrer" content="never">
+    <meta content="webkit" name="renderer" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="Copyright" content="matridx" />
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+    <title>销售订单信息</title>
+    <script type="text/javascript" src="/js/jquery-3.6.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/js/bootstrap.min.js" charset="utf-8"></script>
+    <link href="/js/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet" type="text/css" />
+    <script src="/js/plugins/bootstrap-table/bootstrap-table.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js" type="text/javascript" charset="utf-8"></script>
+    <link href="/js/plugins/bootstrap-table/bootstrap-table-pagejump.css" rel="stylesheet">
+    <script src="/js/plugins/bootstrap-table/bootstrap-table-pagejump.js"></script>
+    <link href="/js/plugins/bootstrap-table/themes/bulma/bootstrap-table-bulma.min.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/js/plugins/bootstrap-typeahead/bootstrap3-typeahead.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/css/v5_style.css" />
+    <link rel="stylesheet" type="text/css" href="/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
+    <link rel="stylesheet" type="text/css" href="/css/basephone.css" />
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/sale/sale_auditView.js'}"  charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css?v=20250110" />
+    <link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/api/site.css?v=20250217v2" />
+    <style>
+        .row{
+            display: block ;
+        }
+        @font-face {
+            font-family: 'Glyphicons Halflings';
+            src: url('/fonts/glyphicons-halflings-regular.eot');
+            src: url('/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+        }
+        .glyphicon {
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: normal;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+    <style type="text/css">
+        .hidden{display:none;}
+        table{
+            table-layout: fixed;
+        }
+        tr{
+            width:100%;
+        }
+        .first th{
+            border:1px solid #DDDDDD;
+        }
+        .first td{
+            border:1px solid #DDDDDD;
+        }
+        body{
+            overflow: auto;
+        }
+        .padding_t7{
+            padding-top: 3px !important;
+        }
+
+
+        .flow_bar li {
+            width: 80px;
+        }
+
+        .flow_bar li .flo_ico {
+            /* 		    width: 30px;
+                        height: 30px;
+                        top:1px;*/
+            top:0px;/*调整小球的位置*/
+        }
+        .flow_bar .flow_finish .flo_ico {
+            width:10px;
+            height:10px;/*调正小球的大小*/
+        }
+        .flow_bar li>div{
+            width:80px;
+            height:56px;
+            height:6px;
+            margin-bottom:40px;/*调整两行间隔*/
+        }
+        .flow_bar .flo_first>div{
+            width:10px;
+            height:6px;/*调整横线宽度*/
+        }
+        .flow_bar .flo_first h5{
+            left:-16px;
+        }
+        .flow_bar li h5{
+            top:19px;
+            width:43px;
+            /*  left:43px; */
+        }
+        .h5, h5 {
+            font-size: 12px;
+        }
+        .table_sh td{
+            padding:0px !important;
+        }
+        b{
+            /* font-size:60px; */
+            margin:16px;
+        }
+        th{
+            font-size:12px;
+            padding:4px !important;
+        }
+
+    </style>
+</head>
+<body>
+<ul class="nav nav-tabs sl_nav_tabs" role="tablist">
+    <li  class="nav-item" >
+        <a  class="nav-link active" href="#xsglTab" role="tab" data-bs-toggle="tab">销售单据</a>
+    </li>
+    <li class="nav-item" >
+        <a  class="nav-link" href="#xsmxTab" role="tab" data-bs-toggle="tab">销售明细</a>
+    </li>
+</ul>
+<form id="saleAuditViewForm" action="" class="form-horizontal sl_all_form  blue-second-skin" data-bs-toggle="validation">
+    <input type="hidden" name="xsid" th:value="${xsglDto.xsid}" id="xsid"/>
+    <input type="hidden" name="urlPrefix" th:value="${urlPrefix}" id="urlPrefix"/>
+    <div class="body-content tab-content">
+        <div role="tabpanel" class="tab-pane fade active in" id="xsglTab"  aria-labelledby="profile-tab">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    OA订单号
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.oaxsdh}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    订单日期
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.ddrq}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    合同单号
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.htdh}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    销售类型
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.xslxmc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    销售部门
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.xsbmmc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    负责大区
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.fzdq}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    客户简称
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.khjcmc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    业务员
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.ywymc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    客户终端
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.khzd}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    终端区域
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.zdqymc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    合同单号
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.htdh}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    运输要求
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.ysyq}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    税率
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.suil}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    总金额
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.xszje}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    发票号
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.xsfph}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    折扣
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.zk}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    到款月
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.dky}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    到款金额
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.dkje}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    是否确认
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.sfqr}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    收货联系人
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.shlxr}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    收货联系方式
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.shlxfs}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    审核人
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.shrymc}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    收货地址
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.shdz}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    快递信息
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.kdxx}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6" style="height:40px;">
+                            <div class="form-group">
+                                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label">
+                                    备注
+                                </label>
+                                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7">
+                                    <span th:text="${xsglDto.bz}" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-12  col-md-6  col-lg-6">
+                            <div class="form-group">
+                                <div id="t_fjcfbDto" th:if="${t_fjcfbDtos != null && t_fjcfbDtos.size() >0}"
+                                     th:each="t_fjcfbDto:${t_fjcfbDtos}">
+                                    <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label"
+                                           th:if="${t_fjcfbDtoStat.index == 0}">附件</label>
+                                    <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label"
+                                           th:if="${t_fjcfbDtoStat.index > 0}"></label>
+                                    <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t7" style="padding-top: 6px;">
+                                        <label for="" th:if="${t_fjcfbDtos.size() > 1}" th:text="${t_fjcfbDtoStat.index+1}+."></label>
+                                        <span th:text="${t_fjcfbDto.wjm}"></span>
+                                        <a title="预览" th:onclick="yl([[${t_fjcfbDto.fjid}]],[[${t_fjcfbDto.wjm}]],[[${t_fjcfbDto.zhwjxx}]])">
+                                        <span class="glyphicon glyphicon-eye-open"></span>
+                                    </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane fade" id="xsmxTab" aria-labelledby="profile-tab" >
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="col-md-12 col-sm-12 col-xs-12 text-left">
+                        <table class="table table-hover table-bordered table-hidden" style="table-layout: fixed;margin-bottom:0px">
+                            <thead>
+                            <tr>
+                                <th style="text-align:center;width:50%;">物料名称</th>
+                                <th style="text-align:center;width:20%;">数量</th>
+                                <th style="text-align:center;width:25%;">单价</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="xsmx:${xsmxDtos}" th:onclick="viewmore([[${xsmx.xsmxid}]])">
+                                <td th:text="${xsmx.wlmc}" style="text-align:center;line-height:120%;white-space: nowrap;text-overflow: clip;overflow: hidden;"></td>
+                                <td th:text="${xsmx.sl}" style="text-align:center;line-height:120%;white-space: nowrap;text-overflow: clip;overflow: hidden;"></td>
+                                <td th:text="${xsmx.bj}" style="text-align:center;line-height:120%;white-space: nowrap;text-overflow: clip;overflow: hidden;"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default" id="t_div" style="overflow-y: scroll;position: absolute;z-index:99;top:0;left:-200px;color:black;width:200px;height:100%;">
+        <div class="panel-body">
+            <div class="col-xs-12 col-sm-12 text-right">
+                <i class="fa fa-times" aria-hidden="true" id="cancel" onclick="closeNav()"></i>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    物料编码
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="wlbm" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    物料名称
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="wlmc" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    规格
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="gg" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    单位
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="jldw" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    数量
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="sl" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    含税单价
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="hsdj" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    价税总额
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="jsze" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    税率
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="suil" />
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12">
+            <div class="form-group">
+                <label for="" class="col-xs-4 col-sm-4 col-md-4  col-lg-4 control-label" style="padding-left:0px;padding-right:0px;">
+                    产品类型
+                </label>
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 padding_t4">
+                    <span id="cplx" />
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</form>
+</body>
+</html>

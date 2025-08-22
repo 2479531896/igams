@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.research.dao.post.IYfglDao" >
+
+	<sql id="SEARCH_TERMS">
+		yf.scbj !='1'
+		<if test="bz !=null and bz != ''">
+			and yf.bz like '%'||#{bz}||'%'
+		</if>
+		<if test="yfdm !=null and yfdm != ''">
+			and yf.yfdm like '%'||#{yfdm}||'%'
+		</if>
+		<if test="yfmc !=null and yfmc != ''">
+			and yf.yfmc like '%'||#{yfmc}||'%'
+		</if>
+		<if test="kssjstart != null and kssjstart != ''">
+			and to_char(yf.kssj,'YYYY-MM-dd') &gt;= #{kssjstart}
+		</if>
+		<if test="kssjend != null and kssjend != ''">
+			and to_char(yf.kssj,'YYYY-MM-dd') &lt;= #{kssjend}
+		</if>
+		<if test="sjwcsjstart != null and sjwcsjstart != ''">
+			and to_char(yf.sjwcsj,'YYYY-MM-dd') &gt;= #{sjwcsjstart}
+		</if>
+		<if test="sjwcsjend != null and sjwcsjend != ''">
+			and to_char(yf.sjwcsj,'YYYY-MM-dd') &lt;= #{sjwcsjqend}
+		</if>
+		<if test = "yflxs != null and yflxs.length > 0 "  >
+			and yf.yflx in 
+			<foreach collection="yflxs" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "dqjds != null and dqjds.length > 0 "  >
+			and yf.dqjd in 
+			<foreach collection="dqjds" separator="," open="(" close=") "
+			item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<!-- 研发管理列表 -->
+	<select id="getPagedDtoList" parameterType="YfglDto" resultType="YfglDto">
+		select yf.yfid,yf.dcmc,yf.yfdm,yf.yfmc,yf.yflx,yf.kssj,yf.dqjd,yf.qwwcsj,yf.sjwcsj,yf.zt,yf.bz,
+			yf.lrry,yf.lrsj,yf.xgry,yf.xgsj,yf.scry,yf.scsj,yf.scbj,
+			jc.csmc yflxmc,jc.csdm yflxdm
+		from igams_yfgl yf
+		left outer join matridx_jcsj jc on yf.yflx = jc.csid
+		<where>
+			<include refid="SEARCH_TERMS"></include>
+		</where>
+	</select>
+	<!-- 根据研发ID获取研发信息 -->
+	<select id="getDtoById" parameterType="String" resultType="YfglDto">
+		select yf.yfid,yf.dcmc,yf.yfdm,yf.yfmc,yf.yflx,yf.kssj,yf.dqjd,yf.qwwcsj,yf.sjwcsj,yf.zt,yf.bz,
+			yf.lrry,yf.lrsj,yf.xgry,yf.xgsj,yf.scry,yf.scsj,yf.scbj,
+			jc.csmc yflxmc,jc.csdm yflxdm
+		from igams_yfgl yf
+		left outer join matridx_jcsj jc on yf.yflx = jc.csid
+			<where>
+				yf.scbj !='1' and yf.yfid = #{yfid}
+			</where>
+	</select>
+	<!-- 根据研发ID获取研发信息 -->
+	<select id="getDto" parameterType="YfglDto" resultType="YfglDto">
+		select yf.yfid,yf.dcmc,yf.yfdm,yf.yfmc,yf.yflx,yf.kssj,yf.dqjd,yf.qwwcsj,yf.sjwcsj,yf.zt,yf.bz,
+			yf.lrry,yf.lrsj,yf.xgry,yf.xgsj,yf.scry,yf.scsj,yf.scbj,
+			jc.csmc yflxmc,jc.csdm yflxdm
+			from igams_yfgl yf
+			left outer join matridx_jcsj jc on yf.yflx = jc.csid
+			<where>
+				yf.scbj !='1' 
+				<if test="yfid != null and yfid != ''">
+					and yf.yfid = #{yfid}
+				</if>
+			</where>
+	</select>
+	<!-- 根据研发ID查询附件表信息 -->
+	<select id="selectFjcfbDtoByYfid" parameterType="String" resultType="FjcfbDto">
+		select fjcfb.ywlx,fjcfb.wjm,fjcfb.wjlj,fjcfb.fjid
+			from igams_yfgl yf
+			left outer join matridx_fjcfb fjcfb on yf.yfid = fjcfb.ywid
+			<where>
+				fjcfb.scbj !='1' and fjcfb.ywid= #{yfid}
+			</where>
+	</select>
+	<!-- 新增研发信息 -->
+	<insert id="insert" parameterType="YfglModel">
+		insert into igams_yfgl(yfid
+		<if test="dcmc !=null and dcmc != ''">
+			,dcmc
+		</if>
+		<if test="yfdm !=null and yfdm != ''">
+			,yfdm
+		</if>
+		<if test="yfmc !=null and yfmc != ''">
+			,yfmc
+		</if>
+		<if test="yflx !=null and yflx != ''">
+			,yflx
+		</if>
+		<if test="kssj !=null and kssj != ''">
+			,kssj
+		</if>
+		<if test="dqjd !=null and dqjd != ''">
+			,dqjd
+		</if>
+		<if test="qwwcsj !=null and qwwcsj != ''">
+			,qwwcsj
+		</if>
+		<if test="sjwcsj !=null and sjwcsj != ''">
+			,sjwcsj
+		</if>
+		<if test="zt !=null and zt != ''">
+			,zt
+		</if>
+		<if test="bz !=null and bz != ''">
+			,bz
+		</if>
+		,lrry,lrsj,scbj) values(#{yfid}
+		<if test="dcmc !=null and dcmc != ''">
+			,#{dcmc}
+		</if>
+		<if test="yfdm !=null and yfdm != ''">
+			,#{yfdm}
+		</if>
+		<if test="yfmc !=null and yfmc != ''">
+			,#{yfmc}
+		</if>
+		<if test="yflx !=null and yflx != ''">
+			,#{yflx}
+		</if>
+		<if test="kssj !=null and kssj != ''">
+			,cast(#{kssj} as TIMESTAMP)
+		</if>
+		<if test="dqjd !=null and dqjd != ''">
+			,#{dqjd}
+		</if>
+		<if test="qwwcsj !=null and qwwcsj != ''">
+			,cast(#{qwwcsj} as TIMESTAMP)
+		</if>
+		<if test="sjwcsj !=null and sjwcsj != ''">
+			,cast(#{sjwcsj} as TIMESTAMP)
+		</if>
+		<if test="zt !=null and zt != ''">
+			,#{zt}
+		</if>
+		<if test="bz !=null and bz != ''">
+			,#{bz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+</mapper>

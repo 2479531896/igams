@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<style type="text/css">
+			.bootstrap-tagsinput {
+			    min-width:100%;
+			}
+			.label-info {
+				cursor: pointer;
+			}
+			 .error{
+             color: #a94442;
+         }
+         	#fkje{
+         	color: #202122;
+         	}
+         	#fkbfb{
+         	color: #202122;
+         	}
+		</style>
+	</head>
+	<body>
+	<div id = "payview">
+		<form id="payForm" class="form-horizontal sl_all_form" method="post" theme="simple" >
+			<div class="body-content">
+				<div class="row">
+					<input type="hidden" name="access_token"/>
+					<input type="hidden" name="czr" id="czr" th:value="${czr}"/>
+					<input type="hidden" name="htid" th:value="${htglDto.htid}" id="htid"/>		
+					<input type="hidden" name="formAction" th:value="${formAction}" id="formAction"/>					
+					<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 col-md-4 control-label">
+								合同金额 </label>
+							<div class="col-sm-8 col-xs-8 col-md-8 padding_t7">
+								<span id="zje" th:text="${htglDto.zje}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 col-md-4 control-label">
+								已付金额 </label>
+							<div class="col-sm-8 col-xs-8 col-md-8 padding_t7">
+								<span id = "yfje" th:text="${htglDto.yfje}" />
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-xs-4 col-md-4 control-label">
+								已付百分比 </label>
+							<div class="col-sm-8 col-xs-8 col-md-8 padding_t7">
+								<span id = "htfkbfb" th:text="${htglDto.fkbfb}" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<button class='btn btn-default col-md-1 col-sm-1' type='button' id='add' name='add' onclick="editdiv()"><span class='glyphicon glyphicon-plus'>添加</span></button>		
+					<!-- 合同明细table -->
+			<table id="tb_list" data-classes="table table-hover table-bordered table-hidden" ></table>
+			</form>
+			</div>
+			<div id="addpay" style="display:none;">
+			<form id="pay_ajaxForm" class="form-horizontal sl_all_form" method="post" theme="simple">
+			<input type="hidden" name="htfkid" id="htfkid" th:value="${htfkqkDto.htfkid}"/>
+			<input type="hidden" name="htzje" id="htzje" th:value="${htfkqkDto.htzje}"/>
+			<input type="hidden" name="access_token" id="access_token"/>
+			<input type="hidden" name="formAction" id="formAction" th:value="${htfkqkDto.formAction}"/>
+			<input type="hidden" name="fkjexgq" id="fkjexgq" th:value="${htfkqkDto.fkjexgq}"/>
+			<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+			<input type="hidden" name="auditType" id="auditType" th:value="${htfkqkDto.auditType}">
+			<div class="body-content" >
+				<div class="row" style="margin-top:20px;">
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款单号:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="fkdh" name="fkdh" th:value="${htfkqkDto.fkdh}" class="form-control" style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px;">
+						<div class="form-group">
+							<label for="" class="col-sm-5 col-md-5 col-xs-12 control-label">
+								<span style="color: red;">*</span>申请人:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7">
+								<div class="input-group">
+									<input type="text" id="sqrmc" name="sqrmc" th:value="${htfkqkDto.sqrmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="sqr" name="sqr" th:value="${htfkqkDto.sqr}" class="form-control"/>
+									<span class="input-group-btn">
+                      					<button type="button" onclick="chooseFzr()" class="btn btn-primary" style="height:28px !important;">选择</button>
+                  					</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px;">
+						<div class="form-group">
+							<label for="" class="col-sm-5 col-md-5 col-xs-12 control-label">
+								<span style="color: red;">*</span>申请部门:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7">
+								<div class="input-group">
+									<input type="text" id="sqbmmc" name="sqbmmc" th:value="${htfkqkDto.sqbmmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="sqbm" name="sqbm" th:value="${htfkqkDto.sqbm}"  class="form-control"/>
+									<span class="input-group-btn">
+                      					<button type="button" onclick="chooseSqbm()" class="btn btn-primary" style="height:28px !important;">选择</button>
+                  					</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px;">
+						<div class="form-group">
+							<label for="" class="col-sm-5 col-md-5 col-xs-12 control-label">
+								<span style="color: red;">*</span>用款部门:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7">
+								<div class="input-group">
+									<input type="text" id="ykbmmc" name="ykbmmc" th:value="${htfkqkDto.ykbmmc}" validate="{required:true}" readonly="true" class="form-control" />
+									<input type="hidden" id="ykbm" name="ykbm" th:value="${htfkqkDto.ykbm}"  class="form-control"/>
+									<span class="input-group-btn">
+                      					<button type="button" onclick="chooseYkbm()" class="btn btn-primary" style="height:28px !important;">选择</button>
+                  					</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-5 col-md-5 col-xs-12 control-label">
+								<span style="color: red;">*</span>付款日期:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7">
+								<input type="text" id="fkrq" name="fkrq"   class="form-control" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款方:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7" th:if="${fkfs!=null && fkfs.size() > 0}">
+								<select id="fkf" name="fkf" class="form-control chosen-select"  style="height:34px;" validate="{required:true}">
+									<option value="">--请选择--</option>
+									<option th:each="list:${fkfs}" th:id="${list.csid}" th:value="${list.csid}" th:text="${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" ></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款方式:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7" th:if="${fkfss!=null && fkfss.size() > 0}">
+								<select id="fkfs" name="fkfs" class="form-control chosen-select "  style="height:34px;" validate="{required:true}">
+									<option value="">--请选择--</option>
+									<option th:each="list:${fkfss}" th:id="${list.csid}" th:value="${list.csid}" th:text="${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}" ></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款金额:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="fkzje" name="fkzje"  class="form-control " style="height:30px;" autocomplete="off" onblur="fkjeblur()" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款百分比:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="fkbfb" name="fkbfb"  class="form-control " style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>最晚支付日期:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="zwzfrq" name="zwzfrq"  class="form-control" style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4">
+						<div class="form-group">
+							<label for="" class="col-sm-5 col-md-5 col-xs-12 control-label">
+								<span style="color: red;">*</span>支付对象:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7">
+								<div class="input-group">
+									<input type="text" id="zfdxmc" name="zfdxmc" th:value="${htfkqkDto.zfdxmc}" readonly="true" validate="{required:true}" class="form-control" />
+									<input id="zfdx" name="zfdx" type="hidden" th:value="${htfkqkDto.zfdx}" class="form-control" validate="{required:true}"/>
+									<span class="input-group-btn">
+										<button type="button" onclick="chooseGysSec()" class="btn btn-primary" style="height:28px !important;">选择</button>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>支付方开户行:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="zffkhh" name="zffkhh" class="form-control" th:value="${htfkqkDto.zffkhh}" style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label" style="padding: 14px;">
+								<span style="color: red;">*</span>支付方银行账户:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="zffyhzh" name="zffyhzh" class="form-control" th:value="${htfkqkDto.zffyhzh}" style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px">
+						<div class="form-group" >
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>单据传达方式:
+							</label>
+							<div class="col-sm-7 col-xs-12 col-md-7" th:if="${djcdfss!=null && djcdfss.size() > 0}">
+								<select id="djcdfs" name="djcdfs" class="form-control chosen-select "  style="height:34px;" validate="{required:true}">
+									<option value="">--请选择--</option>
+									<option th:each="list:${djcdfss}" th:id="${list.csid}" th:value="${list.csid}" th:text="${list.csmc}" th:cskz1="${list.cskz1}" th:csdm="${list.csdm}"  th:selected="${list.csid eq htfkqkDto.djcdfs}"></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 col-sm-4" style="height:40px" >
+						<div class="form-group">
+							<label for="" class="col-sm-5 control-label">
+								<span style="color: red;">*</span>付款事由:
+							</label>
+							<div class="col-sm-7 col-xs-12">
+								<input type="text" id="fksy" name="fksy" class="form-control" style="height:30px;" autocomplete="off" validate="{required:true}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" >
+						<div class="form-group" >
+							<label for="" class="col-sm-1 control-label">
+								备注：
+							</label>
+							<div class="col-sm-11 col-xs-12" >
+								<textarea id="bz" name="bz" rows="3"  style="height:50px;" class="form-control"  autocomplete="off"></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" style="margin-top:20px;">
+						<div class="col-md-4 col-sm-4"></div>
+						<div class="col-md-4 col-sm-4">
+							<div class="col-md-2 col-sm-2"></div>
+							<button title="确定" class="btn btn-success col-md-3 col-sm-3" type="button" onclick="insertpay()">
+	    						<span>确定</span>
+	    					</button>
+	    					<div class="col-md-2 col-sm-2"></div>
+							<button title="取消" class="btn btn-danger col-md-3 col-sm-3" type="button" onclick="returnview()" >
+	    						<span>取消</span>
+	    					</button>
+	    					<div class="col-md-2 col-sm-2"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+		</form>
+	</div>
+	</body>
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/contract_pay.js'}" charset="utf-8"></script>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>行政请购付款列表</title>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/purchase/administration/adminPurchasePay_list.js'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:0px;">
+    <form id="adminPurchasePay_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="urlPrefix" id ="auditType" th:value="${auditType}">
+        <input type="hidden" name="urlPrefix" id ="auditTypePTP" th:value="${auditTypePTP}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件 &nbsp; &nbsp;</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select id="adminPurchasePay_select" name="adminPurchasePay_select" class="form-control chosen-select" style="height:34px;">
+                            <option value="0">付款单号</option>
+                            <option value="1">对账方式</option>
+                            <option value="2">支付对象</option>
+                            <option value="3">申请人</option>
+                            <option value="4">申请部门</option>
+                        </select>
+                        <input id="adminPurchasePay_input" name="adminPurchasePay_input" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchAdminPurchasePayResult(true); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>最晚付款日期</label>
+                        <input id="fkrqstart" name="fkrqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="fkrqend" name="fkrqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore"
+                     style="display: none;">
+                    <div class="tab-content sl_sel_con row"
+                         style="min-height: 50px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+                         id="sl_sel_con">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="fylb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="费用类别">费用类别：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${fylblist!=null && fylblist.size() >0}"
+                                                th:each="t_fylb:${fylblist}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('fylb',[[${t_fylb.csid}]],'adminPurchasePay_formSearch');"
+                                                    th:id="'fylb_id_'+${t_fylb.csid}"><span
+                                                    th:style="${t_fylb.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_fylb.csmc}+ ${t_fylb.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="fkfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="付款方式">付款方式：</label>
+                                    <div
+                                            class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul
+                                                class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${fkfslist!=null && fkfslist.size() >0}"
+                                                th:each="t_fkfs:${fkfslist}"><a
+                                                    style='text-decoration: none; cursor: pointer;'
+                                                    th:onclick="addTj('fkfs',[[${t_fkfs.csid}]],'adminPurchasePay_formSearch');"
+                                                    th:id="'fkfs_id_'+${t_fkfs.csid}"><span
+                                                    th:style="${t_fkfs.scbj eq '2'?'color:red':''}"
+                                                    th:text="${t_fkfs.csmc}+ ${t_fkfs.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="fylb_id_tj" name="fylb_id_tj">
+        <input type="hidden" id="fkfs_id_tj" name="fkfs_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="table_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true" ></table>
+    </form>
+</div>
+</body>
+</html>

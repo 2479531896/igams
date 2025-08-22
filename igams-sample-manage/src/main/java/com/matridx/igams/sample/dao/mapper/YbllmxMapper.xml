@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IYbllmxDao">
+    <insert id="insertYbllmxDtos" parameterType="List">
+        insert into igams_ybllmx(llmxid,llid,ybkcid,lrry,lrsj,scbj)
+        values
+        <foreach collection="list" separator="," open="" close="" item="item" index="index">
+            (#{item.llmxid},#{item.llid},#{item.ybkcid},#{item.lrry},LOCALTIMESTAMP,0)
+        </foreach>
+
+    </insert>
+    <insert id="deleteByLlmxids" parameterType="YbllmxDto">
+        update igams_ybllmx set scbj = '1'
+        where
+        llid = #{llid}
+        and llmxid not in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </insert>
+
+    <update id="updateYdbjByLlmxids" parameterType="YbllmxDto">
+        update igams_ybkcxx  set ydbj = '0' where
+         scbj = '0' and ybkcid in
+        (select ybkcid from igams_ybllmx where llid = #{llid} and llmxid not in
+        <foreach item="item"  collection="ids" open="(" close=") " separator=",">
+            #{item}
+        </foreach>)
+    </update>
+
+    <update id="deleteByLlids" parameterType="YbllmxDto">
+        update igams_ybllmx set scbj = '1'
+        where
+        llid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getDtoListWithPrint" parameterType="String" resultType="YbllmxDto">
+        select ybkcxx.ybkcid,sjxx.nbbm,sjxx.ybbh,jcsj.csmc yblxmc,ybkcxx.tj,sbglbx.sbh bxh,sbglct.sbh cth,sbglhz.sbh hh,ybkcxx.wz,jcdw.csmc jcdwmc,
+        sbglbx.wz bxwz,sbglhz.wz hzwz,ybkcxx.hzbh,sbglct.wz ctwz
+        from igams_ybllmx ybllmx
+        left join igams_ybkcxx ybkcxx on ybllmx.ybkcid = ybkcxx.ybkcid
+        left join igams_sjxx sjxx on ybkcxx.sjid = sjxx.sjid
+        left join matridx_jcsj jcsj on jcsj.csid = sjxx.yblx
+        LEFT JOIN igams_sbgl sbglbx on sbglbx.sbid = ybkcxx.bxid
+        left join matridx_jcsj jcdw on jcdw.csid = sbglbx.jcdw
+        LEFT JOIN igams_sbgl sbglct on sbglct.sbid = ybkcxx.chtid
+        LEFT JOIN igams_sbgl sbglhz on sbglhz.sbid = ybkcxx.hzid
+        where ybllmx.llid = #{llid} and ybllmx.scbj!='1'
+        order by sbglbx.sbh,sbglct.sbh,sbglhz.sbh,cast(ybkcxx.wz as numeric ) asc
+    </select>
+</mapper>

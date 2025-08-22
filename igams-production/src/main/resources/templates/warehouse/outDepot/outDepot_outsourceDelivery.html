@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/warehouse/outDepot/outDepot_outsourceDelivery.js'}" charset="utf-8"></script>
+    <style type="text/css">
+        #fjcfbDto span:hover{
+            cursor:pointer;
+        }
+        .bootstrap-tagsinput {
+            min-width:100%;
+        }
+        .label-info {
+            cursor: pointer;
+        }
+        th{
+            font-weight:bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<form id="outsourceDeliveryForm" th:action="${urlPrefix}+'/warehouse/outDepot/outsourcedeliverySaveOut'"  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+    <input type="hidden" name="access_token"/>
+    <input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+    <input type="hidden" name="url" id="url" th:value="${url}">
+    <input type="hidden" name="ckmx_json" id="ckmx_json"/>
+    <input type="hidden" name="ckdm" id="ckdm"/>
+    <div class="panel-body body-content">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                                <span style="color: red;">*</span>合同单:
+                            </label>
+                            <div class="col-sm-11 col-xs-11 col-md-11">
+                                <div class="input-group">
+                                    <span class="input-group-btn">
+										<button type="button" onclick="chooseContract()" class="btn btn-primary"  style="height:32px !important;">新增</button>
+									</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="form-group">
+                            <div class="col-md-3 col-sm-3" style="height:30px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+                                        <span style="color: red;">*</span>出库单号:
+                                    </label>
+                                    <div class="col-sm-8 col-xs-8 col-md-8" >
+                                        <input type="text" id="ckdh" name="ckdh" th:value="${ckglDto.ckdh}" validate="{required:true,stringMaxLength:64}" class="form-control" autocomplete="off"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3" style="height:30px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+                                        <span style="color: red;">*</span>出库日期:
+                                    </label>
+                                    <div class="col-sm-8 col-xs-8 col-md-8">
+                                        <input type="text" id="ckrq" name="ckrq" th:value="${ckglDto.ckrq}" validate="{required:true,stringMaxLength:64}" class="form-control" autocomplete="off"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3" style="height:30px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+                                        <span style="color: red;">*</span>部门:
+                                    </label>
+                                    <div class="col-sm-8 col-xs-8 col-md-8">
+                                        <div class="input-group">
+                                            <input id="bmmc" name="bmmc" type="text" th:value="${ckglDto.bmmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+                                            <input id="bm" name="bm" type="hidden" th:value="${ckglDto.bm}" class="form-control" validate="{required:true}"/>
+                                            <input id="bmdm" name="bmdm" type="hidden" th:value="${ckglDto.bmdm}" class="form-control" validate="{required:true}"/>
+                                            <span class="input-group-btn">
+												<button type="button" onclick="chooseBm()" class="btn btn-primary">选择</button>
+											</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3" style="height:30px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+                                        <span style="color: red;">*</span>记录编号:
+                                    </label>
+                                    <div class="col-sm-8 col-xs-8 col-md-8">
+                                        <div class="input-group" >
+                                            <input id="jlbh" name="jlbh" type="text" th:value="${ckglDto.jlbh}"validate="{required:true}"  class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3"  style="height:30px">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+                                        <span style="color: red;">*</span>仓库:
+                                    </label>
+                                    <div class="col-sm-8 col-xs-8 col-md-8" th:if="${ckxxDtos!=null && ckxxDtos.size() > 0}">
+                                        <select id="ck" name="ck"  class="form-control chosen-select" validate="{required:true}" style="height:28px;">
+                                            <option value="">--请选择--</option>
+                                            <option th:each="list:${ckxxDtos}" th:value="${list.ckid}" th:text="${list.ckmc}" th:ckdm="${list.ckdm}" ></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table id="tb_list" data-classes="table" style="width:1500px;margin-left: 20px"></table>
+</form>
+</body>
+</html>

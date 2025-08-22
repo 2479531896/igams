@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/receiveMateriel/receiveMateriel_delivery.js'}" charset="utf-8"></script>
+		<style type="text/css">
+			.bootstrap-tagsinput {
+			    min-width:100%;
+			}
+			.label-info {
+				cursor: pointer;
+			}
+			th{
+				font-weight:bold;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+	<form id="deliveryForm" th:action="${urlPrefix}+${llglDto.formAction}"  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="auditType" th:value="${llglDto.auditType}" id="auditType"/>
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="llid" th:value="${llglDto.llid}" id="llid"/>
+		<input type="hidden" name="lllx" th:value="${llglDto.lllx}" id="lllx"/>
+		<input type="hidden" name="hwllmx_json" id="hwllmx_json" th:value="${llglDto.hwllmx_json}" />
+		<input type="hidden" name="jy_json" id="jy_json"/>
+		<input type="hidden" name="rybj" id="rybj"/>
+		<input type="hidden" name="qybj" th:value="${llglDto.qybj}" id="qybj"/>
+		<div class="panel-body body-content">
+		    	<div class="panel panel-default">
+		    		<div class="panel-body">
+						<div class="row">
+<!--					        <div class="col-md-3 col-sm-3" style="height:38.4px;">-->
+<!--								<div class="form-group">-->
+<!--									<label for="" class="col-sm-5 control-label">-->
+<!--										<span style="color: red;">*</span>&nbsp;&nbsp;&nbsp;出库单号:-->
+<!--									</label>-->
+<!--									<div class="col-sm-7 col-xs-12">-->
+<!--										<input type="text" id="ckdh" name="ckdh" th:value="${llglDto.ckdh}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>-->
+<!--									</div>-->
+<!--								</div>-->
+<!--							</div>							-->
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>部门:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<div class="input-group">
+											<input id="sqbmmc" name="sqbmmc" type="text" th:value="${llglDto.sqbmmc}" readonly="readonly" validate="{required:true}" class="form-control" style="height:30px;" autocomplete="off" />
+					        				<input id="sqbm" name="sqbm" type="hidden" th:value="${llglDto.sqbm}" class="form-control" validate="{required:true}"/>
+											<input id="jgdm" name="jgdm" type="hidden" th:value="${llglDto.jgdm}" class="form-control" validate="{required:true}"/>
+											<span class="input-group-btn">
+												<button type="button" onclick="chooseSqbm()" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+<!--							<div class="col-md-3 col-sm-3" style="height:38.4px;">-->
+<!--								<div class="form-group">-->
+<!--									<label for="" class="col-sm-5 control-label">-->
+<!--										<span style="color: red;">*</span>仓库-->
+<!--									</label>-->
+<!--									<div class="col-sm-7 col-xs-12" th:if="${cklist !=null && cklist.size() > 0}"> -->
+<!--										<select id="ckid" name="ckid" th:value="${llglDto.ckmc}" class="form-control chosen-select" validate="{required:true}">-->
+<!--											<option value="">&#45;&#45;请选择&#45;&#45;</option>-->
+<!--		                        			<option th:each="list:${cklist}" th:value="${list.ckid}" th:text="${list.ckmc}" th:selected="${list.ckid eq llglDto.ckid}"></option>-->
+<!--										</select>-->
+<!--									</div>-->
+<!--								</div>-->
+<!--							</div>-->
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>出库日期:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="ckrq" name="ckrq" th:value="${llglDto.ckrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>
+									</div>
+								</div>
+							</div>			
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>出库类别:
+									</label>
+									<div class="col-sm-7 col-xs-12" th:if="${cklblist!=null && cklblist.size() > 0}"  style="height:30px;" >
+										<select id="cklb" name="cklb" th:value="${llglDto.cklb}" 
+											class="form-control chosen-select" validate="{required:true}"
+											>
+											<option value="">--请选择--</option>
+											<option th:each="list:${cklblist}" th:value="${list.csid}"
+												th:text="${list.csmc}" th:csdm="${list.csdm}" th:selected="${list.csid eq llglDto.cklb}">
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>记录编号：
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<input type="text" id="jlbh" name="jlbh" th:value="${llglDto.jlbh}" validate="{stringMaxLength:64}" class="form-control" style="height:30px;" autocomplete="off"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>领料人:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<div class="input-group" >
+											<input id="llrmc" name="llrmc" type="text" th:value="${llglDto.llrmc}" readonly="readonly" validate="{required:true}"  class="form-control" style="height:30px;" autocomplete="off"/>
+						         			<input id="llr" name="llr" type="hidden"  th:value="${llglDto.llr}" class="form-control" validate="{required:true}"/>											
+											<span class="input-group-btn">
+												<button type="button" onclick="chooseFlr('1')" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-3" style="height:38.4px;">
+								<div class="form-group">
+									<label for="" class="col-sm-5 control-label">
+										<span style="color: red;">*</span>发料人:
+									</label>
+									<div class="col-sm-7 col-xs-12">
+										<div class="input-group" >
+											<input id="flrmc" name="flrmc" type="text" th:value="${llglDto.flrmc}" readonly="readonly" validate="{required:true}"  class="form-control" style="height:30px;" autocomplete="off"/>
+						         			<input id="flry" name="flry" type="hidden"  th:value="${llglDto.flry}" class="form-control" validate="{required:true}"/>
+											<span class="input-group-btn">
+												<button type="button" onclick="chooseFlr('2')" class="btn btn-primary">选择</button>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>					
+							<div class="col-md-12 col-sm-12">
+								<div class="form-group" >
+									<label for="" class="col-sm-1 control-label">
+										备注：
+									</label>
+									<div class="col-sm-11 col-xs-11" >
+										<textarea id="bz" name="bz" rows="3"  style="height:50px;" validate="{stringMaxLength:512}" class="form-control" th:text="${llglDto.bz}" autocomplete="off"></textarea> 
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div style="padding-left: 10px;padding-right: 10px;" th:if="${hwllxxDtos != null && hwllxxDtos.size() >0}" th:each="t_hwllxxDto:${hwllxxDtos}">
+				<table border="1" cellspacing="0" cellpadding="0" class="table table-hover table-bordered table-hidden" style="width: 80%;">
+					<tr>
+						<td hidden="hidden"><span th:text="${t_hwllxxDto.hwllid}"/></td>
+		       			<td style="width:50px;"><span th:title="${t_hwllxxDto.wlbm}" th:text="${t_hwllxxDto.wlbm}"/></td>
+						<td style="width:80px;"><span th:title="${t_hwllxxDto.wlmc}" th:text="${t_hwllxxDto.wlmc}"/></td>
+						<td style="width:50px;"><span th:title="${t_hwllxxDto.ckqxmc}" th:text="${t_hwllxxDto.ckqxmc}"/></td>
+		       			<td style="width:30px;"><span th:title="${t_hwllxxDto.jldw}" th:text="${t_hwllxxDto.jldw}"/></td>
+		       			<td style="width:50px;"><span th:title="${t_hwllxxDto.gg}" th:text="${t_hwllxxDto.gg}"/></td>
+		       			<td style="width:70px;" th:if="${llglDto.qybj != '1'}">库存:<span th:title="${t_hwllxxDto.kcl}" th:text="${t_hwllxxDto.kcl}"/></td>
+		       			<td style="width:100px;">请领数:<span th:title="${t_hwllxxDto.qlsl}" th:text="${t_hwllxxDto.qlsl}"/></td>
+		       			<td style="width:100px;">允许领取数:<span id="'yxsl_'+${t_hwllxxDto.hwllid}" th:title="${t_hwllxxDto.yxsl}" th:text="${t_hwllxxDto.yxsl}"/></td>
+		       		</tr>
+         		</table>
+       			<table border="1" cellspacing="0" cellpadding="0" class="table table-hover table-bordered table-hidden">
+					<tr style="background-color: #63a3ff;">
+						<th hidden="hidden"><span th:text="物料id"/></th>
+						<th style="width:80px;"><span th:text="到货单号"/></th>
+						<th style="width:40px;"><span th:text="物料编码" /></th>
+						<th style="width:100px;"><span th:text="物料名称" /></th>
+						<th style="width:30px;"><span th:text="规格" /></th>
+						<th style="width:20px;"><span th:text="单位" /></th>
+						<th style="width:50px;"><span th:text="生产批号" /></th>
+						<th style="width:50px;"><span th:text="追溯号" /></th>
+						<th style="width:40px;"><span th:text="仓库" /></th>
+						<th style="width:40px;"><span th:text="库位编号" /></th>
+						<th style="width:40px;"><span th:text="入库日期"/></th>
+						<th style="width:30px;"><span th:text="允许领取数" /></th>
+						<th style="width:40px;"><span th:text="实领数量"/></th>
+					</tr>
+		        	<div th:if="${t_hwllxxDto.hwxxDtos != null && t_hwllxxDto.hwxxDtos.size() >0}" th:each="t_hwxxDto:${t_hwllxxDto.hwxxDtos}">
+		        		<tr>
+			        		<td hidden="hidden"><span th:title="${t_hwxxDto.hwid}" th:text="${t_hwxxDto.hwid}"/></td>
+			        		<td hidden="hidden"><span th:id="'ckid_'+${t_hwxxDto.hwid}+'_'+${t_hwllxxDto.hwllid}" th:title="${t_hwxxDto.ckid}" th:text="${t_hwxxDto.ckid}"/></td>	
+			        		<td><span th:title="${t_hwxxDto.dhdh}" th:text="${t_hwxxDto.dhdh}"/></td>	
+							<td><span th:title="${t_hwxxDto.wlbm}" th:text="${t_hwxxDto.wlbm}" th:id="'wlbm_'+${t_hwxxDto.hwid}+'_'+${t_hwllxxDto.hwllid}"/></td>
+							<td><span th:title="${t_hwxxDto.wlmc}" th:text="${t_hwxxDto.wlmc}"/></td>
+							<td><span th:title="${t_hwxxDto.gg}" th:text="${t_hwxxDto.gg}"/></td>
+							<td><span th:title="${t_hwxxDto.jldw}" th:text="${t_hwxxDto.jldw}"/></td>
+							<td><span th:title="${t_hwxxDto.scph}" th:text="${t_hwxxDto.scph}"/></td>
+							<td><span th:title="${t_hwxxDto.zsh}" th:text="${t_hwxxDto.zsh}"/></td>
+			                <td><span th:title="${t_hwxxDto.ckmc}" th:text="${t_hwxxDto.ckmc}"/></td>
+							<td><span th:title="${t_hwxxDto.kwmc}" th:text="${t_hwxxDto.kwmc}"/></td>
+			                <td><span th:title="${t_hwxxDto.rkrq}" th:text="${t_hwxxDto.rkrq}"/></td>
+							<td><span th:title="${t_hwxxDto.yxsl}" th:text="${t_hwxxDto.yxsl}" th:id="'yxsl_'+${t_hwxxDto.hwid}+'_'+${t_hwllxxDto.hwllid}"/></td>
+							<td><input style="width:100%;" th:id="'slsl_'+${t_hwxxDto.hwid}+'_'+${t_hwllxxDto.hwllid}" 
+							validate="{slslNumber:true}" name="slsl" th:value="${t_hwxxDto.slsl}" 
+							th:onchange="deliveryout([[${t_hwxxDto.hwid}]],[[${t_hwllxxDto.hwllid}]],[[${t_hwllxxDto.yxsl}]],event);" /></td>
+						</tr>
+					</div>
+				</table>	
+			</div>			
+		</form>
+	</body>
+</html>

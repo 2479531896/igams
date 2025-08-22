@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+		<title>库存列表</title>
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/stock/administrationStock_list.js'}" charset="utf-8"></script>
+</head>
+<body>
+	<div class="panel-body body-content" style="padding-bottom: 0px;">
+		<form id="administrationStock_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+				<input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+			<input type="hidden" name="ids" id="ids" th:value="${ids}">
+			<input type="hidden" name="idss" id="idss" th:value="${idss}">
+			<input type="hidden" name="llcsl" id="llcsl" th:value="${llcsl}">
+			<input type="hidden" name="dbcsl" id="dbcsl" th:value="${dbcsl}">
+			<div class="panel panel-default">
+				<div class="panel-heading">查询条件</div>
+				<div class="panel-body">
+					<div class="">
+						<div class="form-group padding_l10">
+							<select name="cxtj" class="form-control chosen-select" id="cxtj"
+								style="height: 34px;">
+								<option value="0">全部</option>
+								<option value="1">货物名称</option>
+								<option value="2">货物标准</option>
+							</select>
+							<input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {stockResult(true); return false;}"/>
+						</div>
+						<button type="button" style="margin-left: 50px" id="btn_query" class="btn btn-primary">查询</button>
+						<span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+					</div>          
+					<div class="sl_yx_con" id="sl_yx_con" style="display: none">
+						<span class="tit">已选条件：</span>
+						<div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+							<ul id="sl_add_ul"></ul>
+						</div>
+					</div>
+					<div class="padding_t7 width100" id="searchMore" style="display: none;">
+						<div class="tab-content sl_sel_con row" style="min-height: 80px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+							id="sl_sel_con">
+							<div class="tab-pane active" id="tab06">
+								<div id="kw_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="库位">库位：</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li th:if="${kwlblist !=null && kwlblist.size() >0}" th:each="list:${kwlblist}">
+													<a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[kw]],[[${list.csid}]],[[administrationStock_formSearch]]);" th:id="'kw_id_'+${list.csid}">
+														<span th:text="${list.csmc}"></span>
+													</a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="jjts_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="警戒提示">警戒提示：</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('jjts','0','administrationStock_formSearch');"
+													   id="jjts_id_0"><span>库存不足</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('jjts','1','administrationStock_formSearch');"
+													   id="jjts_id_1"><span>库存充足</span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+								<div id="kcsfcz_id" class="col-xs-12 col-sm-12 col-lg-12">
+									<div class="form-group width100">
+										<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="库存是否充足">库存是否充足：</label>
+										<div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+											<ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('kcsfcz','0','administrationStock_formSearch');"
+													   id="kcsfcz_id_0"><span>库存不足</span></a>
+												</li>
+												<li>
+													<a style='text-decoration:none;cursor:pointer;'
+													   onclick="addTj('kcsfcz','1','administrationStock_formSearch');"
+													   id="kcsfcz_id_1"><span>库存充足</span></a>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input  type="hidden" id="kw_id_tj" name="kw_id_tj">
+			<input  type="hidden" id="jjts_id_tj" name="jjts_id_tj">
+			<input  type="hidden" id="kcsfcz_id_tj" name="kcsfcz_id_tj">
+			<div th:include="common/btn/ancz.html"></div>
+			<table id="stock_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true"></table>
+		</form>
+	</div>
+</body>
+</html>

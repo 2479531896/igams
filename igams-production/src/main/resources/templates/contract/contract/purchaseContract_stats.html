@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>请购合同统计</title>
+        <script type="text/javascript" src="/js/plugins/echarts/echarts.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="/js/plugins/echarts/macarons.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/wechat/statistics/style.css" />
+        <script type="text/javascript" src="/js/plugins/echarts/china.js"></script>
+        <link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+    </head>
+    <style type="text/css">
+        .topstyle{
+            display:block;
+            padding-top:10px;
+        }
+        .titletop{
+            position: absolute;
+            padding:15px;
+            left:0px;
+            top:-5px;
+        }
+    </style>
+    <body>
+        <div class="body-content tab-content" id="purchaseContractStats">
+            <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}" >
+            <input type="hidden" name="gysids" id ="gysids" th:value="${gysids}">
+            <div class="row" id="all">
+                <div class="col-md-12 col-sm-12 col-xs-12 padding_t7">
+                    <div class="alert alert-info" role="alert">
+                        温馨提醒：D,W,M,Y为切换按钮。D为按天数据统计，W为按周数据统计，M为按月数据统计，Y为按年数据统计
+                    </div>
+                </div>
+                <div id="q" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">请购审核用时</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="qstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="qendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_purchaseAudit" style="height:300px;margin-top:30px;"></div>
+                </div>
+                <div id="qc" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">请购审核通过到合同提交</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="qcstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="qcendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div style="margin-top: 60px;margin-right: -65px;">
+                        <img class="col-sm-10 col-md-10 col-xs-10 text-center" src="/images/censusimages/ksh40.png" style="margin-bottom: 10px;">
+                        <div class="col-sm-10 col-md-10 col-xs-10 text-center" style="position: absolute;z-index:99;">
+                            <span class="topstyle font-topstyle" style="margin-bottom: 40px;font-family:yjsz; color:#20dbfd;text-shadow: 0 0 25px #00d8ff;font-size: 20px;">平均用时(日)</span>
+                            <div class="font-ygnum purchaseAuditToContractSubmitChange" id="echarts_week_lead_purchaseAuditToContractSubmit" style="color:#20dbfd;text-shadow: 0 0 25px #00d8ff;font-family:yjsz; font-size: 120px"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 统计订单个数 -->
+                <div class="col-md-3 col-sm-6 col-xs-12 padding_t7">
+                    <span style="color:#000000;">统计订单个数</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+                    <!-- 条件选择框 -->
+                    <div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+                        <div id="countOrders_head" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+                            <a href="javascript:void(0);" id="coy" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+                            <a href="javascript:void(0);" id="com" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+                            <a href="javascript:void(0);" id="cow" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+                            <a href="javascript:void(0);" id="cod" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+                        </div>
+                    </div>
+                    <div id="echarts_week_lead_countOrders" style="height:300px;"></div>
+                </div>
+                <div id="cs" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">合同审核用时</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="csstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="csendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_contractAudit" style="height:300px;margin-top:30px;"></div>
+                </div>
+                <div id="cf" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">合同付款审核用时</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="cfstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="cfendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_contractPay" style="height:300px;margin-top:30px;"></div>
+                </div>
+                <!-- 按部门统计合同金额 -->
+                <div class="col-md-3 col-sm-6 col-xs-12 padding_t7">
+                    <span style="color:#000000;">按部门统计合同金额</span>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;height:50px;">
+                    <!-- 条件选择框 -->
+                    <div class="desktop_analysisBar" style="position: absolute;top:30px;margin-left:-20px;width:100%;">
+                        <div id="contractAmount_head" class="desktop_analysisBar-head" style="margin-left:-1%;width:100%;">
+                            <a href="javascript:void(0);" id="cay" class="tj1 ocFlag pull-right " title="年" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundq" ></i><i  class="fa fa-yahoo fa-stack-1x roundq"></i></span></a>
+                            <a href="javascript:void(0);" id="cam" class="tj1 ocFlag pull-right" title="月" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundm"></i><i  class="fa fa-maxcdn fa-stack-1x roundm"></i></span></a>
+                            <a href="javascript:void(0);" id="caw" class="tj1 ocFlag pull-right bechoosed" title="周" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundw" style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i><i  class="fa fa-wikipedia-w fa-stack-1x roundw"  style="color: #20dbfd;text-shadow: 0 0 25px #00d8ff;"></i></span></a>
+                            <a href="javascript:void(0);" id="cad" class="tj1 ocFlag pull-right" title="日" ><span class="fa-stack"><i class="fa fa-circle-thin fa-stack-2x roundd"></i><i  class=" roundw" style="margin-left:30%;">D</i></span></a>
+                        </div>
+                    </div>
+                    <div id="echarts_week_lead_contractAmount" style="height:300px;"></div>
+                </div>
+                <div id="wlfl" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">合同物料分类到货及时率</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="wlflstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="wlflendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_matterArrive" style="height:330px;margin-top:30px;"></div>
+                </div>
+                <div id="htlx" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">合同类型到货及时率</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="htlxstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="htlxendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_contractClassArrive" style="height:330px;margin-top:30px;"></div>
+                </div>
+                <div id="fzr" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">合同负责人到货及时率</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 130px;margin-top: 15px;">
+                        <input id="fzrstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="fzrendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_chargePerArrivePer" style="height:330px;margin-top:30px;"></div>
+                </div>
+                <div id="gys" class="col-md-3 col-sm-6 col-xs-12 padding_t7" style="height:430px;">
+                    <span style="color:#000000;">供应商到货及时率</span>
+                    <div class="col-md-10 col-sm-12" style="height:25px;margin-left: 50px;margin-top: 15px;">
+                        <input id="gysstartTime" th:value="${htglDto.tjsjstart}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%" name="startTime" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="gysendTime" th:value="${htglDto.tjsjend}" style="border: 1px solid #ccc;border-radius: 4px;width: 30%"  name="endTime" placeholder="结束日期" validate="{required:true}" />
+                        <button type="button" style="margin-left:5px;width: 10%;height: 80%  !important;padding: 0px" id="btn_query" class="btn btn-primary glyphicon glyphicon-zoom-in"></button>
+                    </div>
+                    <img class="titletop" src="/images/censusimages/ksh33.png" style="width:100%;">
+                    <div id="echarts_week_lead_supplierArrivePer" style="height:330px;margin-top:30px;"></div>
+                </div>
+                <button type="button" id="gysonick" class="btn btn-primary" style="height:28px ;margin-left: 10px">选择供应商</button>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/contract/contract/purchaseContract_stats.js'}"></script>
+</html>

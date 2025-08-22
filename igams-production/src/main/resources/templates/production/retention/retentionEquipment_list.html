@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom:100px;">
+    <form id="retention_formSearch" class="form-horizontal form-inline">
+        <input type="hidden" name="access_token"/>
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" id="cxtj" class="form-control chosen-select" style="height:34px;">
+                            <option value="0">记录人员</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchretentionResult(); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>记录时间</label>
+                        <input id="jlsjstart" name="jlsjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                        <input id="jlsjend" name="jlsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+            </div>
+            <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                <span class="tit">已选条件：</span>
+                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                    <ul id="sl_add_ul"></ul>
+                </div>
+            </div>
+            <div class="padding_t7 width100" id="searchMore"
+                 style="display: none;">
+                <div class="tab-content sl_sel_con row"
+                     style="min-height: 50px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+                     id="sl_sel_con">
+                    <div class="tab-pane active" id="tab06">
+                        <div id="bhlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                            <div class="form-group width100">
+                                <label
+                                        class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                        title="编号类别">设备编号：</label>
+                                <div
+                                        class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                    <ul
+                                            class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                        <li th:if="${bhlblist!=null && bhlblist.size() >0}"
+                                            th:each="t_bhlb:${bhlblist}"><a
+                                                style='text-decoration: none; cursor: pointer;'
+                                                th:onclick="addTj('bhlb',[[${t_bhlb.csid}]],'retention_formSearch');"
+                                                th:id="'bhlb_id_'+${t_bhlb.csid}"><span
+                                                th:style="${t_bhlb.scbj eq '2'?'color:red':''}"
+                                                th:text="${t_bhlb.csdm}+ ${t_bhlb.scbj eq '2'?'(停用)':''}"></span></a>
+                                        </li>
+                                    </ul>
+                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bhlbmcs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                            <div class="form-group width100">
+                                <label
+                                        class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                        title="设备名称">设备名称：</label>
+                                <div
+                                        class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                    <ul
+                                            class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                        <li th:if="${bhlblist!=null && bhlblist.size() >0}"
+                                            th:each="t_bhlb:${bhlblist}"><a
+                                                style='text-decoration: none; cursor: pointer;'
+                                                th:onclick="addTj('bhlbmcs',[[${t_bhlb.csid}]],'retention_formSearch');"
+                                                th:id="'bhlbmcs_id_'+${t_bhlb.csid}"><span
+                                                th:style="${t_bhlb.scbj eq '2'?'color:red':''}"
+                                                th:text="${t_bhlb.csmc}+ ${t_bhlb.scbj eq '2'?'(停用)':''}"></span></a>
+                                        </li>
+                                    </ul>
+                                    <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12">
+                            <div class="form-group width100">
+                                <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="状态" >状态：</label>
+                                <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                    <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                        <li>
+                                            <a style='text-decoration:none;cursor:pointer;'
+                                               onclick="addTj('wdzt','0','retention_formSearch');"
+                                               id="wdzt_id_0"><span>正常</span></a>
+                                        </li>
+                                        <li>
+                                            <a style='text-decoration:none;cursor:pointer;'
+                                               onclick="addTj('wdzt','1','retention_formSearch');"
+                                               id="wdzt_id_1"><span>低于</span></a>
+                                        </li>
+                                        <li>
+                                            <a style='text-decoration:none;cursor:pointer;'
+                                               onclick="addTj('wdzt','2','retention_formSearch');"
+                                               id="wdzt_id_2"><span>高于</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="bhlb_id_tj" name="bhlb_id_tj">
+        <input type="hidden" id="bhlbmcs_id_tj" name="bhlbmcs_id_tj">
+        <input type="hidden" id="wdzt_id_tj" name="wdzt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="retention_list" class="table table-hover table-bordered table-hidden"></table>
+    </form>
+</div>
+</body>
+<script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/retention/retentionEquipment_list.js'}"></script>
+</html>

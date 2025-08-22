@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+		<script type="text/javascript" th:src="@{${urlPrefix} + '/js/sample/allot/sampleAllot_allocation.js'}" charset="utf-8"></script>
+	</head>
+	<style>
+		.sampleAllotInput{
+			background-color:#eee
+		}
+	</style>
+	<body>
+
+	<form id="sampleAllotForm" th:action="${urlPrefix}+'/sampleAllot/'+${formAction} + 'SaveSampleAllot'" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+		<input type="hidden" name="access_token"/>
+		<input type="hidden" name="message" id="message"/>
+		<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+		<input type="hidden" name="formAction" id="formAction" th:value="${formAction}">
+		<input type="hidden" name="hzInfo_json" id="hzInfo_json"/>
+		<input type="hidden" name="ybdbid" id="ybdbid" th:value="${ybdbDto.ybdbid}"/>
+		<input type="hidden" name="drccdwid" id="drccdwid" th:value="${ybdbDto.drccdw}"/>
+		<input type="hidden" name="dcccdwid" id="dcccdwid" th:value="${ybdbDto.dcccdw}"/>
+		<input type="hidden" name="dcbxid" id="dcbxid" th:value="${ybdbDto.dcbx}"/>
+		<input type="hidden" name="dcctid" id="dcctid" th:value="${ybdbDto.dcct}"/>
+		<input type="hidden" name="hzlist" id="hzlist" th:value="${hzlist}"/>
+		<input type="hidden" name="drhzList" id="drhzList" th:value="${drhzList}"/>
+		<div class="panel-body body-content">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<!--调拨日期-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px" th:if="${formAction!='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>调拨日期:
+								</label>
+								<div class="col-sm-9">
+									<input type="text" id="dbrq" name="dbrq" th:value="${ybdbDto.dbrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:28px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<!--调拨日期特殊审核-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px" th:if="${formAction=='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>调拨日期:
+								</label>
+								<div class="col-sm-9">
+									<input type="text" readonly th:value="${ybdbDto.dbrq}"  class="form-control" style="height:28px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<!--调拨人-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px;" th:if="${formAction!='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label">
+									<span style="color: red;">*</span>调拨人:
+								</label>
+								<div class="col-sm-9">
+									<div class="input-group" >
+										<input id="dbrmc" name="dbrmc" type="text" th:value="${ybdbDto.dbrmc}" readonly="readonly" validate="{required:true}"  class="form-control" style="height:30px;" autocomplete="off"/>
+										<input id="dbr" name="dbr" type="hidden"  th:value="${ybdbDto.dbr}" class="form-control" validate="{required:true}"/>
+										<span class="input-group-btn" >
+											<button type="button" onclick="chooseDbr()" class="btn btn-primary">选择</button>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!--调拨人特殊审核-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px;" th:if="${formAction=='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label">
+									<span style="color: red;">*</span>调拨人:
+								</label>
+								<div class="col-sm-9">
+									<input type="text" th:value="${ybdbDto.dbrmc}" readonly="readonly"  class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<!--调入储存单位-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label">
+									<span style="color: red;">*</span>调入储存单位:
+								</label>
+								<div class="col-sm-9">
+									<select id="drccdw" name="drccdw" class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkCcdw('drccdw','dcccdw')">
+										<option value="">--请选择--</option>
+										<option th:each="ccdw:${dwlist}" th:value="${ccdw.csid}" th:text="${ccdw.csmc}" th:csdm="${ccdw.csdm}" th:selected="${ccdw.csid  eq ybdbDto.drccdw}"></option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!--调出储存单位-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>调出储存单位:
+								</label>
+								<div class="col-sm-9">
+									<select id="dcccdw" name="dcccdw" class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkCcdw('dcccdw','drccdw')">
+										<option value="">--请选择--</option>
+										<option th:each="ccdw:${dwlist}" th:value="${ccdw.csid}" th:text="${ccdw.csmc}" th:csdm="${ccdw.csdm}" th:selected="${ccdw.csid  eq ybdbDto.dcccdw}">
+										</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<!--调出冰箱-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label">
+									<span style="color: red;">*</span>调出冰箱:
+								</label>
+								<div class="col-sm-9">
+									<select id="dcbx" name="dcbx" class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkBx()">
+										<option value="">--请选择--</option>
+										<option th:each="dcbx:${bxlist}" th:value="${dcbx.sbid}" th:text="${dcbx.wz + '(' + dcbx.sbh + ')'}" th:selected="${dcbx.sbid  eq ybdbDto.dcbx}">
+									</select>
+								</div>
+							</div>
+						</div>
+						<!--调出抽屉-->
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label">
+									<span style="color: red;">*</span>调出抽屉:
+								</label>
+								<div class="col-sm-9">
+									<select id="dcct" name="dcct" class="form-control chosen-select" validate="{required:true}" style="height: 34px;" onchange="checkCt()">
+										<option value="">--请选择--</option>
+										<option th:each="dcct:${ctlist}" th:value="${dcct.sbid}" th:text="${dcct.wz}" th:selected="${dcct.sbid  eq ybdbDto.dcct}">
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px" th:if="${formAction=='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>调入冰箱:
+								</label>
+								<div class="col-sm-9">
+									<input  id="drbxmc" name="drbxmc"  type="text" th:value="${ybdbDto.dcbxmc}" readonly="readonly"  class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-4 col-md-4 col-sm-4" style="margin-top:5px" th:if="${formAction=='commonAudit'}">
+							<div class="form-group">
+								<label for="" class="col-sm-3 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>调入抽屉:
+								</label>
+								<div class="col-sm-9">
+									<input id="drctmc" name="drctmc" type="text" th:value="${ybdbDto.dcctmc}" readonly="readonly"  class="form-control" style="height:30px;" autocomplete="off"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<!--物流信息-->
+						<div class="col-lg-12 col-md-12 col-sm-12" >
+							<div class="form-group" >
+								<label for="" class="col-sm-1 control-label" style="padding: 0;">
+									<span style="color: red;">*</span>物流信息：
+								</label>
+								<div class="col-sm-11" >
+									<input id="wlxx" name="wlxx" th:value="${ybdbDto.wlxx}" validate="{required:true,stringMaxLength:1024}" class="form-control"autocomplete="off"></input>
+								</div>
+							</div>
+						</div>
+						<!--备注-->
+						<div class="col-lg-12 col-md-12 col-sm-12" >
+							<div class="form-group" >
+								<label for="" class="col-sm-1 control-label" style="padding: 0;">
+									备注：
+								</label>
+								<div class="col-sm-11" >
+									<textarea id="bz" name="bz" rows="3" th:text="${ybdbDto.bz}" style="height:50px;" validate="{stringMaxLength:1024}" class="form-control"autocomplete="off"></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body">
+					<div class="row" th:if="${formAction!='commonAudit'}">
+						<div class="col-md-12 col-sm-12" >
+							<button type="button" class="btn btn-success" onclick="addHzInfo()"><span id="addHzInfo">新增</span></button>
+							<button type="button" class="btn btn-success" onclick="allotAll()"><span id="allotAll">调拨全部</span></button>
+						</div>
+					</div>
+					<table id="tb_hzInfo_list" class="table table-hover table-bordered" style="width:1000px;"></table>
+				</div>
+			</div>
+		</div>
+		</form>
+	</body>
+</html>

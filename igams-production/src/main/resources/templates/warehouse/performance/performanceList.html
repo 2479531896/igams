@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>供方绩效列表</title>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/warehouse/performance/performanceList.js'}" charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom: 0px;">
+    <form id="performanceList_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="auditType" id ="auditType" th:value="${gfjxglDto.auditType}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                style="height: 34px;">
+                            <option value="5">全&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;部</option>
+                            <option value="0">供方名称</option>
+                            <option value="1">供方联系人</option>
+                            <option value="2">供方传真</option>
+                            <option value="3">供方电话</option>
+                            <option value="4">供方编号</option>
+                            <option value="6">录入人员</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配" onkeydown="if(event.keyCode==13) {saleResult(true); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left: 50px" id="btn_query" class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore"
+                     style="display: none;">
+                    <div class="tab-content sl_sel_con row"
+                         style="min-height: 120px; padding-left: 5px; margin-left: 0px; margin-right: 0px; padding-bottom: 10px;"
+                         id="sl_sel_con">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="gfgllb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="供方管理类别">供方管理类别：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${gfgllblist!=null && gfgllblist.size() >0}" th:each="gfgllbs:${gfgllblist}">
+                                                <a
+                                                        style='text-decoration: none; cursor: pointer;'
+                                                        th:onclick="addTj('gfgllb',[[${gfgllbs.csid}]],'performanceList_formSearch');"
+                                                        th:id="'gfgllb_id_'+${gfgllbs.csid}"><span
+                                                        th:style="${gfgllbs.scbj eq '2'?'color:red':''}"
+                                                        th:text="${gfgllbs.csmc}+ ${gfgllbs.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="khxz_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="考核性质">考核性质：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${khxzlist!=null && khxzlist.size() >0}" th:each="khxzs:${khxzlist}">
+                                                <a
+                                                        style='text-decoration: none; cursor: pointer;'
+                                                        th:onclick="addTj('khxz',[[${khxzs.csid}]],'performanceList_formSearch');"
+                                                        th:id="'khxz_id_'+${khxzs.csid}"><span
+                                                        th:style="${khxzs.scbj eq '2'?'color:red':''}"
+                                                        th:text="${khxzs.csmc}+ ${khxzs.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="pj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="评级">评级：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${pjlist!=null && pjlist.size() >0}" th:each="pjs:${pjlist}">
+                                                <a
+                                                        style='text-decoration: none; cursor: pointer;'
+                                                        th:onclick="addTj('pj',[[${pjs.csid}]],'performanceList_formSearch');"
+                                                        th:id="'pj_id_'+${pjs.csid}"><span
+                                                        th:style="${pjs.scbj eq '2'?'color:red':''}"
+                                                        th:text="${pjs.csmc}+ ${pjs.scbj eq '2'?'(停用)':''}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="khkssj_id" class="col-md-12 col-sm-12 col-lg-12 sl_sel_list">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="考核开始时间">考核开始时间：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <input id="khkssjstart" name="khkssjstart" class="form-control" placeholder="开始日期"  validate="{required:true,}" />~
+                                        <input id="khkssjend" name="khkssjend" class="form-control" placeholder="结束日期"   validate="{required:true,}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="khjssj_id" class="col-md-12 col-sm-12 col-lg-12 sl_sel_list">
+                                <div class="form-group width100">
+                                    <label
+                                            class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label"
+                                            title="考核结束时间">考核结束时间：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <input id="khjssjstart" name="khjssjstart" class="form-control" placeholder="开始日期"  validate="{required:true,}" />~
+                                        <input id="khjssjend" name="khjssjend" class="form-control" placeholder="结束日期"   validate="{required:true,}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="gfgllb_id_tj" name="gfgllb_id_tj">
+        <input  type="hidden" id="khxz_id_tj" name="khxz_id_tj">
+        <input  type="hidden" id="pj_id_tj" name="pj_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="performance_list" class="table table-hover table-bordered table-hidden" data-reorderable-columns="true"></table>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.sample.dao.post.IJzllmxDao" >
+    <select id="getDtoListByllid" resultType="JzllmxDto" parameterType="String">
+    SELECT
+        jzllmx.jzkcid,
+        jzllmx.llmxid,
+        jzkcxx.bh,
+        jzkcxx.mc,
+        jzkcxx.ph,
+        jzkcxx.gg,
+        jzllmx.qlsl,
+        jzllmx.cksl,
+        jzkcxx.wz,
+        jzkcxx.ly,
+        jzkcxx.kcl,
+        (coalesce(jzkcxx.yds,0)-coalesce(jzllmx.qlsl,0)) yds,
+        (coalesce(jzkcxx.kcl,0) - coalesce(jzkcxx.yds,0)+coalesce(jzllmx.qlsl,0)) klsl,
+        jzkcxx.kbs
+    FROM
+        igams_jzllmx jzllmx
+        LEFT JOIN igams_jzkcxx jzkcxx ON jzkcxx.jzkcid = jzllmx.jzkcid
+        where jzllmx.llid=#{llid}
+    ORDER BY jzkcxx.wz ASC
+    </select>
+
+    <insert id="insertList" parameterType="list" >
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                insert into igams_jzllmx(llmxid
+                <if test="item.llid != null and item.llid != ''">
+                    ,llid
+                </if>
+                <if test="item.jzkcid != null and item.jzkcid != ''">
+                    ,jzkcid
+                </if>
+                <if test="item.qlsl != null and item.qlsl != ''">
+                    ,qlsl
+                </if>
+                <if test="item.cksl != null and item.cksl != ''">
+                    ,cksl
+                </if>
+                ,lrry,lrsj,scbj
+                )values(#{item.llmxid}
+                <if test="item.llid != null and item.llid != ''">
+                    ,#{item.llid}
+                </if>
+                <if test="item.jzkcid != null and item.jzkcid != ''">
+                    ,#{item.jzkcid}
+                </if>
+                <if test="item.qlsl != null and item.qlsl != ''">
+                    ,cast(#{item.qlsl} as numeric )
+                </if>
+                <if test="item.cksl != null and item.cksl != ''">
+                    ,cast(#{item.cksl} as numeric )
+                </if>
+                ,#{item.lrry},LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+    </insert>
+
+    <delete id="deleteById" parameterType="JzllmxDto">
+    DELETE
+    FROM
+        igams_jzllmx
+    WHERE
+        llid =#{llid }
+    </delete>
+
+    <update id="updateList" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_jzllmx
+                <set>
+                    <trim prefixOverrides=",">
+                        xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+                        <if test="item.cksl !=null and item.cksl !=''">
+                            ,cksl=cast(#{item.cksl} as numeric)
+                        </if>
+                    </trim>
+                </set>
+                <where>
+                    llmxid=#{item.llmxid}
+                </where>
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getDtoList" resultType="JzllmxDto" parameterType="JzllmxDto">
+    SELECT
+        jzllmx.jzkcid,
+        jzllmx.llmxid,
+        jzkcxx.bh,
+        jzkcxx.mc,
+        jzkcxx.ph,
+        jzkcxx.gg,
+        jzllmx.qlsl,
+        jzllmx.cksl,
+        jzkcxx.wz,
+        jzkcxx.ly,
+        jzkcxx.kcl,
+        jzkcxx.yds
+    FROM
+        igams_jzllmx jzllmx
+        LEFT JOIN igams_jzkcxx jzkcxx ON jzkcxx.jzkcid = jzllmx.jzkcid
+        <where>
+            jzllmx.scbj='0'
+            <if test="ids !=null and ids.size > 0">
+                and jzllmx.llid in
+                <foreach collection="ids" open="(" close=")" separator="," item="items">
+                    #{items}
+                </foreach>
+            </if>
+            <if test="jzkcid !=null and jzkcid!=''">
+                and jzllmx.jzkcid=#{jzkcid}
+            </if>
+        </where>
+    </select>
+
+    <update id="delete" parameterType="JzllmxDto">
+        update igams_jzllmx
+        <set>
+            scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            llid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+</mapper>

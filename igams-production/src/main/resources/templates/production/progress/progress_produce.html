@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/production/progress/progress_produce.js'}" charset="utf-8"></script>
+    <style type="text/css">
+		.bootstrap-tagsinput{
+			width:100%;
+		}
+        #fjcfbDto span:hover{
+            cursor:pointer;
+        }
+        .bootstrap-tagsinput {
+            min-width:100%;
+        }
+        .label-info {
+            cursor: pointer;
+        }
+        th{
+            font-weight:bold;
+            text-align: center;
+        }
+	</style>
+</head>
+<body>
+<form id="progress_produce_ajaxForm" th:action ="${urlPrefix}+${sczlglDto.formAction}" class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+    <div class="body-content">
+        <div id="row" class="row">
+            <input type="hidden" name="access_token"/>
+            <input type="hidden" name="fjids" id="fjids"/>
+            <input type="hidden" name="sczlmx_json" id="sczlmx_json"/>
+            <input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+            <input type="hidden" name="cplx" id="cplx" th:value="${sczlglDto.cplx}">
+            <input type="hidden" name="cplxmc" id="cplxmc" th:value="${sczlglDto.cplxmc}">
+            <input type="hidden" name="url" id="url" th:value="${url}">
+            <input type="hidden" name="xqjhmxid" id="xqjhmxid" th:value="${sczlglDto.xqjhmxid}">
+            <input type="hidden" name="sfsc" id="sfsc" th:value="${sczlglDto.sfsc}">
+            <input type="hidden" name="ywlx" id="ywlx" th:value="${ywlx}">
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                   <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>指令单号:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                    <div class="input-group">
+                        <input type="text" id="zldh" name="zldh" th:value="${sczlglDto.zldh}" validate="{required:true,stringMaxLength:32}" class="form-control" style="height:28px;" autocomplete="off"/>
+                        <span class="input-group-btn">
+							<button type="button" onclick="refreshZldh()" class="btn btn-primary" style="height:28px !important;">刷新</button>
+						</span>
+					</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>指令日期:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="zlrq" th:value="${sczlglDto.zlrq}" name="zlrq" validate="{required:true,stringMaxLength:32}" class="form-control" style="height:28px;" autocomplete="off"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>产品编号:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="cpbh" th:value="${sczlglDto.cpbh}" name="cpbh" validate="{required:true,stringMaxLength:32}" class="form-control" style="height:28px;" autocomplete="off"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>计划产量:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <input type="text" id="jhcl" onchange="jhclChoose()" th:value="${sczlglDto.jhcl}" name="jhcl" validate="{required:true,digits:true}" class="form-control" style="height:28px;" autocomplete="off"/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-4">
+                <div class="form-group">
+                    <label for="" class="col-sm-3 col-md-3 col-xs-3 control-label">
+                        <span style="color: red;">*</span>审核类型:
+                    </label>
+                    <div class="col-sm-9 col-xs-9 col-md-9">
+                        <select  id="shlx" name="shlx"  th:value="${sczlglDto.shlx}" class="form-control chosen-select" style="height:28px;" validate="{required:true}">
+                            <option value="">--请选择--</option>
+                            <option  th:each="audit:${auditlist}" th:value="${audit.cskz1}"  th:csdm="${audit.csdm}" th:text="${audit.csmc}" th:selected="${sczlglDto.shlx eq audit.cskz1}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12" >
+                <div class="form-group">
+                    <label for="" class="col-sm-1 col-xs-1 col-md-1 control-label">
+                        附件上传:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11" style="line-height:28px;">
+                        <a href="javascript:void(0);" onclick="editfile()" id="file_btn" style="display:inline-block;width:100%;;border:1px solid #CCCCCC;border-radius:3px;">
+                            <span  id="fileclick" title="点击上传"  style="display:inline-block;width:100%;color:#A6A6A6;font-size:12px;padding-left:10px;">点击展开上传文件</span>
+                        </a>
+                        <div id="fileDiv" style="display:none;">
+                            <input id="pro_file" name="pro_file" type="file">
+                            <button class="btn btn-default" type="button" style="margin-left:77%;width:23%;margin-top:10px;" onclick="cancelfile()">隐藏</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12">
+                <div class="form-group">
+                    <label for="" class="col-sm-1 col-md-1 col-xs-1 control-label">
+                        备注:
+                    </label>
+                    <div class="col-sm-11 col-xs-11 col-md-11">
+                        <textarea id="bz" name="bz" th:text="${sczlglDto.bz}" rows="3" validate="{stringMaxLength:1024}" style="height: auto;" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table id="progress_produce_tb_list" data-classes="table table-hover table-bordered" style="width:1470px;margin-left:2px;"></table>
+</form>
+</body>
+</html>

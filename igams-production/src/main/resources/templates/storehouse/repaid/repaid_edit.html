@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<script type="text/javascript" src="/js/systemmain/task/bootstrap-tagsinput.js" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="/js/systemmain/task/bootstrap-tagsinput.css" />
+	<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/fileinput.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/plugins/bootstrap-fileinput/zh.js" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="/js/plugins/bootstrap-fileinput/fileinput.min.css" />
+	<script type="text/javascript" th:src="@{${urlPrefix} + '/js/storehouse/repaid/repaid_edit.js'}" charset="utf-8"></script>
+	<style type="text/css">
+	</style>
+</head>
+<body>
+
+<form id="repaidForm" th:action="${urlPrefix}+${jcghglDto.formAction}"  class="form-horizontal sl_all_form" method="post" theme="simple" data-bs-toggle="validation">
+	<input type="hidden" name="access_token"/>
+	<input type="hidden" name="formAction" id ="formAction" th:value="${jcghglDto.formAction}">
+	<input type="hidden" name="jcjyid" id ="jcjyid" th:value="${jcghglDto.jcjyid}">
+	<input type="hidden" name="jcghid" id ="jcghid" th:value="${jcghglDto.jcghid}">
+	<input type="hidden" name="urlPrefix" id="urlPrefix" th:value="${urlPrefix}">
+	<input type="hidden" name="xsbj" id ="xsbj" th:value="${jcghglDto.xsbj}">
+	<input type="hidden" name="cklist" id="cklist" th:value="${cklist}">
+	<input type="hidden" name="kwlist" id="kwlist" th:value="${kwlist}">
+	<input type="hidden" name="url" id="url" th:value="${url}">
+	<input type="hidden" name="auditType" id="auditType"  th:value="${auditType}">
+	<input type="hidden" name="ghmx_json" id="ghmx_json">
+	<div class="panel-body body-content">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-3 col-sm-3" style="height:30px">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>归还单号:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<div class="input-group">
+									<input type="text" id="ghdh" style="min-width: 100%;height:28px;" readonly="readonly" name="ghdh" th:value="${jcghglDto.ghdh}" validate="{required:true,stringMaxLength:64}" class="form-control"  autocomplete="off"/>
+									<span class="input-group-btn">
+												<button type="button" onclick="sxghdh()" class="btn btn-primary"  style="height:32px !important;">刷新</button>
+											</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:30px">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>部门:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<div class="input-group">
+									<input id="bmmc" name="bmmc" type="text" th:value="${jcghglDto.bmmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+									<input id="bm" name="bm" type="hidden" th:value="${jcghglDto.bm}" class="form-control" validate="{required:true}"/>
+									<input id="bmdm" name="bmdm" type="hidden" th:value="${jcghglDto.bmdm}" class="form-control" validate="{required:true}"/>
+									<span class="input-group-btn">
+												<button type="button" onclick="chooseSqbm()" class="btn btn-primary">选择</button>
+											</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>归还日期:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<input type="text" id="ghrq" name="ghrq" th:value="${jcghglDto.ghrq}" validate="{required:true,stringMaxLength:64}" class="form-control" style="height:28px;" autocomplete="off"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>单位类别:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8" th:if="${dwlblist!=null && dwlblist.size() > 0}">
+								<select id="dwlx" name="dwlx"
+										class="form-control chosen-select" validate="{required:true}"  onchange="choseDwlx()"
+										style="height: 34px;">
+									<option value="">--请选择--</option>
+									<option th:each="list:${dwlblist}" th:value="${list.csid}"
+											th:text="${list.csmc}" th:csdm="${list.csdm}" th:selected="${list.csid eq jcghglDto.dwlx}">
+									</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3" style="height:30px">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>单位:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<div class="input-group">
+									<input id="dwmc" name="dwmc" type="text" th:value="${jcghglDto.dwmc}" readonly="readonly" validate="{required:true}" class="form-control"  />
+									<input id="dwid" name="dwid" type="hidden" th:value="${jcghglDto.dwid}" class="form-control" validate="{required:true}"/>
+									<input id="dwdm" name="dwdm" type="hidden" th:value="${jcghglDto.dwdm}" class="form-control" validate="{required:true}"/>
+									<span class="input-group-btn">
+												<button type="button" onclick="choosedw()" class="btn btn-primary">选择</button>
+											</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3 col-sm-3">
+						<div class="form-group">
+							<label for="" class="col-sm-4 col-md-4 col-xs-4 control-label">
+								<span style="color: red;">*</span>是否支付运费:
+							</label>
+							<div class="col-sm-8 col-xs-8 col-md-8">
+								<select id="sfzfyf" name="sfzfyf" th:value="${jcghglDto.sfzfyf}"
+										class="form-control chosen-select" validate="{required:true}"
+										style="height: 34px;">
+									<option value="">--请选择--</option>
+									<option value="1"  th:selected="${'1' eq jcghglDto.sfzfyf}">是</option>
+									<option value="0"  th:selected="${'0' eq jcghglDto.sfzfyf}">否</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 col-sm-12" >
+						<div class="form-group" >
+							<label for="" class="col-sm-1 control-label">
+								备注:
+							</label>
+							<div class="col-sm-11 col-xs-11" >
+								<textarea id="bz" name="bz" rows="3"  style="height:50px;" validate="{stringMaxLength:512}" class="form-control" th:text="${jcghglDto.bz}" autocomplete="off"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<table id="jcghglDto_list" data-classes="table" style="width:1500px;margin-left: 20px"></table>
+</form>
+</body>
+</html>
