@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head>
+        <script type="text/javascript" th:src="@{${urlPrefix} + '/js/vacation/vacation/vacationRecord_list.js'}"
+                charset="utf-8"></script>
+    </head>
+    <body>
+        <div class="panel-body body-content" style="padding-bottom: 0px;">
+            <form id="vacationRecord_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+                <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+                <div class="panel panel-default">
+                    <div class="panel-heading">查询条件</div>
+                    <div class="panel-body">
+                        <div class="">
+                            <div class="form-group padding_l10">
+                                <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                        style="height: 34px;">
+                                    <option value="0">全部</option>
+                                    <option value="1">用户名</option>
+                                    <option value="2">姓名</option>
+                                </select>
+                                <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                                       onkeydown="if(event.keyCode==13) {questionResult(); return false;}"/>
+                            </div>
+                            <button type="button" style="margin-left: 50px" id="btn_query"
+                                    class="btn btn-primary">查询</button>
+                            <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                        </div>
+                        <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                            <span class="tit">已选条件：</span>
+                            <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                                <ul id="sl_add_ul"></ul>
+                            </div>
+                        </div>
+                        <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                            <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:50px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                                <div class="tab-pane active" id="tab06">
+                                    <div id="jqlx_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="假期类型">假期类型：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${jqlxlist !=null && jqlxlist.size() >0}" th:each="list:${jqlxlist}">
+                                                        <a style='text-decoration:none;cursor:pointer;' th:onclick="addTj([[jqlx]],[[${list.csid}]],[[vacationRecord_formSearch]]);" th:id="'jqlx_id_'+${list.csid}">
+                                                            <span th:text="${list.csmc}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="nd_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="年度">年度：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                                    <li th:if="${nds !=null && nds.size() >0}" th:each="nd:${nds}">
+                                                        <a style='text-decoration:none;cursor:pointer;' th:onclick="addTj([[nd]],[[${nd}]],[[vacationRecord_formSearch]]);" th:id="'nd_id_'+${nd}">
+                                                            <span th:text="${nd}"></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="kssj_id" class="col-xs-12 col-sm-6 col-lg-6">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-4 col-md-4 col-lg-2 control-label" title="开始时间">开始时间：</label>
+                                            <div class="col-xs-12 col-sm-8  col-md-8 col-lg-10 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                                    <li>
+                                                        <input id="kssjstart" name="kssjstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                        <input id="kssjend" name="kssjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="jssj_id" class="col-xs-12 col-sm-6 col-lg-6">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-4 col-md-4 col-lg-2 control-label" title="有效期">有效期：</label>
+                                            <div class="col-xs-12 col-sm-8  col-md-8 col-lg-10 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                                    <li>
+                                                        <input id="yxqstart" name="yxqstart" class="form-control" placeholder="开始日期" validate="{required:true}" />~
+                                                        <input id="yxqend" name="yxqend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="fffs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                        <div class="form-group width100">
+                                            <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="发放方式">发放方式：</label>
+                                            <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                                <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('fffs','0','vacationRecord_formSearch');"
+                                                           id="fffs_id_0"><span>自动发放</span></a>
+                                                    </li>
+                                                    <li>
+                                                        <a style='text-decoration:none;cursor:pointer;'
+                                                           onclick="addTj('fffs','1','vacationRecord_formSearch');"
+                                                           id="fffs_id_1"><span>手动发放</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input  type="hidden" id="jqlx_id_tj" name="jqlx_id_tj">
+                <input  type="hidden" id="fffs_id_tj" name="fffs_id_tj">
+                <input  type="hidden" id="nd_id_tj" name="nd_id_tj">
+                <div th:include="common/btn/ancz.html"></div>
+                <table id="tab_list"
+                       class="table table-hover table-bordered table-hidden"
+                       data-reorderable-columns="true"></table>
+            </form>
+        </div>
+    </body>
+</html>

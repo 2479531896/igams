@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/annualPlan/annualPlan/annualPlan_list.js?v=20240110'}"
+            charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom: 0px;">
+    <form id="annualPlanFormSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                style="height: 34px;">
+                            <option value="0">全部</option>
+                            <option value="1">培训名称</option>
+                            <option value="2">参培部门/人员</option>
+                            <option value="3">培训讲师</option>
+                            <option value="4">实施部门</option>
+                            <option value="5">培训记录编号</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {searchAnnualPlanResult(); return false;}"/>
+                    </div>
+                    <button type="button" style="margin-left: 50px" id="btn_query"
+                            class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="nd_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="年度">年度：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${ndList !=null && ndList.size() >0}" th:each="list:${ndList}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[nd]],[[${list}]],[[annualPlanFormSearch]]);" th:id="'nd_id_'+${list}">
+                                                    <span th:text="${list}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="pxfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="培训方式">培训方式：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${pxfsList !=null && pxfsList.size() >0}" th:each="list:${pxfsList}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[pxfs]],[[${list.csid}]],[[annualPlanFormSearch]]);" th:id="'pxfs_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="lb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="类别">类别：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('lb','1','annualPlanFormSearch');"
+                                                   id="lb_id_1"><span>计划外</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('lb','0','annualPlanFormSearch');"
+                                                   id="lb_id_0"><span>计划内</span></a>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="jhpxsj" class="col-md-6 col-sm-6 col-lg-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="计划培训时间" >计划培训时间：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="jhpxsjstart" name="jhpxsjstart" class="form-control" placeholder="开始日期" style="height:28px;"/>~
+                                        <input id="jhpxsjend" name="jhpxsjend" class="form-control" placeholder="结束日期" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sjpxsj" class="col-md-6 col-sm-6 col-lg-6">
+                                <div class="form-group width100">
+                                    <label class="col-sm-3 col-md-2 col-lg-2 control-label" title="实际培训时间" >实际培训时间：</label>
+                                    <div class="col-sm-10  col-md-10 col-lg-10 sl_sel_list" style="margin-top:5px">
+                                        <input id="sjpxsjstart" name="sjpxsjstart" class="form-control" placeholder="开始日期"  style="height:28px;"/>~
+                                        <input id="sjpxsjend" name="sjpxsjend" class="form-control" placeholder="结束日期" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="nd_id_tj" name="nd_id_tj">
+        <input  type="hidden" id="pxfs_id_tj" name="pxfs_id_tj">
+        <input  type="hidden" id="lb_id_tj" name="lb_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="annualPlan_list"
+               class="table table-hover table-bordered table-hidden"
+               data-reorderable-columns="true"></table>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+version: '3'
+services:
+  igams-production:
+    build:
+      context: .
+      dockerfile: DockerFile
+    ports:
+      - "8090:8090"    # 绑定容器的8086端口到主机的8088端口
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - /matridx/production:/matridx
+      - /matridx/production:/home
+    networks:
+      - backend
+      - frontend
+
+  db:
+    image: postgres:10.6
+    volumes:
+      - /opt/postgres/data:/var/lib/postgresql/data  #/var前不能有空格
+    environment:
+      POSTGRES_DB: matridx
+      POSTGRES_USER: matridx
+      POSTGRES_PASSWORD: 123456   #set default password for postgres
+    ports:
+      - 5432:5432
+    networks:
+      - backend
+      
+  redis:
+    restart: always
+    ports:
+    - 6379:6379
+    image: redis
+    #command: /bin/bash -c "redis-server /etc/redis/redis.conf"
+    networks:
+      - frontend
+networks:
+  backend:
+  frontend:

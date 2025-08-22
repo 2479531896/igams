@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IYhkqxxDao" >
+    <select id="getPagedDtoList" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select kqxx.kqid,kqxx.jbyy,kqxx.yhid,kqxx.cqzt,kqxx.gzsc,kqxx.rq,kqxx.cqsj,kqxx.tqsj,kqxx.bz,kqxx.yhmc,kqxx.qjjssj,kqxx.qjkssj,kqxx.jbkssj
+        ,kqxx.jbjssj,kqxx.sc,kqxx.jgmc,kqxx.qjsc,kqxx.qjlx,kqxx.qjlxmc,kqxx.sffdjr,kqxx.hsfs,(select count(spid) as qjcs from igams_kqqjxx where yhid=kqxx.yhid and rq =kqxx.rq)
+        ,kqxx.ycqts,kqxx.cqts,kqxx.xxts,kqxx.cdcs,kqxx.cdsc,kqxx.ztcs,kqxx.ztsc,kqxx.sbqkcs,kqxx.xbqkcs,kqxx.kgts,kqxx.ccsc,kqxx.wcsc,kqxx.jbzsc,kqxx.gzrjb,kqxx.xxrjb,kqxx.jjrjb,kqxx.kqjg
+        from
+        (select cq.kqid,cq.yhid,cq.rq,to_char(cq.cqsj,'yyyy-MM-dd HH24:MI:ss') cqsj,to_char(cq.tqsj,'yyyy-MM-dd HH24:MI:ss') tqsj,cq.bz,xtyh.zsxm yhmc,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,to_char(cq.tqsj,'YYYY-MM-DD') tqrq,
+        cq.qjkssj,cq.qjjssj,cq.jbkssj,cq.jbjssj,cq.sc,jgxx.jgmc,cq.qjsc,cq.qjcs,cq.qjlx,jcsj.csmc qjlxmc,cq.gzsc,jcsj_gz.csmc cqzt,cq.jbyy,
+        case when cq.sffdjr='0' then '否' when cq.sffdjr='1' then '是' end sffdjr ,cq.hsfs,cq.scbj,xtyh.yhm,cq.ycqts,cq.cqts,cq.xxts,cq.cdcs,cq.cdsc,
+        cq.ztcs,cq.ztsc,cq.sbqkcs,cq.xbqkcs,cq.kgts,cq.ccsc,cq.wcsc,cq.jbzsc,cq.gzrjb,cq.xxrjb,cq.jjrjb,cq.kqjg
+        from igams_yhkqxx cq
+        left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=cq.yhid
+        left join matridx_jgxx jgxx on yhssjg.jgid=jgxx.jgid
+        left join matridx_jcsj jcsj on jcsj.csid=cq.qjlx
+        left join matridx_jcsj jcsj_gz on jcsj_gz.csid=cq.cqzt
+        <where>
+            cq.scbj!='1'
+            <if test="yhmc != null and yhmc != ''">
+                and xtyh.zsxm like '%'||#{yhmc}||'%'
+            </if>
+            <if test="jgmc != null and jgmc != ''">
+                and jgxx.jgmc like '%'||#{jgmc}||'%'
+            </if>
+            <if test="qjlx != null and qjlx != ''">
+                and jcsj.csmc like '%'||#{qjlx}||'%'
+            </if>
+            <if test="rqstart != null and rqstart !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+            </if>
+            <if test="rqend != null and rqend !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+            </if>
+            <if test="cqsjstart != null and cqsjstart !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &gt;= #{cqsjstart}
+            </if>
+            <if test="cqsjend != null and cqsjend !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &lt;= #{cqsjend}
+            </if>
+            <if test="tqsjstart != null and tqsjstart !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &gt;= #{tqsjstart}
+            </if>
+            <if test="tqsjend != null and tqsjend !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &lt;= #{tqsjend}
+            </if>
+        </where>) kqxx
+    </select>
+
+    <select id="getKqxxByKqid" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select cq.kqid,cq.yhid,cq.rq,cq.cqsj,cq.tqsj,cq.bz,xtyh.zsxm yhmc,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,to_char(cq.tqsj,'YYYY-MM-DD') tqrq,
+        cq.qjkssj,cq.qjjssj,cq.jbkssj,cq.jbjssj,cq.sc,jgxx.jgmc,cq.qjcs,jcsj.csmc qjlxmc,cq.qjsc,cq.gzsc,jcsj_gz.csmc cqzt,cq.jbyy,
+        case when cq.sffdjr='0' then '否' when cq.sffdjr='1' then '是' end sffdjr ,cq.hsfs
+        from igams_yhkqxx cq
+        left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=cq.yhid
+        left join matridx_jgxx jgxx on yhssjg.jgid=jgxx.jgid
+        left join matridx_jcsj jcsj on jcsj.csid=cq.qjlx
+        left join matridx_jcsj jcsj_gz on jcsj_gz.csid=cq.cqzt
+        <where>
+             cq.kqid=#{kqid}
+        </where>
+    </select>
+    <select id="getDtoList" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select cq.kqid,cq.yhid,cq.rq
+        from igams_yhkqxx cq
+        <where>
+            cq.scbj = '0'
+            <if test="rqstart != null and rqstart !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+            </if>
+            <if test="rqend != null and rqend !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+            </if>
+        </where>
+    </select>
+    <select id="getWorkOvertimeList" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        SELECT
+        yhkqxx.kqid,yhkqxx.rq,yhkqxx.yhid,bcgl.bcid,yhkqxx.tqsj,yhkqxx.cqsj,yhkqxx.cqzt,yhkqxx.wbcxid
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN igams_bcgl bcgl ON bcgl.bcmc = yhkqxx.bcmc AND bcgl.scbj ='0'
+        WHERE yhkqxx.scbj ='0' AND yhkqxx.bcmc IS NOT NULL AND bcgl.bcid IS NOT NULL
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-MM-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-MM-dd') &lt;= #{rqend}
+        </if>
+    </select>
+    <!-- 新增用户出勤信息 -->
+    <insert id="insert" parameterType="YhkqxxDto">
+        insert into igams_yhkqxx(kqid,yhid,rq
+        <if test="cqsj != null and cqsj != ''">
+            ,cqsj
+        </if>
+        <if test="cqzt != null and cqzt != ''">
+            ,cqzt
+        </if>
+        <if test="tqsj != null and tqsj != ''">
+            ,tqsj
+        </if>
+        <if test="gzsc != null and gzsc != ''">
+            ,gzsc
+        </if>
+        <if test="bz != null and bz != ''">
+            ,bz
+        </if>
+        <if test="jbkssj != null and jbkssj != ''">
+            ,jbkssj
+        </if>
+        <if test="jbjssj != null and jbjssj != ''">
+            ,jbjssj
+        </if>
+        <if test="sc != null and sc != ''">
+            ,sc
+        </if>
+        <if test="qjkssj != null and qjkssj != ''">
+            ,qjkssj
+        </if>
+        <if test="qjjssj != null and qjjssj != ''">
+            ,qjjssj
+        </if>
+        <if test="qjsc != null and qjsc != ''">
+            ,qjsc
+        </if>
+        <if test="qjlx != null and qjlx != ''">
+            ,qjlx
+        </if>
+        <if test="sffdjr != null and sffdjr != ''">
+            ,sffdjr
+        </if>
+        <if test="hsfs != null and hsfs != ''">
+            ,hsfs
+        </if>
+        <if test="jbyy != null and jbyy != ''">
+            ,jbyy
+        </if>
+        <if test="wbcxid != null and wbcxid != ''">
+            ,wbcxid
+        </if>
+        ,lrry,lrsj,scbj)
+        values(#{kqid},#{yhid},cast(#{rq} as date)
+        <if test="cqsj != null and cqsj != ''">
+            ,cast(#{cqsj} as timestamp)
+        </if>
+        <if test="cqzt != null and cqzt != ''">
+            ,#{cqzt}
+        </if>
+        <if test="tqsj != null and tqsj != ''">
+            ,cast(#{tqsj} as timestamp)
+        </if>
+        <if test="gzsc != null and gzsc != ''">
+            ,#{gzsc}
+        </if>
+        <if test="bz != null and bz != ''">
+            ,#{bz}
+        </if>
+        <if test="jbkssj != null and jbkssj != ''">
+            ,cast(#{jbkssj} as timestamp)
+        </if>
+        <if test="jbjssj != null and jbjssj != ''">
+            ,cast(#{jbjssj} as timestamp)
+        </if>
+        <if test="sc != null and sc != ''">
+            ,#{sc}
+        </if>
+        <if test="qjkssj != null and qjkssj != ''">
+            ,cast (#{qjkssj} as timestamp)
+        </if>
+        <if test="qjjssj != null and qjjssj != ''">
+            ,cast (#{qjjssj} as timestamp)
+        </if>
+        <if test="qjsc != null and qjsc != ''">
+            ,#{qjsc}
+        </if>
+        <if test="qjlx != null and qjlx != ''">
+            ,#{qjlx}
+        </if>
+        <if test="sffdjr != null and sffdjr != ''">
+            ,#{sffdjr}
+        </if>
+        <if test="hsfs != null and hsfs != ''">
+            ,#{hsfs}
+        </if>
+        <if test="jbyy != null and jbyy != ''">
+            ,#{jbyy}
+        </if>
+         <if test="wbcxid != null and wbcxid != ''">
+            ,#{wbcxid}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <!-- 删除 -->
+    <update id="delKqxx" parameterType="YhkqxxDto">
+        update igams_yhkqxx
+        <set>
+            scbj='1',
+            scry=#{scry},
+            scsj=LOCALTIMESTAMP
+        </set>
+        <where>
+            kqid in
+            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </update>
+    <!-- 更新出勤退勤时间 -->
+    <update id="updateSj" parameterType="YhkqxxDto">
+        update igams_yhkqxx
+        <set>
+            yhid=#{yhid},xgry=#{xgry},xgsj=LOCALTIMESTAMP
+            <if test="cqsj != null and cqsj != ''">
+                ,cqsj=cast (#{cqsj} as timestamp)
+            </if>
+            <if test="cqzt != null and cqzt != ''">
+                ,cqzt=#{cqzt}
+            </if>
+            <if test="tqsj != null and tqsj != ''">
+                ,tqsj=cast (#{tqsj} as timestamp)
+            </if>
+            <if test="gzsc != null and gzsc != ''">
+                ,gzsc=#{gzsc}
+            </if>
+            <if test="bz != null and bz != ''">
+                ,bz=#{bz}
+            </if>
+            <if test="jbkssj != null and jbkssj != ''">
+                ,jbkssj=cast (#{jbkssj} as timestamp)
+            </if>
+            <if test="jbjssj != null and jbjssj != ''">
+                ,jbjssj=cast (#{jbjssj} as timestamp)
+            </if>
+            <if test="sc != null and sc != ''">
+                ,sc=#{sc}
+            </if>
+            <if test="qjkssj != null and qjkssj != ''">
+                ,qjkssj=cast (#{qjkssj} as timestamp)
+            </if>
+            <if test="qjjssj != null and qjjssj != ''">
+                ,qjjssj=cast (#{qjjssj} as timestamp)
+            </if>
+            <if test="qjsc != null and qjsc != ''">
+                ,qjsc=#{qjsc}
+            </if>
+            <if test="qjlx != null and qjlx != ''">
+                ,qjlx=#{qjlx}
+            </if>
+            <if test="sffdjr != null and sffdjr != ''">
+                ,sffdjr=#{sffdjr}
+            </if>
+            <if test="hsfs != null and hsfs != ''">
+                ,hsfs=#{hsfs}
+            </if>
+            <if test="jbyy != null and jbyy != ''">
+                ,jbyy=#{jbyy}
+            </if>
+        </set>
+        <where>
+            kqid=#{kqid}
+        </where>
+    </update>
+    <!--选中导出-->
+    <select id="getListForSelectExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select kqxx.kqid  ${sqlParam} from(
+        select cq.kqid,cq.yhid,cq.rq,cq.cqsj,cq.tqsj,cq.bz,xtyh.zsxm yhmc,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,to_char(cq.tqsj,'YYYY-MM-DD') tqrq,
+        qj.qjkssj,qj.qjjssj,cq.jbkssj,cq.jbjssj,cq.sc,jgxx.jgmc,qj.qjsc,cq.qjcs,jcsj.csmc qjlx,cq.gzsc,jcsj_gz.csmc cqzt,cq.jbyy,
+        case when cq.sffdjr='0' then '否' when cq.sffdjr='1' then '是' end sffdjr ,cq.hsfs,cq.scbj
+        from (
+        <foreach item="item" index="index" collection="ids" separator=" union all ">
+            select #{item,jdbcType=VARCHAR} kqid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_yhkqxx cq on cq.kqid=tmp.kqid
+        left join igams_kqqjxx qj on qj.yhid=cq.yhid and qj.rq=cq.rq
+        left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=cq.yhid
+        left join matridx_jgxx jgxx on yhssjg.jgid=jgxx.jgid
+        left join matridx_jcsj jcsj on jcsj.csid=qj.qjlx
+        left join matridx_jcsj jcsj_gz on jcsj_gz.csid=cq.cqzt
+        where cq.scbj!='1')kqxx
+        order by kqxx.yhid asc
+    </select>
+    <!-- 搜索导出查询条数 -->
+    <select id="getCountForSearchExp" parameterType="YhkqxxDto" resultType="java.lang.Integer">
+        select count(cq.kqid)
+        from igams_yhkqxx cq
+        left join igams_kqqjxx qj on qj.yhid=cq.yhid and qj.rq=cq.rq
+        left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=cq.yhid
+        left join matridx_jgxx jgxx on yhssjg.jgid=jgxx.jgid
+        left join matridx_jcsj jcsj on jcsj.csid=qj.qjlx
+        left join matridx_jcsj jcsj_gz on jcsj_gz.csid=cq.cqzt
+        <where>
+            cq.scbj!='1'
+            <if test="yhmc != null and yhmc != ''">
+                and xtyh.zsxm like '%'||#{yhmc}||'%'
+            </if>
+            <if test="jgmc != null and jgmc != ''">
+                and jgxx.jgmc like '%'||#{jgmc}||'%'
+            </if>
+            <if test="qjlx != null and qjlx != ''">
+                and jcsj.csmc like '%'||#{qjlx}||'%'
+            </if>
+            <if test="rqstart != null and rqstart !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+            </if>
+            <if test="rqend != null and rqend !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+            </if>
+            <if test="cqsjstart != null and cqsjstart !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &gt;= #{cqsjstart}
+            </if>
+            <if test="cqsjend != null and cqsjend !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &lt;= #{cqsjend}
+            </if>
+            <if test="tqsjstart != null and tqsjstart !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &gt;= #{tqsjstart}
+            </if>
+            <if test="tqsjend != null and tqsjend !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &lt;= #{tqsjend}
+            </if>
+        </where>
+    </select>
+
+    <select id="getListForSearchExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select kqxx.kqid  ${sqlParam}  from(
+        select cq.kqid,cq.yhid,cq.rq,cq.cqsj,cq.tqsj,cq.bz,xtyh.zsxm yhmc,to_char(cq.cqsj,'YYYY-MM-DD') cqrq,to_char(cq.tqsj,'YYYY-MM-DD') tqrq,
+        qj.qjkssj,qj.qjjssj,cq.jbkssj,cq.jbjssj,cq.sc,jgxx.jgmc,qj.qjsc,cq.qjcs,jcsj.csmc qjlx,cq.gzsc,jcsj_gz.csmc cqzt,cq.jbyy,
+        case when cq.sffdjr='0' then '否' when cq.sffdjr='1' then '是' end sffdjr ,cq.hsfs,cq.scbj
+        from igams_yhkqxx cq
+        left join igams_kqqjxx qj on qj.yhid=cq.yhid and qj.rq=cq.rq
+        left join matridx_xtyh xtyh on xtyh.yhid=cq.yhid
+        left join matridx_yhssjg yhssjg on yhssjg.yhid=cq.yhid
+        left join matridx_jgxx jgxx on yhssjg.jgid=jgxx.jgid
+        left join matridx_jcsj jcsj on jcsj.csid=qj.qjlx
+        left join matridx_jcsj jcsj_gz on jcsj_gz.csid=cq.cqzt
+        <where>
+            cq.scbj!='1'
+            <if test="yhmc != null and yhmc != ''">
+                and xtyh.zsxm like '%'||#{yhmc}||'%'
+            </if>
+            <if test="jgmc != null and jgmc != ''">
+                and jgxx.jgmc like '%'||#{jgmc}||'%'
+            </if>
+            <if test="qjlx != null and qjlx != ''">
+                and jcsj.csmc like '%'||#{qjlx}||'%'
+            </if>
+            <if test="rqstart != null and rqstart !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+            </if>
+            <if test="rqend != null and rqend !=''">
+                AND to_char(cq.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+            </if>
+            <if test="cqsjstart != null and cqsjstart !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &gt;= #{cqsjstart}
+            </if>
+            <if test="cqsjend != null and cqsjend !=''">
+                AND to_char(cq.cqsj, 'hh24:mi:ss') &lt;= #{cqsjend}
+            </if>
+            <if test="tqsjstart != null and tqsjstart !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &gt;= #{tqsjstart}
+            </if>
+            <if test="tqsjend != null and tqsjend !=''">
+                AND to_char(cq.tqsj, 'hh24:mi:ss') &lt;= #{tqsjend}
+            </if>
+        </where>
+        )kqxx
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <!-- 通过hzid和报告查询userid -->
+    <select id="getKqid" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+		select kqid,jbkssj,jbjssj,qjkssj,gzsc,sc
+		from igams_yhkqxx
+		where scbj!='1' and  yhid=#{yhid}  and  to_char(rq,'YYYY-MM-dd')=#{rq}
+	</select>
+    <!-- 通过kqid查询-->
+    <select id="getByKqid" parameterType="String" resultType="YhkqxxDto">
+		select yhid,to_char(rq,'YYYY-MM-dd') rq
+		from igams_yhkqxx
+		where scbj!='1' and  kqid=#{kqid}
+	</select>
+    <!-- 批量新增用户考勤信息(考勤信息) -->
+    <insert id="insertOrUpdateYhkqxxDtos" parameterType="List">
+        insert into igams_yhkqxx(kqid,yhid,rq,ycqts,xxts,cdcs,cdsc,kgts,ztcs,ztsc,sbqkcs,xbqkcs,wcsc,ccsc,jbzsc,xxrjb,gzrjb,jjrjb,kqjg,cqts,
+                                sjxs,bjxs,njxs,txxs,hjts,cjts,hljts,cjjts,sjts,yejts,dsznphfmjts,wbcxid,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.kqid},#{item.yhid},cast(#{item.rq} as date),cast(#{item.ycqts} as numeric),cast(#{item.xxts} as numeric),cast(#{item.cdcs} as numeric),cast(#{item.cdsc} as numeric),cast(#{item.kgts} as numeric)
+                ,cast(#{item.ztcs} as numeric),cast(#{item.ztsc} as numeric),cast(#{item.sbqkcs} as numeric),cast(#{item.xbqkcs} as numeric),cast(#{item.wcsc} as numeric),cast(#{item.ccsc} as numeric)
+                ,cast(#{item.jbzsc} as numeric),cast(#{item.xxrjb} as numeric),cast(#{item.gzrjb} as numeric),cast(#{item.jjrjb} as numeric),#{item.kqjg},cast(#{item.cqts} as numeric)
+                ,cast(#{item.sjxs} as numeric),cast(#{item.bjxs} as numeric),cast(#{item.njxs} as numeric),cast(#{item.txxs} as numeric),cast(#{item.hjts} as numeric),cast(#{item.cjts} as numeric)
+                ,cast(#{item.hljts} as numeric),cast(#{item.cjjts} as numeric),cast(#{item.sjts} as numeric),cast(#{item.yejts} as numeric),cast(#{item.dsznphfmjts} as numeric),#{item.wbcxid},'admin',LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+        on conflict (yhid,rq)
+        do update set
+        ycqts = excluded.ycqts,xxts = excluded.xxts,cdcs = excluded.cdcs,cdsc = excluded.cdsc,kgts = excluded.kgts,
+        ztcs = excluded.ztcs,ztsc = excluded.ztsc,sbqkcs = excluded.sbqkcs,xbqkcs = excluded.xbqkcs
+        ,wcsc = excluded.wcsc,ccsc = excluded.ccsc,jbzsc = excluded.jbzsc,xxrjb = excluded.xxrjb,gzrjb = excluded.gzrjb
+        ,jjrjb = excluded.jjrjb,kqjg = excluded.kqjg,cqts = excluded.cqts,sjxs = excluded.sjxs,bjxs = excluded.bjxs
+        ,njxs = excluded.njxs,txxs = excluded.txxs,hjts = excluded.hjts,cjts = excluded.cjts,hljts = excluded.hljts
+        ,cjjts = excluded.cjjts,sjts = excluded.sjts,yejts = excluded.yejts,dsznphfmjts = excluded.dsznphfmjts,xgsj = LOCALTIMESTAMP
+    </insert>
+    <!-- 批量新增用户考勤信息(考勤组) -->
+    <insert id="insertOrUpdateList" parameterType="List">
+        insert into igams_yhkqxx(kqid,yhid,rq,kqlx,kqz,wbcxid,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.kqid},#{item.yhid},cast(#{item.rq} as date),#{item.kqlx},#{item.kqz},#{item.wbcxid},'admin',LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+        on conflict (yhid,rq)
+        do update set
+        kqlx = excluded.kqlx,kqz = excluded.kqz,xgsj = LOCALTIMESTAMP
+    </insert>
+    <!-- 批量新增用户考勤信息(加班班次) -->
+    <insert id="insertOrUpdateYhWorkOvertime" parameterType="List">
+        insert into igams_yhkqxx(kqid,yhid,rq,jbkssj,jbjssj,wbcxid,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.kqid},#{item.yhid},cast(#{item.rq} as date),cast(#{item.jbkssj} as timestamp ),cast(#{item.jbjssj} as timestamp),#{item.wbcxid},'admin',LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+        on conflict (yhid,rq)
+        do update set
+        bcmc = excluded.bcmc,jbkssj = excluded.jbkssj,jbjssj = excluded.jbjssj,xgsj = LOCALTIMESTAMP
+    </insert>
+    <!-- 批量新增用户考勤信息(打卡情况) -->
+    <insert id="insertOrUpdateYhRecords" parameterType="List">
+        insert into igams_yhkqxx(kqid,yhid,rq,cqsj,tqsj,cqzt,gzsc,wbcxid,bcid,bcglid,btglid,btje,bcmc,lrry,lrsj,scbj)
+        values
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator="," item="item" index="index">
+                (
+                #{item.kqid},#{item.yhid},cast(#{item.rq} as date),case when #{item.cqsj} !='' then cast(#{item.cqsj} as timestamp) else null end
+                ,case when #{item.tqsj} !='' then cast(#{item.tqsj} as timestamp) else null end,#{item.cqzt},#{item.gzsc},#{item.wbcxid},#{item.bcid},#{item.bcglid},#{item.btglid},case when #{item.btje} !='' then cast(#{item.btje} as numeric) else null end,#{item.bcmc},'admin',LOCALTIMESTAMP,'0'
+                )
+            </foreach>
+        </if>
+        on conflict (yhid,rq)
+        do update set
+        cqsj = excluded.cqsj,tqsj = excluded.tqsj,cqzt = excluded.cqzt,gzsc = excluded.gzsc,bcid = excluded.bcid,bcglid = excluded.bcglid,btglid = excluded.btglid,btje = excluded.btje,bcmc = excluded.bcmc,xgsj = LOCALTIMESTAMP
+    </insert>
+    <!--批量更新用户考勤信息-->
+    <update id="updateYhkqxxDtos" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            <foreach collection="list" separator=";" item="item" index="index">
+                update igams_yhkqxx set
+                <if test="item.ycqts != null and item.ycqts != ''">
+                    ycqts=cast(#{item.ycqts} as numeric),
+                </if>
+                <if test="item.xxts != null and item.xxts != ''">
+                    xxts=cast(#{item.xxts} as numeric),
+                </if>
+                <if test="item.cdcs != null and item.cdcs != ''">
+                    cdcs=cast(#{item.cdcs} as numeric),
+                </if>
+                <if test="item.cdsc != null and item.cdsc != ''">
+                    cdsc=cast(#{item.cdsc} as numeric),
+                </if>
+                <if test="item.kgts != null and item.kgts != ''">
+                    kgts=cast(#{item.kgts} as numeric),
+                </if>
+                <if test="item.ztcs != null and item.ztcs != ''">
+                    ztcs=cast(#{item.ztcs} as numeric),
+                </if>
+                <if test="item.ztsc != null and item.ztsc != ''">
+                    ztsc=cast(#{item.ztsc} as numeric),
+                </if>
+                <if test="item.sbqkcs != null and item.sbqkcs != ''">
+                    sbqkcs=cast(#{item.sbqkcs} as numeric),
+                </if>
+                <if test="item.xbqkcs != null and item.xbqkcs != ''">
+                    xbqkcs=cast(#{item.xbqkcs} as numeric),
+                </if>
+                <if test="item.wcsc != null and item.wcsc != ''">
+                    wcsc=cast(#{item.wcsc} as numeric),
+                </if>
+                <if test="item.ccsc != null and item.ccsc != ''">
+                    ccsc=cast(#{item.ccsc} as numeric),
+                </if>
+                <if test="item.jbzsc != null and item.jbzsc != ''">
+                    jbzsc=cast(#{item.jbzsc} as numeric),
+                </if>
+                <if test="item.xxrjb != null and item.xxrjb != ''">
+                    xxrjb=cast(#{item.xxrjb} as numeric),
+                </if>
+                <if test="item.gzrjb != null and item.gzrjb != ''">
+                    gzrjb=cast(#{item.gzrjb} as numeric),
+                </if>
+                <if test="item.jjrjb != null and item.jjrjb != ''">
+                    jjrjb=cast(#{item.jjrjb} as numeric),
+                </if>
+                <if test="item.kqjg != null and item.kqjg != ''">
+                    kqjg=#{item.kqjg},
+                </if>
+                <if test="item.cqts != null and item.cqts != ''">
+                    cqts=cast(#{item.cqts} as numeric),
+                </if>
+                <if test="item.kqlx != null and item.kqlx != ''">
+                    kqlx=#{item.kqlx},
+                </if>
+                <if test="item.kqz != null and item.kqz != ''">
+                    kqz=#{item.kqz},
+                </if>
+                <if test="item.cqsj != null and item.cqsj != ''">
+                    cqsj=cast(#{item.cqsj} as timestamp),
+                </if>
+                <if test="item.tqsj != null and item.tqsj != ''">
+                    tqsj=cast(#{item.tqsj} as timestamp),
+                </if>
+                <if test="item.cqzt != null and item.cqzt != ''">
+                    cqzt=#{item.cqzt},
+                </if>
+                    xgry = 'admin',xgsj=LOCALTIMESTAMP
+                where yhid = #{item.yhid} and rq = cast(#{item.rq} as date)
+            </foreach>
+        </if>
+    </update>
+    <select id="getPagedStatis" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select * from ( SELECT
+        yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,SUM ( yhkqxx.ycqts ) ycqts,SUM ( yhkqxx.cqts )-SUM(yhkqxx.cjts)
+        cqts,SUM ( yhkqxx.xxts ) xxts,
+        SUM ( yhkqxx.cdcs ) cdcs,SUM ( yhkqxx.cdsc ) cdsc,SUM ( yhkqxx.ztcs ) ztcs,SUM ( yhkqxx.ztsc ) ztsc,SUM (
+        yhkqxx.sbqkcs ) sbqkcs,
+        SUM ( yhkqxx.xbqkcs ) xbqkcs,SUM ( yhkqxx.kgts ) kgts,SUM ( yhkqxx.ccsc ) ccsc,SUM ( yhkqxx.wcsc ) wcsc,SUM (
+        yhkqxx.jbzsc ) jbzsc,
+        SUM ( yhkqxx.gzrjb ) gzrjb,SUM ( yhkqxx.xxrjb ) xxrjb,SUM ( yhkqxx.jjrjb ) jjrjb,yhkqxx.kqlx,SUM(yhkqxx.btje) btje,SUM(yhkqxx.qjcs) qjcs,SUM(yhkqxx.yccs) yccs,
+        SUM ( yhkqxx.sjxs ) sjxs,SUM ( yhkqxx.bjxs ) bjxs,SUM ( yhkqxx.njxs ) njxs,SUM(yhkqxx.txxs) txxs,SUM(yhkqxx.hjts) hjts,SUM(yhkqxx.cjts) cjts,
+        SUM ( yhkqxx.hljts ) hljts,SUM ( yhkqxx.cjjts ) cjjts,SUM ( yhkqxx.sjts ) sjts,SUM(yhkqxx.yejts) yejts,SUM(yhkqxx.dsznphfmjts) dsznphfmjts
+        from (SELECT
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,COALESCE (yhkqxx.ycqts,0) ycqts,COALESCE (yhkqxx.cqts,0) cqts,
+        COALESCE (yhkqxx.xxts,0) xxts,case when yhkqxx.cdcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.cdcs else 0 end cdcs,  COALESCE (yhkqxx.cdsc,0) cdsc,COALESCE (yhkqxx.ztcs,0) ztcs,COALESCE (yhkqxx.ztsc,0) ztsc,case when yhkqxx.sbqkcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.sbqkcs else 0 end sbqkcs,case when yhkqxx.xbqkcs>0 and kqjg NOT LIKE '%上班外勤%' then yhkqxx.xbqkcs else 0 end xbqkcs,COALESCE (yhkqxx.kgts,0) kgts,
+        COALESCE (yhkqxx.ccsc,0) ccsc,COALESCE (yhkqxx.wcsc,0) wcsc,COALESCE (yhkqxx.jbzsc,0) jbzsc,COALESCE (yhkqxx.gzrjb,0) gzrjb,COALESCE (yhkqxx.xxrjb,0) xxrjb,COALESCE (yhkqxx.jjrjb,0) jjrjb,yhkqxx.kqlx,COALESCE (yhkqxx.btje,0) btje,
+        CASE
+        WHEN cqsj IS NULL
+        AND tqsj IS NULL
+        AND kqjg NOT LIKE '%出差%'
+        AND kqjg NOT LIKE '%外出%'
+        AND kqjg NOT LIKE '%休息,加班%'
+        AND kqjg NOT LIKE '%补卡申请%'
+        AND kqjg !='休息' AND kqjg !='未排班' THEN 1
+        ELSE 0 END yccs, COUNT(kqqjxx.spid) qjcs,yhkqxx.kqid,
+        COALESCE (yhkqxx.sjxs,0) sjxs,COALESCE (yhkqxx.bjxs,0) bjxs,COALESCE (yhkqxx.njxs,0) njxs,COALESCE (yhkqxx.txxs,0) txxs,COALESCE (yhkqxx.hjts,0) hjts,COALESCE (yhkqxx.cjts,0) cjts,COALESCE (yhkqxx.hljts,0) hljts,
+        COALESCE (yhkqxx.cjjts,0) cjjts,COALESCE (yhkqxx.sjts,0) sjts,COALESCE (yhkqxx.yejts,0) yejts,COALESCE (yhkqxx.dsznphfmjts,0) dsznphfmjts
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        LEFT JOIN igams_kqqjxx kqqjxx ON kqqjxx.rq = yhkqxx.rq AND kqqjxx.yhid = yhkqxx.yhid
+        WHERE
+        yhkqxx.scbj = '0'
+        <include refid="SelectWhere"></include>
+        GROUP BY
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,yhkqxx.ycqts,yhkqxx.cqts,
+        yhkqxx.xxts,yhkqxx.cdcs, yhkqxx.cdsc,yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,
+        yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc, yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb,yhkqxx.kqlx,yhkqxx.btje,yhkqxx.cqsj,
+        yhkqxx.tqsj,yhkqxx.kqjg,yhkqxx.kqid,yhkqxx.sjxs,yhkqxx.bjxs,yhkqxx.njxs,yhkqxx.txxs,yhkqxx.hjts,yhkqxx.cjts,yhkqxx.hljts,yhkqxx.cjjts,yhkqxx.sjts,yhkqxx.yejts,yhkqxx.dsznphfmjts)yhkqxx
+        group by yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,yhkqxx.kqlx) yhkqxx
+        where 1=1
+        <if test="sfqq != null and sfqq !='' and sfqq =='1'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 end
+        </if>
+        <if test="sfqq != null and sfqq !='' and sfqq =='0'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 end
+        </if>
+    </select>
+    <select id="getDtoByYhAndRq" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        SELECT  yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.ycqts,yhkqxx.cqts,yhkqxx.xxts,yhkqxx.cdcs,yhkqxx.cdsc,
+        yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc,yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb
+        ,yhkqxx.yhid,yhkqxx.btje,(select count(spid) as qjcs from igams_kqqjxx where yhid=yhkqxx.yhid
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>) qjcs from  (SELECT
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,SUM ( yhkqxx.ycqts ) ycqts,SUM ( yhkqxx.cqts ) cqts,SUM ( yhkqxx.xxts ) xxts,
+        SUM ( yhkqxx.cdcs ) cdcs,SUM ( yhkqxx.cdsc ) cdsc,SUM ( yhkqxx.ztcs ) ztcs,SUM ( yhkqxx.ztsc ) ztsc,SUM ( yhkqxx.sbqkcs ) sbqkcs,
+        SUM ( yhkqxx.xbqkcs ) xbqkcs,SUM ( yhkqxx.kgts ) kgts,SUM ( yhkqxx.ccsc ) ccsc,SUM ( yhkqxx.wcsc ) wcsc,SUM ( yhkqxx.jbzsc ) jbzsc,
+        SUM ( yhkqxx.gzrjb ) gzrjb,SUM ( yhkqxx.xxrjb ) xxrjb,SUM ( yhkqxx.jjrjb ) jjrjb,SUM(yhkqxx.btje) btje
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        WHERE
+        yhkqxx.scbj = '0' and yhkqxx.yhid  = #{yhid}
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+        GROUP BY
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid)yhkqxx
+    </select>
+    <select id="getDtoListByYh" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        SELECT yhkqxx.kqid,xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,yhkqxx.ycqts,yhkqxx.cqts,yhkqxx.xxts,yhkqxx.cdcs,yhkqxx.cdsc,
+        yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc,yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb,yhkqxx.rq
+        ,xtyh.yhid,yhkqxx.kqjg
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        WHERE yhkqxx.scbj ='0' and xtyh.yhid = #{yhid}
+        <if test="rq !=null and rq !=''">
+            and to_char(yhkqxx.rq,'yyyy-MM')=#{rq}
+        </if>
+        ORDER BY
+        yhkqxx.rq ASC
+    </select>
+    <select id="getPagedSubsidy" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        SELECT
+            yhkqxx.kqid,yhkqxx.rq,bcgl.bcmc,btgl.btmc,yhkqxx.btje,yhkqxx.cqsj,yhkqxx.tqsj
+        FROM
+            igams_yhkqxx yhkqxx
+                LEFT JOIN igams_bcgl bcgl ON bcgl.bcglid = yhkqxx.bcglid
+                LEFT JOIN igams_btgl btgl ON btgl.btglid = yhkqxx.btglid
+        WHERE yhkqxx.scbj = '0' and btgl.btglid IS NOT NULL and yhkqxx.yhid  = #{yhid}
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+    </select>
+    <sql id="SelectWhere">
+        <if test="entire != null and entire != ''">
+            and (xtyh.zsxm like '%'||#{entire}||'%'
+            or xtyh.yhm like '%'||#{entire}||'%'
+            or yghmc.zc like '%'||#{entire}||'%'
+            or jgxx.jgmc like '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="jgmc != null and jgmc !=''">
+            AND jgxx.jgmc like '%'||#{jgmc}||'%'
+        </if>
+        <if test="zc != null and zc !=''">
+            AND yghmc.zc like '%'||#{zc}||'%'
+        </if>
+        <if test="yhm != null and yhm !=''">
+            AND xtyh.yhm like '%'||#{yhm}||'%'
+        </if>
+        <if test="zsxm != null and zsxm !=''">
+            AND xtyh.zsxm like '%'||#{zsxm}||'%'
+        </if>
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+    </sql>
+    <select id="getAttListForSearchExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select yhkqxx.yhm  ${sqlParam}
+        from
+        ( SELECT
+        yhkqxx.yhid,yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,SUM ( yhkqxx.ycqts ) ycqts,SUM ( yhkqxx.cqts )-SUM(yhkqxx.cjts)
+        cqts,SUM ( yhkqxx.xxts ) xxts,
+        SUM ( yhkqxx.cdcs ) cdcs,SUM ( yhkqxx.cdsc ) cdsc,SUM ( yhkqxx.ztcs ) ztcs,SUM ( yhkqxx.ztsc ) ztsc,SUM (
+        yhkqxx.sbqkcs ) sbqkcs,
+        SUM ( yhkqxx.xbqkcs ) xbqkcs,SUM ( yhkqxx.kgts ) kgts,SUM ( yhkqxx.ccsc ) ccsc,SUM ( yhkqxx.wcsc ) wcsc,SUM (
+        yhkqxx.jbzsc ) jbzsc,
+        SUM ( yhkqxx.gzrjb ) gzrjb,SUM ( yhkqxx.xxrjb ) xxrjb,SUM ( yhkqxx.jjrjb ) jjrjb,yhkqxx.kqlx,SUM(yhkqxx.btje) btje,SUM(yhkqxx.qjcs) qjcs,SUM(yhkqxx.yccs) yccs,
+        SUM ( yhkqxx.sjxs ) sjxs,SUM ( yhkqxx.bjxs ) bjxs,SUM ( yhkqxx.njxs ) njxs,SUM(yhkqxx.txxs) txxs,SUM(yhkqxx.hjts) hjts,SUM(yhkqxx.cjts) cjts,
+        SUM ( yhkqxx.hljts ) hljts,SUM ( yhkqxx.cjjts ) cjjts,SUM ( yhkqxx.sjts ) sjts,SUM(yhkqxx.yejts) yejts,SUM(yhkqxx.dsznphfmjts) dsznphfmjts
+        from (SELECT
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,COALESCE (yhkqxx.ycqts,0) ycqts,COALESCE (yhkqxx.cqts,0) cqts,
+        COALESCE (yhkqxx.xxts,0) xxts,case when yhkqxx.cdcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.cdcs else 0 end cdcs,  COALESCE (yhkqxx.cdsc,0) cdsc,COALESCE (yhkqxx.ztcs,0) ztcs,COALESCE (yhkqxx.ztsc,0) ztsc,case when yhkqxx.sbqkcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.sbqkcs else 0 end sbqkcs,case when yhkqxx.xbqkcs>0 and kqjg NOT LIKE '%上班外勤%' then yhkqxx.xbqkcs else 0 end xbqkcs,COALESCE (yhkqxx.kgts,0) kgts,
+        COALESCE (yhkqxx.ccsc,0) ccsc,COALESCE (yhkqxx.wcsc,0) wcsc,COALESCE (yhkqxx.jbzsc,0) jbzsc,COALESCE (yhkqxx.gzrjb,0) gzrjb,COALESCE (yhkqxx.xxrjb,0) xxrjb,COALESCE (yhkqxx.jjrjb,0) jjrjb,yhkqxx.kqlx,COALESCE (yhkqxx.btje,0) btje,
+        CASE
+        WHEN cqsj IS NULL
+        AND tqsj IS NULL
+        AND kqjg NOT LIKE '%出差%'
+        AND kqjg NOT LIKE '%外出%'
+        AND kqjg NOT LIKE '%休息,加班%'
+        AND kqjg NOT LIKE '%补卡申请%'
+        AND kqjg !='休息' AND kqjg !='未排班' THEN 1
+        ELSE 0 END yccs, COUNT(kqqjxx.spid) qjcs,yhkqxx.kqid,
+        COALESCE (yhkqxx.sjxs,0) sjxs,COALESCE (yhkqxx.bjxs,0) bjxs,COALESCE (yhkqxx.njxs,0) njxs,COALESCE (yhkqxx.txxs,0) txxs,COALESCE (yhkqxx.hjts,0) hjts,COALESCE (yhkqxx.cjts,0) cjts,COALESCE (yhkqxx.hljts,0) hljts,
+        COALESCE (yhkqxx.cjjts,0) cjjts,COALESCE (yhkqxx.sjts,0) sjts,COALESCE (yhkqxx.yejts,0) yejts,COALESCE (yhkqxx.dsznphfmjts,0) dsznphfmjts
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        LEFT JOIN igams_kqqjxx kqqjxx ON kqqjxx.rq = yhkqxx.rq AND kqqjxx.yhid = yhkqxx.yhid
+        WHERE
+        yhkqxx.scbj = '0'
+        <include refid="SelectWhere"></include>
+        GROUP BY
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,yhkqxx.ycqts,yhkqxx.cqts,
+        yhkqxx.xxts,yhkqxx.cdcs, yhkqxx.cdsc,yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,
+        yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc, yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb,yhkqxx.kqlx,yhkqxx.btje,yhkqxx.cqsj,
+        yhkqxx.tqsj,yhkqxx.kqjg,yhkqxx.kqid,yhkqxx.sjxs,yhkqxx.bjxs,yhkqxx.njxs,yhkqxx.txxs,yhkqxx.hjts,yhkqxx.cjts,yhkqxx.hljts,yhkqxx.cjjts,yhkqxx.sjts,yhkqxx.yejts,yhkqxx.dsznphfmjts)yhkqxx group by yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,yhkqxx.kqlx
+        ) yhkqxx
+        where 1=1
+        <if test="sfqq != null and sfqq !='' and sfqq =='1'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 end
+        </if>
+        <if test="sfqq != null and sfqq !='' and sfqq =='0'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 end
+        </if>
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <!-- 搜索导出查询条数 -->
+    <select id="getAttCountForSearchExp" parameterType="YhkqxxDto" resultType="java.lang.Integer">
+        select count(yhkqxx.yhid)
+        from ( SELECT
+        yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,SUM ( yhkqxx.ycqts ) ycqts,SUM ( yhkqxx.cqts )
+        cqts,SUM ( yhkqxx.xxts ) xxts,
+        SUM ( yhkqxx.cdcs ) cdcs,SUM ( yhkqxx.cdsc ) cdsc,SUM ( yhkqxx.ztcs ) ztcs,SUM ( yhkqxx.ztsc ) ztsc,SUM (
+        yhkqxx.sbqkcs ) sbqkcs,
+        SUM ( yhkqxx.xbqkcs ) xbqkcs,SUM ( yhkqxx.kgts ) kgts,SUM ( yhkqxx.ccsc ) ccsc,SUM ( yhkqxx.wcsc ) wcsc,SUM (
+        yhkqxx.jbzsc ) jbzsc,
+        SUM ( yhkqxx.gzrjb ) gzrjb,SUM ( yhkqxx.xxrjb ) xxrjb,SUM ( yhkqxx.jjrjb ) jjrjb,yhkqxx.kqlx,SUM(yhkqxx.btje) btje,SUM(yhkqxx.qjcs) qjcs,SUM(yhkqxx.yccs) yccs from (SELECT
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,COALESCE (yhkqxx.ycqts,0) ycqts,COALESCE (yhkqxx.cqts,0) cqts,
+        COALESCE (yhkqxx.xxts,0) xxts,case when yhkqxx.cdcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.cdcs else 0 end cdcs,  COALESCE (yhkqxx.cdsc,0) cdsc,COALESCE (yhkqxx.ztcs,0) ztcs,COALESCE (yhkqxx.ztsc,0) ztsc,case when yhkqxx.sbqkcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.sbqkcs else 0 end sbqkcs,case when yhkqxx.xbqkcs>0 and kqjg NOT LIKE '%上班外勤%' then yhkqxx.xbqkcs else 0 end xbqkcs,COALESCE (yhkqxx.kgts,0) kgts,
+        COALESCE (yhkqxx.ccsc,0) ccsc,COALESCE (yhkqxx.wcsc,0) wcsc,COALESCE (yhkqxx.jbzsc,0) jbzsc,COALESCE (yhkqxx.gzrjb,0) gzrjb,COALESCE (yhkqxx.xxrjb,0) xxrjb,COALESCE (yhkqxx.jjrjb,0) jjrjb,yhkqxx.kqlx,COALESCE (yhkqxx.btje,0) btje,
+        CASE
+        WHEN cqsj IS NULL
+        AND tqsj IS NULL
+        AND kqjg NOT LIKE '%出差%'
+        AND kqjg NOT LIKE '%外出%'
+        AND kqjg NOT LIKE '%休息,加班%'
+        AND kqjg NOT LIKE '%补卡申请%'
+        AND kqjg !='休息' AND kqjg !='未排班' THEN 1
+        ELSE 0 END yccs, COUNT(kqqjxx.spid) qjcs,yhkqxx.kqid
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        LEFT JOIN igams_kqqjxx kqqjxx ON kqqjxx.rq = yhkqxx.rq AND kqqjxx.yhid = yhkqxx.yhid
+        WHERE
+        yhkqxx.scbj = '0'
+        <include refid="SelectWhere"></include>
+        GROUP BY
+       xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,yhkqxx.ycqts,yhkqxx.cqts,
+        yhkqxx.xxts,yhkqxx.cdcs, yhkqxx.cdsc,yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,
+        yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc, yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb,yhkqxx.kqlx,yhkqxx.btje,yhkqxx.cqsj,
+        yhkqxx.tqsj,yhkqxx.kqjg,yhkqxx.kqid)yhkqxx group by yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,yhkqxx.kqlx
+        ) yhkqxx
+        where 1=1
+        <if test="sfqq != null and sfqq !='' and sfqq =='1'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)=0 end
+        </if>
+        <if test="sfqq != null and sfqq !='' and sfqq =='0'.toString()">
+            AND case when yhkqxx.kqlx='FIXED' then coalesce(cdcs+ztcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 when yhkqxx.kqlx='TURN' then coalesce(cdcs+qjcs+kgts+sbqkcs+xbqkcs+yccs)>0 end
+        </if>
+    </select>
+
+    <select id="getAttListForSelectExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select yhkqxx.yhid  ${sqlParam}
+        from
+        (
+        <foreach item="item" index="index" collection="ids" separator=" union all ">
+            select #{item,jdbcType=VARCHAR} yhid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join
+        ( SELECT
+        yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,SUM ( yhkqxx.ycqts ) ycqts,SUM ( yhkqxx.cqts )-SUM(yhkqxx.cjts)
+        cqts,SUM ( yhkqxx.xxts ) xxts,
+        SUM ( yhkqxx.cdcs ) cdcs,SUM ( yhkqxx.cdsc ) cdsc,SUM ( yhkqxx.ztcs ) ztcs,SUM ( yhkqxx.ztsc ) ztsc,SUM (
+        yhkqxx.sbqkcs ) sbqkcs,
+        SUM ( yhkqxx.xbqkcs ) xbqkcs,SUM ( yhkqxx.kgts ) kgts,SUM ( yhkqxx.ccsc ) ccsc,SUM ( yhkqxx.wcsc ) wcsc,SUM (
+        yhkqxx.jbzsc ) jbzsc,
+        SUM ( yhkqxx.gzrjb ) gzrjb,SUM ( yhkqxx.xxrjb ) xxrjb,SUM ( yhkqxx.jjrjb ) jjrjb,yhkqxx.kqlx,SUM(yhkqxx.btje) btje,SUM(yhkqxx.qjcs) qjcs,SUM(yhkqxx.yccs) yccs,
+        SUM ( yhkqxx.sjxs ) sjxs,SUM ( yhkqxx.bjxs ) bjxs,SUM ( yhkqxx.njxs ) njxs,SUM(yhkqxx.txxs) txxs,SUM(yhkqxx.hjts) hjts,SUM(yhkqxx.cjts) cjts,
+        SUM ( yhkqxx.hljts ) hljts,SUM ( yhkqxx.cjjts ) cjjts,SUM ( yhkqxx.sjts ) sjts,SUM(yhkqxx.yejts) yejts,SUM(yhkqxx.dsznphfmjts) dsznphfmjts
+        from (SELECT
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,COALESCE (yhkqxx.ycqts,0) ycqts,COALESCE (yhkqxx.cqts,0) cqts,
+        COALESCE (yhkqxx.xxts,0) xxts,case when yhkqxx.cdcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.cdcs else 0 end cdcs,  COALESCE (yhkqxx.cdsc,0) cdsc,COALESCE (yhkqxx.ztcs,0) ztcs,COALESCE (yhkqxx.ztsc,0) ztsc,case when yhkqxx.sbqkcs>0 AND kqjg NOT LIKE '%上班外勤%' then yhkqxx.sbqkcs else 0 end sbqkcs,case when yhkqxx.xbqkcs>0 and kqjg NOT LIKE '%上班外勤%' then yhkqxx.xbqkcs else 0 end xbqkcs,COALESCE (yhkqxx.kgts,0) kgts,
+        COALESCE (yhkqxx.ccsc,0) ccsc,COALESCE (yhkqxx.wcsc,0) wcsc,COALESCE (yhkqxx.jbzsc,0) jbzsc,COALESCE (yhkqxx.gzrjb,0) gzrjb,COALESCE (yhkqxx.xxrjb,0) xxrjb,COALESCE (yhkqxx.jjrjb,0) jjrjb,yhkqxx.kqlx,COALESCE (yhkqxx.btje,0) btje,
+        CASE
+        WHEN cqsj IS NULL
+        AND tqsj IS NULL
+        AND kqjg NOT LIKE '%出差%'
+        AND kqjg NOT LIKE '%外出%'
+        AND kqjg NOT LIKE '%休息,加班%'
+        AND kqjg NOT LIKE '%补卡申请%'
+        AND kqjg !='休息' AND kqjg !='未排班' THEN 1
+        ELSE 0 END yccs, COUNT(kqqjxx.spid) qjcs,yhkqxx.kqid,
+        COALESCE (yhkqxx.sjxs,0) sjxs,COALESCE (yhkqxx.bjxs,0) bjxs,COALESCE (yhkqxx.njxs,0) njxs,COALESCE (yhkqxx.txxs,0) txxs,COALESCE (yhkqxx.hjts,0) hjts,COALESCE (yhkqxx.cjts,0) cjts,COALESCE (yhkqxx.hljts,0) hljts,
+        COALESCE (yhkqxx.cjjts,0) cjjts,COALESCE (yhkqxx.sjts,0) sjts,COALESCE (yhkqxx.yejts,0) yejts,COALESCE (yhkqxx.dsznphfmjts,0) dsznphfmjts
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        LEFT JOIN igams_kqqjxx kqqjxx ON kqqjxx.rq = yhkqxx.rq AND kqqjxx.yhid = yhkqxx.yhid
+        WHERE
+        yhkqxx.scbj = '0'
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+        GROUP BY
+        xtyh.zsxm,xtyh.yhm,jgxx.jgmc,yghmc.rzrq,yghmc.zc,xtyh.yhid,yhkqxx.ycqts,yhkqxx.cqts,
+        yhkqxx.xxts,yhkqxx.cdcs, yhkqxx.cdsc,yhkqxx.ztcs,yhkqxx.ztsc,yhkqxx.sbqkcs,yhkqxx.xbqkcs,yhkqxx.kgts,
+        yhkqxx.ccsc,yhkqxx.wcsc,yhkqxx.jbzsc, yhkqxx.gzrjb,yhkqxx.xxrjb,yhkqxx.jjrjb,yhkqxx.kqlx,yhkqxx.btje,yhkqxx.cqsj,
+        yhkqxx.tqsj,yhkqxx.kqjg,yhkqxx.kqid,yhkqxx.sjxs,yhkqxx.bjxs,yhkqxx.njxs,yhkqxx.txxs,yhkqxx.hjts,yhkqxx.cjts,yhkqxx.hljts,yhkqxx.cjjts,yhkqxx.sjts,yhkqxx.yejts,yhkqxx.dsznphfmjts)yhkqxx group by yhkqxx.zsxm,yhkqxx.yhm,yhkqxx.jgmc,yhkqxx.rzrq,yhkqxx.zc,yhkqxx.yhid,yhkqxx.kqlx
+        ) yhkqxx on tmp.yhid=yhkqxx.yhid
+        order by
+        <if test="sortName != null and sortName != ''">
+            ${sortName} ${sortOrder}
+        </if>
+        <if test="sortLastName != null and sortLastName != ''">
+            ,${sortLastName} ${sortLastOrder}
+        </if>
+    </select>
+    <select id="getDetailsListForSearchExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        SELECT yhkqxx.yhid ${sqlParam}
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN igams_bcgl bcgl ON bcgl.bcglid = yhkqxx.bcglid
+        LEFT JOIN igams_btgl btgl ON btgl.btglid = yhkqxx.btglid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        WHERE yhkqxx.scbj = '0'
+        <include refid="SelectWhere"></include>
+        order by xtyh.yhm asc,yhkqxx.rq asc
+        LIMIT #{pageSize} OFFSET #{pageStart}
+    </select>
+    <select id="getDetailsCountForSearchExp" parameterType="YhkqxxDto" resultType="java.lang.Integer">
+        SELECT count (yhkqxx.yhid)
+        FROM
+        igams_yhkqxx yhkqxx
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN igams_bcgl bcgl ON bcgl.bcglid = yhkqxx.bcglid
+        LEFT JOIN igams_btgl btgl ON btgl.btglid = yhkqxx.btglid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        WHERE yhkqxx.scbj = '0'
+        <include refid="SelectWhere"></include>
+    </select>
+    <select id="getDetailsListForSelectExp" parameterType="YhkqxxDto" resultType="YhkqxxDto">
+        select yhkqxx.yhid  ${sqlParam}
+        from
+        (
+        <foreach item="item" index="index" collection="ids" separator=" union all ">
+            select #{item,jdbcType=VARCHAR} yhid,#{index} ordernum
+        </foreach>
+        ) tmp
+        left join igams_yhkqxx yhkqxx on yhkqxx.yhid=tmp.yhid
+        LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = yhkqxx.yhid
+        LEFT JOIN igams_bcgl bcgl ON bcgl.bcglid = yhkqxx.bcglid
+        LEFT JOIN igams_btgl btgl ON btgl.btglid = yhkqxx.btglid
+        LEFT JOIN matridx_yghmc yghmc ON yghmc.yhid = xtyh.yhid
+        LEFT JOIN matridx_yhssjg yhssjg ON yhssjg.yhid = yhkqxx.yhid
+        LEFT JOIN matridx_jgxx jgxx ON yhssjg.jgid = jgxx.jgid
+        WHERE yhkqxx.scbj = '0'
+        <if test="rqstart != null and rqstart !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &gt;= #{rqstart}
+        </if>
+        <if test="rqend != null and rqend !=''">
+            AND to_char(yhkqxx.rq, 'yyyy-mm-dd') &lt;= #{rqend}
+        </if>
+        order by xtyh.yhm asc,yhkqxx.rq asc
+    </select>
+    <select id="getTest" parameterType="String" resultType="String">
+        select text from test where id = #{id}
+    </select>
+</mapper>

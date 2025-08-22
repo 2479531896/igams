@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript"  th:src="@{${urlPrefix} + '/js/train/roster/roster_modTrainRecord.js'}" charset="utf-8"></script>
+</head>
+<body>
+<form id="modTrainRecordRosterForm" class="form-horizontal sl_all_form " theme="simple" data-bs-toggle="validation">
+    <input type="hidden" name="access_token" />
+    <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+    <input type="hidden" name="yhid" id ="yhid" th:value="${yghmcDto.yhid}">
+    <div class="body-content tab-content">
+        <div>
+            <div class="panel panel-default form-inline">
+                <input id="cxnr" name="cxnr" class="form-control" placeholder="请输入培训标题进行检索" autocomplete="off" />
+                <button v-on:click="search" type="button" id="btn_query" class="btn btn-primary">检索</button>
+                <span v-on:click="searchMore"   style="margin-left:20px"  class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                <button onclick="delTrainRecords()" style="margin-left:20px" type="button" class="btn btn-danger">删除</button>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row"  style="min-height:100px;padding-left:5px;margin-left: 0px;margin-right: 0px;padding-bottom:10px;" id="sl_sel_con">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="tgbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="考核结果">考核结果：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('tgbj','0','modTrainRecordRosterForm');"
+                                                   id="tgbj_id_0"><span>不合格</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('tgbj','1','modTrainRecordRosterForm');"
+                                                   id="tgbj_id_1"><span>合格</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ssgs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="所属公司">所属公司：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${ssgslist!=null && ssgslist.size() >0}" th:each="dto:${ssgslist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[ssgs]],[[${dto.csid}]],[[modTrainRecordRosterForm]]);" th:id="'ssgs_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="pxfs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="培训方式">培训方式：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${pxfslist!=null && pxfslist.size() >0}" th:each="dto:${pxfslist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[pxfs]],[[${dto.csid}]],[[modTrainRecordRosterForm]]);" th:id="'pxfs_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="pxlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="培训类别">培训类别：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${pxlblist!=null && pxlblist.size() >0}" th:each="dto:${pxlblist}">
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   th:onclick="addTj([[pxlb]],[[${dto.csid}]],[[modTrainRecordRosterForm]]);" th:id="'pxlb_id_'+${dto.csid}" th:csdm="${dto.csdm}"><span th:text="${dto.csmc}"></span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="qwwcsj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="培训时间">培训时间：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <input id="qwwcsjstart" name="qwwcsjstart" class=" form-control" placeholder="开始日期" validate="{required:true}" />~
+                                        <input id="qwwcsjend" name="qwwcsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="tgbj_id_tj" name="tgbj_id_tj">
+            <input type="hidden" id="ssgs_id_tj" name="ssgs_id_tj">
+            <input type="hidden" id="pxfs_id_tj" name="pxfs_id_tj">
+            <input type="hidden" id="pxlb_id_tj" name="pxlb_id_tj">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <table id="pxxx_list" data-classes="table table-hover table-bordered table-hidden"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</form>
+</body>
+</html>

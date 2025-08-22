@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <script type="text/javascript" th:src="@{${urlPrefix} + '/js/train/train/train_list.js?v=20230112301'}"
+            charset="utf-8"></script>
+</head>
+<body>
+<div class="panel-body body-content" style="padding-bottom: 0px;">
+    <form id="train_formSearch" class="form-horizontal form-inline" data-bs-toggle="validation">
+        <input type="hidden" name="urlPrefix" id ="urlPrefix" th:value="${urlPrefix}">
+        <input type="hidden" name="auditType" id ="auditType" th:value="${auditType}">
+        <input type="hidden" name="flg" id ="flg" th:value="${flg}">
+        <div class="panel panel-default">
+            <div class="panel-heading">查询条件</div>
+            <div class="panel-body">
+                <div class="">
+                    <div class="form-group padding_l10">
+                        <select name="cxtj" class="form-control chosen-select" id="cxtj"
+                                style="height: 34px;">
+                            <option value="0">全部</option>
+                            <option value="1">确认人员</option>
+                            <option value="2">培训标题</option>
+                            <option value="3">部门</option>
+                        </select>
+                        <input id="cxnr" name="cxnr" class="form-control" placeholder="模糊匹配"
+                               onkeydown="if(event.keyCode==13) {trainResult(); return false;}"/>
+                    </div>
+                    <div class="form-group padding-l30" style="margin-left:0px">
+                        <label>录入时间</label>
+                        <input id="lrsjstart" name="lrsjstart" class="form-control" placeholder="创建日期" validate="{required:true}" />~
+                        <input id="lrsjend" name="lrsjend" class="form-control" placeholder="结束日期" validate="{required:true}" />
+                    </div>
+                    <button type="button" style="margin-left: 50px" id="btn_query"
+                            class="btn btn-primary">查询</button>
+                    <span class="btn btn-primary btn-sm margin_b5" id="sl_searchMore">高级筛选</span>
+                </div>
+                <div class="sl_yx_con" id="sl_yx_con" style="display: none">
+                    <span class="tit">已选条件：</span>
+                    <div class="col-xs-12 col-sm-10 col-md-10 col-lg-11">
+                        <ul id="sl_add_ul"></ul>
+                    </div>
+                </div>
+                <div class="padding_t7 width100" id="searchMore" style="display: none;" >
+                    <div class="tab-content sl_sel_con row" id="sl_sel_con" style="min-height:100px;min-height:150px;padding-left:5px;margin-left: 0px;margin-right: 0px;">
+                        <div class="tab-pane active" id="tab06">
+                            <div id="pxlb_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="培训类别">培训类别：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${pxlblist !=null && pxlblist.size() >0}" th:each="list:${pxlblist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[pxlb]],[[${list.csid}]],[[train_formSearch]]);" th:id="'pxlb_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <span class="col-xs-12 col-lg-2 col-sm-2 col-md-2 text-right" style="padding-top: 5.5px;"><a name="more" style="text-decoration:none;cursor:pointer;">更多&gt;&gt;</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="spbj_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="视频标记" >视频标记：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('spbj','1','train_formSearch');"
+                                                   id="spbj_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('spbj','0','train_formSearch');"
+                                                   id="spbj_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sfcs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否测试" >是否测试：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfcs','1','train_formSearch');"
+                                                   id="sfcs_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sfcs','0','train_formSearch');"
+                                                   id="sfcs_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="htbj_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="回退标记" >回退标记：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('htbj','1','train_formSearch');"
+                                                   id="htbj_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('htbj','0','train_formSearch');"
+                                                   id="htbj_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="tzfsbj_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="跳转方式" >跳转方式：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('tzfsbj','1','train_formSearch');"
+                                                   id="tzfsbj_id_1"><span>点击选项</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('tzfsbj','0','train_formSearch');"
+                                                   id="tzfsbj_id_0"><span>点击下一题</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ckdabj_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="查看答案" >查看答案：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ckdabj','1','train_formSearch');"
+                                                   id="ckdabj_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('ckdabj','0','train_formSearch');"
+                                                   id="ckdabj_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dcckbj_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="当场重考" >当场重考：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('dcckbj','1','train_formSearch');"
+                                                   id="dcckbj_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('dcckbj','0','train_formSearch');"
+                                                   id="dcckbj_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sffshb_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="是否发送红包" >是否发送红包：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sffshb','1','train_formSearch');"
+                                                   id="sffshb_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('sffshb','0','train_formSearch');"
+                                                   id="sffshb_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="zt_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg=='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="状态" >是否学习：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','80','train_formSearch');"
+                                                   id="zt_id_80"><span>已学习</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('zt','00','train_formSearch');"
+                                                   id="zt_id_00"><span>未学习</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ssgs_id" class="col-xs-12 col-sm-12 col-lg-12">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="所属公司">所属公司：</label>
+                                    <div class="col-xs-12 col-sm-10  col-md-10 col-lg-11 sl_sel_list" >
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li th:if="${ssgslist !=null && ssgslist.size() >0}" th:each="list:${ssgslist}">
+                                                <a style='text-decoration:none;cursor:pointer;'th:onclick="addTj([[ssgs]],[[${list.csid}]],[[train_formSearch]]);" th:id="'ssgs_id_'+${list.csid}">
+                                                    <span th:text="${list.csmc}"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dqtx_id" class="col-xs-12 col-sm-12 col-lg-12" th:if="${flg!='1'}">
+                                <div class="form-group width100">
+                                    <label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label" title="到期提醒" >到期提醒：</label>
+                                    <div class="col-xs-6 col-sm-10  col-md-10 col-lg-11 sl_sel_list">
+                                        <ul class="col-xs-12 col-sm-10 col-lg-10 col-md-10 item_more_hidden">
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('dqtx','1','train_formSearch');"
+                                                   id="dqtx_id_1"><span>是</span></a>
+                                            </li>
+                                            <li>
+                                                <a style='text-decoration:none;cursor:pointer;'
+                                                   onclick="addTj('dqtx','0','train_formSearch');"
+                                                   id="dqtx_id_0"><span>否</span></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input  type="hidden" id="pxlb_id_tj" name="pxlb_id_tj">
+        <input  type="hidden" id="spbj_id_tj" name="spbj_id_tj">
+        <input  type="hidden" id="sfcs_id_tj" name="sfcs_id_tj">
+        <input  type="hidden" id="htbj_id_tj" name="htbj_id_tj">
+        <input  type="hidden" id="tzfsbj_id_tj" name="tzfsbj_id_tj">
+        <input  type="hidden" id="ckdabj_id_tj" name="ckdabj_id_tj">
+        <input  type="hidden" id="dcckbj_id_tj" name="dcckbj_id_tj">
+        <input  type="hidden" id="ssgs_id_tj" name="ssgs_id_tj">
+        <input  type="hidden" id="dqtx_id_tj" name="dqtx_id_tj">
+		<input  type="hidden" id="sffshb_id_tj" name="sffshb_id_tj">
+        <input  type="hidden" id="zt_id_tj" name="zt_id_tj">
+        <div th:include="common/btn/ancz.html"></div>
+        <table id="train_list"
+               class="table table-hover table-bordered table-hidden"
+               data-reorderable-columns="true"></table>
+    </form>
+</div>
+</body>
+</html>

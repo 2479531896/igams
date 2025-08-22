@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.igams.hrm.dao.post.IYhqjxxDao" >
+    <select id="selectDtoByDdslid" resultType="YhqjxxDto" parameterType="YhqjxxDto">
+        select yhqjid,kqid,qjlx,qjkssj,qjjssj,qjsc,ddslid,zt,xjslid,yhid
+        from igams_yhqjxx
+        where ddslid=#{ddslid}
+    </select>
+    <select id="getDtoList" parameterType="YhqjxxDto" resultType="YhqjxxDto">
+         select yhqjid,kqid,qjlx,qjkssj,qjjssj,qjsc,ddslid,zt,xjslid,yhid
+        from igams_yhqjxx
+    </select>
+
+    <insert id="insert" parameterType="YhqjxxDto">
+        insert into igams_yhqjxx(
+        yhqjid,
+        qjlx,
+        qjkssj,
+        qjjssj,
+        qjsc,
+        ddslid,
+        zt,
+        xjslid,
+        yhid
+        )values (
+        #{yhqjid},
+        #{qjlx},
+       cast(#{qjkssj} as timestamp ) ,
+        cast (#{qjjssj} as timestamp ),
+        cast (#{qjsc} as numeric ),
+        #{ddslid},
+        #{zt},
+        #{xjslid},
+        #{yhid}
+        )
+    </insert>
+    <update id="update" parameterType="YhqjxxDto">
+        update igams_yhqjxx
+        set
+        <if test="zt!=null and zt!=''">
+            zt=#{zt}
+        </if>
+        <where>
+            ddslid=#{ddslid}
+        </where>
+    </update>
+    <select id="getDtoListGroupYhAndQjlx" parameterType="YhqjxxDto" resultType="YhqjxxDto">
+        SELECT
+        yhid,qjlx,SUM(COALESCE(qjsc,0)) qjsc
+        FROM
+        igams_yhqjxx
+        <where>
+            <if test="zt!=null and zt!=''">
+                and zt=#{zt}
+            </if>
+            <if test="nd!=null and nd!=''">
+                and to_char(qjkssj,'yyyy')=#{nd}
+            </if>
+            <if test = "yhids != null and yhids.size > 0 "  >
+                and yhid in
+                <foreach collection="yhids" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "qjlxs != null and qjlxs.size() > 0"  >
+                and qjlx in
+                <foreach collection="qjlxs" separator="," open="(" close=") "
+                         item="item" index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY yhid,qjlx
+    </select>
+</mapper>
