@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjqxDao" >
+	
+	<!-- 分页查询送检权限信息列表 -->
+	<select id="getPagedDtoList" parameterType="SjqxDto" resultType="SjqxDto">
+		select sjqx.sjqxid,sjqx.wxid,sjqx.sjdw,sjqx.ks,wxyh.wxm
+		from igams_sjqx sjqx
+		left join matridx_wxyh wxyh on sjqx.wxid = wxyh.unionid
+		<where>
+			wxyh.gzpt = #{wbcxid}
+			<if test="sjdw !=null and sjdw != ''">
+				and sjdw like '%'||#{sjdw}||'%'
+			</if>
+			<if test="ks !=null and ks != ''">
+				and ks like '%'||#{ks}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询系统审核信息 -->
+	<select id="getDto" parameterType="SjqxDto" resultType="SjqxDto">
+		select sjqx.sjqxid,sjqx.wxid,sjqx.sjdw,sjqx.ks
+		from igams_sjqx sjqx
+		where
+			sjqxid = #{sjqxid}
+	</select>
+	
+	<!-- 新增送检权限 -->
+	<insert id="insert" parameterType="SjqxModel">
+		insert into igams_sjqx(sjqxid
+		<if test="wxid !=null and wxid != ''">
+			,wxid
+		</if>
+		<if test="sjdw !=null and sjdw != ''">
+			,sjdw
+		</if>
+		<if test="ks !=null and ks != ''">
+			,ks
+		</if>) values(#{sjqxid}
+		<if test="wxid !=null and wxid != ''">
+			,#{wxid}
+		</if>
+		<if test="sjdw !=null and sjdw != ''">
+			,#{sjdw}
+		</if>
+		<if test="ks !=null and ks != ''">
+			,#{ks}
+		</if>)
+	</insert>
+	
+	<!--更新送检权限-->
+	<update id="update" parameterType="SjqxModel">
+		update igams_sjqx 
+		<set>
+		<if test="wxid !=null and wxid != ''">
+			wxid = #{wxid},
+		</if>
+		<if test="sjdw !=null and sjdw != ''">
+			sjdw = #{sjdw},
+		</if>
+		<if test="ks !=null and ks != ''">
+			ks = #{ks},
+		</if>
+			sjqxid = #{sjqxid}
+		</set>
+		<where>
+			sjqxid = #{sjqxid}
+		</where>
+	</update>
+	
+	<!-- 删除送检查看权限 -->
+	<delete id="delete" parameterType="sjqxModel">
+		delete from igams_sjqx
+		<where>
+			(1=2
+			<if test="sjqxid !=null and sjqxid != ''">
+				or sjqxid = #{sjqxid}
+			</if>
+			<if test="ids !=null and ids.size > 0">
+				or sjqxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>)
+		</where>
+	</delete>
+	<!-- 获取送检权限列表 -->
+	<select id="getDtoList" parameterType="SjqxDto" resultType="SjqxDto">
+		select sjqx.sjqxid,sjqx.wxid,sjqx.sjdw,sjqx.ks
+			from igams_sjqx sjqx
+			<where>
+				<if test="wxid != null and wxid != ''">
+					and sjqx.wxid = #{wxid}
+				</if>
+			</where>
+			order by sjqx.sjdw, sjqx.ks
+	</select>
+	<!-- 删除送检查看权限 -->
+	<delete id="deleteByWxid" parameterType="String">
+		delete from igams_sjqx
+		<where>
+			wxid = #{wxid}
+		</where>
+	</delete>
+	<!-- 批量新增权限信息 -->
+	<insert  id="insertBySjqxDtos" parameterType="list">
+		insert into igams_sjqx (sjqxid, wxid, sjdw, ks) 
+		values
+		<if test="list != null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjqxid},#{item.wxid},#{item.sjdw},#{item.ks})
+			</foreach>
+		</if>
+	</insert>
+</mapper>

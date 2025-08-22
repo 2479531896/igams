@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IYhbqDao" >
+
+	<!--根据标签ID删除用户信息-->
+	<delete id="deleteByBqid" parameterType="YhbqDto">
+		delete from igams_yhbq
+		<where>
+			<if test="wbcxid !=null and wbcxid != ''">
+				and wbcxid = #{wbcxid}
+			</if>
+			<if test="bqid !=null and bqid != ''">
+				and bqid = #{bqid}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 新增标签用户信息 -->
+	<insert  id="insertByBqid" parameterType="YhbqDto">
+		insert into igams_yhbq (bqid, wxid, wbcxid)
+		values
+		<if test="wxids !=null and wxids.size > 0">
+			<foreach collection="wxids" separator="," item="item" index="index">
+				(#{bqid},#{item},#{wbcxid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 批量新增用户标签 -->
+	<insert  id="insertByWxids" parameterType="WxyhDto">
+		insert into igams_yhbq (bqid, wxid, wbcxid)
+		values
+		<if test="ids !=null and ids.size > 0">
+			<foreach collection="ids" separator="," item="item" index="index">
+				(#{bqid},#{item},#{wbcxid})
+			</foreach>
+		</if>
+	</insert>
+	<!-- 批量删除用户标签 -->
+	<delete  id="deleteByWxids" parameterType="WxyhDto">
+		delete from igams_yhbq
+		where bqid = #{bqid}
+			<if test="ids !=null and ids.size > 0">
+			and wxid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			and wbcxid = #{wbcxid}
+	</delete>
+</mapper>

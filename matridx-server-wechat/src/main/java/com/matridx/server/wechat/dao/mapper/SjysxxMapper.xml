@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjysxxDao" >
+	<!-- 查询送检医生信息 -->
+	<select id="selectBySjys" parameterType="SjxxDto" resultType="SjysxxDto">
+		select ysxx.ysid, ysxx.sjdw, ysxx.ks, ysxx.sjys, ysxx.ysdh, ysxx.dbm, ysxx.jcdw
+			from igams_sjysxx ysxx
+			<where>
+				ysxx.sjys like '%'||#{sjys}||'%'
+				and ysxx.wxid = #{wxid}
+			</where>
+	</select>
+	<!-- 查询送检医生信息 -->
+	<select id="selectSjysxxDtoBySjys" parameterType="SjxxDto" resultType="SjysxxDto">
+		select ysxx.ysid, ysxx.sjdw, ysxx.ks, ysxx.sjys, ysxx.ysdh, ysxx.dbm, ysxx.wxid, ysxx.jcdw
+			from igams_sjysxx ysxx
+			<where>
+				ysxx.sjys = #{sjys} and ysxx.wxid = #{wxid}
+			</where>
+	</select>
+	
+	<!-- 根据送检信息新增医生信息 -->
+	<insert id="insertBySjxxDto" parameterType="sjxxDto">
+		insert into igams_sjysxx(ysid
+		<if test="wxid !=null and wxid != ''">
+			,wxid
+		</if>
+		<if test="sjdw !=null and sjdw != ''">
+			,sjdw
+		</if>
+		<if test="ks !=null and ks != ''">
+			,ks
+		</if>
+		<if test="sjys !=null and sjys != ''">
+			,sjys
+		</if>
+		<if test="ysdh !=null and ysdh != ''">
+			,ysdh
+		</if>
+		<if test="db !=null and db != ''">
+			,dbm
+		</if>
+		) values(#{ysid}
+		<if test="wxid !=null and wxid != ''">
+			,#{wxid}
+		</if>
+		<if test="sjdw !=null and sjdw != ''">
+			,#{sjdw}
+		</if>
+		<if test="ks !=null and ks != ''">
+			,#{ks}
+		</if>
+		<if test="sjys !=null and sjys != ''">
+			,#{sjys}
+		</if>
+		<if test="ysdh !=null and ysdh != ''">
+			,#{ysdh}
+		</if>
+		<if test="db !=null and db != ''">
+			,#{db}
+		</if>
+		)
+	</insert>
+	
+    <select id="getDtoList" parameterType="SjysxxDto" resultType="SjysxxDto">
+        select sjys.ysid,sjys.sjdw,sjys.ks,sjys.sjys,sjys.ysdh,sjys.dbm,sjys.wxid,sjys.jcdw,
+        case when sjys.qtks is null then sjdw.dwmc else sjys.qtks end qtks,sjdw.kzcs,'1' as show_flg,yyxx.dwmc,
+        yyxx.cskz1 sjdwbj,yyxx.dwjc sjdwjc
+        from igams_sjysxx sjys 
+        left join igams_sjdwxx sjdw on sjdw.dwid=sjys.ks
+       	left join igams_yyxx yyxx on yyxx.dwid=sjys.sjdw
+        <where>
+           	sjys.wxid in
+           	<foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+   				#{item}
+   			</foreach>
+			<if test="sjys != null and sjys != ''">
+				and sjys like '%'||#{sjys}||'%'
+			</if>
+        </where>
+       	 	order by sjys.sjdw
+    </select>
+
+    <select id="getPagedDtoList" parameterType="SjysxxDto" resultType="SjysxxDto">
+        select sjys.ysid,sjys.sjdw,sjys.ks,sjys.sjys,sjys.ysdh,sjys.dbm,sjys.wxid,sjys.jcdw,
+        case when sjys.qtks is null then sjdw.dwmc else sjys.qtks end qtks,sjdw.kzcs,'1' as show_flg,yyxx.dwmc,
+        yyxx.cskz1 sjdwbj,yyxx.dwjc sjdwjc
+        from igams_sjysxx sjys
+        left join igams_sjdwxx sjdw on sjdw.dwid=sjys.ks
+       	left join igams_yyxx yyxx on yyxx.dwid=sjys.sjdw
+        <where>
+           	sjys.wxid in
+           	<foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+   				#{item}
+   			</foreach>
+			<if test="sjys != null and sjys != ''">
+				and sjys like '%'||#{sjys}||'%'
+			</if>
+        </where>
+    </select>
+    
+        <!-- 根据送检信息新增医生信息 -->
+    <insert id="insert" parameterType="SjysxxDto">
+        insert into igams_sjysxx(ysid
+        <if test="wxid !=null and wxid != ''">
+            ,wxid
+        </if>
+        <if test="sjdw !=null and sjdw != ''">
+            ,sjdw
+        </if>
+        <if test="ks !=null and ks != ''">
+            ,ks
+        </if>
+        <if test="sjys !=null and sjys != ''">
+            ,sjys
+        </if>
+        <if test="ysdh !=null and ysdh != ''">
+            ,ysdh
+        </if>
+        <if test="dbm !=null and dbm != ''">
+            ,dbm
+        </if>
+        <if test="qtks !=null and qtks != ''">
+            ,qtks
+        </if>
+        <if test="jcdw !=null and jcdw != ''">
+            ,jcdw
+        </if>
+        ) values(#{ysid}
+        <if test="wxid !=null and wxid != ''">
+            ,#{wxid}
+        </if>
+        <if test="sjdw !=null and sjdw != ''">
+            ,#{sjdw}
+        </if>
+        <if test="ks !=null and ks != ''">
+            ,#{ks}
+        </if>
+        <if test="sjys !=null and sjys != ''">
+            ,#{sjys}
+        </if>
+        <if test="ysdh !=null and ysdh != ''">
+            ,#{ysdh}
+        </if>
+        <if test="dbm !=null and dbm != ''">
+            ,#{dbm}
+        </if>
+        <if test="qtks !=null and qtks != ''">
+            ,#{qtks}
+        </if>
+        <if test="jcdw !=null and jcdw != ''">
+            ,#{jcdw}
+        </if>
+        )
+    </insert>
+    
+    <delete id="deleteById" parameterType="String">
+        delete from igams_sjysxx where ysid=#{ysid}
+    </delete>
+    
+	<select id="getSjysxxDtos" parameterType="SjysxxDto" resultType="SjysxxDto">
+        select sjys.ysid,sjys.sjdw,sjys.ks,sjys.sjys,sjys.ysdh,sjys.dbm,sjys.wxid,sjys.jcdw,sjys.qtks,sjdw.kzcs,yyxx.dwmc
+        from igams_sjysxx sjys 
+        left join igams_sjdwxx sjdw on sjdw.dwid=sjys.ks 
+        left join igams_yyxx yyxx on yyxx.dwid=sjys.sjdw 
+        <where>
+            sjys.wxid=#{wxid}
+        </where>
+    </select>
+    
+    <select id="getCount" parameterType="SjysxxDto" resultType="int">
+    	select count(ysid) from igams_sjysxx 
+    	<where>
+    		<if  test="sjdw != null and sjdw != ''">
+    			and sjdw=#{sjdw}
+    		</if>
+    		<if  test="ks != null and ks != ''">
+    			and ks=#{ks}
+    		</if>
+    		<if  test="sjys != null and sjys != ''">
+    			and sjys=#{sjys}
+    		</if>
+    		<if  test="dbm != null and dbm != ''">
+    			and dbm=#{dbm}
+    		</if>
+    		<if  test="wxid != null and wxid != ''">
+    			and wxid=#{wxid}
+    		</if>
+    		<if  test="qtks != null and qtks != ''">
+    			and qtks=#{qtks}
+    		</if>
+    		<if  test="jcdw != null and jcdw != ''">
+    			and jcdw=#{jcdw}
+    		</if>
+    	</where>
+    </select>
+    
+    <select id="selectTreeSjysxx" parameterType="SjysxxDto" resultType="SjysxxDto">
+		SELECT *
+			FROM (
+				SELECT sjys.ysid, sjys.sjdw, sjys.ks, sjys.sjys, sjys.ysdh , sjys.dbm, sjys.wxid, sjys.jcdw, CASE WHEN sjys.qtks IS NULL THEN sjdw.dwmc ELSE sjys.qtks END AS qtks,
+				sjdw.kzcs,yyxx.dwmc,yyxx.cskz1 sjdwbj,yyxx.dwjc sjdwjc
+	  				FROM igams_sjysxx sjys
+   				    LEFT JOIN igams_sjdwxx sjdw ON sjdw.dwid = sjys.ks
+   				    LEFT JOIN igams_yyxx yyxx ON yyxx.dwid = sjys.sjdw
+   				    WHERE sjys.wxid in 
+   				    <foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+   				    	#{item}
+   				    </foreach>
+					<if test="sjys != null and sjys != ''">
+						and sjys like '%'||#{sjys}||'%'
+					</if>
+						UNION ALL
+					SELECT '' AS ysid, sjys.sjdw, '' AS ks, '' AS sjys, '' AS ysdh
+					  , '' AS dbm, '' AS wxid, '' AS jcdw, '' AS qtks, '' AS kzcs,
+					 yyxx.dwmc,yyxx.cskz1 sjdwbj,yyxx.dwjc sjdwjc
+					FROM igams_sjysxx sjys
+				 	LEFT JOIN igams_yyxx yyxx ON yyxx.dwid=sjys.sjdw
+					WHERE sjys.wxid in
+					<foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+   				    	#{item}
+   				    </foreach>
+					<if test="sjys != null and sjys != ''">
+						and sjys like '%'||#{sjys}||'%'
+					</if>
+					GROUP BY  sjys.sjdw,yyxx.dwmc,yyxx.cskz1,yyxx.dwjc
+			) tmp
+		ORDER BY sjdw, ysid
+    </select>
+    
+    <select id="getCountByWxid" parameterType="SjysxxDto" resultType="int">
+    	select count(ysid) from igams_sjysxx
+    	<where>
+    		wxid in
+    		<foreach collection="lrrylist" separator="," open="(" close=")" item="item" index="index">
+    			#{item}
+    		</foreach>
+    	</where>
+    </select>
+    
+</mapper>

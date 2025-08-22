@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IZdyszDao" >
+	<!-- 根据wxid查询该用户保存的自定义设置方案 -->
+	<select id="getZdyProject" parameterType="ZdyszDto" resultType="ZdyszDto">
+		select zdysz.zdyid,zdysz.wxid,zdysz.zdyxm,zdysz.zdyxb,zdysz.zdynl,zdysz.zdysj,zdysz.famc,
+		zdysz.sfyy,case when zdysz.sfyy ='0' then '未应用' when zdysz.sfyy='1' then '已应用' end sfyymc,
+		fj.wjlj faimglj,fj.fjid fjid
+		from igams_zdysz zdysz
+		left join matridx_fjcfb fj on fj.ywid=zdysz.zdyid
+		<where>
+			zdysz.scbj!='1'
+			and zdysz.wxid=#{wxid}
+		</where>
+	</select>
+	
+	<!-- 根据zdyid和微信id更新自定义设置 -->
+	<update id="update" parameterType="ZdyszDto">
+		update igams_zdysz 
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="famc !=null and famc !=''">
+				,famc=#{famc}
+			</if>
+			<if test="zdyxm !=null and zdyxm !=''">
+				,zdyxm=#{zdyxm}
+			</if>
+			<if test="zdyxb !=null and zdyxb !=''">
+				,zdyxb=#{zdyxb}
+			</if>
+			<if test="zdynl !=null and zdynl !=''">
+				,zdynl=#{zdynl}
+			</if>
+			<if test="zdysj !=null and zdysj !=''">
+				,zdysj=#{zdysj}
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			and wxid=#{wxid}
+			and zdyid=#{zdyid}
+		</where>
+	</update>
+	
+	<!-- 设置应用方案 -->
+	<update id="setUseProject" parameterType="List">
+		<foreach collection="list" close="" open="" separator=";" item="item" index="index">
+			update igams_zdysz 
+			<set>
+				sfyy=#{item.sfyy}
+			</set>
+			<where>
+				zdyid=#{item.zdyid}
+			</where>
+		</foreach>
+	</update>
+	
+	
+	<!-- 删除自定义设置方案 -->
+	<update id="delete" parameterType="ZdyszDto">
+		update igams_zdysz set 
+		scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			wxid=#{wxid}
+			and zdyid=#{zdyid}
+		</where>
+	</update>
+</mapper>

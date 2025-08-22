@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjnyxDao" >
+	<!-- 批量新增送检耐药性信息 -->
+	<insert  id="insertBysjnyxDtos" parameterType="list">
+		insert into igams_sjnyx (sjid, xh, jy, jyl, tx, jl, ds, yp, xgwz,jclx,nyjyid,jyfx,xls,qyz,jczlx)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjid},cast(#{item.xh} as numeric),#{item.jy},#{item.jyl},#{item.tx},#{item.jl},
+				#{item.ds},#{item.yp},#{item.xgwz},#{item.jclx},#{item.nyjyid},#{item.jyfx},#{item.xls},#{item.qyz},#{item.jczlx})
+			</foreach>
+		</if>
+	</insert>
+	<!--根据送检ID删除信息-->
+	<delete id="deleteById" parameterType="String">
+		delete from igams_sjnyx
+		<where>
+			sjid = #{sjid}
+		</where>
+	</delete>
+	<!--根据送检ID删除信息-->
+	<delete id="deleteBySjnyxDto" parameterType="SjnyxDto">
+		delete from igams_sjnyx
+		<where>
+			sjid = #{sjid} and jclx = #{jclx}
+			<if test="jczlx !=null and jczlx != ''">
+				and jczlx = #{jczlx}
+			</if>
+		</where>
+	</delete>
+	<!-- 根据送检ID查询相应的耐药信息 -->
+	<select id="getNyxBySjid" parameterType="SjxxDto" resultType="SjnyxDto">
+		select nyx.json,nyx.sjid,nyx.xh,nyx.jy,nyx.jyl,nyx.tx,nyx.jl,nyx.ds,nyx.yp,nyx.xgwz,nyx.jyfx,nyx.xls,qyz,jclx.cskz1 jclx,jclx.csid jcxmid,nyx.jczlx jczxmid
+		from igams_sjnyx nyx
+		left join matridx_jcsj jclx on jclx.csid=nyx.jclx
+		<where>
+			<if test="sjid !=null and sjid !=''">
+			nyx.sjid=#{sjid}
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

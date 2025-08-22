@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjwzxxDao" >
+
+	<!-- 批量新增送检物种信息 -->
+	<insert  id="insertBysjwzxxDtos" parameterType="list">
+		insert into igams_sjwzxx (sjwzid, sjid, wzid, wzywm, wzzwm, wzfl, jglx, xh, dqs, jyzfgd, xpxx, xdfd, sid, sm, szwm, sdds, sfd, lrry, lrsj, scbj,jclx,wzfllx,wxid,rpm,jczlx)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjwzid},#{item.sjid},#{item.wzid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.jglx},cast(#{item.xh} as numeric),
+					#{item.dqs},#{item.jyzfgd},#{item.xpxx},#{item.xdfd},#{item.sid},#{item.sm},#{item.szwm},#{item.sdds},#{item.sfd},#{item.lrry},LOCALTIMESTAMP, '0',
+				#{item.jclx},#{item.wzfllx},#{item.wxid},#{item.rpm},#{item.jczlx})
+			</foreach>
+		</if>
+	</insert>
+	<!--批量删除送检物种信息-->
+	<delete id="deleteBysjwzxxDto" parameterType="SjwzxxDto">
+		delete from igams_sjwzxx
+		where sjid = #{sjid} and jclx = #{jclx}
+		<if test="jczlx != null and jczlx!=''">
+			and jczlx = #{jczlx}
+		</if>
+	</delete>
+	<!-- 医生小程序获取送检清单 -->
+	<select id="getSpeciesStatis" parameterType="SjxxDto" resultType="SjwzxxDto">
+		select count(*) as num,wz.wzzwm
+			from igams_sjwzxx wz
+		left outer join igams_sjxx sj on sj.sjid = wz.sjid
+			where
+				sj.scbj != '1'
+				and ( 1 = 2
+					<if test="ysdh != null and ysdh != ''">
+						or sj.ysdh = #{ysdh}
+					</if>
+					<if test="lrrys != null and lrrys.size > 0">
+						or sj.lrry in
+							<foreach collection="lrrys" open="(" close=")" separator="," item="item">
+								#{item}
+							</foreach>
+					</if>
+				) 
+				<if test="yblx != null and yblx != ''">
+					and sj.yblx = #{yblx}
+				</if>
+			group by wz.wzzwm
+			order by count(*) desc
+	</select>
+</mapper>

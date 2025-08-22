@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IZdyfaDao" >
+	<!-- 根据wxid查询该用户保存的自定义设置方案 -->
+	<select id="getZdyProject" parameterType="ZdyfaDto" resultType="ZdyfaDto">
+		select fa.faid,fa.wxid,fa.famc,fa.fasfyy,case when fa.fasfyy ='0' then '未应用' when fa.fasfyy='1' then '已应用' end sfyymc,
+		fj.wjlj faimglj,fj.fjid fjid
+		from igams_zdyfa fa
+		left join matridx_fjcfb fj on fj.ywid=fa.faid
+		<where>
+			fa.scbj!='1'
+			and fa.wxid=#{wxid}
+		</where>
+	</select>
+
+	<!-- 新增自定义方案 -->
+	<insert id="insert" parameterType="ZdyfaModel">
+		insert into igams_zdyfa(faid
+		<if test="famc != null and famc != ''">
+			,famc
+		</if>
+		<if test="wxid != null and wxid != ''">
+			,wxid
+		</if>
+		,fasfyy,lrry,lrsj,scbj)
+		values(#{faid}
+		<if test="famc != null and famc != ''">
+			,#{famc}
+		</if>
+		<if test="wxid != null and wxid != ''">
+			,#{wxid}
+		</if>
+		,'1',#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<!-- 根据faid更新自定义方案 -->
+	<update id="update" parameterType="ZdyfaModel">
+		update igams_zdyfa 
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="famc !=null and famc !=''">
+				,famc=#{famc}
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			and faid=#{faid}
+		</where>
+	</update>
+	
+	<!-- 删除自定义设置方案 -->
+	<update id="delete" parameterType="ZdyfaDto">
+		update igams_zdyfa set 
+		scbj='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			wxid=#{wxid}
+			and faid=#{faid}
+		</where>
+	</update>
+	
+	<!-- 根据faid查询该用户当前已应用的自定义设置方案 -->
+	<select id="getYyyFa" parameterType="ZdyfaDto" resultType="ZdyfaDto">
+		select fa.faid,fa.wxid,fa.famc,
+		fa.fasfyy,case when fa.fasfyy ='0' then '未应用' when fa.fasfyy='1' then '已应用' end sfyymc,
+		fj.wjlj faimglj,fj.fjid fjid
+		from igams_zdyfa fa
+		left join matridx_fjcfb fj on fj.ywid=fa.faid
+		<where>
+			fa.scbj!='1'
+			and fa.faid=#{faid}
+			and fa.fasfyy='1'
+		</where>
+	</select>
+	<!--   查询自定义方案列表 -->
+	<select id="getDtoList"  parameterType="ZdyfaDto"  resultType="ZdyfaDto" >
+		select  fa.faid, fa.famc, fa.fasfyy, btwz.zdyid, btwz.zdmc, btwz.bhbj, btwz.zbj, btwz.zjg, btwz.ybj, btwz.yjg, btwz.sbj, 
+			btwz.sjg, btwz.xbj, btwz.xjg, btwz.ywbj, btwz.zdxx
+ 		from igams_zdyfa fa  
+ 		left join igams_zdybtwz btwz on fa.faid = btwz.faid
+		<where>
+ 			fa.scbj != '1' and btwz.scbj != '1'and fa.faid = #{faid}
+  		</where>
+	</select>
+	<!-- 查询自定义方案信息 -->
+	<select id="getDto"  parameterType="ZdyfaDto"  resultType="ZdyfaDto" >
+		select  fa.faid, fa.famc, fa.fasfyy
+ 		from igams_zdyfa fa
+		<where>
+ 			fa.scbj != '1'
+ 			<if test="faid !=null and faid != ''">
+				and fa.faid = #{faid}
+			</if>
+ 			<if test="wxid !=null and wxid != ''">
+				and fa.wxid = #{wxid}
+			</if>
+			<if test="fasfyy !=null and fasfyy != ''">
+				and fa.fasfyy = #{fasfyy}
+			</if>
+  		</where>
+	</select>
+
+</mapper>

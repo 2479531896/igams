@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<body>
+		<form action="/systemcheck/auditProcess/auditSave" data-bs-toggle="validation" method="post" id="auditAjaxForm" theme="simple" class="form-horizontal sl_all_form">
+			<div class="sl_fixtop" id="fixtop" style="border-bottom:2px solid #ff9c00;margin-bottom:15px;">
+				<input type="hidden" id="ywid" name="ywid" th:value="${shgcDto.ywid}"/>
+				<!-- 用于加载页面时确认唯一值 -->
+				<input type="hidden" id="audit_loadYmCode" name="loadYmCode" th:value="${shgcDto.loadYmCode}"/>
+				<input type="hidden" id="business_url" name="business_url" th:value="${shgcDto.business_url}"/>
+				<input type="hidden" id="ywzd" name="ywzd" th:value="${shgcDto.ywzd}"/>
+				<input type="hidden" id="lcxh" name="lcxh" th:value="${shgcDto.xlcxh}"/>
+				<input type="hidden" id="shlb" name="shlb" th:value="${shgcDto.shlb}"/>
+				<input type="hidden" id="lastStep" name="lastStep" th:value="${shgcDto.lastStep}"/>
+				<input type="hidden" id="access_token" name="access_token"/>
+				<div class="row"  style="z-index:3;position: relative;">
+					<div class="col-sm-8 col-lg-9">
+						<div class="input-group">
+							<div class="input-group-btn">
+								<span class="valid-class-place">
+									<select id="sftg" name="sftg" validate="{required:true}" class="form-control success" style="width:15%;padding:0px 12px;">
+										<option value="">--请选择--</option>
+	                        			<option value="1" >通过</option>
+	                        			<option value="0" >不通过</option>
+									</select>
+								</span>
+								<span class="valid-class-place">
+									<select id="shxxThlcxh" name="thlcxh" validate="{required:true}" class="form-control hidden" disabled="true" style="width:25%;padding:0px 12px;">
+										<option value="">--请选择退回节点--</option>
+	                        			<option th:each="list:${backShlcList}" th:value="${list.lcxh}" th:text="${list.gwmc}" ></option>
+									</select>
+								</span>
+								<input type="text" id="shxxShyj" name="shyj" validate="{stringMaxLength:2000}" style="width:100%;" class="form-control" placeholder="审核意见" >
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4 col-lg-3 text-right">
+						<button type="button" class="btn btn-primary" id="audit_confirm_btn">确定</button>
+						<button type="button" class="btn btn-default" id="click_audit_steps">审核历史</button>
+						<div class="sl_flpop_con padding_10 hidden">
+							<ul class="audit_steps">
+								<li class='end'><span>开始</span></li>
+								<li th:each="shlc : ${shlcList}" th:class='${shlc.audited eq true?"end":""}'><span th:text="${shlc.gwmc}"></span></li>
+								<li><span>结束</span></li>
+							</ul>
+							<div class="clearfix"></div>
+							<div class="audit_steps_con" th:if="${shxxList != null and shxxList.size() > 0}" th:each="shxx:${shxxList}">
+								<p class="t"><span th:text="${(shxx.sftg eq null)?'用户':shxx.gwmc}"></span><span th:text ="${shxx.shrmc}"></span><span th:text ="${shxx.shsj}"></span><span th:class="'pull-right col'+${(shxx.sftg eq '1')?'1':(shxx.sftg eq null?'4':'2')}" th:text='${(shxx.sftg eq null)?"提交":shxx.sftgmc}'></span></p>
+								<p class="c"><i class="fa fa-chevron-down"></i><span th:text="${(shxx.sftg eq null) ? shxx.ssyj : shxx.shyj}">&nbsp;</span></p>
+							</div>
+						</div>
+					</div>
+					<div id="qwwc" class="col-md-6 col-sm-6" style="margin-top:10px;">
+						<div class="form-group">
+							<label style="color:black;" for="" class="col-sm-3 col-xs-12 control-label">
+								期望完成日期:
+							</label>
+							<div class="col-sm-9 col-xs-12" style="padding:0;">
+								<input type="text" id="qwwcsj" name="qwwcsj" validate="{stringMaxLength:32}" class="form-control" placeholder="期望完成时间" >
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="clearfix"></div>
+			<div id="auditPage"><span style="width:100%;text-align:center;"><img alt="" src="/images/loading-2.gif"></img></span></div>
+		</form>
+	</body>
+	<script type="text/javascript" src="/js/globalweb/systemcheck/audit_process.js" charset="utf-8"></script>
+</html>

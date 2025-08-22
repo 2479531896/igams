@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IZdybtwzDao" >
+
+	<!-- 根据方案ID删除信息 -->
+	<delete id="deleteByFaid" parameterType="String">
+		delete from igams_zdybtwz where faid = #{faid}
+	</delete>
+	
+	<!-- 批量新增标题位置信息  -->
+	<insert  id="insertByZdybtwzDtos" parameterType="list">
+		insert into igams_zdybtwz (zdyid, faid, zdmc, zdxx, bhbj, zbj, zjg, ybj, yjg, sbj, sjg, xbj, xjg, ywbj, lrry, lrsj, scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.zdyid},#{item.faid},#{item.zdmc},#{item.zdxx},#{item.bhbj},#{item.zbj},#{item.zjg},#{item.ybj},#{item.yjg},#{item.sbj},#{item.sjg},
+					#{item.xbj},#{item.xjg},#{item.ywbj},#{item.lrry},LOCALTIMESTAMP, '0')
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 根据方案id查询自定义标题位置信息 -->
+	<select id="getZdybtwzByFaid" parameterType="ZdybtwzDto" resultType="ZdybtwzDto">
+		select btwz.zdyid, btwz.faid, btwz.zdmc, btwz.zdxx, btwz.bhbj, btwz.zbj, btwz.zjg, btwz.ybj, btwz.yjg, btwz.sbj, btwz.sjg, btwz.xbj, btwz.xjg, btwz.ywbj
+		from igams_zdybtwz btwz
+		left join igams_zdyfa fa on fa.faid=btwz.faid
+		<where>
+			btwz.scbj!='1'
+			and btwz.faid=#{faid}
+			and fa.fasfyy='1'
+		</where>
+	</select>
+</mapper>

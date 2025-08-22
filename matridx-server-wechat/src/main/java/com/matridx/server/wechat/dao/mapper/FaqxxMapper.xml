@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IFaqxxDao" >
+	<!--   查询列表 -->
+	<select id="getDtoList"  parameterType="FaqxxDto"  resultType="FaqxxDto" >
+		select  faqxx.faqid,faqxx.xh,faqxx.bt,faqxx.nr,faqxx.wz,faqxx.gzpt,faqxx.lrsj,faqxx.lrry,faqxx.xgsj,faqxx.xgry,faqxx.scsj,faqxx.scry,faqxx.scbj
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj!='1'
+			<if test="bt != null and bt != ''">
+				and bt ILIKE '%'||#{bt}||'%'
+			</if>
+			<if test="nr != null and nr != ''">
+				and nr ILIKE '%'||#{nr}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!--  查询信息  -->
+	<select id="getDtoById"  parameterType="String"  resultType="FaqxxDto" >
+		select  faqxx.faqid,faqxx.xh,faqxx.bt,faqxx.nr,faqxx.wz,faqxx.gzpt,faqxx.lrsj,faqxx.lrry,faqxx.xgsj,faqxx.xgry,faqxx.scsj,faqxx.scry,faqxx.scbj
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj!='1' and faqxx.faqid = #{faqid}
+		</where>
+	</select>
+
+
+	<select id="getDto"  parameterType="faqxxDto"  resultType="FaqxxDto" >
+		select  faqxx.faqid,faqxx.xh,faqxx.bt,faqxx.nr,faqxx.wz,faqxx.gzpt,faqxx.lrsj,faqxx.lrry,faqxx.xgsj,faqxx.xgry,faqxx.scsj,faqxx.scry,faqxx.scbj
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj!='1' and faqxx.faqid = #{faqid}
+		</where>
+	</select>
+
+	<select id="getWsWechatNewsList" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select  faqxx.faqid,faqxx.xh,faqxx.bt,faqxx.nr,faqxx.wz,faqxx.gzpt,faqxx.lrsj,faqxx.lrry,faqxx.xgsj,faqxx.xgry,faqxx.scsj,faqxx.scry,faqxx.scbj
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj!='1'
+			<if test="bt != null and bt != ''">
+				and bt ILIKE '%'||#{bt}||'%'
+			</if>
+			<if test="nr != null and nr != ''">
+				and nr ILIKE '%'||#{nr}||'%'
+			</if>
+		</where>
+	</select>
+
+
+	<update id="update" parameterType="FaqxxDto">
+		update igams_faqxx
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,faqid=#{faqid},xh=cast(#{xh} AS numeric),wz=#{wz},gzpt=#{gzpt},nr=#{nr},bt=#{bt}
+
+		</set>
+		<where>
+			scbj!='1' and
+			faqid=#{faqid}
+		</where>
+	</update>
+
+	<!--删除 -->
+	<update id="delete" parameterType="FaqxxDto">
+		update igams_faqxx
+		<set>
+			scbj='1',
+			scry=#{scry},
+			scsj=LOCALTIMESTAMP
+		</set>
+		<where>
+			faqid in
+			<foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getPagedDtoList" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqxx.faqid,faqxx.bt,faqxx.nr,faqxx.xh,faqxx.wz,faqxx.gzpt,faqxx.lrry,faqxx.lrsj,faqxx.xgry,faqxx.xgsj,faqxx.scry,faqxx.scsj,faqxx.scbj
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj!='1'
+			<if test="bt != null and bt != ''">
+				and bt ILIKE '%'||#{bt}||'%'
+			</if>
+			<if test="nr != null and nr != ''">
+				and nr ILIKE '%'||#{nr}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据标题模糊查询faq信息 -->
+	<select id="getFqaxxByBt" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqid,bt,nr,xh,wz,gzpt
+		from igams_faqxx
+		<where>
+			(bt like '%'||#{bt}||'%'
+			or
+			nr like '%'||#{bt}||'%')
+			and gzpt = #{gzpt}
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="FaqxxDto">
+		insert into igams_faqxx(faqid,xh,bt,nr,wz,gzpt,lrry,lrsj,xgry,xgsj,scry,scsj,scbj)
+		values(cast((SELECT MAX(xh) FROM igams_faqxx) AS INTEGER) +1,cast(cast((SELECT MAX(xh) FROM igams_faqxx) AS INTEGER) +1 AS numeric),#{bt},#{nr},#{wz},#{gzpt},#{lrry},LOCALTIMESTAMP,#{xgry},#{xgsj},#{scry},#{scsj},'0')
+	</insert>
+
+	<!-- 根据ID查询信息 -->
+	<select id="selectFaqxxByFaqid" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqid,bt,nr,xh,wz,gzpt,lrry,lrsj,xgry,xgsj,scry,scsj,scbj
+		from igams_faqxx
+		<where>
+			scbj!='1'
+			and faqid=#{faqid}
+		</where>
+	</select>
+
+	<select id="getFqaxxByWz" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqid,bt,nr,xh,wz,gzpt
+		from igams_faqxx
+		<where>
+			wz=#{wz} and scbj!='1'
+		</where>
+	</select>
+	
+	<!-- 查询前5个faq信息 -->
+	<select id="getFaqxxgd"  parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqid,bt,nr,xh,wz,gzpt
+		from igams_faqxx
+		where gzpt = #{gzpt} and scbj!='1'
+		order by xh limit 5
+	</select>
+
+	<!-- 获取信息列表 -->
+
+	<select id="getPagedFaqxxList" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqxx.faqid,faqxx.bt,faqxx.nr,faqxx.xh,faqxx.wz,faqxx.gzpt,faqxx.lrsj, xtyh.zsxm lrry
+		from igams_faqxx faqxx
+		left join matridx_xtyh xtyh on faqxx.lrry=xtyh.yhid
+		<where>
+			faqxx.scbj!='1'
+			<if test="bt != null and bt != ''">
+				and faqxx.bt like '%'||#{bt}||'%'
+			</if>
+			<if test="nr != null and nr != ''">
+				and faqxx.nr like '%'||#{nr}||'%'
+			</if>
+		</where>
+	</select>
+
+
+
+
+	<!--根据删除信息-->
+	<delete id="deleteFaqxx" parameterType="FaqxxDto">
+		delete from igams_faqxx
+		<where>
+			faqid = #{faqid}
+		</where>
+	</delete>
+
+	<!-- 查询机构信息 -->
+	<select id="getFaqxxList"  resultType="FaqxxDto">
+		select faqxx..faqid,faqxx..bt,faqxx..nr,faqxx..lrry,faqxx.lrsj,faqxx..xgry,faqxx.xgsj,faqxx.scry
+		from igams_faqxx faqxx
+		<where>
+			faqxx.scbj='0'
+			<if test="bt != null and bt != ''">
+				and bt ILIKE '%'||#{bt}||'%'
+			</if>
+			<if test="nr != null and nr != ''">
+				and nr ILIKE '%'||#{nr}||'%'
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据标题查询信息 -->
+	<select id="getFaqxxByBt" parameterType="FaqxxDto" resultType="FaqxxDto">
+		select faqxx.faqid,faqxx.bt,faqxx.nr,faqxx.xh,faqxx.wz,faqxx.gzpt
+		from igams_faqxx
+		<where>
+			faqxx.scbj!='1'
+			and bt=#{bt}
+			<if test="faqid !=null and faqid != ''">
+				and faqxx.faqid!=#{faqid}
+			</if>
+		</where>
+	</select>
+</mapper>

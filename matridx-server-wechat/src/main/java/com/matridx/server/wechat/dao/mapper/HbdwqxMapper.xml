@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IHbdwqxDao" >
+
+  <select id="getOptionJcdw" parameterType="String" resultType="HbdwqxDto">
+    select jc.csid as csid , jc.csmc as jcdwmc, jc.cspx as xh from matridx_jcsj jc
+    where jclb='DETECTION_UNIT'
+  </select>
+   
+  <select id="getPagedSelectedList" parameterType="HbdwqxDto" resultType="HbdwqxDto">
+     select hbdwqx.hbid, hbdwqx.xh , hbdwqx.jcdw, jc.csmc as jcdwmc 
+     from igams_hbdwqx hbdwqx
+     left join matridx_jcsj jc on jc.csid = hbdwqx.jcdw and jc.scbj='0'
+     <where>
+         hbdwqx.hbid = #{hbid}
+     </where>
+  </select>
+
+  <insert id="insertjcdw" parameterType="list">
+     insert into igams_hbdwqx (hbid, jcdw, xh) values
+     <if test="list != null and list.size > 0">
+         <foreach collection="list" separator="," item="item" index="index">
+              (#{item.hbid},#{item.jcdw}, #{index}+1)
+         </foreach>
+     </if>
+  </insert>
+  
+  <delete id="deleteById" parameterType="String">
+      delete from igams_hbdwqx
+      <where>
+           hbid = #{hbid}
+      </where> 
+  </delete>
+  
+  <!-- 查询伙伴单位权限 -->
+  <select id="selectByHbmc" parameterType="String" resultType="String">
+      select hbdw.jcdw
+  	from igams_sjhbxx sjhb
+        left join igams_hbdwqx hbdw on hbdw.hbid = sjhb.hbid
+      where sjhb.scbj = '0' and sjhb.hbmc = #{hbmc}  and hbdw.jcdw is not null
+  </select>
+</mapper>

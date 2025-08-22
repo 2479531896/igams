@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IHbxxzDao" >
+	<select id="getHbDtoFromId" parameterType="SjxxDto" resultType="SjhbxxDto">
+		select hbxxz.hbxxzid,hbxxz.hbid,hbxxz.sysid,hbxxz.jcxmcskz3,hbxxz.xzlx from
+		igams_sjxx sj
+		left outer join igams_sjjcxm jcxm on jcxm.sjid=sj.sjid and jcxm.scbj = '0'
+		left outer join matridx_jcsj jc_jcxm on jc_jcxm.csid=jcxm.jcxmid
+		left outer join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and hbxx.scbj = '0'
+		left outer join igams_hbxxz hbxxz on hbxxz.hbid = hbxx.hbid and hbxxz.sysid = sj.jcdw and hbxxz.jcxmcskz3=jc_jcxm.cskz3
+		where sj.sjid=#{sjid} and jc_jcxm.cskz3= 'IMP_REPORT_ONCO_QINDEX_TEMEPLATE'
+	</select>
+
+	<select id="getHbxzDtoByHbmc" parameterType="String" resultType="SjhbxxDto">
+		select hbxxz.hbxxzid,hbxxz.hbid,hbxxz.sysid,hbxxz.jcxmcskz3,hbxxz.xzlx from
+		igams_hbxxz hbxxz
+		left join igams_sjhbxx hbxx on hbxxz.hbid = hbxx.hbid and hbxx.scbj = '0'
+		where hbxx.hbmc=#{hbmc}
+	</select>
+	<select id="getDto" parameterType="HbxxzDto" resultType="HbxxzDto">
+		select hbxxz.hbxxzid,hbxxz.hbid,hbxxz.sysid,hbxxz.jcxmcskz3,hbxxz.xzlx,hbxx.hbmc,jcdw.csmc jcdwmc from
+		igams_hbxxz hbxxz
+		left join igams_sjhbxx hbxx on hbxxz.hbid = hbxx.hbid and hbxx.scbj = '0'
+		left join matridx_jcsj jcdw on jcdw.csid= hbxxz.sysid
+		where hbxxz.hbxxzid=#{hbxxzid}
+	</select>
+
+
+	<!-- 分页查询伙伴X限制信息 (更改查询列表的sql，增加一列用来显示选择的检测单位，原本的sql为上面注释的) -->
+	<select id="getPagedDtoList" parameterType="HbxxzDto" resultType="HbxxzDto">
+		select
+		hbxxz.hbxxzid, hbxxz.hbid,hbxxz.lrry,hbxxz.lrsj,hbxxz.sysid,hb.hbmc,jcdw.csmc jcdwmc,hbxxz.jcxmcskz3,hbxxz.xzlx
+		from
+		igams_hbxxz hbxxz
+		left join igams_sjhbxx hb on hb.hbid=hbxxz.hbid and hb.scbj != '1'
+		left join matridx_jcsj jcdw on jcdw.csid= hbxxz.sysid
+		<where>
+			<include refid="selectWhere"></include>
+		</where>
+	</select>
+
+	<sql id="selectWhere">
+		<if test="hbmc!=null and hbmc !=''">
+			and hb.hbmc ILIKE '%' ||#{hbmc}||'%'
+		</if>
+		<if test="jcdwmc !=null and jcdwmc !=''">
+			and jcdw.csmc ILIKE '%'||#{jcdwmc}||'%'
+		</if>
+		<if test = "jcdws != null and jcdws.length > 0 "  >
+			and hbxxz.sysid in
+			<foreach collection="jcdws" separator="," open="(" close=") "
+					 item="item" index="index">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+
+
+	<!-- 添加伙伴X限制 -->
+	<insert id="insertDto" parameterType="HbxxzDto">
+		insert into igams_hbxxz(hbxxzid,hbid, sysid, lrry, lrsj,jcxmcskz3,xzlx)
+		values (#{hbxxzid},#{hbid}, #{sysid}, #{lrry}, localtimestamp,#{jcxmcskz3},#{xzlx})
+	</insert>
+
+	<select id="getSameDto" parameterType="HbxxzDto" resultType="HbxxzDto">
+		select hbxxz.hbxxzid,hbxxz.hbid, hbxxz.sysid,hbxxz.jcxmcskz3,hbxxz.xzlx
+		from igams_hbxxz hbxxz
+		where hbxxz.hbid = #{hbid}
+		  and hbxxz.sysid = #{sysid}
+		  and hbxxz.jcxmcskz3 = #{jcxmcskz3}
+		  and hbxxz.xzlx = #{xzlx}
+		and hbxxz.hbxxzid != #{hbxxzid}
+	</select>
+
+	<update id="updateDto" parameterType="HbxxzDto">
+		update igams_hbxxz
+		set hbid=#{hbid},
+			sysid=#{sysid},
+			jcxmcskz3=#{jcxmcskz3},
+			xzlx=#{xzlx}
+		where hbxxzid=#{hbxxzid}
+	</update>
+	<delete id="delete" parameterType="HbxxzDto">
+		delete
+		from igams_hbxxz
+		where hbxxzid in
+		<if test="ids !=null and ids.size() !=''">
+			<foreach collection="ids" open="(" close=")" separator="," item="item" >
+				#{item}
+			</foreach>
+		</if>
+	</delete>
+</mapper>

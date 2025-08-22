@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IHzxxDao" >
+	<!-- 添加患者信息 -->
+	<insert id="insert" parameterType="HzxxDto">
+		insert into igams_hzxx(hzid
+		<if test="wxid !=null and wxid !=''">
+			,wxid
+		</if>
+		<if test="xm !=null and xm !=''">
+			,xm
+		</if>
+		<if test="xb !=null and xb !=''">
+			,xb
+		</if>
+		<if test="nl !=null and nl !=''">
+			,nl
+		</if>
+		<if test="sj !=null and sj !=''">
+			,sj
+		</if>
+		<if test="tw !=null and tw !=''">
+			,tw
+		</if>
+		<if test="twjcz !=null and twjcz !=''">
+			,twjcz
+		</if>
+		,lrry,lrsj,scbj)values(#{hzid}
+		<if test="wxid !=null and wxid !=''">
+			,#{wxid}
+		</if>
+		<if test="xm !=null and xm !=''">
+			,#{xm}
+		</if>
+		<if test="xb !=null and xb !=''">
+			,#{xb}
+		</if>
+		<if test="nl !=null and nl !=''">
+			,#{nl}
+		</if>
+		<if test="sj !=null and sj !=''">
+			,#{sj}
+		</if>
+		<if test="tw !=null and tw !=''">
+			,#{tw}
+		</if>
+		<if test="twjcz !=null and twjcz !=''">
+			,#{twjcz}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 患者信息统计 -->
+	<select id="getDtoById" parameterType="String" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.wxid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.lrry,hzxx.lrsj,hzxx.scbj,to_char(hzxx.lrsj,'yyyy-MM-dd') flrsj,
+		case when hzxx.xb ='1' then '男' when hzxx.xb='2' then '女' end xbmc,hzxx.tw,hzxx.twjcz,jcsj.csmc twmc
+		from igams_hzxx hzxx
+		left outer join matridx_jcsj jcsj on hzxx.tw = jcsj.csid
+		<where>
+			hzxx.scbj != '1'
+			and hzxx.hzid = #{hzid}
+		</where>
+	</select>
+
+	<!-- 获取患者信息 -->
+	<select id="getDtoList" parameterType="HzxxDto" resultType="HzxxDto">
+		select hzxx.hzid,hzxx.wxid,hzxx.xm,hzxx.nl,hzxx.xb,hzxx.sj,hzxx.lrry,hzxx.lrsj,hzxx.scbj,to_char(hzxx.lrsj,'yyyy-MM-dd') flrsj
+		from igams_hzxx hzxx
+		<where>
+			hzxx.scbj != '1'
+			<if test="wxid !=null and wxid != ''">
+				and hzxx.wxid = #{wxid}
+			</if>
+			<if test="xm !=null and xm != ''">
+				and hzxx.xm like '%'||#{xm}||'%'
+			</if>
+		</where>
+		order by (lrsj,hzid) desc
+		limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+
+	<!-- 患者信息统计 -->
+	<select id="getPatientStatis" parameterType="HzxxDto" resultType="Map">
+		select count(*) as num,  case when hzxx.xb ='1' then '男' when hzxx.xb='2' then '女' end xbmc
+		from igams_hzxx hzxx
+		<where>
+			hzxx.scbj != '1'
+			and hzxx.wxid = #{wxid}
+			<if test="tw != null and tw != ''">
+				and hzxx.tw = #{tw}
+			</if>
+		</where>
+		group by hzxx.xb
+		order by count(*) desc
+	</select>
+
+	<!-- 更新患者信息 -->
+	<update  id="updatePatient" parameterType="HzxxDto">
+		update igams_hzxx
+		<set>
+			<if test="xm !=null and xm != ''">
+				xm = #{xm},
+			</if>
+			<if test="xb !=null and xb != ''">
+				xb = cast(#{xb} as numeric),
+			</if>
+			<if test="nl !=null and nl != ''">
+				nl = #{nl},
+			</if>
+			<if test="sj !=null and sj != ''">
+				sj = #{sj},
+			</if>
+			<if test="tw !=null and tw != ''">
+				tw = #{tw},
+			</if>
+			<if test="twjcz !=null and twjcz != ''">
+				twjcz = #{twjcz},
+			</if>
+			<if test="yzm !=null and yzm != ''">
+				yzm = #{yzm},
+			</if>
+			<if test="fssj !=null and fssj != ''">
+				fssj = #{fssj},
+			</if>
+			xgsj = LOCALTIMESTAMP
+		</set>
+		<where>
+			scbj!='1'
+			<if test="hzid !=null and hzid != ''">
+				and hzid = #{hzid}
+			</if>
+			<if test="sj !=null and sj != ''">
+				and sj = #{sj}
+			</if>
+			<if test="zjh !=null and zjh != ''">
+				and zjh = #{zjh}
+			</if>
+		</where>
+	</update>
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IBqglDao" >
+	<!-- 分页查询用户标签信息列表 -->
+	<select id="getPagedDtoList" parameterType="BqglDto" resultType="BqglDto">
+		select bq.bqid,bq.bqm,bq.lrry,bq.lrsj,bq.xgry,bq.xgsj,bq.scry,bq.scsj,bq.scbj,bq.wbcxid
+		from igams_bqgl bq
+		<where>
+			bq.scbj != '1'
+			and bq.wbcxid=#{wbcxid}
+			<if test="bqm !=null and bqm != ''">
+				and bq.bqm like '%'||#{bqm}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 查询全部标签 -->
+	<select id="selectAll" parameterType="BqglDto" resultType="BqglDto">
+		select bq.bqid,bq.bqm,bq.lrry,bq.lrsj,bq.xgry,bq.xgsj,bq.scry,bq.scsj,bq.scbj
+		from igams_bqgl bq
+		<where>
+			bq.scbj != '1'
+		</where>
+	</select>
+	<!-- 根据标签ID查询标签 -->
+	<select id="getDto" parameterType="BqglDto" resultType="BqglDto">
+		select bq.bqid,bq.bqm,bq.lrry,bq.lrsj,bq.xgry,bq.xgsj,bq.scry,bq.scsj,bq.scbj,bq.wbcxid
+		from igams_bqgl bq
+		<where>
+			bq.scbj != '1' and bq.bqid = #{bqid} and bq.wbcxid = #{wbcxid}
+		</where>
+	</select>
+	<!--更新标签的删除状态-->
+	<update  id="delete" parameterType="BqglModel">
+		update igams_bqgl set scry = #{scry}, scsj = LOCALTIMESTAMP, scbj= #{scbj}
+		<where>
+			(1=2
+			<if test="bqid !=null and bqid != ''">
+				or bqid = #{bqid} 
+			</if>
+			<if test="ids !=null and ids.size > 0">
+			or bqid in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>)
+			and wbcxid = #{wbcxid}
+		</where>
+	</update>
+	<!-- 增加标签信息 -->
+	<insert id="insert" parameterType="BqglModel">
+		insert into igams_bqgl(bqid
+		<if test="bqm !=null and bqm != ''">
+			,bqm
+		</if>
+		,wbcxid,lrry,lrsj,scbj) values(#{bqid}
+		<if test="bqm !=null and bqm != ''">
+			,#{bqm}
+		</if>
+		,#{wbcxid},#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!--更新标签信息-->
+	<update  id="update" parameterType="BqglModel">
+		update igams_bqgl
+		<set>
+		<if test="bqm !=null and bqm != ''">
+			bqm = #{bqm},
+		</if>
+			xgsj = LOCALTIMESTAMP,
+			xgry = #{xgry}
+		</set>
+		<where>
+			bqid = #{bqid} and wbcxid = #{wbcxid}
+		</where>
+	</update>
+	<!--根据标签列表删除信息-->
+	<delete id="deleteByBqglDtos" parameterType="list">
+		delete from igams_bqgl
+		<where>
+			 (bqid, wbcxid) in
+				<foreach collection="list" open="(" close=")" separator="," item="item">
+					(#{item.bqid}, #{item.wbcxid})
+				</foreach>
+		</where>
+	</delete>
+	<!-- 根据标签列表插入信息 -->
+	<insert  id="insertByBqglDtos" parameterType="list">
+		insert into igams_bqgl (bqid, bqm, wbcxid, scbj)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.bqid},#{item.bqm},#{item.wbcxid},'0')
+			</foreach>
+		</if>
+	</insert>
+	
+	<!-- 通过微信公众号查询标签 -->
+	<select id="selectTag" parameterType="BqglDto" resultType="BqglDto">
+		select bq.bqid,bq.bqm,bq.lrry,bq.lrsj,bq.xgry,bq.xgsj,bq.scry,bq.scsj,bq.scbj,bq.wbcxid
+		from igams_bqgl bq
+		<where>
+			bq.scbj != '1'
+			and bq.wbcxid=#{wbcxid}
+		</where>
+	</select>
+</mapper>

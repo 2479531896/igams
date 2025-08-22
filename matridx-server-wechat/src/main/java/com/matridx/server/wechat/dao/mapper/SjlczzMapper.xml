@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjlczzDao" >
+
+	<!-- 增加送检临床症状信息 -->
+	<insert  id="insertSjlczzDtos" parameterType="list">
+		insert into igams_sjlczz (sjid, xh, zz)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.sjid},cast(#{item.xh} as numeric),#{item.zz})
+			</foreach>
+		</if>
+	</insert>
+	<!--根据送检ID删除临床症状-->
+	<delete id="deleteBySjxx" parameterType="SjxxDto">
+		delete from igams_sjlczz
+		<where>
+			sjid = #{sjid}
+		</where>
+	</delete>
+	<!--根根据送检ID查询送检临床症状-->
+	<select id="selectLczzBySjid" parameterType="SjxxDto" resultType="SjlczzDto">
+		select sjid,xh,zz
+		from igams_sjlczz
+		<where>
+			sjid = #{sjid}
+		</where>
+	</select>
+	
+	<!--根据送检ID查询临床症状清单-->
+	<select id="getDtoList" parameterType="SjlczzDto" resultType="SjlczzDto">
+		select lczz.sjid,lczz.xh,lczz.zz,sj.csdm,sj.csmc from igams_sjlczz lczz
+		left outer join matridx_jcsj sj on lczz.zz = sj.csid
+		<where>
+			sjid = #{sjid}
+		</where>
+		order by xh
+	</select>
+	
+	<!--根据送检ID查询临床症状清单-->
+	<select id="getStringList" parameterType="SjlczzDto" resultType="String">
+		select zz from igams_sjlczz
+		<where>
+			sjid = #{sjid}
+		</where>
+		order by xh
+	</select>
+</mapper>

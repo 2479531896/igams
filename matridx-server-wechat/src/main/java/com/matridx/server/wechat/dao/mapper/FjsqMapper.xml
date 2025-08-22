@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IFjsqDao" >
+	<sql id="PageListWhere">
+		<if test="entire !=null and entire !=''">
+				and( fjsq.yy like '%'||#{entire}||'%'
+				or sjxx.ybbh like '%'||#{entire}||'%'
+				or sjxx.hzxm like '%'||#{entire}||'%'
+				or yblxmc like '%'||#{entire}||'%'
+				or sjxx.db like '%'||#{entire}||'%'
+				or jcxm.csmc like '%'||#{entire}||'%'
+				or sjxx.nbbm like '%'||#{entire}||'%'
+				or fjsq.bz like '%'||#{entire}||'%')
+		</if>
+		<if test="yy !=null and yy !=''">
+			and fjsq.yy like '%'||#{yy}||'%'
+		</if>
+		<if test="bz !=null and bz !=''">
+			and fjsq.bz like '%'||#{bz}||'%'
+		</if>
+		<if test="jcxm !=null and jcxm !=''">
+			and jcxm.csmc like '%'||#{jcxm}||'%'
+		</if>
+		<if test="hzxm !=null and hzxm !=''">
+			and sjxx.hzxm like '%'||#{hzxm}||'%'
+		</if>
+		<if test="ybbh !=null and ybbh !=''">
+			and sjxx.ybbh like '%'||#{ybbh}||'%'
+		</if>
+		<if test="nbbm !=null and nbbm !=''">
+			and sjxx.nbbm like '%'||#{nbbm}||'%'
+		</if>
+		<if test="lrsj !=null and lrsj !=''">
+			and to_char(fjsq.lrsj,'YYYY-MM-dd')=#{lrsj}
+		</if>
+		<if test="lxs !=null and lxs.length> 0">
+			and fjsq.lx in
+			<foreach collection="lxs" open="(" close=")" separator="," index="index"  item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="sfffs !=null and sfffs.length> 0">
+			and fjsq.sfff in
+			<foreach collection="sfffs" open="(" close=")" separator="," index="index"  item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcdws !=null and jcdws.length> 0">
+			and fjsq.jcdw in
+			<foreach collection="jcdws" open="(" close=")" separator="," index="index"  item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="bgbjs !=null and bgbjs.length> 0">
+			and fjsq.bgbj in
+			<foreach collection="bgbjs" open="(" close=")" separator="," index="index"  item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="zts !=null and zts.length> 0">
+			and fjsq.zt in
+			<foreach collection="zts" open="(" close=")" separator="," index="index"  item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="jcdwxz !=null and jcdwxz.size()>0">
+			and fjsq.jcdw in
+			<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="hbids != null and hbids.size()>0">
+			and sjhb.hbid in
+			<foreach collection="hbids" open="(" close=")" index="index" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		<if test="yblxs != null and yblxs.length > 0">
+		    and sjxx.yblx in
+		    <foreach collection="yblxs" separator="," open="(" close=")" item="item" index="index">
+		        #{item}
+		    </foreach>
+		</if>
+		<if test="jcxmss != null and jcxmss.length > 0">
+		    and jcxm.csid in
+		    <foreach collection="jcxmss" separator="," open="(" close=")" item="item" index="index">
+		        #{item}
+		    </foreach>
+		</if>
+		 <if test="syrqstart != null and syrqstart != ''">
+			and to_char(fjsq.rsyrq,'yyyy-mm-dd hh24:mi:ss') &gt;= #{syrqstart}
+		</if>
+		<if test="syrqend != null and syrqend != ''">
+			and to_char(fjsq.rsyrq,'yyyy-mm-dd hh24:mi:ss') &lt;= #{syrqend}
+		</if>
+		 <if test="dsyrqstart != null and dsyrqstart != ''">
+			and to_char(fjsq.dsyrq,'yyyy-mm-dd hh24:mi:ss') &gt;= #{dsyrqstart}
+		</if>
+		<if test="dsyrqend != null and dsyrqend != ''">
+			and to_char(fjsq.dsyrq,'yyyy-mm-dd hh24:mi:ss') &lt;= #{dsyrqend}
+		</if>
+	</sql>
+	<select id="getPagedDtoList" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,jcxm.csmc as jcxmmc,fjsq.lrsj,fjsq.shlx,xtyh.zsxm as lrrymc
+		,sjxx.ybbh,sjxx.db,sjxx.hzxm,sjxx.nl,sjxx.yblx,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.nbbm,sjxx.jsrq,
+		fjlx.csmc as lxmc,sjxx.sfsc as sfsc,fjsq.sfff,jc_jcdw.csmc as jcdwmc,fjsq.jcdw,
+		fjsq.rsyrq as syrq,fjsq.dsyrq
+		from igams_fjsq fjsq
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+		left join matridx_xtyh xtyh on xtyh.yhid=fjsq.lrry
+		left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+		left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx on fjlx.csid=fjsq.lx
+		left join igams_sjhbxx sjhb on sjhb.hbmc =sjxx.db and sjhb.scbj = '0'
+		left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+		<where>
+			fjsq.scbj!='1' 
+			<if test="userids != null and userids.size()>0">
+				and (fjsq.lrry in
+				<foreach collection="userids" open="(" close=")" index="index" item="item" separator=","> 
+					#{item}
+				</foreach>
+				<if test="sjhbs != null and sjhbs.size()>0">
+					or sjxx.db in 
+					<foreach collection="sjhbs" open="(" close=")" index="index" item="item" separator=","> 
+						#{item}
+					</foreach>
+				</if>
+				)
+			</if>
+			<include refid="PageListWhere"></include>
+		</where>
+	</select>
+	<!-- 查询是否重复 -->
+	<select id="getCount" parameterType="FjsqDto" resultType="int">
+		select count(fjid) from igams_fjsq 
+		<where>
+			 scbj='0' 
+			<if test="sjid !=null and sjid!=''">
+				and sjid=#{sjid}
+			</if>
+			<if test="lx !=null and lx !=''">
+				and lx=#{lx}
+			</if>
+		</where>
+	</select>
+	<!-- 新增附件申请 -->
+	<insert id="insert" parameterType="FjsqDto">
+		insert into igams_fjsq(
+				fjid
+			<if test="zt !=null and zt !=''">
+				,zt
+			</if>
+			<if test="yy !=null and yy !=''">
+				,yy
+			</if>
+			<if test="bz !=null and bz !=''">
+				,bz
+			</if>
+			<if test="sjid !=null and sjid !=''">
+				,sjid
+			</if>
+			<if test="lx !=null and lx !=''">
+				,lx
+			</if>
+			<if test="jcxm !=null and jcxm !=''">
+				,jcxm
+			</if>
+			<if test="bgbj !=null and bgbj !=''">
+				,bgbj
+			</if>
+			<if test="shlx !=null and shlx !=''">
+				,shlx
+			</if>
+			<if test="sfff !=null and sfff !=''">
+				,sfff
+			</if>
+			<if test="jcdw !=null and jcdw !=''">
+				,jcdw
+			</if>
+				,lrry,lrsj,scbj
+		)values(
+				#{fjid}
+			<if test="zt !=null and zt !=''">
+				,#{zt}
+			</if>
+			<if test="yy !=null and yy !=''">
+				,#{yy}
+			</if>
+			<if test="bz !=null and bz !=''">
+				,#{bz}
+			</if>
+			<if test="sjid !=null and sjid !=''">
+				,#{sjid}
+			</if>
+			<if test="lx !=null and lx !=''">
+				,#{lx}
+			</if>
+			<if test="jcxm !=null and jcxm !=''">
+				,#{jcxm}
+			</if>
+			<if test="bgbj !=null and bgbj !=''">
+				,#{bgbj}
+			</if>
+			<if test="shlx !=null and shlx !=''">
+				,#{shlx}
+			</if>
+			<if test="sfff !=null and sfff !=''">
+				,#{sfff}
+			</if>
+			<if test="jcdw !=null and jcdw !=''">
+				,#{jcdw}
+			</if>
+				,#{lrry}
+				,LOCALTIMESTAMP
+				,'0'
+		)
+	</insert>
+	
+	<!-- 通过id查询单个信息 -->
+	<select id="getDtoById" parameterType="String" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,fjsq.lrsj,sjxx.nbbm,sjxx.ybbh,sjxx.hzxm
+			,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,fjlx.csmc as lxmc,
+		fjlx.csdm as fjlxdm,sjxx.sfsc as sfsc,fjsq.sfff,fjsq.jcdw,jc_jcdw.csmc as jcdwmc
+		,case when fjsq.bz is null then fjsq.yy else fjsq.bz end f_bz,
+		fjsq.rjcbj jcbj, fjsq.djcbj, fjsq.qtjcbj, fjsq.rsyrq syrq, fjsq.dsyrq, fjsq.qtsyrq
+		from  igams_fjsq fjsq
+		left join igams_sjxx   sjxx   on sjxx.sjid =fjsq.sjid
+		left join matridx_jcsj yblx   on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx   on fjlx.csid=fjsq.lx
+		left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+		<where>
+			fjsq.scbj!='1' and fjsq.fjid=#{fjid}
+		</where>
+	</select>
+
+	<!-- 通过id查询单个信息 -->
+	<select id="getDtoByYbbh" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,fjsq.lrsj,sjxx.nbbm,sjxx.ybbh,sjxx.hzxm
+		,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,fjlx.csmc as lxmc,
+		fjlx.csdm as fjlxdm,sjxx.sfsc as sfsc,fjsq.sfff,fjsq.jcdw,jc_jcdw.csmc as jcdwmc
+		,case when fjsq.bz is null then fjsq.yy else fjsq.bz end f_bz,
+		fjsq.rjcbj jcbj, fjsq.djcbj, fjsq.qtjcbj, fjsq.rsyrq syrq, fjsq.dsyrq, fjsq.qtsyrq
+		from  igams_fjsq fjsq
+		left join igams_sjxx   sjxx   on sjxx.sjid =fjsq.sjid
+		left join matridx_jcsj yblx   on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx   on fjlx.csid=fjsq.lx
+		left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+		LEFT JOIN matridx_jsjcdw jsjcdw ON jsjcdw.jcdw = sjxx.jcdw
+		<where>
+			fjsq.scbj!='1' and sjxx.ybbh=#{ybbh} AND jsjcdw.jsid=#{jsid}
+		</where>
+	</select>
+	
+	<!-- 修改复检申请 -->
+	<update id="update" parameterType="FjsqDto">
+		update igams_fjsq set xgry=#{xgry},xgsj =LOCALTIMESTAMP
+			<if test="yy !=null and yy !=''">
+				,yy=#{yy}
+			</if>
+			<if test="bz !=null and bz !=''">
+				,bz=#{bz}
+			</if>
+			<if test="zt !=null and zt !=''">
+				,zt=#{zt}
+			</if>
+			<if test="lx !=null and lx !=''">
+				,lx=#{lx}
+			</if>
+			<if test="jcxm !=null and jcxm !=''">
+				,jcxm=#{jcxm}
+			</if>
+			<if test="bgbj !=null and bgbj !=''">
+				,bgbj=#{bgbj}
+			</if>
+			<if test="shlx !=null and shlx !=''">
+				,shlx=#{shlx}
+			</if>
+			<if test="sfff !=null and sfff !=''">
+				,sfff=#{sfff}
+			</if>
+			<if test="jcdw !=null and jcdw !=''">
+				,jcdw=#{jcdw}
+			</if>
+
+			<if test="jcbj !=null and jcbj !=''">
+				,rjcbj='1',rsyrq =LOCALTIMESTAMP
+			</if>
+			<if test="djcbj !=null and djcbj !=''">
+				,djcbj='1',dsyrq =LOCALTIMESTAMP
+			</if>
+			<if test="qtjcbj !=null and qtjcbj !=''">
+				,qtjcbj='1',qtsyrq =LOCALTIMESTAMP
+			</if>
+			<if test="syrq !=null and syrq !=''">
+				,rjcbj='1',rsyrq = cast( #{syrq} as TIMESTAMP )
+			</if>
+			<if test="dsyrq !=null and dsyrq !=''">
+				,djcbj='1',dsyrq = cast( #{dsyrq} as TIMESTAMP )
+			</if>
+			<if test="qtsyrq !=null and qtsyrq !=''">
+				,qtjcbj='1',qtsyrq = cast( #{qtsyrq} as TIMESTAMP )
+			</if>
+			<where>
+				fjid=#{fjid}
+			</where>
+	</update>
+	
+	<!-- 查询复检信息 -->
+	<select id="getDtoList" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,jcxm.csmc as jcxmmc,
+		case when fjsq.bgbj ='0' then '不发送'   when fjsq.bgbj='1' then '发送' end  bgbjmc,	
+		sjxx.jcdw,sjxx.nbbm,sjxx.ybbh,sjxx.hzxm,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.jsrq
+		<!-- case when fjsq.lx='RECHECK_TYPE' then '复测申请' when fjsq.lx='ADDJCXM_TYPE' then '增加项目' when fjsq.lx='SOURCE_TYPE' then '加测去人源' end  lxmc,fjsq.shlx, -->
+		,fjlx.csmc as lxmc,sjxx.sfsc as sfsc,jc_jcdw.csmc as jcdwmc,fjsq.jcdw
+		from  igams_fjsq fjsq 
+		left join igams_sjxx sjxx on sjxx.sjid =fjsq.sjid
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+		left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx on fjlx.csid =fjsq.lx
+		left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+		<where>
+				fjsq.scbj!='1'
+			<if test="fjid!=null and fjid !=''">
+				and fjsq.fjid=#{fjid}
+			</if>
+			<if test="sjid!=null and sjid !=''">
+				and fjsq.sjid=#{sjid}
+			</if>
+			<if test="lx!=null and lx !=''">
+				and fjsq.lx=#{lx}
+			</if>
+			<if test="zt != null and zt != ''">
+				and fjsq.zt= #{zt}
+			</if>
+		</where>
+	</select>
+	<!-- 查看 -->
+	<select id="getDto" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,fjsq.lrsj,jcxm.csmc as jcxmmc,fjsq.jcdw,fjsq.sfje,fjsq.fkbj,fjsq.fkrq,
+			case when fjsq.bgbj ='0' then '不发送'   when fjsq.bgbj='1' then '发送' end  bgbjmc,	
+			fjsq.shlx,sjxx.nbbm,sjxx.ybbh,sjxx.hzxm,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.jsrq,
+			fjlx.csmc as lxmc,fjlx.csdm as fjlxdm,fjsq.jcdw,
+			case when fjsq.sfff='0' then '不收费' when fjsq.sfff='1' then '收费'  end sfffmc,jc_jcdw.csmc as jcdwmc
+			,case when fjsq.bz is null then fjsq.yy else fjsq.bz end f_bz,fjsq.rjcbj jcbj, fjsq.djcbj, fjsq.qtjcbj, fjsq.rsyrq syrq, fjsq.dsyrq
+			<!-- case when fjsq.lx='RECHECK_TYPE' then '复测申请' when fjsq.lx='ADDJCXM_TYPE' then '增加项目' when fjsq.lx='SOURCE_TYPE' then '加测去人源' end  lxmc, -->
+		from  igams_fjsq fjsq 
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+		left join igams_sjxx sjxx on sjxx.sjid =fjsq.sjid
+		left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx on fjlx.csid=fjsq.lx
+		left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+		<where>
+			fjsq.scbj!='1'
+			<if test="fjid!=null and fjid !=''">
+				and fjsq.fjid=#{fjid}
+			</if>
+			<if test="sjid!=null and sjid !=''">
+				and fjsq.sjid=#{sjid}
+			</if>
+			<if test="lx!=null and lx !=''">
+				and fjsq.lx=#{lx}
+			</if>
+			<if test="zt != null and zt != ''">
+				and fjsq.zt= #{zt}
+			</if>
+		</where>
+	</select>
+	
+	<!--删除 -->
+	<update id="delete" parameterType="FjsqDto">
+		update igams_fjsq set scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			<if test="fjid !=null and fjid !=''">
+				or fjid=#{fjid}
+			</if>
+			<if test="ids!=null and ids.size>0">
+				or fjid in
+				<foreach collection="ids" open="("  close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	<!-- 审核时修改状态 -->
+	<update id="updateZt" parameterType="FjsqDto">
+		update igams_fjsq set
+		xgry = #{xgry},xgsj = LOCALTIMESTAMP
+		<if test="zt !=null and zt !=''">
+			,zt = #{zt}
+		</if>
+		<if test="sfff !=null and sfff !=''">
+			,sfff = #{sfff}
+		</if>
+		<where>
+			fjid = #{fjid}
+		</where>
+	</update>
+	
+	 <!-- 获取复检申请的ID列表 -->
+	<select id="getPagedAuditRecheck" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.lrsj,fjsq.shlx
+		,sjxx.ybbh,sjxx.db,sjxx.hzxm,sjxx.nl,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.nbbm,sjxx.sfsc as sfsc
+			from igams_fjsq fjsq
+			left join matridx_jcsj jcxm on jcxm.csid = fjsq.jcxm
+			left join igams_sjxx sjxx on sjxx.sjid=fjsq.sjid
+			left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+			<where>
+				fjsq.scbj !='1' 
+				<if test="entire !=null and entire !=''">
+					and( sjxx.ybbh like '%'||#{entire}||'%'
+					or sjxx.hzxm like '%'||#{entire}||'%'
+					or sjxx.db like '%'||#{entire}||'%'
+					or jcxm.csmc like '%'||#{entire}||'%'
+					or sjxx.nbbm like '%'||#{entire}||'%')
+				</if>
+				<if test="yy !=null and yy !=''">
+					and fjsq.yy like '%'||#{yy}||'%'
+				</if>
+				<if test="zt !=null and zt !=''">
+					and fjsq.zt like '%'||#{zt}||'%'
+				</if>
+				<if test="bz !=null and bz !=''">
+					and fjsq.bz like '%'||#{bz}||'%'
+				</if>
+				<if test="jcxm !=null and jcxm !=''">
+					and jcxm.csmc like '%'||#{jcxm}||'%'
+				</if>
+				<if test="jcdwxz !=null and jcdwxz.size()>0">
+					and fjsq.jcdw in
+					<foreach collection="jcdwxz" open="(" close=")" index="index" item="item"  separator=",">
+						#{item}
+					</foreach>
+				</if>
+			</where>
+	</select>
+	
+	<!-- 临时表分页查询-审核列表 -->
+	<select id="getAuditListRecheck" parameterType="List" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.lx,fjsq.jcxm,fjsq.bz,fjsq.sjid,fjsq.lrry,	case when fjsq.bgbj ='0' then '不发送'   when fjsq.bgbj='1' then '发送' end  bgbjmc,
+		shxx_sqsj,shxx_gwmc,sqr,shxx_lrryxm,shxx_shsj,shxx_sftg,shxx_shxxid,sjxx.jsrq
+		,sjxx.ybbh,sjxx.db,sjxx.hzxm,sjxx.nl,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.nbbm,sjxx.sfsc as sfsc
+		,fjlx.csmc as lxmc,jc_jcdw.csmc as jcdwmc
+			from igams_fjsq fjsq
+			left join igams_sjxx sjxx on sjxx.sjid=fjsq.sjid
+			left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+			left join matridx_jcsj fjlx ON fjlx.csid= fjsq.lx
+			left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+			join 
+				<foreach collection="list" separator="union" open="(" close=") "
+						item="item" index="index">
+					select #{item.fjid} fjid,#{item.shxx_shxxid} shxx_shxxid,#{item.shxx_sqsj} shxx_sqsj,#{item.sqr} sqr,#{item.shxx_lrryxm} shxx_lrryxm,#{item.shxx_shsj} shxx_shsj,#{item.shxx_sftg} shxx_sftg,#{item.shxx_gwmc} shxx_gwmc,#{index} rownum
+				</foreach>
+			tmp on tmp.fjid = fjsq.fjid
+		order by tmp.rownum
+	</select>
+	
+	<select id="getPagedStatisRecheck" parameterType="FjsqDto" resultType="FjsqDto">
+		select xh,fjid,sjid,ybbh,yblxmc,yy,bz,nbbm,db ,hzxm,jcbj,syrq,djcbj,dsyrq,jcxmmc,jsrq,to_char(lrsj,'yyyy-MM-dd hh24:mi') as lrsj from (
+			select fjsq.fjid,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,sjxx.ybbh,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,
+			row_number() over(partition by sjxx.sjid,fjsq.lx order by fjsq.lrsj asc  ) xh,sjxx.nbbm,sjxx.hzxm,sjxx.db,sjxx.jcbj,sjxx.syrq,sjxx.jsrq,sjxx.sfsc as sfsc,fjsq.lrsj,
+			sjxx.djcbj,sjxx.dsyrq,jcxmmc.csmc as jcxmmc,jc_jcdw.csmc as jcdwmc,
+			fjlx.csmc as lxmc
+			from igams_fjsq fjsq
+			left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+			left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+			left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+			left join matridx_jcsj jcxmmc on jcxmmc.csid=fjsq.jcxm
+			left join matridx_jcsj fjlx ON fjlx.csid= fjsq.lx
+			left join matridx_jcsj jc_jcdw on fjsq.jcdw=jc_jcdw.csid
+			<where>
+				fjsq.scbj!='1' and fjsq.zt!='00' and fjsq.zt!='15'
+				<if test="sjhbs != null and sjhbs.size()>0">
+					and sjxx.db in 
+					<foreach collection="sjhbs" open="(" close=")" separator="," item="item" index="index">
+						#{item}
+					</foreach>
+				</if>
+				<if test="lx !=null and lx !=''">
+					and fjsq.lx=#{lx}
+				</if>
+				<if test="cskz3 !=null and cskz3 !=''">
+					AND jcxm.cskz3 = #{cskz3}
+				</if>
+				<if test="lrsj !=null and lrsj !=''">
+					and to_char(fjsq.lrsj,'yyyy-MM-dd')=#{lrsj}
+				</if>	
+				<if test="lrsjstart!=null and lrsjstart !=''">
+			   		and to_char(fjsq.lrsj,'yyyy-MM-dd')&gt;=#{lrsjstart}
+			   	</if>
+			   	<if test="lrsjend!=null and lrsjend !=''">
+			   		and to_char(fjsq.lrsj,'yyyy-MM-dd')&lt;=#{lrsjend}
+			   	</if>
+			   	<if test="lrsjMstart!=null and lrsjMstart !=''">
+			   		and to_char(fjsq.lrsj,'yyyy-MM')&lt;=#{lrsjMstart}
+			   	</if>
+			   	<if test="lrsjMend!=null and lrsjMend !=''">
+			   		and to_char(fjsq.lrsj,'yyyy-MM')&lt;=#{lrsjMend}
+			   	</if>
+			   	<if test="lrsjYstart!=null and lrsjYstart !=''">
+			   		and to_char(fjsq.lrsj,'yyyy')&lt;=#{lrsjYstart}
+			   	</if>
+			   	<if test="lrsjYend!=null and lrsjYend !=''">
+			   		and to_char(fjsq.lrsj,'yyyy')&lt;=#{lrsjYend}
+			   	</if>
+				</where>
+			) fjsq 
+			where 
+				fjsq.xh=cast(#{xh} as bigint)
+		
+	</select>
+	
+	<select id="checkFjbgSfwc" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid
+		from igams_fjsq fjsq
+		left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+		<where>
+			 fjsq.zt ='80' and fjsq.bgbj ='1' and fjsq.scbj ='0' 
+			  and 
+			  (
+			  		to_char(fjsq.rsyrq,'YYYY-MM-DD')= #{lrsj} 
+		  		or 
+		  			to_char(fjsq.dsyrq,'YYYY-MM-DD')= #{lrsj} 
+			  	or
+			  		to_char(fjsq.qtsyrq,'YYYY-MM-DD')= #{lrsj} 
+			  )
+			  and to_char(sjxx.bgrq,'YYYY-MM-DD') != #{bgrq}
+			and fjsq.lx in
+			<foreach collection="fjlxs" open="(" close=")" item="item" index="index" separator=",">
+				#{item}
+			</foreach>
+		</where>
+		
+		 
+	</select>
+	
+	<select id="getListAuditPhone" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,jcxm.csmc as jcxmmc,fjsq.lrsj,fjsq.shlx,xtyh.zsxm as lrrymc
+		,sjxx.ybbh,sjxx.db,sjxx.hzxm,sjxx.nl,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.nbbm,sjxx.sfsc as sfsc
+		,fjlx.csmc as lxmc
+		from igams_fjsq fjsq
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+		left join matridx_xtyh xtyh on xtyh.yhid=fjsq.lrry
+		left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+		left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx ON fjlx.csid= fjsq.lx
+		<where>
+			fjsq.scbj!='1' 
+			<if test="lrsj !=null and lrsj !=''">
+				and to_char(fjsq.lrsj,'YYYY-MM-dd')=#{lrsj}
+			</if>
+			<if test="shlx != null and shlx !=''">
+				and fjsq.shlx=#{shlx}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getListBySjid" parameterType="FjsqDto" resultType="FjsqDto">
+		SELECT fjsq.fjid, fjsq.zt, case when fjsq.bz is null then fjsq.yy else fjsq.bz end bz, fjsq.sjid
+			,  fjsq.jcxm, fjsq.bgbj, jcxm.csmc AS jcxmmc, fjsq.lrsj
+			, fjsq.shlx, xtyh.zsxm AS lrrymc, sjxx.ybbh, sjxx.db, sjxx.hzxm,sjxx.sfsc as sfsc
+			, sjxx.nl
+			, CASE 
+				WHEN sjxx.yblxmc IS NULL THEN yblx.csmc
+				ELSE sjxx.yblxmc
+			END AS yblxmc, sjxx.nbbm
+		<!-- 	case when fjsq.lx='RECHECK_TYPE' then '复测申请' when fjsq.lx='ADDJCXM_TYPE' then '加测申请' end lx, -->
+			,fjlx.csmc as lxmc
+		FROM igams_fjsq fjsq
+			LEFT JOIN matridx_jcsj jcxm ON jcxm.csid = fjsq.jcxm
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = fjsq.lrry
+			LEFT JOIN igams_sjxx sjxx ON sjxx.sjid = fjsq.sjid
+			LEFT JOIN matridx_jcsj yblx ON yblx.csid = sjxx.yblx
+			LEFT JOIN matridx_jcsj fjlx ON fjlx.csid= fjsq.lx
+		<where>
+			fjsq.scbj != '1' 
+				<if test="sjid !=null and sjid !=''">
+					and fjsq.sjid=#{sjid}
+				</if> 
+				<if test="zts !=null and zts.length> 0">
+					and fjsq.zt in
+				<foreach collection="zts" open="(" close=")" separator="," index="index"  item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询复检信息 -->
+	<select id="getDtoZt" parameterType="SjxxDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj
+		from  igams_fjsq fjsq 
+		<where>
+			fjsq.scbj!='1'
+			<if test="sjid!=null and sjid !=''">
+				and fjsq.sjid=#{sjid}
+			</if>
+			<if test="lx!=null and lx !=''">
+				and fjsq.lx=#{lx}
+			</if>
+		</where>
+		order by fjsq.lrsj desc
+		limit 1
+	</select>
+
+
+	<select id="getXtyhByMap" parameterType="Map" resultType="Map">
+		select yh.yhid,yh.ddid,gwcy.jsid
+		from matridx_xtyh yh
+		left join matridx_spgwcy gwcy on gwcy.yhid = yh.yhid
+		left join matridx_yhjs yhjs on yhjs.yhid = yh.yhid  and gwcy.jsid =yhjs.jsid
+		left join matridx_jsjcdw jcdw on jcdw.jsid= yhjs.jsid
+		left join matridx_xtjs js on js.jsid = yhjs.jsid
+		<where>
+			yh.scbj != '1'  and yh.sfsd!='1' and js.scbj ='0'
+			and (jcdw.jcdw = #{jcdw} or js.dwxdbj = '0')
+			<if test="ddids !=null and ddids.size()> 0">
+				and yh.ddid in
+				<foreach collection="ddids" open="(" close=")" separator="," index="index"  item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		group by yh.yhid,yh.ddid,gwcy.jsid
+	</select>
+	<!-- 查询复检信息,生信部用 -->
+	<select id="getDtoListOrderLrsj" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.zt,fjsq.yy,fjsq.bz,fjsq.sjid,fjsq.lx,fjsq.jcxm,fjsq.bgbj,jcxm.csmc as jcxmmc,fjsq.lrsj,
+		case when fjsq.bgbj ='0' then '不发送'   when fjsq.bgbj='1' then '发送' end  bgbjmc,	
+		fjsq.shlx,
+		sjxx.jcdw,sjxx.nbbm,sjxx.ybbh,sjxx.hzxm,case when sjxx.yblxmc is null then yblx.csmc else sjxx.yblxmc end yblxmc,sjxx.jsrq,sjxx.sfsc as sfsc,
+		<!-- case when fjsq.lx='RECHECK_TYPE' then '复测申请' when fjsq.lx='ADDJCXM_TYPE' then '增加项目' when fjsq.lx='SOURCE_TYPE' then '加测去人源' end  lxmc -->
+		fjlx.csmc as lxmc
+		from  igams_fjsq fjsq 
+		left join igams_sjxx sjxx on sjxx.sjid =fjsq.sjid
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+		left join matridx_jcsj yblx on yblx.csid=sjxx.yblx
+		left join matridx_jcsj fjlx ON fjlx.csid= fjsq.lx
+		<where>
+				fjsq.scbj!='1' 
+			<if test="jcxms != null and jcxms.size()>0">
+				and fjsq.jcxm in
+				<foreach collection="jcxms" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="nbbm != null and nbbm != ''">
+				and sjxx.nbbm=#{nbbm}
+			</if>	
+			<if test="lrsjstart != null and lrsjstart != ''">
+				and to_char(fjsq.lrsj,'yyyy-mm-dd') &gt;= #{lrsjstart}
+			</if> 
+			<if test="lrsjend != null and lrsjend != ''">
+				and to_char(fjsq.lrsj,'yyyy-mm-dd') &lt;= #{lrsjend}
+			</if>
+			<if test="fjid!=null and fjid !=''">
+				and fjsq.fjid=#{fjid}
+			</if>
+			<if test="sjid!=null and sjid !=''">
+				and fjsq.sjid=#{sjid}
+			</if>
+			<if test = "lxs != null and lxs.length > 0 "  >
+				and fjsq.lx in 
+				<foreach collection="lxs" separator="," open="(" close=") "
+				item="item" index="index">
+					#{item}
+				</foreach>
+			</if>
+			<if test="zt != null and zt != ''">
+				and fjsq.zt= #{zt}
+			</if>
+		</where>
+		order by fjsq.lrsj desc
+	</select>
+	
+	<sql id="EXPORT_JOINS">
+		<if test="yblx_flg !=null">
+			left join matridx_jcsj jc_yblx on jc_yblx.csid=sjxx.yblx
+		</if>
+		<if test="jcxm_flg !=null">
+			left join matridx_jcsj jc_jcxm on jc_jcxm.csid=fjsq.jcxm
+		</if>
+		<if test="lrry_flg !=null">
+			left join matridx_xtyh xtyh on xtyh.yhid=fjsq.lrry
+		</if>
+		<if test="fjlx_flg !=null">
+			left join matridx_jcsj fjlx on fjlx.csid=fjsq.lx
+		</if>
+	</sql>
+	
+	<!-- 查询导出条数 -->
+	<select id="getCountForSearchExp"  parameterType="FjsqDto" resultType="int">
+		select count(fjsq.fjid) from 
+		igams_fjsq fjsq
+			left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+			left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+			left join igams_sjhbxx sjhb on sjhb.hbmc =sjxx.db and sjhb.scbj = '0'
+		<where>
+			fjsq.scbj!='1'
+			<include refid="PageListWhere"></include>
+		</where>
+	</select>
+	 <!-- 搜索导出 --> 
+	<select id="getListForSearchExp" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid ${sqlparam} from (
+		select fjsq.fjid 
+			from igams_fjsq fjsq
+			left join matridx_jcsj jcxm on jcxm.csid =fjsq.jcxm
+			left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+			left join igams_sjhbxx sjhb on sjhb.hbmc =sjxx.db and sjhb.scbj = '0'
+		<where>
+			fjsq.scbj!='1'
+			<include refid="PageListWhere"></include>
+		</where>
+		LIMIT #{pageSize} OFFSET #{pageStart}
+		) t_fjsq
+		left outer join igams_fjsq fjsq on t_fjsq.fjid = fjsq.fjid
+		left outer join igams_sjxx sjxx on sjxx.sjid = fjsq.sjid
+		<include refid="EXPORT_JOINS"></include>
+		order by 
+		<if test="sortName != null and sortName != ''">
+		${sortName} ${sortOrder}
+		</if>
+		<if test="sortLastName != null and sortLastName != ''">
+			,${sortLastName} ${sortLastOrder}
+		</if>
+	</select> 
+	
+	<!-- 选中导出 -->
+	<select id="getListForSelectExp" parameterType="FjsqDto" resultType="FjsqDto">
+		select fjsq.fjid,fjsq.scbj ${sqlparam} from (
+			<foreach item="item" index="index" collection="ids" separator=" union all ">  
+			   select #{item,jdbcType=VARCHAR} fjid,#{index} ordernum
+			</foreach>
+			) tmp
+			left outer join igams_fjsq fjsq on tmp.fjid = fjsq.fjid
+			left outer join igams_sjxx sjxx on sjxx.sjid=fjsq.sjid
+			<include refid="EXPORT_JOINS"></include>
+		order by tmp.ordernum
+	</select>
+	
+	<select id="queryFjbg" parameterType="FjsqDto" resultType="FjsqDto">
+		select tmp.fjid,tmp.bgrq,tmp.ybbh,tmp.sjid from (select fjsq.fjid,sjxx.bgrq,sjxx.ybbh,sjxx.sjid,fjsq.scbj,fjsq.lx,jcxm.csdm as csdm from igams_fjsq fjsq
+		left join igams_sjxx sjxx on sjxx.sjid= fjsq.sjid
+		left join matridx_jcsj jcxm on jcxm.csid =fjsq.lx
+		where  fjsq.bgbj ='0' and fjsq.scbj !='1' 
+		and jcxm.csdm in
+			<foreach collection="ids" open="(" close=")" item="item" index="index" separator=",">
+				#{item}
+			</foreach>
+		order by sjxx.bgrq desc) as tmp limit 5
+	</select>
+	
+	<select id="querynum" parameterType="FjsqDto" resultType="java.lang.Integer">
+		select count(fjsq.fjid) from igams_fjsq fjsq	
+			left join matridx_jcsj jcxm on jcxm.csid =fjsq.lx
+			<where>
+				fjsq.bgbj ='0' and fjsq.scbj !='1'
+				and jcxm.csdm in
+				<foreach collection="ids" open="(" close=")" item="item" index="index" separator=",">
+				#{item}
+			</foreach>
+			</where>
+	</select>
+	
+	<select id="getSpgwcyList" parameterType="FjsqDto" resultType="FjsqDto">
+		SELECT fjsq.fjid,xtyh.ddid
+		FROM igams_fjsq fjsq
+			LEFT JOIN matridx_shgc gc ON gc.ywid = fjsq.fjid
+			LEFT JOIN matridx_shlc shlc
+			ON gc.shid = shlc.shid
+				AND gc.xlcxh = shlc.lcxh
+				AND gc.sqsj &gt;= shlc.qysj
+				AND (gc.sqsj &lt;= shlc.tysj
+					OR shlc.tysj IS NULL)
+			LEFT JOIN matridx_spgwcy gwcy ON shlc.gwid = gwcy.gwid
+			LEFT JOIN matridx_xtjs xtjs ON gwcy.jsid = xtjs.jsid
+			LEFT JOIN matridx_jsjcdw jsjcdw ON gwcy.jsid = jsjcdw.jsid
+			LEFT JOIN matridx_xtyh xtyh ON xtyh.yhid = gwcy.yhid
+		<where>
+			 fjsq.zt = '10'	
+			AND (xtjs.dwxdbj = '0'
+				OR xtjs.dwxdbj IS NULL
+				OR (xtjs.dwxdbj = '1'
+				<if test="jcdw !=null and jcdw !=''">
+					AND jsjcdw.jcdw =#{jcdw}
+				</if>
+					))
+			AND fjsq.fjid = #{fjid}
+		</where>
+	</select>
+	
+	<!-- 修改复检申请 -->
+	<update id="modRecheckPayinfo" parameterType="FjsqDto">
+		update igams_fjsq set xgry=#{xgry},xgsj =LOCALTIMESTAMP
+			<if test="sfje !=null and sfje !=''">
+				,sfje=cast(#{sfje} as numeric)
+			</if>
+			<if test="fkbj !=null and fkbj !=''">
+				,fkbj=#{fkbj}
+			</if>
+			<if test="fkrq !=null and fkrq !=''">
+				,fkrq=cast(#{fkrq} as TIMESTAMP)
+			</if>
+			<where>
+				fjid=#{fjid}
+			</where>
+	</update>
+	
+	<!-- 点击实验按钮时先去查询出dna/rna/其他的实验日期和检测标记 -->
+	<select id="getFjxxByfjids" resultType="FjsqDto" parameterType="FjsqDto">
+	    select case when fjsq.rjcbj is null then '0' else fjsq.rjcbj end jcbj,
+			case when fjsq.djcbj is null then '0' else fjsq.djcbj end djcbj,
+			case when fjsq.qtjcbj is null then '0' else fjsq.qtjcbj end qtjcbj,
+			fjsq.rsyrq as syrq, fjsq.dsyrq as dsyrq, fjsq.qtsyrq as qtsyrq, fjsq.jcdw
+			from igams_fjsq fjsq
+		<where>
+		    fjsq.scbj != '1' and fjsq.fjid in
+		    <foreach collection="ids" open="(" close=")" separator="," item="item">
+		       #{item}
+		    </foreach>
+		</where>			
+	</select>
+	
+	 <!-- 点击实验按钮判断检查项目 -->
+	<select id="checkJcxm" parameterType="FjsqDto" resultType="FjsqDto">
+	   select jc.cskz1 as jcxmcskz
+			from igams_fjsq fj 
+			left join matridx_jcsj jc on jc.csid=fj.jcxm 
+		  <where>
+		  	  fj.scbj!='1'
+			  and fj.fjid in 
+			  <foreach collection="ids" item="item" open="(" close=")" separator=",">
+				  #{item}
+			  </foreach>
+		  </where>
+		  group by jcxmcskz
+	</select>
+	
+
+	<update id="updateJcbjByid" parameterType="FjsqDto">
+		update igams_fjsq set xgry=#{xgry},xgsj=LOCALTIMESTAMP,rsyrq=cast(#{syrq} as TIMESTAMP),dsyrq=cast(#{dsyrq} as TIMESTAMP),qtsyrq=cast(#{qtsyrq} as TIMESTAMP)
+		<if test="jcbj !=null and  jcbj !=''">
+			,rjcbj=#{jcbj}
+		</if>
+		<if test="djcbj !=null and  djcbj !=''">
+			,djcbj=#{djcbj}
+		</if>
+		<if test="qtjcbj !=null and  qtjcbj !=''">
+			,qtjcbj=#{qtjcbj}
+		</if>
+		<where>
+			<if test="ids!=null and ids.size>0">
+				and fjid in
+				<foreach collection="ids"  open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<!-- 通过fjid去取到sjid,这里的sjid用于后续的发送实验通知的sendMessage方法 -->
+	<select id="getSjidFromFjid" parameterType="String" resultType="String">
+	   select fjsq.sjid from igams_fjsq fjsq where fjid = #{fjid} 
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjxxjgDao" >
+	<!-- 批量新增送检详细审核结果 -->
+	<insert  id="insertBySjxxjgDtos" parameterType="list">
+		insert into igams_sjxxjg (xxjgid, xh, sjid, jdid, fjdid, wzywm, wzzwm, wzfl, fldj, dqs, zdqs, dwds, dsbfb, jyzfgd, sm, sdds, xpjcl, gzd, xdfd, lrry, lrsj, scbj, jclx, wzfllx,xmdm,wkbh)
+		values
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator="," item="item" index="index">
+				(#{item.xxjgid},cast(#{item.xh} as numeric),#{item.sjid},#{item.jdid},#{item.fjdid},#{item.wzywm},#{item.wzzwm},#{item.wzfl},#{item.fldj},#{item.dqs},
+					#{item.zdqs},#{item.dwds},#{item.dsbfb},#{item.jyzfgd},#{item.sm},#{item.sdds},#{item.xpjcl},#{item.gzd},#{item.xdfd},#{item.lrry},LOCALTIMESTAMP, '0',#{item.jclx}, #{item.wzfllx}, #{item.xmdm}, #{item.wkbh})
+			</foreach>
+		</if>
+	</insert>
+	<!--批量删除送检详细审核结果-->
+	<delete id="deleteBySjxxjgDto" parameterType="SjxxjgDto">
+		delete from igams_sjxxjg
+		where sjid = #{sjid} and jclx = #{jclx} and xmdm= #{xmdm}
+	</delete>
+	<!-- 根据送检ID和物种分类查询fjdid为null的详细信息 -->
+	<select id="getxxjgByFjdidIsNull" parameterType="SjxxjgDto" resultType="SjxxjgDto">
+		select xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx
+		from igams_sjxxjg
+		<where>
+		scbj!='1' and fjdid ='' and jclx=#{jclx}
+		<if test="sjid !=null and sjid!=''">
+		and sjid=#{sjid}
+		</if>
+		<if test="wzfl !=null and wzfl!=''">
+		and wzfl=#{wzfl}
+		</if>
+		</where>
+	</select>
+	<!-- 根据节点ID查询Species下最后一条详细结果 -->
+	<select id="getxxInSpecies" parameterType="List" resultType="SjxxjgDto">
+		(WITH RECURSIVE r (xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx,depth,np)
+		 AS ( select xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx,1 as depth ,RIGHT('0000'||CAST(row_number() over(order by jdid)  AS varchar(50)),4) np
+		   from igams_sjxxjg a 
+		   where scbj!='1' 
+		   and 
+		   <foreach collection="list" open="(" close=")" separator=" or " item="item">
+					(fjdid=#{item.jdid} 
+		 			<if test="item.sjid != null and item.sjid !=''">
+		 				and sjid=#{item.sjid}
+		 			</if>
+		 			)
+	 			</foreach> 
+		   union all 
+		   select b.xxjgid,b.xh,b.sjid,b.jdid,b.fjdid,b.wzywm,b.wzzwm,b.wzfl,b.fldj,b.dqs,b.zdqs,b.dwds,b.dsbfb,b.jyzfgd,b.sm,b.sdds,b.xpjcl,b.gzd,b.jclx,b.wzfllx,r.depth + 1 as depth ,r.np||RIGHT('0000'||CAST(row_number() over(partition by r.jdid order by b.jdid)  AS varchar(50)),4) np
+		   from igams_sjxxjg b 
+		   join r on b.fjdid = r.jdid 
+		   and b.sjid = r.sjid )
+		 SELECT xxjgid,xh,sjid,jdid,case when fjdid is not null then '' end fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx,depth,np
+		 FROM r order by  np )
+	</select>
+	<!-- 根据节点ID查询Genus下详细结果 -->
+	<select id="getxxInGenus" parameterType="List" resultType="SjxxjgDto">
+		(WITH RECURSIVE r (xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wfllx,depth) AS 
+ 			( 
+ 			select xxjgid,xh,sjid,jdid,fjdid,wzywm,wzzwm,wzfl,fldj,dqs,zdqs,dwds,dsbfb,jyzfgd,sm,sdds,xpjcl,gzd,jclx,wzfllx,1 as depth from igams_sjxxjg a
+	 			where scbj!='1' and 
+	 			
+				<foreach collection="list" open="(" close=")" separator=" or " item="item">
+		 			(
+		 			jdid=#{item.jdid} 
+		 			<if test="item.jclx != null and item.jclx !=''">
+		 				and jclx=#{item.jclx}
+		 			</if>
+		 			<if test="item.sjid != null and item.sjid !=''">
+		 				and sjid=#{item.sjid}
+		 			</if>
+		 			)
+				</foreach>
+ 			union all  
+ 			select b.xxjgid,b.xh,b.sjid,b.jdid,b.fjdid,b.wzywm,b.wzzwm,b.wzfl,b.fldj,b.dqs,b.zdqs,b.dwds,b.dsbfb,b.jyzfgd,b.sm,b.sdds,b.xpjcl,b.gzd,b.jclx,b.wzfllx,r.depth + 1 as depth 
+ 			from igams_sjxxjg b join r on b.fjdid = r.jdid and b.sjid = r.sjid
+ 			)SELECT * FROM r order by depth)
+	</select>
+	<!-- 根据检测类型计算D,R,C下详细结果总和 -->
+	<select id="getJclxCount" parameterType="SjxxjgDto" resultType="SjxxjgDto">
+		select count(sjid) num,jclx.cskz1 jclx 
+		from igams_sjxxjg xxjg
+		left join matridx_jcsj jclx on jclx.csid=xxjg.jclx
+		<where>
+			xxjg.scbj!='1'
+			and xxjg.sjid=#{sjid}
+		</where>
+		group by jclx.cskz1
+	</select>
+</mapper>

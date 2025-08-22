@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjsyglDao" >
+
+	<sql id="SQL">
+		from igams_sjxx sjxx
+		left join igams_sjjcxm sjjcxm on sjjcxm.sjid = sjxx.sjid and sjjcxm.scbj='0'
+		left join igams_xxdy xxdy on xxdy.yxxid= sjjcxm.jcxmid and  xxdy.scbj = '0' and (xxdy.zid = sjjcxm.jczxmid or sjjcxm.jczxmid is null)
+		and (xxdy.kzcs5=#{jcdwmc} or xxdy.kzcs5 is null or xxdy.kzcs5='')  and (xxdy.kzcs4=#{yblxdm} or xxdy.kzcs4 is null  or xxdy.kzcs4='')
+		left join igams_xmsygl xmsygl on xmsygl.ywid = sjxx.sjid  and xmsygl.scbj = '0' AND xmsygl.ywlx = #{ywlx} and xmsygl.dyid = XXDY.dyid
+		AND xxdy.yxxid = xmsygl.jcxmid AND ( xxdy.zid = xmsygl.jczxmid OR xmsygl.jczxmid IS NULL OR xmsygl.jczxmid = '' )
+		LEFT JOIN igams_sjsygl sjsygl ON sjsygl.syglid = xmsygl.syglid AND sjsygl.jclxid = xxdy.dyxx  AND sjsygl.scbj = '0'
+		left join matridx_jcsj jcxm on sjjcxm.jcxmid = jcxm.csid
+	</sql>
+
+	<select id="getHbDto" parameterType="SjsyglDto" resultType="SjsyglDto">
+		select hbxxz.hbid,hbxxz.jcxmcskz3,hbxxz.xzlx
+		from igams_sjxx sj
+		left outer join igams_sjjcxm jcxm on sj.sjid=jcxm.sjid and jcxm.scbj ='0'
+		left outer join matridx_jcsj jc_jcxm on jc_jcxm.csid=jcxm.jcxmid
+		 left outer join igams_sjhbxx hbxx on sj.db = hbxx.hbmc and hbxx.scbj = '0'
+		 left outer join igams_hbxxz hbxxz on hbxxz.hbid = hbxx.hbid and hbxxz.sysid = sj.jcdw
+		where sj.sjid=#{sjid} and jc_jcxm.cskz3=hbxxz.jcxmcskz3
+	</select>
+
+	<select id="getInsertInfo" parameterType="SjsyglDto" resultType="SjsyglDto">
+		select sjxx.sjid,sjxx.sjid ywid,jcxm.cskz3 jcxmcskz3,
+		case when xmsygl.xmsyglid is not null then xmsygl.xmsyglid else '' end xmsyglid,
+		case when sjsygl.syglid is not null then sjsygl.syglid else '' end syglid,
+		case when sjsygl.syglid is not null then sjsygl.jcdw else sjxx.jcdw end jcdw,jcxm.csmc jcxmmc,COALESCE(jcxm.bz,jcxm.csmc) jcxmbm,
+		sjjcxm.jcxmid,sjjcxm.jczxmid,xxdy.dyxx as jclxid,sjxx.lrry,xxdy.dydm as nbzbm,xxdy.dyid,xxdy.kzcs4,sjxx.nbbm,xxdy.kzcs5,xxdy.kzcs6,xxdy.px,xxdy.kzcs7 as wksxbm,
+		case when sjsygl.syglid is not null then sjsygl.sfjs else null end sfjs,
+		case when sjsygl.syglid is not null then sjsygl.jsrq else null end jsrq,
+		case when sjsygl.syglid is not null then sjsygl.jsry else null end jsry,
+		case when sjsygl.syglid is not null then sjsygl.jcbj else null end jcbj,
+		case when sjsygl.syglid is not null then sjsygl.syrq else null end syrq,
+		case when sjsygl.syglid is not null then sjsygl.jt else null end jt,
+		case when sjsygl.syglid is not null then sjsygl.zt else null end zt,
+		case when sjsygl.qysj is not null then sjsygl.qysj else null end qysj,
+		case when sjsygl.qyry is not null then sjsygl.qyry else null end qyry,
+		case when sjsygl.syglid is not null then sjsygl.bz else null end bz
+		<include refid="SQL"></include>
+		where sjxx.sjid = #{sjid}
+		order by  sjjcxm.jcxmid ,sjjcxm.jczxmid,xxdy.kzcs5,xxdy.kzcs4
+	</select>
+
+	<select id="getDtoList" parameterType="SjsyglDto" resultType="SjsyglDto">
+		select sjsygl.syglid,'('||jcxmlx.cskz1||')'||jcxmlx.csmc as jcxmmc,jclx.csmc as jclxmc,jclx.csdm jclxdm,to_char(sjsygl.jsrq,'yyyy-mm-dd hh24:mi:ss') as jsrq,sjsygl.jcdw,jcdw.csmc as jcdwmc,sjxx.db,sjsygl.sjid,xmsygl.jcxmid,xmsygl.jczxmid,sjsygl.jclxid,sjsygl.sfjs,sjsygl.nbzbm,sjsygl.jsry,sjsygl.jcbj,to_char(sjsygl.syrq,'yyyy-mm-dd hh24:mi:ss') as syrq,sjsygl.jt,sjsygl.zt,sjsygl.bz,
+		       xmsygl.dyid
+			from igams_sjsygl sjsygl
+			left join igams_xmsygl xmsygl on sjsygl.syglid = xmsygl.syglid and xmsygl.scbj ='0'
+		left join igams_sjjcxm sjjcxm on sjjcxm.jcxmid = xmsygl.jcxmid and ((sjjcxm.jczxmid is null and xmsygl.jczxmid is null) or sjjcxm.jczxmid= xmsygl.jczxmid) and sjjcxm.sjid=sjsygl.sjid and sjjcxm.scbj='0'
+		left join matridx_jcsj jcxmlx on jcxmlx.csid= sjjcxm.jcxmid and jcxmlx.scbj='0'
+		left join matridx_jcsj jclx on jclx.csid= sjsygl.jclxid and jcxmlx.scbj='0'
+		left join matridx_jcsj jcdw on jcdw.csid= sjsygl.jcdw and jcdw.scbj='0'
+		left join igams_sjxx sjxx on sjxx.sjid=sjsygl.sjid and sjxx.scbj='0'
+		where sjsygl.scbj='0' and  sjsygl.sjid = #{sjid}
+	</select>
+
+
+	<insert id="insertList" parameterType="list">
+		insert into igams_sjsygl(syglid,xmmc,sjid,jclxid,jcdw,sfjs,jsry,jcbj,jt,zt,bz,lrry,qyry,jsrq,syrq,lrsj,qysj,scbj,nbzbm,wksxbm)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.syglid},#{item.xmmc},#{item.sjid},#{item.jclxid},#{item.jcdw},#{item.sfjs},
+			#{item.jsry},#{item.jcbj},#{item.jt},#{item.zt},#{item.bz},#{item.lrry},#{item.qyry}
+			<if test="item.jsrq != null and item.jsrq !=''">
+				,cast(#{item.jsrq} as TIMESTAMP)
+			</if>
+			<if test="item.jsrq == null or item.jsrq ==''">
+				,null
+			</if>
+			<if test="item.syrq != null and item.syrq !=''">
+				,cast(#{item.syrq} as TIMESTAMP
+			</if>
+			<if test="item.syrq == null or item.syrq ==''">
+				,null
+			</if>
+			,coalesce(cast(#{item.lrsj} as TIMESTAMP),LOCALTIMESTAMP)
+			<if test="item.qysj != null and item.qysj !=''">
+				,cast(#{item.qysj} as TIMESTAMP)
+			</if>
+			<if test="item.qysj == null or item.qysj ==''">
+				,null
+			</if>
+			,coalesce(#{item.scbj},'0'),#{item.nbzbm},#{item.wksxbm}
+			)
+		</foreach>
+	</insert>
+
+	<update id="updateList" parameterType="list">
+		<foreach collection="list" item="item" separator=";">
+			update igams_sjsygl set xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			<if test="item.jcdw != null and item.jcdw != ''">
+				,jcdw=#{item.jcdw}
+			</if>
+			<if test="item.sfjs != null and item.sfjs != ''">
+				,sfjs=#{item.sfjs},jsrq=LOCALTIMESTAMP
+			</if>
+			<if test="item.nbzbm != null and item.nbzbm != ''">
+				,nbzbm=#{item.nbzbm}
+			</if>
+			<if test="item.jsry != null and item.jsry != ''">
+				,jsry=#{item.jsry}
+			</if>
+			<if test="item.jcbj != null and item.jcbj != ''">
+				,jcbj=#{item.jcbj},syrq=LOCALTIMESTAMP
+			</if>
+			<if test="item.jt != null and item.jt != ''">
+				,jt=#{item.jt}
+			</if>
+			<if test="item.zt != null and item.zt != ''">
+				,zt=#{item.zt}
+			</if>
+			<if test="item.bz != null and item.bz != ''">
+				,bz=#{item.bz}
+			</if>
+			<if test="item.wksxbm != null and item.wksxbm != ''">
+				,wksxbm=#{item.wksxbm}
+			</if>
+			<where>
+				syglid=#{item.syglid}
+			</where>
+		</foreach>
+	</update>
+
+	<update id="modAllList" parameterType="list">
+		<foreach collection="list" item="item" separator=";">
+			update igams_sjsygl set xgry=#{item.xgry},xgsj=LOCALTIMESTAMP,scry=null,scsj=null
+			<if test="item.jclxid != null and item.jclxid != ''">
+				,jclxid=#{item.jclxid}
+			</if>
+			<if test="item.jcdw != null and item.jcdw != ''">
+				,jcdw=#{item.jcdw}
+			</if>
+			<if test="item.sfjs != null and item.sfjs != ''">
+				,sfjs=#{item.sfjs}
+			</if>
+			<if test="item.xmmc != null and item.xmmc != ''">
+				,xmmc=#{item.xmmc}
+			</if>
+			<if test="item.jsrq != null and item.jsrq != ''">
+				,jsrq=cast (#{item.jsrq} as timestamp)
+			</if>
+			<if test="item.jsry != null and item.jsry != ''">
+				,jsry=#{item.jsry}
+			</if>
+			<if test="item.jcbj != null and item.jcbj != ''">
+				,jcbj=#{item.jcbj}
+			</if>
+			<if test="item.syrq != null and item.syrq != ''">
+				,syrq=cast (#{item.syrq} as timestamp)
+			</if>
+			<if test="item.jt != null and item.jt != ''">
+				,jt=#{item.jt}
+			</if>
+			<if test="item.zt != null and item.zt != ''">
+				,zt=#{item.zt}
+			</if>
+			<if test="item.bz != null and item.bz != ''">
+				,bz=#{item.bz}
+			</if>
+			<if test="item.qyry != null and item.qyry != ''">
+				,qyry=#{item.qyry}
+			</if>
+			<if test="item.qysj != null and item.qysj != ''">
+				,qysj=cast (#{item.qysj} as timestamp)
+			</if>
+			<if test="item.scbj != null and item.scbj != ''">
+				,scbj=#{item.scbj}
+			</if>
+			<if test="item.nbzbm != null and item.nbzbm != ''">
+				,nbzbm=#{item.nbzbm}
+			</if>
+			<if test="item.wksxbm != null and item.wksxbm != ''">
+				,wksxbm=#{item.wksxbm}
+			</if>
+			<where>
+				syglid=#{item.syglid}
+			</where>
+		</foreach>
+	</update>
+
+	<update id="adjustUpdateList" parameterType="list">
+		<foreach collection="list" item="item" separator=";">
+			update igams_sjsygl set xgry=#{item.xgry},xgsj=LOCALTIMESTAMP
+			<if test="item.jcdw != null and item.jcdw != ''">
+				,jcdw=#{item.jcdw}
+			</if>
+			<if test="item.sfjs != null and item.sfjs != ''">
+				,sfjs=#{item.sfjs}
+			</if>
+			<if test="item.jsrq != null and item.jsrq != ''">
+				,jsrq=cast( #{item.jsrq} as timestamp )
+			</if>
+			<if test="item.jsrq == null or item.jsrq == ''">
+				,jsrq = null
+			</if>
+			<if test="item.jcbj != null and item.jcbj != ''">
+				,jcbj=#{item.jcbj}
+			</if>
+			<if test="item.syrq != null and item.syrq != ''">
+				,syrq=cast( #{item.syrq} as timestamp )
+			</if>
+			<if test="item.syrq == null or item.syrq == ''">
+				,syrq = null
+			</if>
+			<if test="item.qysj != null and item.qysj != ''">
+				,qysj=cast( #{item.qysj} as timestamp )
+			</if>
+			<if test="item.qysj == null or item.qysj == ''">
+				,qysj = null
+			</if>
+			<if test="item.wksxbm != null and item.wksxbm != ''">
+				,wksxbm=#{item.wksxbm}
+			</if>
+			<where>
+				syglid=#{item.syglid}
+			</where>
+		</foreach>
+	</update>
+
+	<delete id="delInfo" parameterType="SjsyglDto">
+		update igams_sjsygl set scbj='1'
+		<if test="scry != null and scry != '' ">
+			, scry = #{scry},scsj=LOCALTIMESTAMP
+		</if>
+		where scbj='0' 
+            and syglid in
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+	</delete>
+
+	<delete id="delBySjid" parameterType="SjsyglDto">
+		update igams_sjsygl set scbj='1'
+		<if test="scry != null and scry != '' ">
+			, scry = #{scry},scsj=LOCALTIMESTAMP
+		</if>
+		where scbj='0'
+		and sjid =#{sjid}
+	</delete>
+
+	<delete id="deleteInfo" parameterType="SjsyglDto">
+		delete from igams_sjsygl  where scbj='1' and sjid = #{sjid}
+	</delete>
+
+	<delete id="delete" parameterType="SjsyglDto">
+		delete from igams_sjsygl  where scbj='1' and sjid = #{sjid}
+	</delete>
+
+	<update id="updateDto" parameterType="SjsyglDto">
+		update igams_sjsygl set xgry=#{xgry},xgsj=LOCALTIMESTAMP,jcdw=#{jcdw}
+		where sjid=#{sjid} and jcdw=#{yjcdw}
+	</update>
+
+	<select id="getModelList" parameterType="SjsyglModel" resultType="SjsyglModel">
+		select sjsygl.* from igams_sjsygl sjsygl
+		left join igams_xmsygl xmsygl on xmsygl.syglid = sjsygl.syglid and xmsygl.scbj='0'
+		where sjsygl.scbj='0' 
+		<if test="sjid != null and sjid!= ''">
+            and sjid = #{sjid}
+        </if>
+		<if test="ywid != null and ywid!= ''">
+			and xmsygl.ywid = #{ywid}
+		</if>
+		<if test="ids !=null and ids.size > 0">
+            and sjsygl.syglid in
+	        <foreach collection="ids" separator="," item="item" open="(" close=")">
+	           #{item}
+	         </foreach>
+	     </if>
+	</select>
+
+	<select id="getViewDetectData" parameterType="String" resultType="SjsyglDto">
+		SELECT
+			jcxm.csmc AS jcxmmc,
+			jczxm.csmc AS jczxmmc,
+			sjid,
+			to_char(tab.jsrq,'yyyy-mm-dd hh24:MI:ss') as jsrq,
+			to_char(tab.qysj,'yyyy-mm-dd hh24:MI:ss') as qysj,
+			to_char(tab.syrq,'yyyy-mm-dd hh24:MI:ss') as syrq,
+			to_char(tab.sjsj,'yyyy-mm-dd hh24:MI:ss') as sjsj
+		FROM
+			(
+				SELECT
+					xmsygl.jcxmid,
+					xmsygl.jczxmid,
+					sjsygl.sjid,
+					MIN ( jsrq ) AS jsrq,
+					MIN ( qysj ) AS qysj,
+					MIN ( syrq ) AS syrq,
+					MAX ( sjsj ) AS sjsj
+				FROM
+					igams_sjsygl sjsygl
+					left join igams_xmsygl xmsygl on sjsygl.syglid = xmsygl.syglid and xmsygl.scbj ='0'
+				WHERE
+					sjid = #{sjid}
+				  AND sjsygl.scbj = '0'
+				GROUP BY
+					xmsygl.jcxmid,
+					xmsygl.jczxmid,sjsygl.sjid
+			) tab
+				LEFT JOIN matridx_jcsj jcxm ON jcxm.csid = tab.jcxmid
+				AND jcxm.scbj != '1'
+				LEFT JOIN matridx_jcsj jczxm ON jczxm.csid = tab.jczxmid
+				AND jczxm.scbj != '1'
+	</select>
+
+	<update id="updateXmmc" parameterType="SjsyglDto">
+		update igams_sjsygl sjsygl
+		set xgsj=LOCALTIMESTAMP,xgry=#{xgry},xmmc=tmp.xmmc
+		from(
+		select xmsygl.syglid,string_agg (distinct jcxm.csmc,',' ) xmmc from igams_xmsygl xmsygl
+		left join matridx_jcsj jcxm on jcxm.csid=xmsygl.jcxmid and jcxm.scbj = '0'
+		where xmsygl.scbj='0' and xmsygl.ywid=#{sjid} group by xmsygl.syglid
+		)
+		tmp
+		where
+		sjsygl.syglid=tmp.syglid
+	</update>
+
+	<update id="updateScbj" parameterType="SjsyglDto">
+		update igams_sjsygl
+		set scsj=LOCALTIMESTAMP,scry=#{scry},scbj='1'
+		where
+		syglid in (
+		select sjsygl.syglid from igams_sjsygl sjsygl
+		left join igams_xmsygl xmsygl on xmsygl.syglid=sjsygl.syglid and xmsygl.scbj = '0'
+		where sjsygl.scbj='0' and sjsygl.sjid=#{sjid} and xmsygl.xmsyglid is null
+		)
+	</update>
+	<update id="updateJsInfo" parameterType="SjsyglDto">
+		update igams_sjsygl set xgry=#{xgry},xgsj=LOCALTIMESTAMP,
+		sfjs=#{sfjs}
+		<if test="sfjs != null and sfjs !='' and  sfjs== '0'.toString() ">
+			,jsry = null
+		</if>
+		<if test="jsrq != null and jsrq !=''">
+			,jsrq = cast(#{jsrq} as TIMESTAMP)
+		</if>
+		<if test="jsrq == null or jsrq ==''">
+			,jsrq = null
+		</if>
+		<where>
+			sjid=#{sjid} and syrq is null and scbj ='0'
+		</where>
+	</update>
+</mapper>

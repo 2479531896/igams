@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IHbsfbzDao" >
+	<select id="getDto" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select hbid,xm,sfbz,tqje
+		from igams_hbsfbz
+			<where>
+				hbid=#{hbid} and xm = #{xm}
+			</where>
+	</select>
+
+	<select id="getDtoList" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select sfbz.hbid,sfbz.xm,sfbz.sfbz,sfbz.tqje,sfbz.zxm
+		from igams_hbsfbz sfbz
+		left join igams_sjhbxx hbxx on hbxx.hbid = sfbz.hbid and hbxx.scbj ='0'
+		<where>
+			hbxx.hbmc=#{hbmc}
+		</where>
+	</select>
+	
+	<select id="getDefaultDto" parameterType="HbsfbzDto" resultType="HbsfbzDto">
+		select xm,sfbz,tqje
+			from igams_hbsfbz
+			<where>
+				hbid= 'default' and xm = #{xm}
+			</where>
+	</select>
+
+	<update id="updateList" parameterType="List">
+		<if test="list !=null and list.size > 0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				update igams_hbsfbz
+				<set>
+					<if test="item.sfbz != null and item.sfbz != ''">
+						,sfbz=cast(#{item.sfbz} as numeric)
+					</if>
+					<if test="item.ksrq != null and item.ksrq != ''">
+						,ksrq=cast(#{item.ksrq} as timestamp)
+					</if>
+					<if test="item.jsrq != null and item.jsrq != ''">
+						,jsrq=cast(#{item.jsrq} as timestamp)
+					</if>
+					<if test="item.htmxid != null and item.htmxid != ''">
+						,htmxid=#{item.htmxid}
+					</if>
+				</set>
+				where hbid = #{item.hbid} and xm = #{item.xm}
+				<if test="item.zxm != null and item.zxm != ''">
+					and zxm=#{item.zxm}
+				</if>
+				<if test="item.zxm != null and item.zxm == ''">
+					and (zxm is null or zxm = '')
+				</if>
+			</foreach>
+		</if>
+	</update>
+	<update id="batchModSfbz">
+		<if test="list != null and list.size>0">
+			<foreach collection="list" separator=";" item="item">
+				update igams_hbsfbz
+				<set>
+					<if test="item.sfbz != null and item.sfbz !=''">
+						sfbz = cast(#{item.sfbz} as numeric),
+					</if>
+					<if test="item.tqje != null and item.tqje !=''">
+						tqje = cast(#{item.tqje} as numeric),
+					</if>
+					<if test="item.ksrq != null and item.ksrq !=''">
+						ksrq = cast(#{item.ksrq} as timestamp),
+					</if>
+					<if test="item.jsrq != null and item.jsrq !=''">
+						jsrq = cast(#{item.jsrq} as timestamp),
+					</if>
+					htmxid = null
+				</set>
+				where hbid = #{item.hbid} and xm=#{item.xm}
+				<choose>
+					<when test="item.zxm != null and item.zxm != '' ">
+						and zxm=#{item.zxm}
+					</when>
+					<otherwise>
+						and zxm is null
+					</otherwise>
+				</choose>
+			</foreach>
+		</if>
+	</update>
+	<!-- 删除 -->
+	<delete id="deleteById" parameterType="String">
+		delete from
+		igams_hbsfbz
+		<where>
+			hbid=#{hbid}
+		</where>
+	</delete>
+	<!-- 新增 -->
+	<insert id="insertsfbz" parameterType="list">
+		<if test="list != null and list.size>0">
+			<foreach collection="list" separator=";" item="item" index="index">
+				insert into igams_hbsfbz (
+				hbsfbzid,hbid,lrsj
+				<if test="item.xm != null and item.xm !=''">
+					,xm
+				</if>
+				<if test="item.zxm != null and item.zxm !=''">
+					,zxm
+				</if>
+				<if test="item.sfbz != null and item.sfbz !=''">
+					,sfbz 
+				</if>
+				<if test="item.tqje != null and item.tqje !=''">
+					,tqje
+				</if>
+				<if test="item.ksrq != null and item.ksrq !=''">
+					,ksrq
+				</if>
+				<if test="item.jsrq != null and item.jsrq !=''">
+					,jsrq
+				</if>
+				<if test="item.htmxid != null and item.htmxid !=''">
+					,htmxid
+				</if>
+				<if test="item.lrry != null and item.lrry !=''">
+					,lrry
+				</if>
+				)
+				values
+				(
+				#{item.hbsfbzid},#{item.hbid},LOCALTIMESTAMP
+				<if test="item.xm != null and item.xm !=''">
+					,#{item.xm}
+				</if>
+				<if test="item.zxm != null and item.zxm !=''">
+					,#{item.zxm}
+				</if>
+				<if test="item.sfbz != null and item.sfbz !=''">
+					,cast(#{item.sfbz} as numeric)
+				</if>
+				<if test="item.tqje != null and item.tqje !=''">
+					,cast(#{item.tqje} as numeric)
+				</if>
+				<if test="item.ksrq != null and item.ksrq !=''">
+					,cast(#{item.ksrq} as timestamp)
+				</if>
+				<if test="item.jsrq != null and item.jsrq !=''">
+					,cast(#{item.jsrq} as timestamp)
+				</if>
+				<if test="item.htmxid != null and item.htmxid !=''">
+					,#{item.htmxid}
+				</if>
+				<if test="item.lrry != null and item.lrry !=''">
+					,#{item.lrry}
+				</if>
+				)
+			</foreach>
+		</if>
+	</insert>
+</mapper>

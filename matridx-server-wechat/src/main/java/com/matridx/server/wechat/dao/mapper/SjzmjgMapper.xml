@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjzmjgDao" >
+	<insert id="insertSjzmjg" parameterType="list">
+		<if test="list !=null and list.size()>0">
+		insert into igams_sjzmjg (zmid,sjid,xh,xm,jg,ckz,jcff,lrry,lrsj,scbj,lx)
+		values
+			<foreach collection="list" open="" close="" index="index" item="item" separator=",">
+				(#{item.zmid},#{item.sjid},#{index},#{item.xm},#{item.jg},#{item.ckz},#{item.jcff},#{item.lrry},LOCALTIMESTAMP,'0',#{item.lx})
+			</foreach>
+		</if>
+	</insert>
+	
+	<delete id="deleteSjzmjg" parameterType="SjzmjgDto">
+		update igams_sjzmjg set scbj ='1',scry=#{scry},scsj=LOCALTIMESTAMP
+		<where>
+			sjid=#{sjid} and lx = #{lx}
+		</where>
+	</delete>
+	
+	<select id="getDtoList" parameterType="SjzmjgDto" resultType="SjzmjgDto"> 
+		select sjzmjg.xm,sjzmjg.jg,sjzmjg.ckz,sjzmjg.jcff,jc_xm.cskz1 as sjzhz,jc_xm.cskz2 as xgzl
+			from igams_sjzmjg sjzmjg
+			left join matridx_jcsj jc_xm on trim(jc_xm.csmc)=trim(sjzmjg.xm)
+			<where>
+				sjzmjg.scbj!='1'
+				and sjzmjg.sjid=#{sjid} and sjzmjg.lx=#{lx}
+			</where>
+	</select>
+</mapper>

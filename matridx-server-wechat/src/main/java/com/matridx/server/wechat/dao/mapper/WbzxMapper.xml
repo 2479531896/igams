@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IWbzxDao" >
+	<!--   查询资讯列表 -->
+	<select id="getDtoList"  parameterType="WbzxDto"  resultType="WbzxDto" >
+		select  wbzx.zxid,wbzx.zxbt,wbzx.zxjj,wbzx.zxnr,wbzx.zxdz,to_char(wbzx.lrsj, 'yyyy-MM-dd') lrsj,wbzx.lrry
+ 		from igams_wbzx wbzx
+		<where>
+ 			wbzx.scbj!='1'
+  		</where>
+	</select>
+	<!--  查询资讯信息  -->
+	<select id="getDtoById"  parameterType="String"  resultType="WbzxDto" >
+		select  wbzx.zxid,wbzx.zxbt,wbzx.zxjj,wbzx.zxnr,wbzx.zxdz,to_char(wbzx.lrsj, 'yyyy-MM-dd') lrsj,wbzx.lrry,zxlx.csmc zxlxmc,
+		zxzlx.csmc zxzlxmc,wbzx.zxlx,wbzx.zxzlx
+ 		from igams_wbzx wbzx
+ 		left join matridx_jcsj zxlx on zxlx.csid=wbzx.zxlx
+		left join matridx_jcsj zxzlx on zxzlx.csid=wbzx.zxzlx
+		<where>
+ 			wbzx.scbj!='1' and wbzx.zxid = #{zxid}
+  		</where>
+	</select>
+	
+	<select id="getPagedDtoList" parameterType="WbzxDto" resultType="WbzxDto">
+		select wbzx.zxid,wbzx.zxlx,wbzx.zxzlx,wbzx.fbrq,wbzx.zxbt,wbzx.zxnr,wbzx.zxdz,wbzx.xh,zxlx.csmc zxlxmc,
+		zxzlx.csmc zxzlxmc,wbzx.zxjj
+		from igams_wbzx wbzx
+		left join matridx_jcsj zxlx on zxlx.csid=wbzx.zxlx
+		left join matridx_jcsj zxzlx on zxzlx.csid=wbzx.zxzlx
+		<where>
+			wbzx.scbj!='1'
+			<if test="zxlxmc != null and zxlxmc != ''">
+				and zxlx.csmc like '%'||#{zxlxmc}||'%'
+			</if>
+			<if test="zxzlxmc != null and zxzlxmc != ''">
+				and zxzlx.csmc like '%'||#{zxzlxmc}||'%'
+			</if>
+			<if test="zxdz != null and zxdz != ''">
+				and wbzx.zxdz like '%'||#{zxdz}||'%'
+			</if>
+			<if test="zxbt != null and zxbt != ''">
+				and wbzx.zxbt like '%'||#{zxbt}||'%'
+			</if>
+			<if test="zxnr != null and zxnr != ''">
+				and wbzx.zxnr like '%'||#{zxnr}||'%'
+			</if>
+			<if test="zxjj != null and zxjj != ''">
+				and wbzx.zxjj like '%'||#{zxjj}||'%'
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="WbzxDto">
+		insert into igams_wbzx(zxid,xh
+			<if test="zxlx != null and zxlx != ''">
+				,zxlx
+			</if>
+			<if test="zxzlx != null and zxzlx != ''">
+				,zxzlx
+			</if>
+			<if test="fbrq != null and fbrq != ''">
+				,fbrq
+			</if>
+			<if test="zxbt != null and zxbt != ''">
+				,zxbt
+			</if>
+			<if test="zxjj != null and zxjj != ''">
+				,zxjj
+			</if>
+			<if test="zxnr != null and zxnr != ''">
+				,zxnr
+			</if>
+			<if test="zxdz != null and zxdz != ''">
+				,zxdz
+			</if>
+		,lrry,lrsj,scbj)
+		values(#{zxid},'0'
+			<if test="zxlx != null and zxlx != ''">
+				,#{zxlx}
+			</if>
+			<if test="zxzlx != null and zxzlx != ''">
+				,#{zxzlx}
+			</if>
+			<if test="fbrq != null and fbrq != ''">
+				,cast(#{fbrq} as timestamp)
+			</if>
+			<if test="zxbt != null and zxbt != ''">
+				,#{zxbt}
+			</if>
+			<if test="zxjj != null and zxjj != ''">
+				,#{zxjj}
+			</if>
+			<if test="zxnr != null and zxnr != ''">
+				,#{zxnr}
+			</if>
+			<if test="zxdz != null and zxdz != ''">
+				,#{zxdz}
+			</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	
+	<update id="update" parameterType="WbzxDto">
+		update igams_wbzx 
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="zxlx != null and zxlx != ''">
+				,zxlx=#{zxlx}
+			</if>
+			<if test="zxzlx != null and zxzlx != ''">
+				,zxzlx=#{zxzlx}
+			</if>
+			<if test="fbrq != null and fbrq != ''">
+				,fbrq=cast(#{fbrq} as timestamp)
+			</if>
+			<if test="zxbt != null and zxbt != ''">
+				,zxbt=#{zxbt}
+			</if>
+			<if test="zxjj != null and zxjj != ''">
+				,zxjj=#{zxjj}
+			</if>
+			<if test="zxnr != null and zxnr != ''">
+				,zxnr=#{zxnr}
+			</if>
+			<if test="zxdz != null and zxdz != ''">
+				,zxdz=#{zxdz}
+			</if>
+		</set>
+		<where>
+			scbj!='1' and
+			zxid=#{zxid}
+		</where>
+	</update>
+	
+	<update id="delete" parameterType="WbzxDto">
+		update igams_wbzx set scry=#{scry},scsj=LOCALTIMESTAMP,scbj='1'
+		<where>
+			zxid in  
+			<foreach collection="ids" item="item" separator="," open="(" close=")" index="index">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+	
+	<select id="getDto" parameterType="WbzxDto" resultType="WbzxDto">
+		select wbzx.zxid,wbzx.zxlx,wbzx.zxzlx,wbzx.fbrq,wbzx.zxbt,wbzx.zxnr,wbzx.zxdz,wbzx.xh,zxlx.csmc zxlxmc,
+		zxzlx.csmc zxzlxmc,wbzx.zxjj
+		from igams_wbzx wbzx
+		left join matridx_jcsj zxlx on zxlx.csid=wbzx.zxlx
+		left join matridx_jcsj zxzlx on zxzlx.csid=wbzx.zxzlx
+		<where>
+			wbzx.scbj!='1'
+			and zxid=#{zxid}
+		</where>
+	</select>
+	
+	<select id="getWsWechatNewsList" parameterType="WbzxDto" resultType="WbzxDto">
+		select wbzx.zxid,wbzx.zxlx,wbzx.zxzlx,wbzx.fbrq,wbzx.zxbt,wbzx.zxnr,wbzx.zxdz,wbzx.xh,zxlx.csmc zxlxmc,
+		zxzlx.csmc zxzlxmc,wbzx.zxjj
+		from igams_wbzx wbzx
+		left join matridx_jcsj zxlx on zxlx.csid=wbzx.zxlx
+		left join matridx_jcsj zxzlx on zxzlx.csid=wbzx.zxzlx
+		<where>
+			wbzx.scbj!='1'
+			<if test="zxlx != null and zxlx != ''">
+				and zxlx=#{zxlx}
+			</if>
+			<if test="zxzlx != null and zxzlx != ''">
+				and zxzlx=#{zxzlx}
+			</if>
+		</where>
+		order by fbrq,zxbt desc limit cast(#{count} as numeric) offset cast(#{start} as numeric)
+	</select>
+</mapper>

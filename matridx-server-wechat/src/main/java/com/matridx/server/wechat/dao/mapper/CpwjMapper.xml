@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ICpwjDao" >
+    <select id="getPagedDtoList" parameterType="CpwjDto" resultType="CpwjDto">
+        SELECT
+            cpwj.cpwjid,cpwj.cpmc,cpwj.cpdm,cpwj.bbh,cpwj.gxsj,cpwj.lrry,to_char(cpwj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,cpwj.sfgk,lrry.zsxm lrrymc,
+            cpwj.xh
+        FROM
+            igams_cpwj cpwj
+                left join matridx_xtyh lrry on lrry.yhid=cpwj.lrry
+        WHERE cpwj.scbj ='0'
+        <if test="entire != null and entire != ''">
+            and (cpwj.cpmc like '%'||#{entire}||'%'
+            or cpwj.cpdm like '%'||#{entire}||'%'
+            or lrry.zsxm like '%'||#{entire}||'%'
+            )
+        </if>
+        <if test="cpmc !=null and cpmc != ''">
+            and cpwj.cpmc ILIKE '%'||#{cpmc}||'%'
+        </if>
+        <if test="cpdm !=null and cpdm != ''">
+            and cpwj.cpdm ILIKE '%'||#{cpdm}||'%'
+        </if>
+        <if test="lrrymc !=null and lrrymc != ''">
+            and lrry.zsxm ILIKE '%'||#{lrrymc}||'%'
+        </if>
+        <if test="sfgk !=null and sfgk != ''">
+            and cpwj.sfgk = #{sfgk}
+        </if>
+    </select>
+    <insert id="insert" parameterType="CpwjDto">
+        insert into igams_cpwj(cpwjid
+        <if test="cpmc !=null and cpmc != ''">
+            ,cpmc
+        </if>
+        <if test="cpdm !=null and cpdm != ''">
+            ,cpdm
+        </if>
+        <if test="bbh !=null and bbh != ''">
+            ,bbh
+        </if>
+        <if test="gxsj !=null and gxsj != ''">
+            ,gxsj
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,xh
+        </if>
+        <if test="sfgk !=null and sfgk != ''">
+            ,sfgk
+        </if>
+        ,lrry,lrsj,scbj) values(#{cpwjid}
+        <if test="cpmc !=null and cpmc != ''">
+            ,#{cpmc}
+        </if>
+        <if test="cpdm !=null and cpdm != ''">
+            ,#{cpdm}
+        </if>
+        <if test="bbh !=null and bbh != ''">
+            ,#{bbh}
+        </if>
+        <if test="gxsj !=null and gxsj != ''">
+            ,cast(#{gxsj} as date)
+        </if>
+        <if test="xh !=null and xh != ''">
+            ,cast(#{xh} as numeric )
+        </if>
+        <if test="sfgk !=null and sfgk != ''">
+            ,#{sfgk}
+        </if>
+        ,#{lrry},LOCALTIMESTAMP,'0')
+    </insert>
+    <update id="updateByBbhAndCpdm" parameterType="CpwjDto">
+        update igams_cpwj set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="sfgk !=null and sfgk != ''">
+            ,sfgk = #{sfgk}
+        </if>
+        <where>
+            bbh=#{bbh} and cpdm=#{cpdm}
+        </where>
+    </update>
+    <select id="getDtoByBbhAndCpdm" resultType="CpwjDto" parameterType="CpwjDto">
+        SELECT
+        cpwj.cpwjid,cpwj.cpmc,cpwj.cpdm,cpwj.bbh,cpwj.gxsj,cpwj.lrry,to_char(cpwj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,cpwj.sfgk,lrry.zsxm lrrymc,
+               cpwj.xh
+        FROM
+        igams_cpwj cpwj
+        left join matridx_xtyh lrry on lrry.yhid=cpwj.lrry
+        <where>
+            cpwj.scbj ='0' and cpwj.bbh=#{bbh} and cpwj.cpdm=#{cpdm}
+            <if test="sfgk !=null and sfgk != ''">
+                and cpwj.sfgk = #{sfgk}
+            </if>
+            ORDER BY cpwj.xh DESC Limit 1
+        </where>
+    </select>
+    <select id="getDtoById" resultType="CpwjDto" parameterType="String">
+        SELECT
+        cpwj.cpwjid,cpwj.cpmc,cpwj.cpdm,cpwj.bbh,cpwj.gxsj,cpwj.lrry,to_char(cpwj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,cpwj.sfgk,lrry.zsxm lrrymc,
+               cpwj.xh
+        FROM
+        igams_cpwj cpwj
+        left join matridx_xtyh lrry on lrry.yhid=cpwj.lrry
+        <where>
+            cpwj.cpwjid=#{cpwjid}
+        </where>
+    </select>
+    <select id="getDtoList" resultType="CpwjDto" parameterType="CpwjDto">
+        SELECT
+        cpwj.cpwjid,cpwj.cpmc,cpwj.cpdm,cpwj.bbh,cpwj.gxsj,cpwj.lrry,to_char(cpwj.lrsj,'yyyy-MM-dd hh24:mi:ss') lrsj,cpwj.sfgk,lrry.zsxm lrrymc,
+               cpwj.xh
+        FROM
+        igams_cpwj cpwj
+        left join matridx_xtyh lrry on lrry.yhid=cpwj.lrry
+        <where>
+            <if test="ids !=null and ids.size > 0">
+                and cpwj.cpwjid in
+                <foreach collection="ids" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <update id="updateGkByBbhAndCpdm" parameterType="List">
+        <if test="list !=null and list.size > 0">
+            update igams_cpwj cpwj
+            set sfgk ='1' ,xgsj = LOCALTIMESTAMP,xgry =tmp.xgry
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.cpwjid} cpwjid,#{item.cpdm} cpdm,#{item.bbh} bbh,#{item.xgry} xgry
+            </foreach>
+            )
+            tmp
+            where
+            cpwj.cpwjid =
+            ( SELECT cp.cpwjid FROM igams_cpwj cp
+            WHERE cp.scbj = '0' AND cp.cpdm = tmp.cpdm AND cp.bbh = tmp.bbh AND cp.cpwjid != tmp.cpwjid ORDER BY cp.xh DESC LIMIT 1 )
+        </if>
+    </update>
+    <delete id="delete" parameterType="CpwjDto">
+        update igams_cpwj set scbj ='1' , scry = #{scry} , scsj = LOCALTIMESTAMP
+        where cpwjid in
+        <foreach collection="ids" open="(" close=")" separator="," item="item">
+            #{item}
+        </foreach>
+    </delete>
+    <update id="update" parameterType="CpwjDto">
+        update igams_cpwj set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="sfgk !=null and sfgk != ''">
+            ,sfgk = #{sfgk}
+        </if>
+        <where>
+            cpwjid=#{cpwjid}
+        </where>
+    </update>
+    <update id="updateCpwjDto" parameterType="CpwjDto">
+        update igams_cpwj set
+        xgry=#{xgry}, xgsj=LOCALTIMESTAMP
+        <if test="cpmc !=null and cpmc != ''">
+            ,cpmc = #{cpmc}
+        </if>
+        <if test="cpdm !=null and cpdm != ''">
+            ,cpdm = #{cpdm}
+        </if>
+        <if test="bbh !=null and bbh != ''">
+            ,bbh = #{bbh}
+        </if>
+        <if test="gxsj !=null and gxsj != ''">
+            ,gxsj = cast(#{gxsj} as date)
+        </if>
+        <where>
+            cpwjid=#{cpwjid}
+        </where>
+    </update>
+</mapper>

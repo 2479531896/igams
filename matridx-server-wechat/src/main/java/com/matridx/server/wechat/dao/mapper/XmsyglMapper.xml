@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IXmsyglDao" >
+    <delete id="delInfo" parameterType="XmsyglDto">
+        update igams_xmsygl xmsygl set scbj='1'
+        <if test="scry != null and scry != '' ">
+            , scry = #{scry},scsj=LOCALTIMESTAMP
+        </if>
+        where scbj='0' and ywid = #{ywid}
+        and not exists (select 1 from igams_sjsygl sjsygl where xmsygl.syglid = sjsygl.syglid
+        and sjsygl.syrq is not null
+        )
+    </delete>
+
+    <insert id="insertList" parameterType="list">
+        insert into igams_xmsygl(xmsyglid,syglid,ywid,dyid,jcxmid,jczxmid,lrry,ywlx,lrsj,scbj,wkdm)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.xmsyglid},#{item.syglid},#{item.ywid},#{item.dyid},#{item.jcxmid},#{item.jczxmid},#{item.lrry},#{item.ywlx},coalesce(cast(#{item.lrsj} as TIMESTAMP),LOCALTIMESTAMP),coalesce(#{item.scbj},'0'),#{item.wkdm}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteInfo" parameterType="XmsyglDto">
+        delete from igams_xmsygl  where scbj='1' and ywid = #{ywid}
+    </delete>
+
+    <update id="modToNormal" parameterType="XmsyglDto">
+        update igams_xmsygl set scbj='0',scry = null,scsj = null
+        <if test="xgry != null and xgry != '' ">
+            , xgry = #{xgry},xgsj=LOCALTIMESTAMP
+        </if>
+        where xmsyglid in
+        <if test="ids !=null and ids.size >0" >
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+
+    <select id="getModelList" parameterType="XmsyglDto" resultType="XmsyglDto">
+		select * from igams_xmsygl xmsygl
+		where xmsygl.ywid = #{ywid} and xmsygl.scbj = '0'
+	</select>
+
+    <update id="updateList" parameterType="list">
+        <if test="list !=null and list.size > 0">
+            update igams_xmsygl xmsygl
+            set xgsj=LOCALTIMESTAMP,xgry=tmp.xgry,syglid=tmp.syglid
+            from(
+            <foreach collection="list" separator="union" open="(" close=") " item="item" index="index">
+                select #{item.xmsyglid} xmsyglid,#{item.syglid} syglid,#{item.xgry} xgry
+            </foreach>
+            )
+            tmp
+            where
+            xmsygl.xmsyglid=tmp.xmsyglid
+        </if>
+    </update>
+</mapper>
+

@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.IWxyhDao" >
+
+	<!-- 新增微信用户信息 -->
+	<insert id="insert" parameterType="WxyhModel">
+		insert into matridx_wxyh(yhid,wxid
+		<if test="wxm !=null and wxm != ''">
+			,wxm
+		</if>
+		<if test="yhm !=null and yhm != ''">
+			,yhm
+		</if>
+		<if test="yhxb !=null and yhxb != ''">
+			,yhxb
+		</if>
+		<if test="yhcs !=null and yhcs != ''">
+			,yhcs
+		</if>
+		<if test="bqidlb !=null and bqidlb != ''">
+			,bqidlb
+		</if>
+		<if test="gzpt !=null and gzpt != ''">
+			,gzpt
+		</if>
+		<if test="sj !=null and sj != ''">
+			,sj
+		</if>
+		<if test="sflx !=null and sflx != ''">
+			,sflx
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			,unionid
+		</if>
+		,lrry,lrsj,scbj) values(#{yhid},#{wxid}
+		<if test="wxm !=null and wxm != ''">
+			,#{wxm}
+		</if>
+		<if test="yhm !=null and yhm != ''">
+			,#{yhm}
+		</if>
+		<if test="yhxb !=null and yhxb != ''">
+			,#{yhxb}
+		</if>
+		<if test="yhcs !=null and yhcs != ''">
+			,#{yhcs}
+		</if>
+		<if test="bqidlb !=null and bqidlb != ''">
+			,#{bqidlb}
+		</if>
+		<if test="gzpt !=null and gzpt != ''">
+			,#{gzpt}
+		</if>
+		<if test="sj !=null and sj != ''">
+			,#{sj}
+		</if>
+		<if test="sflx !=null and sflx != ''">
+			,#{sflx}
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			,#{unionid}
+		</if>
+		,#{lrry},LOCALTIMESTAMP,'0')
+	</insert>
+	<!-- 获取微信用户信息列表 -->
+	<select id="getPagedDtoList" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.wxid,wxyh.yhid,wxyh.wxm,wxyh.yhm,case when wxyh.yhxb ='1' then '男' when wxyh.yhxb='2' then '女' end yhxb,
+		wxyh.lrry,wxyh.lrsj,wxyh.xgry,wxyh.xgsj,wxyh.scry,wxyh.scsj,wxyh.scbj,wxyh.unionid,
+		wxyh.yhcs,wxyh.bqidlb,bqgl.bqm,wbcx.gzpt gzptmc,wxyh.gzpt
+		from matridx_wxyh wxyh
+		left outer join igams_yhbq yhbq on  wxyh.wxid = yhbq.wxid
+		left outer join igams_bqgl bqgl on  bqgl.bqid = yhbq.bqid and yhbq.wbcxid = bqgl.wbcxid 
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid = wxyh.gzpt
+		<where>
+			wxyh.scbj != '1'
+			<if test="wxid!=null and wxid !=''">
+			and wxyh.wxid like '%'||#{wxid}||'%'
+			</if>
+			<if test="yhm!=null and yhm !=''">
+			and wxyh.yhm like '%'||#{yhm}||'%'
+			</if>
+			<if test="yhid!=null and yhid !=''">
+			and wxyh.yhid like '%'||#{yhid}||'%'
+			</if>
+			<if test="wxm!=null and wxm !=''">
+			and wxyh.wxm like '%'||#{wxm}||'%'
+			</if>
+			<if test="gzpt != null and gzpt != ''">
+				and wbcx.gzpt like '%'||#{gzpt}||'%'
+			</if>
+		</where>
+	</select>
+	<!-- 获取标签名列表 -->
+	<select id="selectbqmbybqlbid"  parameterType="WxyhDto" resultType="WxyhDto">
+		select bqid,bqm
+		from
+		igams_bqgl bqgl
+		<where>
+			scbj != '1'
+		</where>
+	</select>
+	<!-- 根据用户ID查询微信用户信息 -->
+	<select id="getDto" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.yhid,wxyh.wxid,wxyh.wxm,wxyh.yhm,case when wxyh.yhxb ='1' then '男' when wxyh.yhxb='2' then '女' end yhxb,
+		wxyh.lrry,wxyh.lrsj,wxyh.xgry,wxyh.xgsj,wxyh.scry,wxyh.scsj,wxyh.scbj,bqgl.bqm,
+		wxyh.yhcs,wxyh.bqidlb,wxyh.unionid,wbcx.gzpt gzptmc,wxyh.gzpt,wbcx.wbcxdm
+		from matridx_wxyh wxyh
+		left outer join igams_yhbq yhbq on  wxyh.wxid= yhbq.wxid
+		left outer join igams_bqgl bqgl on  bqgl.bqid=yhbq.bqid and yhbq.wbcxid = bqgl.wbcxid 
+		left outer join matridx_wbcx wbcx on wbcx.wbcxid = wxyh.gzpt
+		<where>
+			wxyh.scbj != '1'
+			<if test="yhid != null and yhid != ''">
+				and wxyh.yhid = #{yhid}
+			</if>
+			<if test="wxid != null and wxid != ''">
+				and wxyh.wxid = #{wxid}
+			</if>
+		</where>
+	</select>
+	<!-- 修改微信用户信息 -->
+	<update id="updateWxyh" parameterType="WxyhDto">
+			update matridx_wxyh set
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+		<if test="wxid !=null and  wxid !=''">
+			,wxid=#{wxid}
+		</if>	
+		<if test="wxm !=null and  wxm !=''">
+			,wxm=#{wxm}
+		</if>
+		<if test="yhm !=null and  yhm !=''">
+			,yhm=#{yhm}
+		</if>
+		<if test="yhxb !=null and  yhxb !=''">
+			,yhxb=#{yhxb}
+		</if>
+		<if test="yhcs !=null and  yhcs !=''">
+			,yhcs=#{yhcs}
+		</if>
+		<if test="bqidlb !=null and  bqidlb !=''">
+			,bqidlb=#{bqidlb}
+		</if>
+		<if test="gzpt !=null and  gzpt !=''">
+			,gzpt=#{gzpt}
+		</if>
+		<if test="unionid !=null and unionid !=''">
+			,unionid=#{unionid}
+		</if>
+		<where>
+			yhid=#{yhid}
+		</where>
+		</update>
+		<!-- 根据用户id删除微信用户信息 -->
+	<update id="deleteWxyhbyyhid" parameterType="WxyhDto" >
+		update matridx_wxyh set scry = #{scry},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			 yhid in
+	 	  	  		<foreach collection="ids" open="(" close=")" separator="," item="item">
+	 	  	  			 #{item}
+	 	  	  		</foreach>
+		</where>
+	</update>
+	<!-- 根据微信ID删除用户信息 -->
+	<update  id="delete" parameterType="WxyhModel">
+		update matridx_wxyh set scry = #{wxid},scsj = LOCALTIMESTAMP,scbj='1'
+		<where>
+			wxid = #{wxid} and scbj = '0'
+			<if test="gzpt !=null and gzpt != ''">
+				and gzpt = #{gzpt}
+			</if>
+		</where>
+	</update>
+	<!-- 通过微信ID查询用户信息 -->
+	<select id="selectYhmByWxid" parameterType="String" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.unionid,wxyh.sj
+			from matridx_wxyh wxyh
+			<where>
+				and wxyh.wxid = #{wxid}
+			</where>
+	</select>
+	<!-- 根据微信用户信息更新删除标记 -->
+	<update  id="updateScbjByWxyh" parameterType="WxyhDto">
+		update matridx_wxyh set xgry = #{wxid},xgsj = LOCALTIMESTAMP,scbj='0'
+		<if test="wxm !=null and wxm != ''">
+			,wxm = #{wxm}
+		</if>
+		<if test="yhm !=null and yhm != ''">
+			,yhm = #{yhm}
+		</if>
+		<if test="yhxb !=null and yhxb != ''">
+			,yhxb = #{yhxb}
+		</if>
+		<if test="yhcs !=null and yhcs != ''">
+			,yhcs = #{yhcs}
+		</if>
+		<if test="bqidlb !=null and bqidlb != ''">
+			,bqidlb = #{bqidlb}
+		</if>
+		<if test="gzpt !=null and gzpt != ''">
+			,gzpt = #{gzpt}
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			,unionid = #{unionid}
+		</if>
+		<where>
+			wxid = #{wxid} and scbj !='1'
+			<if test="gzpt !=null and gzpt != ''">
+				and gzpt = #{gzpt}
+			</if>
+		</where>
+	</update>
+	<!-- 更新微信用户信息 -->
+	<update  id="update" parameterType="WxyhDto">
+		update matridx_wxyh set xgry = #{wxid},xgsj = LOCALTIMESTAMP
+		<if test="wxm !=null and wxm != ''">
+			,wxm = #{wxm}
+		</if>
+		<if test="yhm !=null and yhm != ''">
+			,yhm = #{yhm}
+		</if>
+		<if test="yhxb !=null and yhxb != ''">
+			,yhxb = #{yhxb}
+		</if>
+		<if test="yhcs !=null and yhcs != ''">
+			,yhcs = #{yhcs}
+		</if>
+		<if test="bqidlb !=null and bqidlb != ''">
+			,bqidlb = #{bqidlb}
+		</if>
+		<if test="gzpt !=null and gzpt != ''">
+			,gzpt = #{gzpt}
+		</if>
+		<if test="sj !=null and sj != ''">
+			,sj = #{sj}
+		</if>
+		<if test="sflx !=null and sflx != ''">
+			,sflx = #{sflx}
+		</if>
+		<if test="cskz1 !=null and cskz1 != ''">
+			,cskz1 = #{cskz1}
+		</if>
+		<if test="cskz2 !=null and cskz2 != ''">
+			,cskz2 = #{cskz2}
+		</if>
+		<if test="cskz3 !=null and cskz3 != ''">
+			,cskz3 = #{cskz3}
+		</if>
+		<if test="unionid !=null and unionid != ''">
+			,unionid = #{unionid}
+		</if>
+		<where>
+			wxid = #{wxid}
+			<if test="gzpt !=null and gzpt != ''">
+				and gzpt = #{gzpt}
+			</if>
+		</where>
+	</update>
+	<!-- 修改微信手机号 -->
+	<update  id="updateSj" parameterType="WxyhDto">
+		update matridx_wxyh set xgry = #{wxid},xgsj = LOCALTIMESTAMP,sj=#{sj}
+		<where>
+			wxid = #{wxid} and scbj = '0'
+			<if test="gzpt !=null and gzpt != ''">
+				and gzpt = #{gzpt}
+			</if>
+		</where>
+	</update>
+
+	<!-- 修改微信名 -->
+	<update  id="updateWxmByid" parameterType="WxyhDto">
+		update matridx_wxyh set wxm = #{wxm}
+		<where>
+			yhid = #{yhid} and scbj = '0'
+		</where>
+
+	</update>
+	<select id="getAllSj" resultType="WxyhDto">
+		select  wxyh.wxid,wxyh.sj,wxyh.wxm,wxyh.yhid
+		 from matridx_wxyh wxyh
+		 where wxyh.scbj!='1' 
+	</select>
+	<!-- 通过微信ID查询用户信息 -->
+	<select id="getDtoById" parameterType="String" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.sj,wxyh.sflx,wxyh.cskz1,wxyh.cskz2,wxyh.cskz3
+			,wxyh.unionid,wbcx.gzpt gzptmc
+			from matridx_wxyh wxyh
+			left join matridx_wbcx wbcx on wxyh.gzpt = wbcx.wbcxid
+			<where>
+				wxyh.scbj != '1' and wbcx.scbj != '1'
+				and wxyh.wxid = #{wxid}
+			</where>
+	</select>
+	<!-- 通过微信ID和关注平台查询用户信息 -->
+	<select id="getDtoByIdAndGzpt" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.sj,wxyh.sflx,wxyh.cskz1,wxyh.cskz2,wxyh.cskz3
+			,wxyh.unionid,wbcx.gzpt gzptmc
+			from matridx_wxyh wxyh
+			left join matridx_wbcx wbcx on wxyh.gzpt = wbcx.wbcxid
+			<where>
+				wxyh.scbj != '1' and wbcx.scbj != '1'
+				and wxyh.wxid = #{wxid}
+				and wxyh.gzpt = #{gzpt}
+			</where>
+	</select>
+	<!-- 获取微信用户信息 -->
+	<select id="getDtoList" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.lrsj,wxyh.unionid,wbcx.gzpt gzptmc
+			from matridx_wxyh wxyh
+			left join matridx_wbcx wbcx on wxyh.gzpt = wbcx.wbcxid
+			<where>
+				wxyh.scbj != '1'
+				<if test="lrsj !=null and lrsj != ''">
+					and wxyh.lrsj > cast(#{lrsj} as timestamp)
+				</if>
+				order by wxyh.lrsj asc
+				limit 500
+			</where>
+	</select>
+	<!-- 查询短信列表 -->
+	<select id="selectDxtzList" resultType="DxtzDto">
+		select sjh, xm
+		 from igams_dxtz
+	</select>
+	<!-- 根据关注平台查询用户 -->
+	<select id="getListByGzpt" parameterType="String" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.sj,wxyh.sflx,wxyh.cskz1,wxyh.cskz2,wxyh.cskz3
+			,wxyh.unionid
+			from matridx_wxyh wxyh
+			<where>
+				wxyh.scbj != '1'
+				and wxyh.gzpt = #{gzpt}
+				and wxyh.unionid is not null
+			</where>
+	</select>	
+	<!-- 查询支付消息通知用户 -->
+	<select id="receivePayMsgUser" parameterType="PayinfoDto" resultType="WxyhDto">
+		select wxyh.wxm,wxyh.yhm,wxyh.yhxb,wxyh.yhcs,wxyh.bqidlb,wxyh.yhid,wxyh.wxid,wxyh.gzpt,wxyh.sj,wxyh.sflx,wxyh.cskz1,wxyh.cskz2,wxyh.cskz3
+			,wxyh.unionid
+			from matridx_wxyh wxyh
+			<where>
+				wxyh.scbj != '1'
+				<if test="gzpt !=null and gzpt != ''">
+					and wxyh.gzpt = #{gzpt}
+				</if>
+				and (unionid in (select unionid from matridx_wxyh where wxid=#{lrry} and scbj = '0') or wxid = #{lrry})
+			</where>
+	</select>
+
+	<!-- 根据微信id获取微信用户信息 -->
+	<select id="getWxyhListByWxid" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.wxid,wxyh.yhid,wxyh.wxm,wxyh.yhm,case when wxyh.yhxb ='1' then '男' when wxyh.yhxb='2' then '女' end yhxb,
+			   wxyh.lrry,wxyh.lrsj,wxyh.xgry,wxyh.xgsj,wxyh.scry,wxyh.scsj,wxyh.scbj,wxyh.unionid,
+			   wxyh.yhcs,wxyh.bqidlb,wxyh.gzpt
+		from matridx_wxyh wxyh
+		left join matridx_wbcx wbcx on wxyh.gzpt = wbcx.wbcxid
+		where wxyh.scbj !='1' and wxyh.wxid = #{wxid} and wbcx.wbcxdm = #{wbcxdm}
+	</select>
+	<!-- 根据手机号获取微信用户信息 -->
+	<select id="getWxyhListBySj" parameterType="WxyhDto" resultType="WxyhDto">
+		select wxyh.wxid,wxyh.yhid,wxyh.wxm,wxyh.yhm,wxyh.sj,case when wxyh.yhxb ='1' then '男' when wxyh.yhxb='2' then '女' end yhxb,
+			   wxyh.lrry,wxyh.lrsj,wxyh.xgry,wxyh.xgsj,wxyh.scry,wxyh.scsj,wxyh.scbj,wxyh.unionid,
+			   wxyh.yhcs,wxyh.bqidlb,wxyh.gzpt
+		from matridx_wxyh wxyh
+		where wxyh.scbj !='1' and wxyh.sj = #{sj}
+	</select>
+</mapper>

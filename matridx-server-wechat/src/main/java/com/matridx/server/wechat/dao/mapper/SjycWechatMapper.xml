@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.matridx.server.wechat.dao.post.ISjycWechatDao" >
+
+	<!-- 根据送检ID获取异常信息 -->
+	<select id="getDtoBySjid" parameterType="SjycWechatDto" resultType="SjycWechatDto">
+		select yc.ycid,yc.ywid,yc.lx,yc.zlx,yclx.csmc lxmc,yczlx.csmc zlxmc,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,yc.twr,to_char(yc.lrsj,'YYYY-MM-DD HH24:MI') lrsj,yc.xgry,yc.ycbt,sj.db,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,xtyh.zsxm twrmc,sj.hzxm hzxm,sj.ybbh ybbh,yc.sfpj,
+		case yc.qrlx when 'USER_TYPE' then '用户' when 'ROLE_TYPE' then '角色'else '用户' end qrlxmc,
+		case yc.qrlx when 'USER_TYPE' then qryh.zsxm when 'ROLE_TYPE' then xtjs.jsmc else qryh.zsxm end qrrmc,
+		jcdw.csmc jcdwmc,sj.jcxmmc,
+		case when yczd.zdry !=null or yczd.zdry !='' then '1' else '0' end sfzd,yczd.zdsj,count(fj.fjid) fjs,yc.zhhfsj,yc.zhhfnr,yc.zfjl
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_xtyh xtyh on xtyh.yhid=yc.twr
+		left join matridx_xtyh qryh on qryh.yhid=yc.qrr
+		left join matridx_xtjs xtjs on xtjs.jsid=yc.qrr
+		left join matridx_jcsj yclx on yclx.csid=yc.lx
+		left join matridx_jcsj yczlx on yczlx.csid=yc.zlx
+		left join matridx_jcsj jcdw on jcdw.csid = sj.jcdw
+		left join igams_sjyczd yczd on yczd.ycid = yc.ycid and zdry = #{yhid}
+		left join igams_sjyctz sjyctz on sjyctz.ycid = yc.ycid
+		left join matridx_fjcfb fj on fj.ywid = yc.ycid
+		<where>
+			yc.scbj!='1' and yc.twr=#{yhid}
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+			<if test="ywid != null and ywid != ''">
+				and yc.ywid=#{ywid}
+			</if>
+			<if test="ycqf != null and ycqf != ''">
+				and yc.ycqf=#{ycqf}
+			</if>
+			<if test="entire != null and entire != ''">
+				and (yc.ycbt like '%'||#{entire}||'%'
+				or jcdw.csmc like '%'||#{entire}||'%')
+			</if>
+		</where>
+		GROUP BY yc.ycid,lxmc,zlxmc,db,jc.csmc,xtyh.zsxm,hzxm,ybbh,qryh.zsxm,xtjs.jsmc,jcdwmc,yczd.zdry,yczd.zdsj,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,
+		yc.lrsj,yc.xgry,yc.ycbt,yc.xgsj,yc.scry,yc.scsj,yc.scbj,sj.jcxmmc,yc.zhhfsj,yc.zhhfnr,yc.zfjl
+		order by sfzd desc,yc.sfjs,yc.lrsj desc
+		LIMIT #{pageSize} OFFSET #{pageStart}
+	</select>
+
+
+	<!-- 根据送检ID获取异常数量 -->
+	<select id="getCountBySjid" parameterType="SjycWechatDto"  resultType="int">
+		select count(yc.ywid) from igams_sjyc yc
+		<where>
+			yc.scbj!='1'
+			<if test="ywid != null and ywid != ''">
+				and yc.ywid=#{ywid}
+			</if>
+			<if test="ycqf != null and ycqf != ''">
+				and yc.ycqf=#{ycqf}
+			</if>
+			<if test="twr != null and twr != ''">
+				and yc.twr=#{twr}
+			</if>
+		</where>
+	</select>
+
+	<!--异常新增-->
+	<insert id="insert" parameterType="SjycWechatDto">
+		insert into igams_sjyc(ycid
+		<if test="ycbt !=null and ycbt != ''">
+			,ycbt
+		</if>
+		<if test="ywid !=null and ywid != ''">
+			,ywid
+		</if>
+		<if test="lx !=null and lx != ''">
+			,lx
+		</if>
+		<if test="zlx !=null and zlx != ''">
+			,zlx
+		</if>
+		<if test="twr !=null and twr != ''">
+			,twr
+		</if>
+		<if test="qrlx !=null and qrlx != ''">
+			,qrlx
+		</if>
+		<if test="qrr !=null and qrr != ''">
+			,qrr
+		</if>
+		<if test="ycxx !=null and ycxx != ''">
+			,ycxx
+		</if>
+		<if test="ycqf !=null and ycqf != ''">
+			,ycqf
+		</if>
+		<if test="jcdw !=null and jcdw != ''">
+			,jcdw
+		</if>
+		,sfjs,lrry,lrsj,scbj
+		)values(#{ycid}
+		<if test="ycbt !=null and ycbt != ''">
+			,#{ycbt}
+		</if>
+		<if test="ywid !=null and ywid != ''">
+			,#{ywid}
+		</if>
+		<if test="lx !=null and lx != ''">
+			,#{lx}
+		</if>
+		<if test="zlx !=null and zlx != ''">
+			,#{zlx}
+		</if>
+		<if test="twr !=null and twr != ''">
+			,#{twr}
+		</if>
+		<if test="qrlx !=null and qrlx != ''">
+			,#{qrlx}
+		</if>
+		<if test="qrr !=null and qrr != ''">
+			,#{qrr}
+		</if>
+		<if test="ycxx !=null and ycxx != ''">
+			,#{ycxx}
+		</if>
+		<if test="ycqf !=null and ycqf != ''">
+			,#{ycqf}
+		</if>
+		<if test="jcdw !=null and jcdw != ''">
+			,#{jcdw}
+		</if>
+		,'0',#{lrry},LOCALTIMESTAMP,'0'
+		)
+	</insert>
+
+	<update id="update" parameterType="SjycWechatDto">
+		update igams_sjyc
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP
+			<if test="ywid != null and ywid != ''">
+				,ywid=#{ywid}
+			</if>
+			<if test="lx != null and lx != ''">
+				,lx=#{lx}
+			</if>
+			<if test="zlx != null and zlx != ''">
+				,zlx=#{zlx}
+			</if>
+			<if test="ycbt != null and ycbt != ''">
+				,ycbt=#{ycbt}
+			</if>
+			<if test="ycxx != null and ycxx != ''">
+				,ycxx=#{ycxx}
+			</if>
+			<if test="twr != null and twr != ''">
+				,twr=#{twr}
+			</if>
+			<if test="qrlx != null and qrlx != ''">
+				,qrlx=#{qrlx}
+			</if>
+			<if test="qrr != null and qrr != ''">
+				,qrr=#{qrr}
+			</if>
+			<if test="sfjs != null and sfjs != ''">
+				,sfjs=#{sfjs}
+			</if>
+			<if test="zhhfnr != null and zhhfnr != ''">
+				,zhhfnr=#{zhhfnr}
+			</if>
+			<if test="zhhfsj != null and zhhfsj != ''">
+				,zhhfsj= cast(#{zhhfsj} as timestamp)
+			</if>
+			<if test="zfjl != null and zfjl != ''">
+				,zfjl=concat(zfjl,#{zfjl})
+			</if>
+		</set>
+		<where>
+			scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and ycid=#{ycid}
+			</if>
+		</where>
+	</update>
+
+	<select id="getDto" parameterType="SjycWechatDto" resultType="SjycWechatDto">
+		select yc.ycid,yc.ywid,yc.lx,yc.zlx,yc.twr,yc.ycxx,yc.qrlx,yc.qrr,yc.sfjs,yc.lrry,to_char(yc.lrsj,'YYYY-MM-DD') lrsj,yc.xgry,yc.ycbt,sj.db,sj.jcxmmc,
+		yc.xgsj,yc.scry,yc.scsj,yc.scbj,jc.csmc yblxmc,wxyh.wxm twrmc,sj.hzxm hzxm,sj.ybbh ybbh,
+		lx.csmc lxmc,zlx.csmc zlxmc,to_char(yc.zfsj,'YYYY-MM-DD hh24:mi:ss') zfsj,yc.zfjl,to_char(yc.zhhfsj,'YYYY-MM-DD hh24:mi:ss') zhhfsj,yc.zhhfnr
+		from igams_sjyc yc
+		left join igams_sjxx sj on sj.sjid=yc.ywid
+		left join matridx_jcsj jc on jc.csid=sj.yblx
+		left join matridx_jcsj lx on lx.csid=yc.lx
+		left join matridx_jcsj zlx on zlx.csid=yc.zlx
+		left join matridx_wxyh wxyh on wxyh.wxid=yc.twr  and wxyh.scbj = '0'
+		left join matridx_wbcx wbcx on wbcx.wbcxid=wxyh.gzpt
+		<where>
+			yc.scbj!='1'
+			<if test="ycid != null and ycid != ''">
+				and yc.ycid=#{ycid}
+			</if>
+			<if test="gzpt != null and gzpt != ''">
+				and wbcx.wbcxdm=#{gzpt}
+			</if>
+		</where>
+	</select>
+
+	<update id="evaluation" parameterType="SjycWechatDto">
+		update igams_sjyc
+		<set>
+			xgry=#{xgry},xgsj=LOCALTIMESTAMP,sfpj='1'
+			<if test="sfjj != null and sfjj != ''">
+				,sfjj=#{sfjj}
+			</if>
+			<if test="pjxj != null and pjxj != ''">
+				,pjxj=#{pjxj}
+			</if>
+			<if test="pjnr != null and pjnr != ''">
+				,pjnr=#{pjnr}
+			</if>
+
+		</set>
+		<where>
+			scbj!='1' and ycid=#{ycid}
+		</where>
+	</update>
+
+
+	<!-- 结束异常任务 -->
+	<update id="finishYc" parameterType="SjycWechatDto">
+		update igams_sjyc set jsry=#{jsry},jssj=LOCALTIMESTAMP,sfjs='1'
+		<where>
+			ycid in
+			<foreach collection="ids" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</where>
+	</update>
+
+
+	<select id="getFinishList" parameterType="SjycWechatDto" resultType="SjycWechatDto">
+		select lrry,twr,ycbt from  igams_sjyc
+		<where>
+			ycid in
+			<foreach collection="ids" separator="," item="item" index="index" open="(" close=")">
+				#{item}
+			</foreach>
+		</where>
+	</select>
+</mapper>
